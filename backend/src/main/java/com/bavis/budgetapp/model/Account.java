@@ -1,8 +1,6 @@
 package com.bavis.budgetapp.model;
 
-import java.time.LocalDateTime;
-
-import com.bavis.budgetapp.enumeration.ConnectionStatus;
+import com.bavis.budgetapp.enumeration.AccountType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -24,36 +23,38 @@ import lombok.Setter;
  * 
  * @author bavis
  * 
- *  	Entity Used To Establish a Connection With an Account and a Specified User
+ *  	Entity To Relate an Account with a User
  *
  */
 @Entity
-@Table(name = "connection")
+@Table(name = "account")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class Connection {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long connectionId;
+public class Account {
+	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long accountId;
 	
 	@Column(nullable = false)
-	private String accessToken;
-	
-	@Column(nullable = false)
-	private String instituionName;
+	private String accountName;
 	
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private ConnectionStatus connectionStatus;
+	private AccountType accountType;
 	
-	@Column(nullable = false)
-	private LocalDateTime lastSyncTime;
+	/**
+	 * Many Users To One Account
+	 */
+	@ManyToOne
+	@JoinColumn(name = "userId", nullable = false)
+	private User user;
 	
+	/**
+	 * One Connection To One Account
+	 */
 	@OneToOne
-	@JoinColumn(name = "accountId", nullable = false)
-	private Account account;
+	@JoinColumn(name = "connectionId", nullable = false, unique = true)
+	private Connection connection;
 }
