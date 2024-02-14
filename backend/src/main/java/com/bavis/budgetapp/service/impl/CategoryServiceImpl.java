@@ -5,8 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.bavis.budgetapp.dao.CateogryRepository;
+import com.bavis.budgetapp.dao.ParentCategoryRepository;
+import com.bavis.budgetapp.dao.SubCategoryRepository;
 import com.bavis.budgetapp.model.Category;
+import com.bavis.budgetapp.model.ParentCategory;
+import com.bavis.budgetapp.model.SubCategory;
 import com.bavis.budgetapp.service.CategoryService;
 
 @Service 
@@ -15,28 +18,38 @@ public class CategoryServiceImpl implements CategoryService{
 	private static final Logger LOG = LoggerFactory.getLogger(CategoryServiceImpl.class);
 	
 	@Autowired 
-	CateogryRepository categoryRepository;
+	SubCategoryRepository subCategoryRepository;
+	
+	@Autowired
+	ParentCategoryRepository parentCategoryRepository;
+	
 
 	@Override
-	public Category create(Category category) {
+	public SubCategory create(SubCategory category) throws Exception {
 		LOG.debug("Creating Category [{}]", category);
-		return categoryRepository.save(category);
+		return subCategoryRepository.save((SubCategory)category);
 	}
 
 	@Override
-	public Category update(Category category) {
+	public Category update(Category category){
 		LOG.debug("Updating Category [{}]", category);
-		return categoryRepository.save(category);
+		
+		if(category instanceof ParentCategory) {
+			return parentCategoryRepository.save((ParentCategory) category);
+		} else {
+			return subCategoryRepository.save((SubCategory)category);
+		} 
 	}
 
 	@Override
-	public Category read(Long categoryId) {
+	public Category read(Long categoryId) throws Exception{
 		LOG.debug("Reading Category with id [{}]", categoryId);
 		
-		Category category = categoryRepository.findByCategoryId(categoryId);
+		Category category = subCategoryRepository.findByCategoryId(categoryId);
 		
-		if(category == null) {
-			throw new RuntimeException("Invalid category id: " + categoryId);
+		if(category == null) {	//check if reading parent category
+			category = parentCategoryRepository.findByCategoryId(categoryId);
+			if(category == null) throw new RuntimeException("Invalid category id: " + categoryId);
 		}
 		
 		return category;
@@ -45,7 +58,7 @@ public class CategoryServiceImpl implements CategoryService{
 	@Override
 	public void delete(Long categoryId) {
 		LOG.debug("Deleting Category with id [{categoryId}]", categoryId);
-		categoryRepository.deleteById(categoryId);
+		subCategoryRepository.deleteById(categoryId);
 	}
 
 }

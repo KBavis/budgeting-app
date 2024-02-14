@@ -49,7 +49,7 @@ public class Transaction {
 	 */
 	@ManyToOne
 	@JoinColumn(name = "categoryId", referencedColumnName = "categoryId")
-	private Category category;
+	private SubCategory category;
 	
 	@Override
 	public boolean equals(Object obj) {

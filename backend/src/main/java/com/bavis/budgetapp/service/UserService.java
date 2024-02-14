@@ -1,5 +1,7 @@
 package com.bavis.budgetapp.service;
 
-public interface UserService {
+import com.bavis.budgetapp.model.User;
 
+public interface UserService {
+	User create(User category) throws Exception;
 }
