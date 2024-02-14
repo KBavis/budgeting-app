@@ -54,10 +54,10 @@ public class User implements UserDetails{
 	private Role role;
 	
 	/**
-	 * One User Can Have Multiple Sub Categories 
+	 * One User Can Have Many Categories 
 	 */
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	List<SubCategory> categories;
+	List<Category> categories;
 	
 	/**
 	 * User Can Have Multiple Accounts

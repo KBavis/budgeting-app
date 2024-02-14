@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.bavis.budgetapp.model.Category;
-import com.bavis.budgetapp.model.SubCategory;
 import com.bavis.budgetapp.service.CategoryService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,7 @@ public class CategoryController {
 	private static Logger LOG = LoggerFactory.getLogger(CategoryController.class);
 	
 	@PostMapping
-	public SubCategory create(@RequestBody SubCategory category) {
+	public Category create(@RequestBody Category category) {
 		LOG.debug("Recieved Category creation request for [{}]", category);
 		
 		try {

@@ -45,11 +45,11 @@ public class Transaction {
 	private Account accountSource; 
 	
 	/**
-	 * Many Transactions To One User 
+	 * Many Transactions To One Category 
 	 */
 	@ManyToOne
 	@JoinColumn(name = "categoryId", referencedColumnName = "categoryId")
-	private SubCategory category;
+	private Category category;
 	
 	@Override
 	public boolean equals(Object obj) {

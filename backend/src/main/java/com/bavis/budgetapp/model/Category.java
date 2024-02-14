@@ -1,16 +1,20 @@
 package com.bavis.budgetapp.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Table;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,17 +24,39 @@ import lombok.Setter;
  * 
  * @author bavis
  * 	
- * 		Super Class To Seperate Categories into Parent & Sub Categories 
+ * 		Class To Store Relationship Between Parent Categories (Wants, Needs, Investments) And Sub Categories
  *
  */
-@MappedSuperclass
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
 @Getter
 @Setter
-public abstract class Category {
+@Builder 
+public class Category {
 	@Id @JsonProperty("categoryId") @GeneratedValue private Long categoryId;
-	protected String name;
+	private String name;
+	private double budgetAllocation; //mainly for parent category, but could also be used for sub
+	
+	/**
+	 * Many Categories For One Parent Category
+	 */
+	@ManyToOne
+	@JoinColumn(name = "parentCategoryId")
+	private Category parentCategory;
+	
+	/**
+	 * One Category For Many Sub Categoreis
+	 */
+	@OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL)
+	private List<Category> subCategories = new ArrayList<>();
+	
+	/**
+	 * Many Categories For One User
+	 */
+	@ManyToOne
+	@JoinColumn(name = "userId")
+	private User user;
 	
 	
 	@Override
