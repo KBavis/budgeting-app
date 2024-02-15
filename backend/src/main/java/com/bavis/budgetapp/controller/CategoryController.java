@@ -25,12 +25,12 @@ public class CategoryController {
 	private final CategoryService categoryService;
 	private static Logger LOG = LoggerFactory.getLogger(CategoryController.class);
 	
-	@PostMapping
-	public Category create(@RequestBody Category category) {
-		LOG.debug("Recieved Category creation request for [{}]", category);
+	@PostMapping("/{categoryTypeId}")
+	public Category create(@RequestBody Category category, @PathVariable(value = "categoryTypeId") Long categoryTypeId) {
+		LOG.info("Recieved Category creation request for [{}] within the category type [{}]", category, categoryTypeId);
 		
 		try {
-			return categoryService.create(category);
+			return categoryService.create(category, categoryTypeId);
 		} catch (Exception e) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access - unable to create parent category");
 		}
@@ -38,7 +38,7 @@ public class CategoryController {
 	
 	@GetMapping("/{categoryId}")
 	public Category read(@PathVariable(value = "categoryId") Long categoryId) {
-		LOG.debug("Recieved Category read request for [{}]", categoryId);
+		LOG.info("Recieved Category read request for [{}]", categoryId);
 		
 		try {
 			return categoryService.read(categoryId);
@@ -49,13 +49,13 @@ public class CategoryController {
 	
 	@PutMapping("/{categoryId}")
 	public Category update(@PathVariable(value = "categoryId") Long categoryId, @RequestBody Category category) {
-		LOG.debug("Recieved Category update request for id [{}] and category [{}]", categoryId, category);
-		return categoryService.update(category);
+		LOG.info("Recieved Category update request for id [{}] and category [{}]", categoryId, category);
+		return categoryService.update(category, categoryId);
 	}
 	
 	@DeleteMapping("/{categoryId}")
 	public void delete(@PathVariable(value = "categoryId") Long categoryId) {
-		LOG.debug("Recieved Category delete request for id [{}]", categoryId);
+		LOG.info("Recieved Category delete request for id [{}]", categoryId);
 		categoryService.delete(categoryId);
 	}
 }
