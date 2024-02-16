@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
 	private static Logger LOG = LoggerFactory.getLogger(UserServiceImpl.class);
-	private final PasswordEncoder passwordEncoder;
 	
 	@Autowired
 	UserRepository userRepository;

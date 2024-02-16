@@ -34,6 +34,7 @@ public class CategoryType {
 	private String name;
 	private double budgetAllocation; //mainly for parent category, but could also be used for sub
 	
+	@Builder.Default
 	@OneToMany(mappedBy = "categoryType", cascade = CascadeType.ALL)
 	private List<Category> categories = new ArrayList<>();
 }
