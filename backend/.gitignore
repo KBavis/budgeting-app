@@ -3,3 +3,4 @@ application.yaml
 /.gradle/
 .gradle/
 build/
+.env
