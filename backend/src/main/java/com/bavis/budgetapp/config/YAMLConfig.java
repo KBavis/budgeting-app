@@ -20,8 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 public class YAMLConfig {
 	private Map<String,Double> categories;
 	
-	@Value("${spring.account.discover.urls.Login}")
-	private String loginUrl;
+	@Value("${spring.csv.location}")
+	private String csvDir;
 	
 //	private Map<String, Map<String, String>> account;
 }
