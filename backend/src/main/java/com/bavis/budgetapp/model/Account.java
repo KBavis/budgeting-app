@@ -25,6 +25,9 @@ import lombok.Setter;
  * 
  *  	Entity To Relate an Account with a User
  *
+ *  	TODO: Fetch Accounts By /development/accounts/get
+ *  			Use this inform
+ *
  */
 @Entity
 @Table(name = "account")
@@ -34,15 +37,20 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Account {
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long accountId;
-	
+
+	@Id
 	@Column(nullable = false)
-	private String accountName;
+	private Long accountId; //account id to be fetched from Plaid, not generated
+
+	@Column(nullable = false)
+	private String accountName; //account name fetched from Plaid (allow users to alter)
 	
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private AccountType accountType;
+
+	@Column(nullable = false)
+	private double balance;
 	
 	/**
 	 * Many Users To One Account

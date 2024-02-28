@@ -4,3 +4,4 @@ application.yaml
 .gradle/
 build/
 .env
+.idea/

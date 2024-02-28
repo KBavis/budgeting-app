@@ -41,10 +41,10 @@ public class Connection {
 	private Long connectionId;
 	
 	@Column(nullable = false)
-	private String accessToken;
+	private String accessToken; //Plaid Access Token needed to access accounts
 	
 	@Column(nullable = false)
-	private String instituionName;
+	private String institutionName;
 	
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -54,6 +54,6 @@ public class Connection {
 	private LocalDateTime lastSyncTime;
 	
 	@OneToOne
-	@JoinColumn(name = "accountId", nullable = false)
+	@JoinColumn(name = "accountId", nullable = false) //one account associated to one connection
 	private Account account;
 }

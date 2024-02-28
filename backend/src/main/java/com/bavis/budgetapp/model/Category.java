@@ -36,12 +36,12 @@ public class Category {
 	
 	@ManyToOne
 	@JoinColumn(name = "categoryTypeId")
-	@JsonIgnoreProperties("categories") //needed to prevent ciruclar dependencies
+	@JsonIgnoreProperties("categories") //needed to prevent circular dependencies
 	private CategoryType categoryType;
 
 	
 	/**
-	 * This Category Will Be Created By One Individaul User
+	 * This Category Will Be Created By One Individual User
 	 */
 	@ManyToOne
 	@JoinColumn(name = "userId")

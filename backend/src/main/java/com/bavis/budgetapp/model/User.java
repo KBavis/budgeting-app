@@ -49,6 +49,7 @@ public class User implements UserDetails{
 	private String username;
 	private String password;
 	private String profileImage;
+	private String linkToken; //Plaid Link token
 	
 	@Enumerated(EnumType.STRING)
 	private Role role;

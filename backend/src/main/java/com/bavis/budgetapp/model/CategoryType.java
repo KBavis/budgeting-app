@@ -32,7 +32,7 @@ import lombok.Setter;
 public class CategoryType {
 	@Id @JsonProperty("categoryTypeId") @GeneratedValue private Long categoryTypeId;
 	private String name;
-	private double budgetAllocation; //mainly for parent category, but could also be used for sub
+	private double budgetAllocation;
 	
 	@Builder.Default
 	@OneToMany(mappedBy = "categoryType", cascade = CascadeType.ALL)
