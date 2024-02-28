@@ -10,6 +10,9 @@ import com.bavis.budgetapp.service.CategoryTypeService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class CategoryTypeServiceImpl implements CategoryTypeService {
@@ -35,11 +38,16 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 	@Override
 	public CategoryType read(Long categoryTypeId) {
 		LOG.info("Reading CategoryType with id [{}]", categoryTypeId);
-		
-		CategoryType categoryType = repository.findById(categoryTypeId).orElseThrow(
+
+        return repository.findById(categoryTypeId).orElseThrow(
 				() -> (new RuntimeException("Invalid category type id: " + categoryTypeId)));
-		
-		return categoryType;
+	}
+
+	@Override
+	public List<CategoryType> readMany() {
+		LOG.info("Reading all available CategoryTypes");
+
+        return repository.findAll();
 	}
 
 	@Override

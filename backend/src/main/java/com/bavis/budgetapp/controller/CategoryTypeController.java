@@ -18,16 +18,18 @@ import com.bavis.budgetapp.service.CategoryTypeService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/category/type")
 public class CategoryTypeController {
 	private final CategoryTypeService service;
-	private static Logger LOG = LoggerFactory.getLogger(CategoryTypeController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CategoryTypeController.class);
 	
 	@PostMapping
 	public CategoryType createCategoryType(@RequestBody CategoryType categoryType) {
-		LOG.info("Recieved Category Type creation request for [{}]", categoryType);
+		LOG.info("Received Category Type creation request for [{}]", categoryType);
 		
 		try {
 			return service.create(categoryType);
@@ -38,13 +40,19 @@ public class CategoryTypeController {
 	
 	@GetMapping("/{categoryTypeId}")
 	public CategoryType read(@PathVariable(value = "categoryTypeId") Long categoryTypeId) {
-		LOG.info("Recieved CategoryType read request for [{}]", categoryTypeId);
+		LOG.info("Received CategoryType read request for Category Type with ID of {}", categoryTypeId);
 		
 		try {
 			return service.read(categoryTypeId);
 		}  catch (Exception e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find category with id " + categoryTypeId);
 		}
+	}
+
+	@GetMapping
+	public List<CategoryType> readAll(){
+		LOG.info("Received CategoryType read many request");
+		return service.readMany();
 	}
 	
 	@PutMapping("/{categoryTypeId}")
