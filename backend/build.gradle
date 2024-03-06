@@ -4,6 +4,14 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.4'
 }
 
+sourceSets {
+	main {
+		resources {
+			srcDirs = ['src/main/resources', 'src/resources']
+		}
+	}
+}
+
 group = 'com.bavis'
 version = '0.0.1-SNAPSHOT'
 
@@ -26,9 +34,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	// https://mvnrepository.com/artifact/org.apache.commons/commons-csv
-	implementation 'org.apache.commons:commons-csv:1.10.0'	
-	implementation 'io.github.cdimascio:dotenv-java:2.2.0'
 	implementation 'org.apache.commons:commons-lang3:3.12.0'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'

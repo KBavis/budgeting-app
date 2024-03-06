@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bavis.budgetapp.model.Connection;
-import com.bavis.budgetapp.service.CSVService;
 import com.bavis.budgetapp.service.ConnectionService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,17 +25,12 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/connect")
 public class ConnectionController {
 	private final ConnectionService connectionService;
-	private final CSVService csvService; //TODO: Delete ME
 	private static Logger LOG = LoggerFactory.getLogger(ConnectionController.class);
 	
 	@PostMapping
 	public Connection create(@RequestBody Connection connection) {
-		LOG.debug("Recieved Connection creation request for [{}]", connection);
-		
-		csvService.getLatestTransactions("Discover-RecentActivity-20240217.csv", null); //TODO: Delete ME
+
 		return null;
-		
-		
 //		try {
 //			return service.create(connection);
 //		} catch (Exception e) {

@@ -19,9 +19,4 @@ import org.springframework.beans.factory.annotation.Value;
 @PropertySource("classpath:application.yaml")
 public class YAMLConfig {
 	private Map<String,Double> categories;
-	
-	@Value("${spring.csv.location}")
-	private String csvDir;
-	
-//	private Map<String, Map<String, String>> account;
 }
