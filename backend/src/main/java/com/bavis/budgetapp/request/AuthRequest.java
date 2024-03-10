@@ -8,6 +8,8 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @ToString
 public class AuthRequest {
+    private final String name;
     private final String username;
-    private final String password;
+    private final String passwordOne;
+    private final String passwordTwo; //validate same password
 }

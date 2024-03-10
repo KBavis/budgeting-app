@@ -21,11 +21,7 @@ public class UserServiceImpl implements UserService{
 	UserRepository userRepository;
 	
 	@Override
-	public User create(User user) throws Exception {
-		LOG.debug("Name Passed: " + user.getName());
-		LOG.debug("Username Passed " + user.getUsername());
-		LOG.debug("Password Passed " + user.getPassword());
-		LOG.debug("Profile Image Passed " + user.getProfileImage());
+	public User create(User user){
 		LOG.debug("Creating User [{}]", user);
 		return userRepository.save(user);
 	}

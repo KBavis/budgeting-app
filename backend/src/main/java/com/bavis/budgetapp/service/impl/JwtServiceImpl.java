@@ -1,7 +1,9 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.JwtService;
+import org.hibernate.annotations.DialectOverride;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,6 +34,20 @@ public class JwtServiceImpl implements JwtService {
         Date expirationDate = decodedJWT.getExpiresAt();
         final String username = decodedJWT.getSignature();
         return (username.equals(userDetails.getUsername()) && expirationDate.before(new Date()));
+    }
+
+    /**
+     * Generates JWT Token For the Respective User
+     * TODO: Finalize this implemetnation
+     *
+     * @param user
+     *          - user being authenticated
+     * @return
+     *          - JWT Token
+     */
+    @Override
+    public String generateToken(User user){
+        return null;
     }
 
 

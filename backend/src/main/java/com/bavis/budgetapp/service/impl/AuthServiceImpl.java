@@ -1,5 +1,7 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.enumeration.Role;
+import com.bavis.budgetapp.exception.BadRegistrationRequestException;
 import com.bavis.budgetapp.exception.UsernameTakenException;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.request.AuthRequest;
@@ -10,9 +12,10 @@ import com.bavis.budgetapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -43,8 +46,36 @@ public class AuthServiceImpl implements AuthService {
             throw new UsernameTakenException(authRequest.getUsername());
         }
 
-        //TODO: Finish Me!
-        return null;
+        //Validate that the user filled out the required fields
+        if(username == null || username.isEmpty()) {
+            throw new BadRegistrationRequestException("Username field was not filled out.");
+        }
+        else if(!authRequest.getPasswordOne().equals(authRequest.getPasswordTwo())){
+            throw new BadRegistrationRequestException("Password fields do not match.") ;
+        }
+
+        //TODO: Consider introducing necessary inclusion for password strength (i.e minimunm 10 letters, must contain uppercase/lowercase, etc)
+
+        User user = User.builder()
+                .name(authRequest.getName())
+                .username(authRequest.getUsername())
+                .password(passwordEncoder.encode(authRequest.getPasswordOne()))
+                .role(Role.USER) //TODO: Consider having seperate roles
+                .profileImage(null)
+                .accounts(new ArrayList<>())
+                .categories(new ArrayList<>())
+                .linkToken(null) //TODO: Figure out how to set this upon setting up a users account
+                .build();
+
+        LOG.info("Registered User: [" + _userService.create(user) + "]");
+
+
+        //TODO: Validate this logic regarding User Details
+        String jwtToken = _jwtService.generateToken(user);
+        return AuthResponse.builder()
+                .token(jwtToken)
+                .userDetails(user)
+                .build();
 
     }
 
