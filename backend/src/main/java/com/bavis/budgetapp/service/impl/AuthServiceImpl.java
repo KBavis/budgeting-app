@@ -1,5 +1,7 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.exception.UsernameTakenException;
+import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.request.AuthRequest;
 import com.bavis.budgetapp.response.AuthResponse;
 import com.bavis.budgetapp.service.AuthService;
@@ -8,6 +10,7 @@ import com.bavis.budgetapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +36,16 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(AuthRequest authRequest) {
+
+        //Validate that the username is indeed unique
+        String username = authRequest.getUsername();
+        if(_userService.existsByUsername(authRequest.getUsername())){
+            throw new UsernameTakenException(authRequest.getUsername());
+        }
+
+        //TODO: Finish Me!
         return null;
+
     }
 
     @Override

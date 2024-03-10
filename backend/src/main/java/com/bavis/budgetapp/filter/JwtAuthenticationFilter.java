@@ -12,6 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -70,8 +71,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      *
      * @param request
+     *          - incoming HTTP request
      * @param response
+     *          -  outgoing HTTP response
      * @param filterChain
+     *          - chain of filters that the request must pass through
      *
      * TODO: Finish Me!
      */
