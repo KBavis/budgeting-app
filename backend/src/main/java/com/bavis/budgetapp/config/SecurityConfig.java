@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.config;
 
-import com.bavis.budgetapp.jwt.JwtAuthenticationFilter;
+import com.bavis.budgetapp.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
