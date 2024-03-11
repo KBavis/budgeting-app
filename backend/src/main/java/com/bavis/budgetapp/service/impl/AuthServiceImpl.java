@@ -8,6 +8,7 @@ import com.bavis.budgetapp.request.AuthRequest;
 import com.bavis.budgetapp.response.AuthResponse;
 import com.bavis.budgetapp.service.AuthService;
 import com.bavis.budgetapp.service.JwtService;
+import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,15 +26,18 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService _jwtService;
     private final UserService _userService;
 
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder _passwordEncoder;
+
+    private final PlaidService _plaidService;
 
     private final AuthenticationManager _authenticationManager;
 
-    public AuthServiceImpl(JwtService _jwtService, UserService _userService, PasswordEncoder _passwordEncoder, AuthenticationManager _authenticationManager){
+    public AuthServiceImpl(JwtService _jwtService, UserService _userService, PasswordEncoder _passwordEncoder, AuthenticationManager _authenticationManager, PlaidService _plaidService){
         this._jwtService = _jwtService;
         this._userService = _userService;
         this._authenticationManager = _authenticationManager;
-        this.passwordEncoder = _passwordEncoder;
+        this._passwordEncoder = _passwordEncoder;
+        this._plaidService = _plaidService;
     }
 
 
@@ -59,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
         User user = User.builder()
                 .name(authRequest.getName())
                 .username(authRequest.getUsername())
-                .password(passwordEncoder.encode(authRequest.getPasswordOne()))
+                .password(_passwordEncoder.encode(authRequest.getPasswordOne()))
                 .role(Role.USER) //TODO: Consider having seperate roles
                 .profileImage(null)
                 .accounts(new ArrayList<>())
@@ -68,6 +72,13 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         LOG.info("Registered User: [" + _userService.create(user) + "]");
+
+        //Generate Plaid Link Token for authenticated user
+        //TODO: Determine if you need to save this user again to persist the link token
+        String linkToken = _plaidService.generateLinkToken(user.getUserId());
+        user.setLinkToken(linkToken);
+
+
 
 
         //TODO: Validate this logic regarding User Details
