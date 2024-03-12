@@ -42,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public AuthResponse register(AuthRequest authRequest) {
+    public AuthResponse register(AuthRequest authRequest) throws BadRegistrationRequestException{
 
         //Validate that the username is indeed unique
         String username = authRequest.getUsername();
@@ -75,6 +75,7 @@ public class AuthServiceImpl implements AuthService {
 
         //Generate Plaid Link Token for authenticated user
         //TODO: Determine if you need to save this user again to persist the link token
+        //TODO: Configure the return from PlaidService to be
         String linkToken = _plaidService.generateLinkToken(user.getUserId());
         user.setLinkToken(linkToken);
 
