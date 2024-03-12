@@ -20,10 +20,10 @@ public class PlaidServiceImpl implements PlaidService{
 
     private final JsonUtil _jsonUtil;
 
-
-    @Value("{plaid.api.base-url}")
     private final String PLAID_API_BASE_URL;
 
+
+    //TODO: Fix this SePL Issue (Not enough variable values available to expand 'plaid.api.base-url')
     public PlaidServiceImpl(@Value("{plaid.api.base-url}") String _plaidApiBaseUrl,
                             RestTemplate _restTemplate,
                             JsonUtil _jsonUtil) {

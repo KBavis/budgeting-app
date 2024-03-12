@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-@Configuration
-public class GlobalConfig {
+@Configuration("restConfig")
+public class RestConfig {
 
     @Bean
     public RestTemplate restTemplate() {
