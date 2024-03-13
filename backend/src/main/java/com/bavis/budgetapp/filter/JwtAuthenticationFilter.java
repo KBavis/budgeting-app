@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,43 +30,23 @@ import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
-@Component
+@Component("jwtAuthFilter")
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static Logger LOG = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private final JwtService _jwtService;
     private final UserDetailsService _userDetailsService;
 
-    private RSAPublicKey rsaPublicKey;
+    private final Algorithm _algorithm;
 
-    private RSAPrivateKey rsaPrivateKey;
 
-    public JwtAuthenticationFilter (JwtService _jwtService, UserDetailsService _userDetailsService) {
+    public JwtAuthenticationFilter (JwtService _jwtService,
+                                    UserDetailsService _userDetailsService,
+                                    Algorithm _algorithm){
         this._jwtService = _jwtService;
         this._userDetailsService = _userDetailsService;
-        generateKeyPair();
+        this._algorithm = _algorithm;
     }
 
-    private void generateKeyPair() {
-        try {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            KeyPair keyPair = keyPairGenerator.generateKeyPair();
-            PublicKey publicKey = keyPair.getPublic();
-            PrivateKey privateKey = keyPair.getPrivate();
-            if(publicKey instanceof RSAPublicKey && privateKey instanceof RSAPrivateKey) {
-                rsaPublicKey = (RSAPublicKey) publicKey;
-                rsaPrivateKey = (RSAPrivateKey) privateKey;
-            } else {
-                throw new Exception("Generated Key Pair Value Is Not A RSA Public/Private Key Pair");
-            }
-
-
-        } catch (NoSuchAlgorithmException ex) {
-            LOG.error("Error Occured While Generated Key Pair Generator: {}", ex.getMessage());
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
-        }
-    }
 
 
     /**
@@ -87,9 +68,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
 
-        final Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, rsaPrivateKey);
         //verifier for our JWT
-        final JWTVerifier jwtVerifier = JWT.require(algorithm)
+        final JWTVerifier jwtVerifier = JWT.require(_algorithm)
                 .withIssuer("bavis")
                 .build();
 
@@ -108,8 +88,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
            decodedJWT = jwtVerifier.verify(jwt);
 
            //Extract Username & Validate Presence
-            //TODO: Consider Using Subject As A Seperate Field, And Then Just Generate Our Own Unique Claim Called userId
+            //TODO: Consider Using Subject As A Separate Field, And Then Just Generate Our Own Unique Claim Called userId
             String jwtUsername = decodedJWT.getSubject();
+            LOG.debug("Extracted Jwt Username: '{}'", jwtUsername);
 
             //Skip Authentication If User Has Already Been Authenticated
             //TODO: Ensure That When A User Logs Out That The SecurityContextHolder Authentication Is Set To Null

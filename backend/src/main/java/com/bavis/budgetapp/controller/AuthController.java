@@ -1,14 +1,18 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.config.AuthenticationConfig;
+import com.bavis.budgetapp.exception.BadRegistrationRequestException;
 import com.bavis.budgetapp.request.AuthRequest;
 import com.bavis.budgetapp.response.AuthResponse;
 import com.bavis.budgetapp.service.AuthService;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.service.UserService;
+import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,8 +35,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest authRequest) {
-       return ResponseEntity.ok(_authService.register(authRequest));
+    public ResponseEntity<?> register(@RequestBody AuthRequest authRequest) {
+       try {
+           return ResponseEntity.ok(_authService.register(authRequest));
+       } catch(BadRegistrationRequestException ex) {
+           return ResponseEntity.badRequest().body(ex.getMessage());
+       } catch(RuntimeException ex) {
+           return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+       }
     }
 
     @PostMapping("/authenticate")

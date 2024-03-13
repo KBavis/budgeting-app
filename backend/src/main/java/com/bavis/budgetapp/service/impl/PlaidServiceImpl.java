@@ -23,8 +23,7 @@ public class PlaidServiceImpl implements PlaidService{
     private final String PLAID_API_BASE_URL;
 
 
-    //TODO: Fix this SePL Issue (Not enough variable values available to expand 'plaid.api.base-url')
-    public PlaidServiceImpl(@Value("{plaid.api.base-url}") String _plaidApiBaseUrl,
+    public PlaidServiceImpl(@Value("${plaid.api.base-url}") String _plaidApiBaseUrl,
                             RestTemplate _restTemplate,
                             JsonUtil _jsonUtil) {
         this._restTemplate = _restTemplate;
@@ -34,7 +33,6 @@ public class PlaidServiceImpl implements PlaidService{
 
     /**
      *
-     * TODO: Finalize this implementation and generate link token
      *
      * @param userId
      *          - specified User ID pertaining to our application
@@ -46,6 +44,7 @@ public class PlaidServiceImpl implements PlaidService{
         String apiUrl = PLAID_API_BASE_URL + "/link/token/create";
 
         //Generate Link Token Request
+        //TODO: Fix this error regarding Plaid stating we are missing the client_id and secret fields in our request
         LinkTokenRequest linkTokenRequest = LinkTokenRequest.builder()
                 .clientName("Bavis Budget Application")
                 .countryCodes(new String[] {"US"})
@@ -53,6 +52,8 @@ public class PlaidServiceImpl implements PlaidService{
                 .user(new PlaidUserDTO(userId))
                 .products(new String[]{"auth"})
                 .build();
+
+        LOG.debug("Link Token Request Created: [{}]", linkTokenRequest.toString());
 
         HttpEntity<LinkTokenRequest> requestEntity = new HttpEntity<>(linkTokenRequest);
         ResponseEntity<String> responseEntity = _restTemplate.postForEntity(apiUrl, requestEntity, String.class);

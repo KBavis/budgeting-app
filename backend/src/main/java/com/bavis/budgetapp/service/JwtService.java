@@ -8,6 +8,6 @@ import org.springframework.stereotype.Service;
 public interface JwtService {
     boolean validateToken(DecodedJWT decodedJWT, UserDetails userDetails);
 
-    String generateToken(User user);
+    String generateToken(User user) throws RuntimeException;
 }
 

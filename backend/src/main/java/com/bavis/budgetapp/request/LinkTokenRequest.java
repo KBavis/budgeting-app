@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.request;
 
 import com.bavis.budgetapp.dto.PlaidUserDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -12,9 +13,11 @@ import org.springframework.beans.factory.annotation.Value;
 public class LinkTokenRequest {
 
     @Value(value = "${plaid.api.client-id")
+    @JsonProperty("client_id")
     private final String clientId;
 
     @Value(value = "${plaid.api.secret")
+    @JsonProperty("secret")
     private final String secretKey;
 
     private String clientName;
