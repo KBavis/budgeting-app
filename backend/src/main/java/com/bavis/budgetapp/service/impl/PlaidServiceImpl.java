@@ -46,10 +46,6 @@ public class PlaidServiceImpl implements PlaidService{
     public String generateLinkToken(Long userId) {
         String apiUrl = PLAID_API_BASE_URL + "/link/token/create";
 
-        LOG.debug("Client Id: {}, Secret Key: {}",_plaidConfig.getClientId(), _plaidConfig.getSecretKey());
-
-
-
         LinkTokenRequest linkTokenRequest = LinkTokenRequest.builder()
                 .clientId(_plaidConfig.getClientId())
                 .secretKey(_plaidConfig.getSecretKey())
@@ -61,6 +57,9 @@ public class PlaidServiceImpl implements PlaidService{
                 .build();
 
         LOG.debug("Link Token in `generateLinkToken()`: {}", linkTokenRequest.toString());
+
+
+        //TODO: Consider setting up Feign Client to access Plaid API's services
 
         HttpEntity<LinkTokenRequest> requestEntity = new HttpEntity<>(linkTokenRequest);
         ResponseEntity<String> responseEntity = _restTemplate.postForEntity(apiUrl, requestEntity, String.class);
