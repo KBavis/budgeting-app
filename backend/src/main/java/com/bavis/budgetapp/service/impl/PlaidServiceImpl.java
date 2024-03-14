@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.config.PlaidConfig;
 import com.bavis.budgetapp.dto.PlaidUserDTO;
 import com.bavis.budgetapp.request.LinkTokenRequest;
 import com.bavis.budgetapp.service.PlaidService;
@@ -17,18 +18,20 @@ public class PlaidServiceImpl implements PlaidService{
 
     private static final Logger LOG = LoggerFactory.getLogger(PlaidServiceImpl.class);
     private final RestTemplate _restTemplate;
-
     private final JsonUtil _jsonUtil;
-
     private final String PLAID_API_BASE_URL;
+
+    private final PlaidConfig _plaidConfig;
 
 
     public PlaidServiceImpl(@Value("${plaid.api.base-url}") String _plaidApiBaseUrl,
                             RestTemplate _restTemplate,
-                            JsonUtil _jsonUtil) {
+                            JsonUtil _jsonUtil,
+                            PlaidConfig _plaidConfig) {
         this._restTemplate = _restTemplate;
         this.PLAID_API_BASE_URL = _plaidApiBaseUrl;
         this._jsonUtil = _jsonUtil;
+        this._plaidConfig = _plaidConfig;
     }
 
     /**
@@ -43,17 +46,21 @@ public class PlaidServiceImpl implements PlaidService{
     public String generateLinkToken(Long userId) {
         String apiUrl = PLAID_API_BASE_URL + "/link/token/create";
 
-        //Generate Link Token Request
-        //TODO: Fix this error regarding Plaid stating we are missing the client_id and secret fields in our request
+        LOG.debug("Client Id: {}, Secret Key: {}",_plaidConfig.getClientId(), _plaidConfig.getSecretKey());
+
+
+
         LinkTokenRequest linkTokenRequest = LinkTokenRequest.builder()
+                .clientId(_plaidConfig.getClientId())
+                .secretKey(_plaidConfig.getSecretKey())
                 .clientName("Bavis Budget Application")
-                .countryCodes(new String[] {"US"})
+                .countryCodes(new String[]{"US"})
                 .language("en")
-                .user(new PlaidUserDTO(userId))
+                .user(new PlaidUserDTO(userId.toString()))
                 .products(new String[]{"auth"})
                 .build();
 
-        LOG.debug("Link Token Request Created: [{}]", linkTokenRequest.toString());
+        LOG.debug("Link Token in `generateLinkToken()`: {}", linkTokenRequest.toString());
 
         HttpEntity<LinkTokenRequest> requestEntity = new HttpEntity<>(linkTokenRequest);
         ResponseEntity<String> responseEntity = _restTemplate.postForEntity(apiUrl, requestEntity, String.class);

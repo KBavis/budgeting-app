@@ -5,23 +5,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@ToString
+@Data
 @Builder
 public class LinkTokenRequest {
 
-    @Value(value = "${plaid.api.client-id")
     @JsonProperty("client_id")
     private final String clientId;
 
-    @Value(value = "${plaid.api.secret")
     @JsonProperty("secret")
     private final String secretKey;
 
+    @JsonProperty("client_name")
     private String clientName;
 
+    @JsonProperty("country_codes")
     private String[] countryCodes;
 
     private String language;

@@ -3,5 +3,5 @@ application.yaml
 /.gradle/
 .gradle/
 build/
-.env
+src/resources/.env
 .idea/
