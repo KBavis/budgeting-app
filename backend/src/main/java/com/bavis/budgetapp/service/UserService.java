@@ -7,5 +7,7 @@ public interface UserService {
 
 	User read(Long id);
 
+	User update(Long id, User user);
+
 	boolean existsByUsername(String username);
 }

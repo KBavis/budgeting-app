@@ -74,14 +74,13 @@ public class AuthServiceImpl implements AuthService {
         LOG.info("Registered User: [" + _userService.create(user) + "]");
 
         //Generate Plaid Link Token for authenticated user
-        //TODO: Determine if you need to save this user again to persist the link token
         String linkToken = _plaidService.generateLinkToken(user.getUserId());
         user.setLinkToken(linkToken);
 
+        //Ensure Plaid Link Token persisted
+        user = _userService.update(user.getUserId(), user);
+        LOG.info("User Following Plaid Link Token Generation: [{}]", user.toString());
 
-
-
-        //TODO: Validate this logic regarding User Details
         String jwtToken = _jwtService.generateToken(user);
         return AuthResponse.builder()
                 .token(jwtToken)
