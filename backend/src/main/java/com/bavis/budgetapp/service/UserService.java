@@ -5,7 +5,9 @@ import com.bavis.budgetapp.model.User;
 public interface UserService {
 	User create(User category);
 
-	User read(Long id);
+	User readById(Long id);
+
+	User readByUsername(String username);
 
 	User update(Long id, User user);
 

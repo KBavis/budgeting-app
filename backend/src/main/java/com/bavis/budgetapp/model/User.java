@@ -129,7 +129,7 @@ public class User implements UserDetails{
 	@Override
 	@JsonIgnore
 	public boolean isAccountNonLocked() {
-		return lockoutEndTime != null && lockoutEndTime.isAfter(LocalDateTime.now());
+		return lockoutEndTime == null || lockoutEndTime.isAfter(LocalDateTime.now());
 	}
 
 	/**

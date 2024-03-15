@@ -4,14 +4,11 @@ import com.bavis.budgetapp.exception.UserNotFoundException;
 import com.bavis.budgetapp.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.UserRepository;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.UserService;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -33,15 +30,21 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
-	public User read(Long id) throws UserNotFoundException {
+	public User readById(Long id) throws UserNotFoundException {
 		return _userRepository.findById(id)
 				.orElseThrow(() -> new UserNotFoundException(id));
+	}
+
+	@Override
+	public User readByUsername(String username) throws UserNotFoundException {
+		return _userRepository.findByUsername(username)
+				.orElseThrow(() -> new UserNotFoundException("User with the username [" + username + "] not found."));
 	}
 
 
 	@Override
 	public User update(Long id, User updatedUser) throws UserNotFoundException{
-		User foundUser = read(id);
+		User foundUser = readById(id);
 		_userMapper.updateUserProfile(foundUser, updatedUser);
 		return _userRepository.save(foundUser);
 	}

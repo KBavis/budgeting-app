@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.enumeration.Role;
+import com.bavis.budgetapp.exception.BadAuthenticationRequest;
 import com.bavis.budgetapp.exception.BadRegistrationRequestException;
 import com.bavis.budgetapp.exception.UsernameTakenException;
 import com.bavis.budgetapp.model.User;
@@ -13,6 +14,8 @@ import com.bavis.budgetapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -68,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
                 .profileImage(null)
                 .accounts(new ArrayList<>())
                 .categories(new ArrayList<>())
-                .linkToken(null) //TODO: Figure out how to set this upon setting up a users account
+                .linkToken(null)
                 .build();
 
         LOG.info("Registered User: [" + _userService.create(user) + "]");
@@ -90,8 +93,28 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponse authenticate(AuthRequest authRequest) {
-        return null;
+    public AuthResponse authenticate(AuthRequest authRequest) throws AuthenticationException, BadAuthenticationRequest {
+        //Ensure Validity of Auth Request
+        if(authRequest.getUsername() == null || authRequest.getUsername().isEmpty() ||
+                authRequest.getPasswordOne() == null || authRequest.getPasswordOne().isEmpty()) {
+            throw new BadAuthenticationRequest("Please fill out required fields: [Username, Password]");
+        }
+
+        //Authenticate User using our AuthenticationManager Bean
+        _authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        authRequest.getUsername(),
+                        authRequest.getPasswordOne()
+                )
+        );
+
+        //Generate JWT Token For Authenticated User
+        User user = _userService.readByUsername(authRequest.getUsername());
+        String jwtToken = _jwtService.generateToken(user);
+        return AuthResponse.builder()
+                .token(jwtToken)
+                .userDetails(user)
+                .build();
     }
 
     @Override
