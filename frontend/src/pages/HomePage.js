@@ -1,21 +1,39 @@
-// src/components/HomePage.js
 import React from "react";
+import { Link } from "react-router-dom";
+import { quotes } from "../utils/quotes";
 
 const HomePage = () => {
+   const [currentQuote, setCurrentQuote] = React.useState("");
+
+   React.useEffect(() => {
+      const randomIndex = Math.floor(Math.random() * quotes.length);
+      setCurrentQuote(quotes[randomIndex]);
+   }, []);
+
    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-         <div className="max-w-md w-full px-6 py-8 bg-white rounded-lg shadow-md">
-            <h1 className="text-3xl font-bold text-center mb-6">
-               Welcome to Bavis Budgeting
-            </h1>
-            <p className="text-gray-600 text-center mb-8">
-               "Budgeting has only one rule: Do not go over budget." - Leslie
-               Tayne
-            </p>
-            <div className="flex justify-center">
-               <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                  Connect Financial Institution
-               </button>
+      <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
+         <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
+            <div className="max-w-md text-center">
+               <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white">
+                  Bavis Budgeting
+               </h1>
+               <p className="text-lg md:text-xl mb-8 text-gray-400 italic">
+                  {currentQuote}
+               </p>
+               <div className="flex flex-col space-y-4">
+                  <Link
+                     to="/login"
+                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mx-auto w-48 md:w-64"
+                  >
+                     Login
+                  </Link>
+                  <Link
+                     to="/register"
+                     className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mx-auto w-48 md:w-64"
+                  >
+                     Register
+                  </Link>
+               </div>
             </div>
          </div>
       </div>

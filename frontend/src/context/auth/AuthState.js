@@ -1,7 +1,7 @@
 import React, { useReducer, useContext } from "react";
 import authReducer from "./authReducer";
 import axios from "axios";
-import apiUrl from "../../config/url";
+import apiUrl from "../../utils/url";
 import {
    REGISTER_FAIL,
    AUTH_FAIL,
