@@ -1,13 +1,19 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Register = () => {
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center font-cool">
-         <div className="max-w-md w-full px-6 py-8 bg-white rounded-lg shadow-md">
+         <div className="max-w-md w-full px-6 py-8 bg-white rounded-lg shadow-md relative">
             <h1 className="text-3xl font-bold text-center mb-6 text-indigo-900">
                Register
             </h1>
             <form className="flex flex-col">
+               <div className="absolute top-0 left-0 w-1/6 h-1/6 ml-3 mt-8">
+                  <Link to="/">
+                     <i class="fa-solid fa-arrow-left-long text-xl hover:cursor-pointer text-indigo-600"></i>
+                  </Link>
+               </div>
                <div className="mb-4">
                   <label
                      className="block text-gray-700 font-bold mb-2"
