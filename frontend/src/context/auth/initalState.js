@@ -1,7 +1,7 @@
 const initalState = {
    token: null,
-   isAuthenticated: null,
-   loading: true,
+   isAuthenticated: false,
+   loading: false,
    error: null,
    user: null,
 };

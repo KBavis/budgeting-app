@@ -35,6 +35,26 @@ const AuthState = (props) => {
       }
    };
 
+   const login = async (formData) => {
+      const config = {
+         headers: {
+            "Content-Type": "application/json",
+         },
+      };
+
+      try {
+         const res = await axios.post(
+            `${apiUrl}/auth/authenticate`,
+            formData,
+            config
+         );
+         dispatch({ type: AUTH_SUCCESS, payload: res.data });
+      } catch (err) {
+         console.error(err);
+         dispatch({ type: AUTH_FAIL, payload: err.response.data });
+      }
+   };
+
    //Return Auth Global Provider
    return (
       <AuthContext.Provider
@@ -45,6 +65,7 @@ const AuthState = (props) => {
             user: state.user,
             error: state.error,
             register,
+            login,
          }}
       >
          {props.children}
