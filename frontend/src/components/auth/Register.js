@@ -1,6 +1,7 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import authContext from "../../context/auth/authContext";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
    /**
@@ -38,6 +39,17 @@ const Register = () => {
          passwordTwo,
       });
    };
+
+   /**
+    * Use Efects
+    */
+   const navigate = useNavigate();
+
+   useEffect(() => {
+      if (isAuthenticated) {
+         navigate("/connect-accounts");
+      }
+   }, [isAuthenticated]);
 
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center font-cool">

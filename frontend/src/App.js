@@ -8,22 +8,18 @@ import Register from "./components/auth/Register";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import authContext from "./context/auth/authContext";
 import { useNavigate } from "react-router-dom";
+import ConnectAccounts from "./pages/ConnectAccounts";
 
 function App() {
-   // const { isAuthenticated = false } = useContext(authContext);
-   // const navigate = useNavigate();
-
-   // useEffect(() => {
-   //    if (isAuthenticated) {
-   //       navigate("/home");
-   //    }
-   // }, [isAuthenticated, navigate]);
-
    return (
       <AuthState>
          <Router>
             <Fragment>
                <Routes>
+                  <Route
+                     path="/connect-accounts"
+                     element={<ConnectAccounts />}
+                  />
                   <Route path="/" element={<LoginRegisterPage />} />
                   <Route path="/home" element={<HomePage />} />
                   <Route path="/login" element={<Login />} />

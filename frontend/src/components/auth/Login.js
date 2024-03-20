@@ -1,4 +1,5 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import authContext from "../../context/auth/authContext";
 import React from "react";
 import { Link } from "react-router-dom";
@@ -32,6 +33,17 @@ const Login = () => {
       console.log({ username, passwordOne });
       login({ username, passwordOne });
    };
+
+   /**
+    * Use Efects
+    */
+   const navigate = useNavigate();
+
+   useEffect(() => {
+      if (isAuthenticated) {
+         navigate("/connect-accounts");
+      }
+   }, [isAuthenticated]);
 
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">

@@ -12,28 +12,18 @@ const HomePage = () => {
 
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
+         <div className="w-32 bg-gray-800 text-white p-4">
+            {/* TODO: Add sidebar icons */}
+         </div>
          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
             <div className="max-w-md text-center">
                <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white">
-                  Bavis Budgeting
+                  Welcome to Bavis Budgeting
                </h1>
                <p className="text-lg md:text-xl mb-8 text-gray-400 italic">
                   {currentQuote}
                </p>
-               <div className="flex flex-col space-y-4">
-                  <Link
-                     to="/login"
-                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mx-auto w-48 md:w-64"
-                  >
-                     Login
-                  </Link>
-                  <Link
-                     to="/register"
-                     className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mx-auto w-48 md:w-64"
-                  >
-                     Register
-                  </Link>
-               </div>
+               {/* TODO: Add content for the home page */}
             </div>
          </div>
       </div>
