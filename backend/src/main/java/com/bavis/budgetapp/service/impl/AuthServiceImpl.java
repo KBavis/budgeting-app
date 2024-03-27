@@ -45,23 +45,13 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public AuthResponse register(AuthRequest authRequest) throws BadRegistrationRequestException, RuntimeException{
+    public AuthResponse register(AuthRequest authRequest) throws BadRegistrationRequestException, UsernameTakenException {
 
-        //Validate that the username is indeed unique
-        String username = authRequest.getUsername();
-        if(_userService.existsByUsername(authRequest.getUsername())){
-            throw new UsernameTakenException(authRequest.getUsername());
-        }
+
 
         //Validate that the user filled out the required fields
-        if(username == null || username.isEmpty()) {
-            throw new BadRegistrationRequestException("Username field was not filled out.");
-        }
-        else if(!authRequest.getPasswordOne().equals(authRequest.getPasswordTwo())){
-            throw new BadRegistrationRequestException("Password fields do not match.") ;
-        }
+        validateAuthRequest(authRequest);
 
-        //TODO: Consider introducing necessary inclusion for password strength (i.e minimunm 10 letters, must contain uppercase/lowercase, etc)
 
         User user = User.builder()
                 .name(authRequest.getName())
@@ -125,5 +115,35 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse logout() {
         return null;
+    }
+
+    //TODO: Consider introducing necessary inclusion for password strength (i.e minimunm 10 letters, must contain uppercase/lowercase, etc)
+    private void validateAuthRequest(AuthRequest authRequest) throws UsernameTakenException, BadRegistrationRequestException {
+        //Validate that the username is indeed unique
+        String username = authRequest.getUsername();
+        if(_userService.existsByUsername(authRequest.getUsername())){
+            throw new UsernameTakenException(authRequest.getUsername());
+        }
+
+        //Ensure name field is field out
+        if(authRequest.getName() == null || authRequest.getName().isEmpty()){
+            throw new BadRegistrationRequestException("Name field was not filled out");
+        }
+
+        //Ensure username is filled out
+        if(username == null || username.isEmpty()) {
+            throw new BadRegistrationRequestException("Username field was not filled out.");
+        }
+
+        //Ensure password fields are filled out
+        if(authRequest.getPasswordOne() == null || authRequest.getPasswordOne().isEmpty()){
+            throw new BadRegistrationRequestException("Password fields were not filled out.");
+        }
+
+        //Ensure passwords match
+        if(!authRequest.getPasswordOne().equals(authRequest.getPasswordTwo())){
+            throw new BadRegistrationRequestException("Password fields do not match.") ;
+        }
+
     }
 }
