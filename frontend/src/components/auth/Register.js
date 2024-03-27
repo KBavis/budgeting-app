@@ -2,13 +2,16 @@ import React, { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import authContext from "../../context/auth/authContext";
 import { useNavigate } from "react-router-dom";
+import AlertContext from "../../context/alert/alertContext";
 
 const Register = () => {
    /**
     * Global States
     */
-   const { register, error, isAuthenticated, clearErrros } =
+   const { register, error, isAuthenticated, clearErrors } =
       useContext(authContext);
+
+   const { setAlert } = useContext(AlertContext);
 
    /**
     * Local States
@@ -45,11 +48,19 @@ const Register = () => {
     */
    const navigate = useNavigate();
 
+   //TOOD: Update this to either navigate to connect accounts page or home page based on if user has connections established
    useEffect(() => {
       if (isAuthenticated) {
          navigate("/connect-accounts");
       }
    }, [isAuthenticated]);
+
+   useEffect(() => {
+      if (error) {
+         setAlert(error, "danger");
+         clearErrors();
+      }
+   }, [error]);
 
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center font-cool">

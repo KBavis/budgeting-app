@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { quotes } from "../utils/quotes";
 import { Link } from "react-router-dom";
+import authContext from "../context/auth/authContext";
+import AlertContext from "../context/alert/alertContext";
 
 const LoginRegisterPage = () => {
    const [currentQuote, setCurrentQuote] = useState("");
+   const { error } = useContext(authContext);
+   const { setAlert } = useContext(AlertContext);
 
    useEffect(() => {
       const randomIndex = Math.floor(Math.random() * quotes.length);

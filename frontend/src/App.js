@@ -9,26 +9,34 @@ import ForgotPassword from "./components/auth/ForgotPassword";
 import authContext from "./context/auth/authContext";
 import { useNavigate } from "react-router-dom";
 import ConnectAccounts from "./pages/ConnectAccounts";
+import AlertState from "./context/alert/AlertState";
+import Alerts from "./components/alert/Alert";
 
 function App() {
    return (
-      <AuthState>
-         <Router>
-            <Fragment>
-               <Routes>
-                  <Route
-                     path="/connect-accounts"
-                     element={<ConnectAccounts />}
-                  />
-                  <Route path="/" element={<LoginRegisterPage />} />
-                  <Route path="/home" element={<HomePage />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-               </Routes>
-            </Fragment>
-         </Router>
-      </AuthState>
+      <AlertState>
+         <AuthState>
+            <Router>
+               <Fragment>
+                  <Alerts />
+                  <Routes>
+                     <Route
+                        path="/connect-accounts"
+                        element={<ConnectAccounts />}
+                     />
+                     <Route path="/" element={<LoginRegisterPage />} />
+                     <Route path="/home" element={<HomePage />} />
+                     <Route path="/login" element={<Login />} />
+                     <Route path="/register" element={<Register />} />
+                     <Route
+                        path="/forgot-password"
+                        element={<ForgotPassword />}
+                     />
+                  </Routes>
+               </Fragment>
+            </Router>
+         </AuthState>
+      </AlertState>
    );
 }
 

@@ -3,13 +3,17 @@ import { useNavigate } from "react-router-dom";
 import authContext from "../../context/auth/authContext";
 import React from "react";
 import { Link } from "react-router-dom";
+import AlertContext from "../../context/alert/alertContext";
 
 const Login = () => {
+   const navigate = useNavigate();
    /**
     * Global States
     */
-   const { login, error, isAuthenticated, clearErrros } =
+   const { login, error, isAuthenticated, clearErrors } =
       useContext(authContext);
+
+   const { setAlert } = useContext(AlertContext);
 
    /**
     * Local States
@@ -37,13 +41,22 @@ const Login = () => {
    /**
     * Use Efects
     */
-   const navigate = useNavigate();
 
+   //Navigate User To Connect Accounts
+   //TODO: Update This To Conditionally Render Connect Accounts Or Home Page Based On Whether User Has Connections Already
    useEffect(() => {
       if (isAuthenticated) {
          navigate("/connect-accounts");
       }
    }, [isAuthenticated]);
+
+   //Utilize Alert Context To Notify User of Unsuccesfull Authentication
+   useEffect(() => {
+      if (error) {
+         setAlert(error, "danger");
+         clearErrors();
+      }
+   }, [error]);
 
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">

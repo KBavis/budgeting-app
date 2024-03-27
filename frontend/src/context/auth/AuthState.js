@@ -8,6 +8,7 @@ import {
    LOGOUT,
    AUTH_SUCCESS,
    REGISTER_SUCCESS,
+   CLEAR_ERRORS,
 } from "./types";
 import initalState from "./initalState";
 import AuthContext from "./authContext";
@@ -55,6 +56,9 @@ const AuthState = (props) => {
       }
    };
 
+   //Clear Errors
+   const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
+
    //Return Auth Global Provider
    return (
       <AuthContext.Provider
@@ -66,6 +70,7 @@ const AuthState = (props) => {
             error: state.error,
             register,
             login,
+            clearErrors,
          }}
       >
          {props.children}
