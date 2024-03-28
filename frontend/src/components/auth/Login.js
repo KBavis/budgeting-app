@@ -10,7 +10,7 @@ const Login = () => {
    /**
     * Global States
     */
-   const { login, error, isAuthenticated, clearErrors } =
+   const { login, error, isAuthenticated, clearErrors, user } =
       useContext(authContext);
 
    const { setAlert } = useContext(AlertContext);
@@ -42,11 +42,14 @@ const Login = () => {
     * Use Efects
     */
 
-   //Navigate User To Connect Accounts
-   //TODO: Update This To Conditionally Render Connect Accounts Or Home Page Based On Whether User Has Connections Already
+   //Navigate User To Connect Accounts Or Home Page
    useEffect(() => {
       if (isAuthenticated) {
-         navigate("/connect-accounts");
+         if (user && user.accounts) {
+            navigate("/");
+         } else {
+            navigate("/connect-accounts");
+         }
       }
    }, [isAuthenticated]);
 

@@ -8,7 +8,7 @@ const Register = () => {
    /**
     * Global States
     */
-   const { register, error, isAuthenticated, clearErrors } =
+   const { register, error, isAuthenticated, clearErrors, authUser } =
       useContext(authContext);
 
    const { setAlert } = useContext(AlertContext);
@@ -48,10 +48,14 @@ const Register = () => {
     */
    const navigate = useNavigate();
 
-   //TOOD: Update this to either navigate to connect accounts page or home page based on if user has connections established
+   //Navigate User To Connect Accounts Or Home Page
    useEffect(() => {
       if (isAuthenticated) {
-         navigate("/connect-accounts");
+         if (authUser && authUser.accounts) {
+            navigate("/");
+         } else {
+            navigate("/connect-accounts");
+         }
       }
    }, [isAuthenticated]);
 
