@@ -39,7 +39,8 @@ public class Connection {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long connectionId;
-	
+
+	//TODO: This information may need to be encrypted for security purposes within our db
 	@Column(nullable = false)
 	private String accessToken; //Plaid Access Token needed to access accounts
 	

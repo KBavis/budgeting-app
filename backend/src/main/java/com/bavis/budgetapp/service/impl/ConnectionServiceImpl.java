@@ -10,18 +10,21 @@ import com.bavis.budgetapp.service.ConnectionService;
 
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Service
 public class ConnectionServiceImpl implements ConnectionService{
 	
 	private static Logger LOG = LoggerFactory.getLogger(ConnectionServiceImpl.class);
 	
-	private final ConnectionRepository repository;
+	private final ConnectionRepository _repository;
+
+	public ConnectionServiceImpl(ConnectionRepository connectionRepository){
+		this._repository = connectionRepository;
+	}
 
 	@Override
 	public Connection create(Connection connection) {
 		LOG.info("Creating Connection [{}]", connection);
-		return repository.save(connection);
+		return _repository.save(connection);
 	}
 
 	@Override
