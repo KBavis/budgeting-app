@@ -1,8 +1,10 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.config.PlaidConfig;
 import com.bavis.budgetapp.dto.PlaidUserDTO;
 import com.bavis.budgetapp.request.LinkTokenRequest;
+import com.bavis.budgetapp.response.LinkTokenResponse;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.util.JsonUtil;
 import org.slf4j.Logger;
@@ -17,21 +19,15 @@ import org.springframework.web.client.RestTemplate;
 public class PlaidServiceImpl implements PlaidService{
 
     private static final Logger LOG = LoggerFactory.getLogger(PlaidServiceImpl.class);
-    private final RestTemplate _restTemplate;
-    private final JsonUtil _jsonUtil;
-    private final String PLAID_API_BASE_URL;
 
+    private final PlaidClient _plaidClient;
     private final PlaidConfig _plaidConfig;
 
 
-    public PlaidServiceImpl(@Value("${plaid.api.base-url}") String _plaidApiBaseUrl,
-                            RestTemplate _restTemplate,
-                            JsonUtil _jsonUtil,
-                            PlaidConfig _plaidConfig) {
-        this._restTemplate = _restTemplate;
-        this.PLAID_API_BASE_URL = _plaidApiBaseUrl;
-        this._jsonUtil = _jsonUtil;
+
+    public PlaidServiceImpl(PlaidClient _plaidClient, PlaidConfig _plaidConfig){
         this._plaidConfig = _plaidConfig;
+        this._plaidClient = _plaidClient;
     }
 
     /**
@@ -44,8 +40,6 @@ public class PlaidServiceImpl implements PlaidService{
      */
     @Override
     public String generateLinkToken(Long userId) {
-        String apiUrl = PLAID_API_BASE_URL + "/link/token/create";
-
         LinkTokenRequest linkTokenRequest = LinkTokenRequest.builder()
                 .clientId(_plaidConfig.getClientId())
                 .secretKey(_plaidConfig.getSecretKey())
@@ -56,25 +50,20 @@ public class PlaidServiceImpl implements PlaidService{
                 .products(new String[]{"auth"})
                 .build();
 
-        LOG.debug("Link Token in `generateLinkToken()`: {}", linkTokenRequest.toString());
+        LOG.debug("Link Token Request in `generateLinkToken()`: {}", linkTokenRequest.toString());
 
+        ResponseEntity<LinkTokenResponse> responseEntity = _plaidClient.createLinkToken(linkTokenRequest);
 
-        //TODO: Consider setting up Feign Client to access Plaid API's services
-
-        HttpEntity<LinkTokenRequest> requestEntity = new HttpEntity<>(linkTokenRequest);
-        ResponseEntity<String> responseEntity = _restTemplate.postForEntity(apiUrl, requestEntity, String.class);
-
-        //Validate Response
-        if(responseEntity.getStatusCode().is2xxSuccessful()) {
-            String responseBody = responseEntity.getBody();
-            if(responseBody != null){
-                //Extract Link Token Attribute from Response
-                return _jsonUtil.extractAttribute(responseBody, "link_token");
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            LOG.debug("Response Body From LinkToken Request: {}", responseEntity.getBody());
+            LinkTokenResponse responseBody = responseEntity.getBody();
+            if (responseBody != null) {
+                return responseBody.getLinkToken();
             } else {
-                LOG.error("Response Body From Plaid API [URL: {}] is NULL.", apiUrl);
+                LOG.error("Response Body From Plaid API is NULL.");
             }
         } else {
-            LOG.error("Response Code From Plaid API [URL: {}] is not succesful.", apiUrl);
+            LOG.error("Response Code From Plaid API is not successful. Status Code: {}", responseEntity.getStatusCode());
         }
         return null;
     }
