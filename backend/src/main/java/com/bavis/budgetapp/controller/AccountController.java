@@ -1,8 +1,9 @@
 package com.bavis.budgetapp.controller;
 
+import com.bavis.budgetapp.dto.AccountDTO;
+import com.bavis.budgetapp.request.ConnectAccountRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bavis.budgetapp.model.Account;
 import com.bavis.budgetapp.service.AccountService;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * TODO: Look into necessary HTTP Status to be returned by each method
@@ -38,9 +37,15 @@ public class AccountController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Account> create(@RequestBody Account newAccount) {
-		LOG.info("Received request to create new account: [{}]", newAccount);
-		return ResponseEntity.ok(_accountService.create(newAccount));
+	public ResponseEntity<AccountDTO> connectAccount(@RequestBody ConnectAccountRequest connectAccountRequest) {
+		LOG.info("Received request to connect new account: [{}]", connectAccountRequest);
+		try{
+			return ResponseEntity.ok( _accountService.connectAccount(connectAccountRequest));
+		} catch (Exception e){
+			//TODO: Return Response Entity Containing Relevant Exception Method
+			//TODO: Create ConnectAccountException for information regarding failed conneciton
+			return null;
+		}
 	}
 	
 	@PutMapping("/{accountId}")

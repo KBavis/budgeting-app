@@ -1,5 +1,10 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.clients.PlaidClient;
+import com.bavis.budgetapp.dto.AccountDTO;
+import com.bavis.budgetapp.request.ConnectAccountRequest;
+import com.bavis.budgetapp.service.ConnectionService;
+import com.bavis.budgetapp.service.PlaidService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -10,30 +15,41 @@ import com.bavis.budgetapp.service.AccountService;
 
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Service
 public class AccountServiceImpl implements AccountService{
 	private static Logger LOG = LoggerFactory.getLogger(AccountServiceImpl.class);
-	private final AccountRepository repository;
+
+	private final ConnectionService _connectionService;
+
+	private final AccountRepository _accountRepository;
+
+	private final PlaidService _plaidService;
+
+	public AccountServiceImpl(AccountRepository _accountRepository,
+							  ConnectionService _connectionService,
+	 						  PlaidService _plaidService) {
+		this._accountRepository = _accountRepository;
+		this._connectionService = _connectionService;
+		this._plaidService = _plaidService;
+	}
 
 	@Override
-	public Account create(Account account) {
+	public AccountDTO connectAccount(ConnectAccountRequest connectAccountRequest) {
 		/**
-		 * TODO: Creating An Account
-		 * 			1a) Establish A Connection with An Account (TODO: Do this if able to work with finacial insitituions API's)
-		 * 			1b) Rather Than Connect To Account, We Can Simply Have User Add A File When Connecting An Account
-		 * 						-- 1) Click Add Account
-		 * 						-- 2) Click Add Transaction Data 
-		 * 						-- 3) Click Selected Format Of The Data Your Spending
-		 * 						-- 4) Enter The Names Of Columns Containing Relevant Information (Amount, Name, Category(? maybe have this automatically create category), Transaction Date)
-		 * 						-- 5) Select Specified File, And Click Fetch Transactions
-		 * 			2) Transactions Currently Associated With Account Should Be Fetched 	
-		 * 			3) Categorize Transactions Currently Associated With Account 
-		 * 				- If Categories Are Present, Users Should Be Given Option to Assign Cateogry To Transaction (Or, Have Our Application Suggest Category For Them)
-		 * 				- If No Categories Are Present, The Category For Each Transaction Should Be Desingated to The Pre-Created Category, "Misc."
-		 * 
-		 * 			
+		 * Steps In Methodology:
+		 * 		1) Use Plaid Service Implementation to Fetch Access Token
+		 * 		2) Use Plaid Service To Fetch Account Balance
+		 * 		2) Generate Account Entity and Persist In Database
+		 * 		3) Generate Connection Entity and Persist in Database Using Connection Service
+		 * 		4
 		 */
+
+
+		//Exchange Public Token With Access Token
+		String accessToken = _plaidService.exchangeToken(connectAccountRequest.getPublicToken());
+
+		//Retrieve Balance Pertaining To Account
+		double balance = _plaidService.retrieveBalance(connectAccountRequest.getPlaidAccountId(), accessToken);
 		return null;
 	}
 

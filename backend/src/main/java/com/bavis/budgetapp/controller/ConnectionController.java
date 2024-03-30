@@ -45,4 +45,6 @@ public class ConnectionController {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access - unable to create connection");
 		}
 	}
+
+
 }
