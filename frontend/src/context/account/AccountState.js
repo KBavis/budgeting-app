@@ -1,16 +1,20 @@
 import React, { useReducer, useContext } from "react";
-import connReducer from "./connReducer";
+import connReducer from "./accountReducer";
 import axios from "axios";
 import apiUrl from "../../utils/url";
-import { CLEAR_ERRORS, CONNECTION_FAILED, CONNECTION_CREATED } from "./types";
 import initalState from "./initalState";
+import {
+   ACCOUNT_CREATED,
+   ACCOUNT_DELETED,
+   ACCOUNT_FAILED_CRATED,
+   ACCOUNT_FAILED_DELETED,
+} from "./types";
 
-const ConnState = (props) => {
+const AccountState = (props) => {
    const [state, dispatch] = useReducer(connReducer, initalState);
 
    //TODO: Should pass our account meta data and our public token to our server to 1) create connection, 2) create account
-   //NOTE: Connection information (such as access token) should ONLY be stored on server, and not be accessible to user
-   const createConnection = async (formData) => {
+   const createAccount = async (formData) => {
       const config = {
          headers: {
             "Content-Type": "application/json",
@@ -18,11 +22,11 @@ const ConnState = (props) => {
       };
 
       try {
-         const res = await axios.post(`${apiUrl}/connect`, formData, config);
-         dispatch({ type: CONNECTION_CREATED, payload: res.data });
+         const res = await axios.post(`${apiUrl}/account`, formData, config);
+         dispatch({ type: ACCOUNT_CREATED, payload: res.data });
       } catch (err) {
          console.error(err);
-         dispatch({ type: CONNECTION_FAILED, payload: err.response.data });
+         dispatch({ type: ACCOUNT_FAILED, payload: err.response.data });
       }
    };
 
@@ -31,17 +35,17 @@ const ConnState = (props) => {
 
    //Return Auth Global Provider
    return (
-      <ConnContext.Provider
+      <AccountContext.Provider
          value={{
             loading: state.loading,
             error: state.error,
-            createConnection,
+            createAccount,
             clearErrors,
          }}
       >
          {props.children}
-      </ConnContext.Provider>
+      </AccountContext.Provider>
    );
 };
 
-export default ConnState;
+export default AccountState;

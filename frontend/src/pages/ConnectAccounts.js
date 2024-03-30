@@ -6,11 +6,13 @@ import authContext from "../context/auth/authContext";
 const ConnectAccounts = () => {
    const navigate = useNavigate();
    const { user } = useContext(authContext);
+   //constt { createAccount } =useContext(accountContext);
 
    const handleOnSuccess = (publicToken, metadata) => {
       console.log("Public token:", publicToken);
       console.log("Account metadata:", metadata);
       // TODO: Send the publicToken to your server to exchange for an access token
+
       navigate("/home");
    };
 
