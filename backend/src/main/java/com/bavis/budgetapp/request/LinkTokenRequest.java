@@ -26,5 +26,4 @@ public class LinkTokenRequest {
     private PlaidUserDTO user;
 
     private String[] products;
-
 }
