@@ -42,5 +42,46 @@ public class JsonUtil {
         return null;
     }
 
+    public String extractAttributeByPath(String jsonString, String attributePath) {
+        try {
+            JsonNode rootNode = _objectMapper.readTree(jsonString);
+            String[] pathSegments = attributePath.split("\\.");
+
+            JsonNode currentNode = rootNode;
+            for (String segment : pathSegments) {
+                if (currentNode.isArray()) {
+                    // Handle array traversal
+                    currentNode = searchInArray(currentNode, segment);
+                    if (currentNode == null) {
+                        return null;
+                    }
+                } else if (currentNode.isObject()) {
+                    // Handle object traversal
+                    currentNode = currentNode.get(segment);
+                    if (currentNode == null) {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            }
+
+            return currentNode.asText();
+        } catch (Exception e) {
+            LOG.error("Error occurred while extracting attribute by path: {}", attributePath, e);
+        }
+        return null;
+    }
+
+    private JsonNode searchInArray(JsonNode arrayNode, String attributeName) {
+        for (JsonNode node : arrayNode) {
+            JsonNode attributeNode = node.get(attributeName);
+            if (attributeNode != null) {
+                return node;
+            }
+        }
+        return null;
+    }
+
 
 }
