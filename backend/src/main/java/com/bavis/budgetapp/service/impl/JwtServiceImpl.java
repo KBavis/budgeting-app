@@ -47,10 +47,9 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public boolean validateToken(DecodedJWT decodedJWT, UserDetails userDetails) {
         Date expirationDate = decodedJWT.getExpiresAt();
-        final String username = decodedJWT.getSignature();
-        return (username.equals(userDetails.getUsername()) && expirationDate.before(new Date()));
+        final String username = decodedJWT.getSubject();
+        return (username.equals(userDetails.getUsername()) && expirationDate.after(new Date()));
     }
-
     /**
      * Generates JWT Token For the Respective User
      *

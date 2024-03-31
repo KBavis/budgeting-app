@@ -116,6 +116,7 @@ public class PlaidServiceImpl implements PlaidService{
             ResponseEntity<String> responseEntity = _plaidClient.retrieveAccountBalance(retrieveBalanceRequest);
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 String responseBody = responseEntity.getBody();
+                LOG.debug("Response Body From Retrieving Balance From Plaid: {}", responseBody);
                 String currentBalancePath = "accounts." + accountId + "balances.current";
                 String currentBalance = _jsonUtil.extractAttributeByPath(responseBody, currentBalancePath);
                 if (currentBalance != null) {
@@ -123,7 +124,7 @@ public class PlaidServiceImpl implements PlaidService{
                 }
             }
         } catch (Exception e) {
-            LOG.error("Error Occurred While Retrieving Balance ......");
+            LOG.error("Error Occurred While Retrieving Balance: [" + e.getMessage() + "]", e);
             //TODO: Handle Exceptions that occur during JsonUtil parsing and during Plaid Client Balance retrieval
         }
 

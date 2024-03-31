@@ -40,7 +40,7 @@ public class Account {
 
 	@Id
 	@Column(nullable = false)
-	private Long accountId; //account id to be fetched from Plaid, not generated
+	private String accountId; //account id to be fetched from Plaid, not generated
 
 	@Column(nullable = false)
 	private String accountName; //account name fetched from Plaid (allow users to alter)

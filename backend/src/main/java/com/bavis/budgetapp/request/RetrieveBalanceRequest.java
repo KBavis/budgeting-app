@@ -10,7 +10,7 @@ public class RetrieveBalanceRequest {
     @JsonProperty("client_id")
     private String clientId;
 
-    @JsonProperty("secret_key")
+    @JsonProperty("secret")
     private String secret;
 
     @JsonProperty("access_token")

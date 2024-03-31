@@ -1,8 +1,6 @@
 package com.bavis.budgetapp.service;
 
 
-import com.bavis.budgetapp.dto.BalanceDTO;
-
 public interface PlaidService {
     public String generateLinkToken(Long userId);
 

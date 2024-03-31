@@ -44,6 +44,7 @@ public class AccountController {
 		} catch (Exception e){
 			//TODO: Return Response Entity Containing Relevant Exception Method
 			//TODO: Create ConnectAccountException for information regarding failed conneciton
+			LOG.error("Exception Occurred When Connecting Account: [" + e.getMessage() + "]", e);
 			return null;
 		}
 	}

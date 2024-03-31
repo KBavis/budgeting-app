@@ -12,4 +12,6 @@ public interface UserService {
 	User update(Long id, User user);
 
 	boolean existsByUsername(String username);
+
+	User getCurrentAuthUser();
 }

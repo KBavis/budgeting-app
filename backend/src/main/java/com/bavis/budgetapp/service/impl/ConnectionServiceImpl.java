@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class ConnectionServiceImpl implements ConnectionService{
 	
-	private static Logger LOG = LoggerFactory.getLogger(ConnectionServiceImpl.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ConnectionServiceImpl.class);
 	
 	private final ConnectionRepository _repository;
 

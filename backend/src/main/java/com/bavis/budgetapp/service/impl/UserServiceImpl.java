@@ -1,14 +1,19 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.controller.AuthController;
 import com.bavis.budgetapp.exception.UserNotFoundException;
 import com.bavis.budgetapp.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.UserRepository;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.UserService;
+
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -52,5 +57,14 @@ public class UserServiceImpl implements UserService{
 	@Override
 	public boolean existsByUsername(String username){
 		return _userRepository.existsByUsername(username);
+	}
+
+	@Override
+	public User getCurrentAuthUser(){
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String username = authentication.getName().trim();
+		User user = _userRepository.findByUsername(username)
+				.orElseThrow(() -> new UserNotFoundException("User with the username [" + username + "] not found."));
+		return  user;
 	}
 }
