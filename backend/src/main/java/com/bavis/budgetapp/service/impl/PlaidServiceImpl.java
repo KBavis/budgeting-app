@@ -117,7 +117,7 @@ public class PlaidServiceImpl implements PlaidService{
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 String responseBody = responseEntity.getBody();
                 LOG.debug("Response Body From Retrieving Balance From Plaid: {}", responseBody);
-                String currentBalancePath = "accounts." + accountId + "balances.current";
+                String currentBalancePath = "accounts." + accountId + ".balances.current";
                 String currentBalance = _jsonUtil.extractAttributeByPath(responseBody, currentBalancePath);
                 if (currentBalance != null) {
                     return Double.parseDouble(currentBalance);
