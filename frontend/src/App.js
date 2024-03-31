@@ -11,30 +11,33 @@ import { useNavigate } from "react-router-dom";
 import ConnectAccounts from "./pages/ConnectAccounts";
 import AlertState from "./context/alert/AlertState";
 import Alerts from "./components/alert/Alert";
+import AccountState from "./context/account/AccountState";
 
 function App() {
    return (
       <AlertState>
          <AuthState>
-            <Router>
-               <Fragment>
-                  <Alerts />
-                  <Routes>
-                     <Route
-                        path="/connect-accounts"
-                        element={<ConnectAccounts />}
-                     />
-                     <Route path="/" element={<LoginRegisterPage />} />
-                     <Route path="/home" element={<HomePage />} />
-                     <Route path="/login" element={<Login />} />
-                     <Route path="/register" element={<Register />} />
-                     <Route
-                        path="/forgot-password"
-                        element={<ForgotPassword />}
-                     />
-                  </Routes>
-               </Fragment>
-            </Router>
+            <AccountState>
+               <Router>
+                  <Fragment>
+                     <Alerts />
+                     <Routes>
+                        <Route
+                           path="/connect-accounts"
+                           element={<ConnectAccounts />}
+                        />
+                        <Route path="/" element={<LoginRegisterPage />} />
+                        <Route path="/home" element={<HomePage />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route
+                           path="/forgot-password"
+                           element={<ForgotPassword />}
+                        />
+                     </Routes>
+                  </Fragment>
+               </Router>
+            </AccountState>
          </AuthState>
       </AlertState>
    );

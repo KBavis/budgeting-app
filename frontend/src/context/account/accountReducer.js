@@ -2,8 +2,8 @@ import {
    ACCOUNT_CREATED,
    ACCOUNT_DELETED,
    ACCOUNT_FAILED_CRATED,
-   ACCOUNT_FAILED_CRATED,
    ACCOUNT_FAILED_DELETED,
+   CLEAR_ERRORS,
 } from "./types";
 
 export default (state, action) => {

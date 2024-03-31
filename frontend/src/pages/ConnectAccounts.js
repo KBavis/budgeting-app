@@ -2,16 +2,45 @@ import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { PlaidLink } from "react-plaid-link";
 import authContext from "../context/auth/authContext";
+import accountContext from "../context/account/accountContext";
 
 const ConnectAccounts = () => {
    const navigate = useNavigate();
    const { user } = useContext(authContext);
+   const { createAccount } = useContext(accountContext);
    //constt { createAccount } =useContext(accountContext);
+
+   const mapAccountType = (type, subtype) => {
+      switch (type) {
+         case "depository":
+            return subtype === "checking" ? "CHECKING" : "SAVING";
+         case "credit":
+            return "CREDIT";
+         case "loan":
+            return "LOAN";
+         case "investment":
+            return "INVESTMENT";
+         default:
+            return null;
+      }
+   };
 
    const handleOnSuccess = (publicToken, metadata) => {
       console.log("Public token:", publicToken);
       console.log("Account metadata:", metadata);
+
       // TODO: Send the publicToken to your server to exchange for an access token
+      const accountData = {
+         plaidAccountId: metadata.account_id,
+         accountName: metadata.institution.name,
+         publicToken,
+         accountType: mapAccountType(
+            metadata.account.type,
+            metadata.account.subtype
+         ),
+      };
+
+      createAccount(accountData);
 
       navigate("/home");
    };

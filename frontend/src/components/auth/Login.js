@@ -43,6 +43,7 @@ const Login = () => {
     */
 
    //Navigate User To Connect Accounts Or Home Page
+   //TODO: Fix this navigation logic
    useEffect(() => {
       if (isAuthenticated) {
          if (user && user.accounts) {
