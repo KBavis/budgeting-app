@@ -27,6 +27,7 @@ public class PlaidServiceImpl implements PlaidService{
 
     private final JsonUtil _jsonUtil;
 
+
     public PlaidServiceImpl(PlaidClient _plaidClient, PlaidConfig _plaidConfig, JsonUtil _jsonUtil){
         this._plaidConfig = _plaidConfig;
         this._plaidClient = _plaidClient;
@@ -117,18 +118,28 @@ public class PlaidServiceImpl implements PlaidService{
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 String responseBody = responseEntity.getBody();
                 LOG.debug("Response Body From Retrieving Balance From Plaid: {}", responseBody);
-                String currentBalancePath = "accounts." + accountId + ".balances.current";
-                String currentBalance = _jsonUtil.extractAttributeByPath(responseBody, currentBalancePath);
-                if (currentBalance != null) {
-                    return Double.parseDouble(currentBalance);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode accountsNode = objectMapper.readTree(responseBody).path("accounts");
+
+                for (JsonNode accountNode : accountsNode) {
+                    String currentAccountId = accountNode.path("account_id").asText();
+                    if (currentAccountId.equals(accountId)) {
+                        double currentBalance = accountNode.path("balances").path("current").asDouble();
+                        LOG.debug("Current balance for account ID [{}]: {}", accountId, currentBalance);
+                        return currentBalance;
+                    }
                 }
+
+                LOG.warn("No matching account found for account ID: {}", accountId);
+            } else {
+                LOG.error("Failed to retrieve balance. Status code: {}", responseEntity.getStatusCode());
             }
         } catch (Exception e) {
-            LOG.error("Error Occurred While Retrieving Balance: [" + e.getMessage() + "]", e);
-            //TODO: Handle Exceptions that occur during JsonUtil parsing and during Plaid Client Balance retrieval
+            LOG.error("Error occurred while retrieving balance: ", e);
         }
 
-        return 0.0;
+        throw new IllegalStateException("Failed to retrieve balance for account ID: " + accountId);
     }
 
 }
