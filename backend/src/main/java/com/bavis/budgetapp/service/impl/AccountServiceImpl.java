@@ -57,25 +57,13 @@ public class AccountServiceImpl implements AccountService{
 		LOG.debug("Attempting To ConnectAccount via ConnectAccountRequest: [{}]", connectAccountRequest);
 
 		//Exchange Public Token With Access Token
-		//TODO: Uncomment me
-		//String accessToken = _plaidService.exchangeToken(connectAccountRequest.getPublicToken());
-		//LOG.debug("Access Token Retrieved From Plaid Service: [{}]", accessToken);
-
-		//TODO: delete me
-		String accessToken = "access-development-f1047cba-2ed3-4576-b8a7-9679826f28ad";
+		String accessToken = _plaidService.exchangeToken(connectAccountRequest.getPublicToken());
+		LOG.debug("Access Token Retrieved From Plaid Service: [{}]", accessToken);
 
 		//Retrieve Balance Pertaining To Account
 		double balance = _plaidService.retrieveBalance(connectAccountRequest.getPlaidAccountId(), accessToken);
 		LOG.debug("Balance Retrieved From Plaid Service: [{}]", balance);
 
-
-		//Init Connection to be persisted
-		Connection newConnection = Connection.builder()
-				.connectionStatus(ConnectionStatus.CONNECTED)
-				.accessToken(accessToken)
-				.institutionName(connectAccountRequest.getAccountName())
-				.lastSyncTime(LocalDateTime.now())
-				.build();
 
 		// Initialize Account to be persisted
 		Account newAccount = Account.builder()
@@ -84,20 +72,27 @@ public class AccountServiceImpl implements AccountService{
 				.balance(balance)
 				.accountType(connectAccountRequest.getAccountType())
 				.user(_userService.getCurrentAuthUser())
-				.connection(newConnection)
 				.build();
 
-		// Set the Account in the Connection
-		newConnection.setAccount(newAccount);
 
-		// Save the Connection entity (which will cascade and save the Account)
+		// Initialize Connection to be persisted
+		Connection newConnection = Connection.builder()
+				.connectionStatus(ConnectionStatus.CONNECTED)
+				.accessToken(accessToken)
+				.institutionName(connectAccountRequest.getAccountName())
+				.lastSyncTime(LocalDateTime.now())
+				.build();
+
+		//Set Connection in the Account
+		newAccount.setConnection(newConnection);
+
+		//Save Entities
 		Connection savedConnection = _connectionService.create(newConnection);
+		Account savedAccount = _accountRepository.save(newAccount);
 
-
-		LOG.info("Account To Be Saved: [{}]", newAccount.toString());
-		LOG.info("Connection To Be Saved: [{}]", newConnection.toString());
-
-
+		//Log Saved Connection/Account
+		LOG.debug("Saved Connection: [{}]", savedConnection.toString());
+		LOG.debug("Saved Account: [{}]", savedAccount.toString());
 
 		//Map Account to AccountDTO
         return _accountMapper.toDTO(newAccount);

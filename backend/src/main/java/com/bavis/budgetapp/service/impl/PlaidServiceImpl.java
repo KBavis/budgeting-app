@@ -112,34 +112,36 @@ public class PlaidServiceImpl implements PlaidService{
                 .build();
 
         LOG.debug("RetrieveBalanceRequest created in 'retrieveBalance' in PlaidService: {}", retrieveBalanceRequest);
+        ObjectMapper _objectMapper = new ObjectMapper();
 
         try {
             ResponseEntity<String> responseEntity = _plaidClient.retrieveAccountBalance(retrieveBalanceRequest);
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 String responseBody = responseEntity.getBody();
-                LOG.debug("Response Body From Retrieving Balance From Plaid: {}", responseBody);
 
-                ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode accountsNode = objectMapper.readTree(responseBody).path("accounts");
+                JsonNode rootNode = _objectMapper.readTree(responseBody);
+                JsonNode accountsNode = rootNode.path("accounts");
 
                 for (JsonNode accountNode : accountsNode) {
                     String currentAccountId = accountNode.path("account_id").asText();
                     if (currentAccountId.equals(accountId)) {
-                        double currentBalance = accountNode.path("balances").path("current").asDouble();
-                        LOG.debug("Current balance for account ID [{}]: {}", accountId, currentBalance);
-                        return currentBalance;
+                        JsonNode balancesNode = accountNode.path("balances");
+                        double availableBalance = balancesNode.path("available").asDouble();
+                        LOG.debug("Available balance for account ID [{}]: {}", accountId, availableBalance);
+                        return availableBalance;
                     }
                 }
 
                 LOG.warn("No matching account found for account ID: {}", accountId);
+                throw new IllegalArgumentException("No matching account found for account ID: " + accountId);
             } else {
                 LOG.error("Failed to retrieve balance. Status code: {}", responseEntity.getStatusCode());
+                throw new RuntimeException("Failed to retrieve balance. Status code: " + responseEntity.getStatusCode());
             }
         } catch (Exception e) {
             LOG.error("Error occurred while retrieving balance: ", e);
+            throw new RuntimeException("Error occurred while retrieving balance: ", e);
         }
-
-        throw new IllegalStateException("Failed to retrieve balance for account ID: " + accountId);
     }
 
 }

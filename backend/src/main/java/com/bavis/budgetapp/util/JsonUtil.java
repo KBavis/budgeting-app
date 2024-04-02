@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -23,6 +24,15 @@ public class JsonUtil {
            LOG.error("Failed To Map Json [" + json + "] to Class " + klass.toString(), e.getMessage());
         }
         return null;
+    }
+
+    public String toJson(Object object){
+        try {
+            return _objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e){
+            LOG.error("Failed to convert the object [{}] to JSON due to following reason: {}", object.toString(), e.getMessage());
+            throw new RuntimeException("Failed to convert object to JSON", e);
+        }
     }
 
     public String extractAttribute(String jsonString, String attributeName) {

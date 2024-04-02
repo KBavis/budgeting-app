@@ -45,8 +45,4 @@ public class Connection {
 
 	@Column(nullable = false)
 	private LocalDateTime lastSyncTime;
-
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "accountId", referencedColumnName =  "accountId")
-	private Account account;
 }
