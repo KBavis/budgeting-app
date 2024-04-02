@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,7 @@ public class PlaidServiceImpl implements PlaidService{
     private final JsonUtil _jsonUtil;
 
 
+    @Autowired
     public PlaidServiceImpl(PlaidClient _plaidClient, PlaidConfig _plaidConfig, JsonUtil _jsonUtil){
         this._plaidConfig = _plaidConfig;
         this._plaidClient = _plaidClient;
@@ -112,24 +114,15 @@ public class PlaidServiceImpl implements PlaidService{
                 .build();
 
         LOG.debug("RetrieveBalanceRequest created in 'retrieveBalance' in PlaidService: {}", retrieveBalanceRequest);
-        ObjectMapper _objectMapper = new ObjectMapper();
 
         try {
             ResponseEntity<String> responseEntity = _plaidClient.retrieveAccountBalance(retrieveBalanceRequest);
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 String responseBody = responseEntity.getBody();
 
-                JsonNode rootNode = _objectMapper.readTree(responseBody);
-                JsonNode accountsNode = rootNode.path("accounts");
-
-                for (JsonNode accountNode : accountsNode) {
-                    String currentAccountId = accountNode.path("account_id").asText();
-                    if (currentAccountId.equals(accountId)) {
-                        JsonNode balancesNode = accountNode.path("balances");
-                        double availableBalance = balancesNode.path("available").asDouble();
-                        LOG.debug("Available balance for account ID [{}]: {}", accountId, availableBalance);
-                        return availableBalance;
-                    }
+                Double balance = _jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available");
+                if(balance != null){
+                    return balance;
                 }
 
                 LOG.warn("No matching account found for account ID: {}", accountId);

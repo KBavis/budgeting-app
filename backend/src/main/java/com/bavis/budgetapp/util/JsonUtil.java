@@ -52,43 +52,26 @@ public class JsonUtil {
         return null;
     }
 
-    public String extractAttributeByPath(String jsonString, String attributePath) {
+    public Double extractBalanceByAccountId(String jsonString, String accountId, String balancePath) {
         try {
             JsonNode rootNode = _objectMapper.readTree(jsonString);
-            String[] pathSegments = attributePath.split("\\.");
+            JsonNode accountsNode = rootNode.path("accounts");
 
-            JsonNode currentNode = rootNode;
-            for (String segment : pathSegments) {
-                if (currentNode.isArray()) {
-                    // Handle array traversal
-                    currentNode = searchInArray(currentNode, segment);
-                    if (currentNode == null) {
+            for (JsonNode accountNode : accountsNode) {
+                String currentAccountId = accountNode.path("account_id").asText();
+                if (currentAccountId.equals(accountId)) {
+                    JsonNode balanceNode = accountNode.at(balancePath);
+                    if (balanceNode.isMissingNode()) {
+                        LOG.error("Balance attribute '{}' not found for account ID '{}'", balancePath, accountId);
                         return null;
                     }
-                } else if (currentNode.isObject()) {
-                    // Handle object traversal
-                    currentNode = currentNode.get(segment);
-                    if (currentNode == null) {
-                        return null;
-                    }
-                } else {
-                    return null;
+                    return balanceNode.asDouble();
                 }
             }
 
-            return currentNode.asText();
+            LOG.error("Account ID '{}' not found in the JSON response", accountId);
         } catch (Exception e) {
-            LOG.error("Error occurred while extracting attribute by path: {}", attributePath, e);
-        }
-        return null;
-    }
-
-    private JsonNode searchInArray(JsonNode arrayNode, String attributeName) {
-        for (JsonNode node : arrayNode) {
-            JsonNode attributeNode = node.get(attributeName);
-            if (attributeNode != null) {
-                return node;
-            }
+            LOG.error("Error occurred while extracting balance for account ID '{}': {}", accountId, e.getMessage());
         }
         return null;
     }

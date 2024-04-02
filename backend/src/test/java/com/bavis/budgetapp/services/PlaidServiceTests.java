@@ -33,6 +33,9 @@ public class PlaidServiceTests {
     @Mock
     private PlaidConfig plaidConfig;
 
+    @Mock
+    private JsonUtil jsonUtil;
+
     @InjectMocks
     private PlaidServiceImpl plaidService;
 
@@ -47,6 +50,9 @@ public class PlaidServiceTests {
     }
 
 
+    /**
+     * Validate PlaidService ability to generate link token successfully
+     */
     @Test
     public void testGenerateLinkToken_Success() {
         //Arrange
@@ -69,6 +75,9 @@ public class PlaidServiceTests {
         assertEquals(expectedLinkToken, actualLinkToken);
     }
 
+    /**
+     * Validate ability of PlaidService to retrieve bank account balance successfully
+     */
     @Test
     public void testRetrieveBalance_Success() {
         //Arrange
@@ -82,11 +91,21 @@ public class PlaidServiceTests {
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
         when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequest.class))).thenReturn(responseEntity);
+        when(jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available"))
+                .thenReturn(_jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available"));
+
 
         //Act
         double actualBalance = plaidService.retrieveBalance(accountId, accessToken);
 
         //Assert
         assertEquals(expectedBalance, actualBalance);
+    }
+
+
+    //TODO: Finish Me
+    @Test
+    public void testExchangeToken_Success() {
+        //Arrange
     }
 }
