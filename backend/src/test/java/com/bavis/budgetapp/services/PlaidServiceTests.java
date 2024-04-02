@@ -3,8 +3,10 @@ package com.bavis.budgetapp.services;
 import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.config.PlaidConfig;
 import com.bavis.budgetapp.helper.TestHelper;
+import com.bavis.budgetapp.request.ExchangeTokenRequest;
 import com.bavis.budgetapp.request.LinkTokenRequest;
 import com.bavis.budgetapp.request.RetrieveBalanceRequest;
+import com.bavis.budgetapp.response.AccessTokenResponse;
 import com.bavis.budgetapp.response.LinkTokenResponse;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
@@ -102,10 +104,53 @@ public class PlaidServiceTests {
         assertEquals(expectedBalance, actualBalance);
     }
 
-
-    //TODO: Finish Me
+    /**
+     * Validate ability of PlaidService to exchange public token for access token successfully
+     */
     @Test
     public void testExchangeToken_Success() {
         //Arrange
+        String publicToken = "public-token";
+        String expectedAccessToken = "access-token";
+        AccessTokenResponse accessTokenResponse = AccessTokenResponse.builder()
+                .accessToken(expectedAccessToken)
+                .build();
+        ResponseEntity<AccessTokenResponse> responseEntity = new ResponseEntity<>(accessTokenResponse, HttpStatus.OK);
+
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class))).thenReturn(responseEntity);
+
+        //Act
+        String actualAccessToken = plaidService.exchangeToken(publicToken);
+
+        //Assert
+        assertEquals(expectedAccessToken, actualAccessToken);
+    }
+
+    /**
+     * Ensures our PlaidService will handle failed exchange token attempts gracefully
+     */
+    @Test
+    public void testExchangeToken_Failed() {
+        //TODO: Finish me
+    }
+
+    /**
+     * Ensures our PlaidService will handle failed retrieval of balance attempts gracefully
+     */
+    @Test
+    public void testRetrieveBalance_Failed() {
+        //TODO: Finish me
+    }
+
+    /**
+     * Ensures our PlaidService will handle failed generation of Link Token gracefully
+     */
+    @Test
+    public void testGenerateLinkToken_Failed() {
+        //TODO: Finsih me
     }
 }

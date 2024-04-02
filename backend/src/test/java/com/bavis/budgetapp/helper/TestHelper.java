@@ -9,7 +9,7 @@ public class TestHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestHelper.class);
 
-    // Helper method to create a balance response JSON
+    // Helper function to create Balance Response Object
     public Object createBalanceResponse(String accountId, double balance) {
         return new Object() {
             public final Object[] accounts = {
@@ -43,4 +43,5 @@ public class TestHelper {
             public final String request_id = "rCl6oBmN5HJgz9e";
         };
     }
+
 }
