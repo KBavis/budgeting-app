@@ -2,6 +2,7 @@ package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.config.PlaidConfig;
+import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.helper.TestHelper;
 import com.bavis.budgetapp.request.ExchangeTokenRequest;
 import com.bavis.budgetapp.request.LinkTokenRequest;
@@ -23,8 +24,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PlaidServiceTests {
@@ -60,8 +62,9 @@ public class PlaidServiceTests {
         //Arrange
         Long userId = 123L;
         String expectedLinkToken = "link-token";
-        LinkTokenResponse linkTokenResponse = new LinkTokenResponse();
-        linkTokenResponse.setLinkToken(expectedLinkToken);
+        LinkTokenResponse linkTokenResponse = LinkTokenResponse.builder()
+                .linkToken(expectedLinkToken)
+                .build();
         ResponseEntity<LinkTokenResponse> responseEntity = new ResponseEntity<>(linkTokenResponse, HttpStatus.OK);
 
 
@@ -75,6 +78,11 @@ public class PlaidServiceTests {
 
         //Assert
         assertEquals(expectedLinkToken, actualLinkToken);
+
+        //Verify
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequest.class));
     }
 
     /**
@@ -102,6 +110,12 @@ public class PlaidServiceTests {
 
         //Assert
         assertEquals(expectedBalance, actualBalance);
+
+        //Verify
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequest.class));
+        verify(jsonUtil, times(1)).extractBalanceByAccountId(responseBody, accountId, "/balances/available");
     }
 
     /**
@@ -128,29 +142,191 @@ public class PlaidServiceTests {
 
         //Assert
         assertEquals(expectedAccessToken, actualAccessToken);
+
+        // Verify
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequest.class));
+    }
+
+    /**
+     * Ensures our PlaidService will handle null response bodies when attempting to exchange public tokens with Plaid API gracefully
+     */
+    @Test
+    public void testExchangeToken_NullResponseBody_Failed() {
+        //Arrange
+        String publicToken = "public-token";
+        ResponseEntity<AccessTokenResponse> responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class))).thenReturn(responseEntity);
+
+        //Act & Assert
+        PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.exchangeToken(publicToken);
+        });
+        assertEquals(exception.getMessage(), "Response Body from Plaid Client when Exchanging Public Token Is Null");
+
+        //Verify
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequest.class));
     }
 
     /**
      * Ensures our PlaidService will handle failed exchange token attempts gracefully
      */
     @Test
-    public void testExchangeToken_Failed() {
-        //TODO: Finish me
+    public void testExchangeToken_InvalidResponseCode_Failed() {
+        //Arrange
+        String publicToken = "public-token";
+        String expectedAccessToken = "access-token";
+        AccessTokenResponse accessTokenResponse = AccessTokenResponse.builder()
+                .accessToken(expectedAccessToken)
+                .build();
+        ResponseEntity<AccessTokenResponse> responseEntity = new ResponseEntity<>(accessTokenResponse, HttpStatus.BAD_REQUEST);
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class))).thenReturn(responseEntity);
+
+        //Act & Assert
+        PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.exchangeToken(publicToken);
+        });
+        assertEquals(exception.getMessage(), "Invalid Response Code When Exchanging Public Token Via Plaid Client: [" + responseEntity.getStatusCode() + "]");
+
+        //Verify
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequest.class));
     }
 
     /**
-     * Ensures our PlaidService will handle failed retrieval of balance attempts gracefully
+     * Ensures our PlaidService will handle invalid response code when retrieving balance from PlaidAPI gracefully
      */
     @Test
-    public void testRetrieveBalance_Failed() {
-        //TODO: Finish me
+    public void testRetrieveBalance_InvalidResponseCode_Failed() {
+        //Arrange
+        String accountId = "account-id";
+        String accessToken = "access-token";
+        double expectedBalance = 1000.0;
+        String responseBody = _jsonUtil.toJson(_testHelper.createBalanceResponse(accountId, expectedBalance));
+        ResponseEntity<String> responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequest.class))).thenReturn(responseEntity);
+
+
+        //Act & Assert
+        PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
+            double actualBalance = plaidService.retrieveBalance(accountId, accessToken);
+        });
+        assertEquals(exception.getMessage(), "Invalid Response Code When Retrieving Balance Via Plaid Client: [" + responseEntity.getStatusCode() + "]");
+
+
+        //Verify
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequest.class));
+        verify(jsonUtil, times(0)).extractBalanceByAccountId(responseBody, accountId, "/balances/available");
+    }
+
+
+    /**
+     * Ensures our PlaidService will handle invalid response code when retrieving balance from PlaidAPI gracefully
+     */
+    @Test
+    public void testRetrieveBalance_AccountIdNotFound_Failed() {
+        //Arrange
+        String validAccountId = "valid-account-id";
+        String invalidAccountId = "invalid-account-id";
+        String accessToken = "access-token";
+        double expectedBalance = 1000.0;
+        String responseBody = _jsonUtil.toJson(_testHelper.createBalanceResponse(invalidAccountId, expectedBalance)); //create response with invalid account id
+        ResponseEntity<String> responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK); //response with invalid account id
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequest.class))).thenReturn(responseEntity);
+        when(jsonUtil.extractBalanceByAccountId(responseBody, validAccountId, "/balances/available")).thenReturn(null);
+
+
+        //Act & Assert
+        PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
+            double actualBalance = plaidService.retrieveBalance(validAccountId, accessToken);
+        });
+        assertEquals(exception.getMessage(), "No Matching Account ID Found In Plaid Client Response When Attempting To Retrieve Balance");
+
+
+        //Verify
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequest.class));
+        verify(jsonUtil, times(1)).extractBalanceByAccountId(responseBody, validAccountId, "/balances/available");
     }
 
     /**
-     * Ensures our PlaidService will handle failed generation of Link Token gracefully
+     * Ensures our PlaidService will handle null response body returned by Plaid API gracefully when attempting to generate link token
      */
     @Test
-    public void testGenerateLinkToken_Failed() {
-        //TODO: Finsih me
+    public void testGenerateLinkToken_NullResponseBody_Failed() {
+        //Arrange
+        Long userId = 123L;
+        ResponseEntity<LinkTokenResponse> responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
+
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.createLinkToken(any(LinkTokenRequest.class))).thenReturn(responseEntity);
+
+        //Act & Assert
+         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
+             plaidService.generateLinkToken(userId);
+         });
+        assertEquals(exception.getMessage(), "Response Body from Plaid Client when Generating Link Token Is Null");
+
+        //Verify
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequest.class));
+    }
+
+    /**
+     * Ensures our PlaidService will handle invalid response codes returned by Plaid API gracefully when attempting to generate link token
+     */
+    @Test
+    public void testGenerateLinkToken_InvalidResponseCode_Failed() {
+        //Arrange
+        Long userId = 123L;
+        String linkToken = "link-token";
+        LinkTokenResponse linkTokenResponse = LinkTokenResponse.builder()
+                .linkToken(linkToken)
+                .build();
+        ResponseEntity<LinkTokenResponse> responseEntity = new ResponseEntity<>(linkTokenResponse, HttpStatus.BAD_REQUEST);
+
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.createLinkToken(any(LinkTokenRequest.class))).thenReturn(responseEntity);
+
+        //Act & Assert
+        PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.generateLinkToken(userId);
+        });
+        assertEquals(exception.getMessage(), "Invalid Response Code When Generating Link Token Via PlaidClient: [" + responseEntity.getStatusCode() + "]");
+
+        //Verify
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequest.class));
     }
 }
