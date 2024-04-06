@@ -1,8 +1,10 @@
 package com.bavis.budgetapp.helper;
 
 import com.auth0.jwt.algorithms.Algorithm;
+import com.bavis.budgetapp.config.JwtConfig;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.JwtService;
+import com.bavis.budgetapp.service.impl.JwtServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,14 @@ import org.springframework.stereotype.Component;
 public class TestHelper {
     private static final Logger LOG = LoggerFactory.getLogger(TestHelper.class);
 
+    @Autowired
+    private JwtService jwtService;
+
+
+    public TestHelper() {
+        jwtService = new JwtServiceImpl(createAlgorithm()); //instantiate jwt service
+    }
+
 
     /**
      * Helper Function To Generate Valid Jwt Token
@@ -20,7 +30,17 @@ public class TestHelper {
      *      - valid JWT Token
      */
     public String getValidJwtToken(){
-        return "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJiYXZpcyIsInN1YiI6IlRlc3RVc2VyMjAyMDEyIiwiZXhwIjoxNzEyMDMxOTYxfQ.E9f7Ck8jtU2kwolBvqhHkS41r0Rr-RKWRQoWEqxMcQKJ2NFj_uX5drJ5ctqdcSu2Qx-ffM-OnQdzEqnaqKnXHZsOsU-A4oCBdwSHU4zNz7yHdN19_zsxTSVYnl88XF8hJ6udoJ72oAYllmzd_rMdQJZKzmYlPIvuIzG9Ue8e61W1LkH5Qv84ogn-1yOlCwszUt161FhrqznojHurNkhREnBKQH1bMf2nUfQP10Wr4wT-1TWHhtZD7y6h54yhqpTlHLy2b4CbNfR6Kin38cfmYQhiLrBuGvvlx6EtQei1ZrOmceD4xvGeG7bln0oex9egcIb5NrPYc20PcYDHG5BTlA";
+        User fakeUser = User.builder()
+                .name("Test User")
+                .username("test-user")
+                .password("password")
+                .build();
+        return jwtService.generateToken(fakeUser);
+    }
+
+    public Algorithm createAlgorithm() {
+        JwtConfig jwtConfig = new JwtConfig();
+        return jwtConfig.jwtAlgorithm();
     }
 
     // Helper function to create Balance Response Object

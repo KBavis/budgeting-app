@@ -30,20 +30,28 @@ repositories {
 }
 
 dependencies {
+	//Spring Framework Dependencies
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	//External Dependencies
 	implementation 'org.apache.commons:commons-lang3:3.12.0'
 	implementation 'org.mapstruct:mapstruct:1.5.3.Final'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'com.auth0:java-jwt:4.4.0'
-	// https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-openfeign
 	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.1.0'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
+
+	//Annotations
 	annotationProcessor 'org.projectlombok:lombok'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
+
+	// Mockito dependency
+	testImplementation 'org.mockito:mockito-core:4.11.0' //mockito dependency
+	testImplementation 'junit:junit:4.13.2' //junit dependency
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 }
