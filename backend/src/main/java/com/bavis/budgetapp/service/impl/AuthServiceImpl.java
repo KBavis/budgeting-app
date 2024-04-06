@@ -3,6 +3,7 @@ package com.bavis.budgetapp.service.impl;
 import com.bavis.budgetapp.enumeration.Role;
 import com.bavis.budgetapp.exception.BadAuthenticationRequest;
 import com.bavis.budgetapp.exception.BadRegistrationRequestException;
+import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.exception.UsernameTakenException;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.request.AuthRequest;
@@ -44,8 +45,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
+    /**
+     *
+     * @param authRequest
+     *          - Authentication Request sent to server
+     * @return
+     * `        - AuthResposne containing UserDetails and JWT Token
+     * @throws RuntimeException
+     *          - Exception for any potential BadRegistrationException, PlaidServiceException, JWTException
+     */
     @Override
-    public AuthResponse register(AuthRequest authRequest) throws BadRegistrationRequestException, UsernameTakenException {
+    public AuthResponse register(AuthRequest authRequest) throws RuntimeException{
 
 
 

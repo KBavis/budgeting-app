@@ -19,6 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.ArrayList;
 
@@ -109,4 +110,6 @@ public class AuthServiceTests {
         verify(userService, times(1)).update(any(Long.class), any(User.class));
         verify(jwtService, times(1)).generateToken(any(User.class));
     }
+
+
 }
