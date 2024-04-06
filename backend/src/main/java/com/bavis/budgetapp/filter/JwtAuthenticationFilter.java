@@ -107,6 +107,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    LOG.info("JWT Token Successfully Validated, SecurityContextHolder Authentication Updated!");
                 }
             }
         } catch(JWTVerificationException e){

@@ -1,14 +1,19 @@
 package com.bavis.budgetapp.helper;
 
+import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.bavis.budgetapp.config.JwtConfig;
+import com.bavis.budgetapp.enumeration.TimeType;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.service.impl.JwtServiceImpl;
+import com.bavis.budgetapp.util.GeneralUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Component
 public class TestHelper {
@@ -24,18 +29,29 @@ public class TestHelper {
 
 
     /**
-     * Helper Function To Generate Valid Jwt Token
      *
+     * Helper Function To Generate Valid Jwt Token Using Passed in Algorithm & User
+     * @param algorithm
+     *          - algorithm to generate JWT Token
+     * @param user
+     *          - user to generate JWT token for
      * @return
-     *      - valid JWT Token
+     *          - valid JWT token for corresponding user
      */
-    public String getValidJwtToken(){
-        User fakeUser = User.builder()
-                .name("Test User")
-                .username("test-user")
-                .password("password")
-                .build();
-        return jwtService.generateToken(fakeUser);
+    public String getValidJwtToken(Algorithm algorithm, User user){
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime expirationTime = GeneralUtil.addTimeToDate(currentTime,3, TimeType.HOURS);
+        try {
+            return JWT.create()
+                    .withIssuer("bavis")
+                    .withSubject(user.getUsername())
+                    .withExpiresAt(GeneralUtil.localDateTimeToDate(expirationTime))
+                    .sign(algorithm);
+        } catch (Exception e) {
+            LOG.error("Failed to generated JWT Token for User [{}]", user.toString());
+            throw new RuntimeException("Failed to Generate JWT Token: ", e);
+        }
     }
 
     public Algorithm createAlgorithm() {
