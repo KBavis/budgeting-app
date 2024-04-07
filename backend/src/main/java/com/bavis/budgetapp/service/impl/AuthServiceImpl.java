@@ -12,6 +12,7 @@ import com.bavis.budgetapp.service.AuthService;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.UserService;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +47,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     /**
+     * Register user within our application
      *
      * @param authRequest
      *          - Authentication Request sent to server
@@ -54,7 +56,10 @@ public class AuthServiceImpl implements AuthService {
      * @throws RuntimeException
      *          - Exception for any potential BadRegistrationException, PlaidServiceException, JWTException
      */
+
+
     @Override
+    @Transactional
     public AuthResponse register(AuthRequest authRequest) throws RuntimeException{
 
 
@@ -129,6 +134,12 @@ public class AuthServiceImpl implements AuthService {
 
     //TODO: Consider introducing necessary inclusion for password strength (i.e minimunm 10 letters, must contain uppercase/lowercase, etc)
     private void validateAuthRequest(AuthRequest authRequest) throws UsernameTakenException, BadRegistrationRequestException {
+        //Ensure username is filled out
+        if(authRequest.getUsername() == null || authRequest.getUsername().isEmpty()) {
+            throw new BadRegistrationRequestException("Username field was not filled out.");
+        }
+
+
         //Validate that the username is indeed unique
         String username = authRequest.getUsername();
         if(_userService.existsByUsername(authRequest.getUsername())){
@@ -137,13 +148,9 @@ public class AuthServiceImpl implements AuthService {
 
         //Ensure name field is field out
         if(authRequest.getName() == null || authRequest.getName().isEmpty()){
-            throw new BadRegistrationRequestException("Name field was not filled out");
+            throw new BadRegistrationRequestException("Name field was not filled out.");
         }
 
-        //Ensure username is filled out
-        if(username == null || username.isEmpty()) {
-            throw new BadRegistrationRequestException("Username field was not filled out.");
-        }
 
         //Ensure password fields are filled out
         if(authRequest.getPasswordOne() == null || authRequest.getPasswordOne().isEmpty()){

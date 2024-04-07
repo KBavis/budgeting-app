@@ -19,13 +19,6 @@ import java.time.LocalDateTime;
 public class TestHelper {
     private static final Logger LOG = LoggerFactory.getLogger(TestHelper.class);
 
-    @Autowired
-    private JwtService jwtService;
-
-
-    public TestHelper() {
-        jwtService = new JwtServiceImpl(createAlgorithm()); //instantiate jwt service
-    }
 
 
     /**
