@@ -65,6 +65,10 @@ public class PlaidServiceImpl implements PlaidService{
             LOG.debug("Response Body From LinkToken Request: {}", responseEntity.getBody());
             LinkTokenResponse responseBody = responseEntity.getBody();
             if (responseBody != null) {
+                if(responseBody.getLinkToken().isEmpty()){
+                    LOG.error("Link Token returned from Plaid Client is NULL");
+                    throw new PlaidServiceException("Link Token returned from Plaid Client is NULL");
+                }
                 return responseBody.getLinkToken();
             } else {
                 LOG.error("Response Body From LinkTokenRequest is NULL.");
@@ -102,6 +106,10 @@ public class PlaidServiceImpl implements PlaidService{
             LOG.debug("Response Body From Exchange Token Request: {}", responseEntity.getBody());
             AccessTokenResponse responseBody = responseEntity.getBody();
             if(responseBody != null){
+                if(responseBody.getAccessToken().isEmpty()){
+                    LOG.error("Access Token returned from PlaidClient is NULL");
+                    throw new PlaidServiceException("Access Token returned from Plaid Client is NULL");
+                }
                 return responseBody.getAccessToken();
             } else {
                 LOG.error("Response Body From ExchangeTokenRequest is NULL.");

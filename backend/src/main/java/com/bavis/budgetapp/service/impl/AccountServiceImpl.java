@@ -3,6 +3,7 @@ package com.bavis.budgetapp.service.impl;
 import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.dto.AccountDTO;
 import com.bavis.budgetapp.enumeration.ConnectionStatus;
+import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.model.Connection;
 import com.bavis.budgetapp.request.ConnectAccountRequest;
@@ -52,17 +53,25 @@ public class AccountServiceImpl implements AccountService{
 
 	@Override
 	@Transactional
-	public AccountDTO connectAccount(ConnectAccountRequest connectAccountRequest) {
+	public AccountDTO connectAccount(ConnectAccountRequest connectAccountRequest) throws RuntimeException{
 
 		LOG.debug("Attempting To ConnectAccount via ConnectAccountRequest: [{}]", connectAccountRequest);
 
-		//Exchange Public Token With Access Token
-		String accessToken = _plaidService.exchangeToken(connectAccountRequest.getPublicToken());
-		LOG.debug("Access Token Retrieved From Plaid Service: [{}]", accessToken);
+		double balance;
+		String accessToken;
 
-		//Retrieve Balance Pertaining To Account
-		double balance = _plaidService.retrieveBalance(connectAccountRequest.getPlaidAccountId(), accessToken);
-		LOG.debug("Balance Retrieved From Plaid Service: [{}]", balance);
+		try{
+			//Exchange Public Token With Access Token
+			accessToken = _plaidService.exchangeToken(connectAccountRequest.getPublicToken());
+			LOG.debug("Access Token Retrieved From Plaid Service: [{}]", accessToken);
+
+			//Retrieve Balance Pertaining To Account
+			balance = _plaidService.retrieveBalance(connectAccountRequest.getPlaidAccountId(), accessToken);
+			LOG.debug("Balance Retrieved From Plaid Service: [{}]", balance);
+		} catch (PlaidServiceException exception){
+			LOG.debug("A PlaidServiceException was thrown by PlaidService while attempting to connect account: [{}]", exception.getMessage());
+			throw new RuntimeException("Unable to connect account due to error interacting with Plaid: {" + exception.getMessage() + "}");
+		}
 
 
 		// Initialize Account to be persisted
