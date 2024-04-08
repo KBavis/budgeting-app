@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.exception.ConnectionCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,13 @@ public class ConnectionServiceImpl implements ConnectionService{
 	}
 
 	@Override
-	public Connection create(Connection connection) {
-		LOG.info("Creating Connection [{}]", connection);
-		return _repository.save(connection);
+	public Connection create(Connection connection) throws ConnectionCreationException{
+		try{
+			LOG.info("Creating Connection [{}]", connection);
+			return _repository.save(connection);
+		} catch(Exception e){
+			throw new ConnectionCreationException(e.getMessage());
+		}
 	}
 
 	@Override
