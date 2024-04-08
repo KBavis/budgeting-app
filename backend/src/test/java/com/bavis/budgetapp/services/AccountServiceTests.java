@@ -5,6 +5,8 @@ import com.bavis.budgetapp.dao.AccountRepository;
 import com.bavis.budgetapp.dto.AccountDTO;
 import com.bavis.budgetapp.enumeration.AccountType;
 import com.bavis.budgetapp.enumeration.ConnectionStatus;
+import com.bavis.budgetapp.exception.AccountConnectionException;
+import com.bavis.budgetapp.exception.ConnectionCreationException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.model.Account;
@@ -128,28 +130,35 @@ public class AccountServiceTests {
      */
     @Test
     public void testConnectAccount_PlaidServiceException_ExchangeToken_Failure(){
+        //Arrange
+        String plaidServiceExceptionMsg = "Invalid Response Code When Exchanging Public Token Via PlaidClient: [404]";
+        String connectAccountExceptionMsg = "An error occurred when creating an account: [" + plaidServiceExceptionMsg + "]";
        //Mock
-       when(plaidService.exchangeToken(connectAccountRequest.getPublicToken())).thenThrow(new PlaidServiceException("Invalid Response Code When Exchanging Public Token Via PlaidClient: [404]"));
+       when(plaidService.exchangeToken(connectAccountRequest.getPublicToken())).thenThrow(new PlaidServiceException(plaidServiceExceptionMsg));
 
        //Act & Assert
-        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+        AccountConnectionException runtimeException = assertThrows(AccountConnectionException.class, () -> {
             accountService.connectAccount(connectAccountRequest);
         });
-        assertEquals("Unable to connect account due to error interacting with Plaid: {Invalid Response Code When Exchanging Public Token Via PlaidClient: [404]}", runtimeException.getMessage());
+        assertEquals(connectAccountExceptionMsg, runtimeException.getMessage());
     }
 
     /**
      * Validates our connect account method correctly handles invalid retrieval of balance
      */
-    @Test
     public void testConnectAccount_PlaidServiceException_RetrieveBalance_Failure(){
+        //Arrange
+        String plaidServiceExceptionMsg = "Invalid Response Code When Retrieving Balance Via PlaidClient: [404]";
+        String connectAccountExceptionMsg = "An error occurred when creating an account: [" + plaidServiceExceptionMsg + "]";
+
         //Mock
-        when(plaidService.exchangeToken(connectAccountRequest.getPublicToken())).thenThrow(new PlaidServiceException("Invalid Response Code When Retrieving Balance Via Plaid Client [404]"));
+        when(plaidService.exchangeToken(connectAccountRequest.getPublicToken())).thenThrow(new PlaidServiceException(plaidServiceExceptionMsg));
 
         //Act & Assert
-        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+        AccountConnectionException runtimeException = assertThrows(AccountConnectionException.class, () -> {
             accountService.connectAccount(connectAccountRequest);
         });
-        assertEquals("Unable to connect account due to error interacting with Plaid: {Invalid Response Code When Retrieving Balance Via Plaid Client [404]}", runtimeException.getMessage());
+        assertNotNull(runtimeException);
+        assertEquals(connectAccountExceptionMsg, runtimeException.getMessage());
     }
 }

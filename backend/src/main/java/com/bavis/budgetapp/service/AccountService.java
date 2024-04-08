@@ -6,7 +6,7 @@ import com.bavis.budgetapp.request.ConnectAccountRequest;
 
 public interface AccountService {
 	
-	AccountDTO connectAccount(ConnectAccountRequest connectAccountRequest) throws Exception;
+	AccountDTO connectAccount(ConnectAccountRequest connectAccountRequest);
 	void delete(Long accountId);
 	Account update(Account account, Long accountId);
 	Account read(Long accountId);

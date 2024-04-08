@@ -37,16 +37,9 @@ public class AccountController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<AccountDTO> connectAccount(@RequestBody ConnectAccountRequest connectAccountRequest) {
+	public ResponseEntity<AccountDTO> connectAccount(@RequestBody ConnectAccountRequest connectAccountRequest){
 		LOG.info("Received request to connect new account: [{}]", connectAccountRequest);
-		try{
-			return ResponseEntity.ok( _accountService.connectAccount(connectAccountRequest));
-		} catch (Exception e){
-			//TODO: Return Response Entity Containing Relevant Exception Method
-			//TODO: Create ConnectAccountException for information regarding failed conneciton
-			LOG.error("Exception Occurred When Connecting Account: [" + e.getMessage() + "]", e);
-			return null;
-		}
+		return ResponseEntity.ok( _accountService.connectAccount(connectAccountRequest));
 	}
 	
 	@PutMapping("/{accountId}")

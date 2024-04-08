@@ -3,6 +3,7 @@ package com.bavis.budgetapp.service.impl;
 import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.dto.AccountDTO;
 import com.bavis.budgetapp.enumeration.ConnectionStatus;
+import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.model.Connection;
@@ -53,7 +54,7 @@ public class AccountServiceImpl implements AccountService{
 
 	@Override
 	@Transactional
-	public AccountDTO connectAccount(ConnectAccountRequest connectAccountRequest) throws RuntimeException{
+	public AccountDTO connectAccount(ConnectAccountRequest connectAccountRequest) throws AccountConnectionException{
 
 		LOG.debug("Attempting To ConnectAccount via ConnectAccountRequest: [{}]", connectAccountRequest);
 
@@ -70,7 +71,7 @@ public class AccountServiceImpl implements AccountService{
 			LOG.debug("Balance Retrieved From Plaid Service: [{}]", balance);
 		} catch (PlaidServiceException exception){
 			LOG.debug("A PlaidServiceException was thrown by PlaidService while attempting to connect account: [{}]", exception.getMessage());
-			throw new RuntimeException("Unable to connect account due to error interacting with Plaid: {" + exception.getMessage() + "}");
+			throw new AccountConnectionException(exception.getMessage());
 		}
 
 
