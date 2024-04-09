@@ -11,8 +11,7 @@ import com.bavis.budgetapp.response.AccessTokenResponse;
 import com.bavis.budgetapp.response.LinkTokenResponse;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.util.JsonUtil;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException.FeignClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +59,7 @@ public class PlaidServiceImpl implements PlaidService{
         LOG.debug("Link Token Request in `generateLinkToken()`: {}", linkTokenRequest.toString());
 
         ResponseEntity<LinkTokenResponse> responseEntity = _plaidClient.createLinkToken(linkTokenRequest);
+        LOG.debug("Response Entity returned when generating link token: {}", responseEntity.getBody());
 
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             LOG.debug("Response Body From LinkToken Request: {}", responseEntity.getBody());
@@ -99,8 +99,12 @@ public class PlaidServiceImpl implements PlaidService{
                 .build();
 
         LOG.debug("ExchangeTokenRequest created in 'exchangeToken' in PlaidService: {}", exchangeTokenRequest);
-
-        ResponseEntity<AccessTokenResponse> responseEntity = _plaidClient.createAccessToken(exchangeTokenRequest);
+        ResponseEntity<AccessTokenResponse> responseEntity;
+        try{
+            responseEntity = _plaidClient.createAccessToken(exchangeTokenRequest);
+        } catch(FeignClientException e){
+            throw new PlaidServiceException(e.getMessage());
+        }
 
         if(responseEntity.getStatusCode().is2xxSuccessful()){
             LOG.debug("Response Body From Exchange Token Request: {}", responseEntity.getBody());

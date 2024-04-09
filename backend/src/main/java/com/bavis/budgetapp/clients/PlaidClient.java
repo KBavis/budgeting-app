@@ -6,6 +6,7 @@ import com.bavis.budgetapp.request.LinkTokenRequest;
 import com.bavis.budgetapp.request.RetrieveBalanceRequest;
 import com.bavis.budgetapp.response.AccessTokenResponse;
 import com.bavis.budgetapp.response.LinkTokenResponse;
+import feign.FeignException.FeignClientException;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +19,7 @@ public interface PlaidClient {
     ResponseEntity<LinkTokenResponse> createLinkToken(@RequestBody LinkTokenRequest linkTokenRequest);
 
     @PostMapping("/item/public_token/exchange")
-    ResponseEntity<AccessTokenResponse> createAccessToken(@RequestBody ExchangeTokenRequest exchangeTokenRequest);
+    ResponseEntity<AccessTokenResponse> createAccessToken(@RequestBody ExchangeTokenRequest exchangeTokenRequest) throws FeignClientException;
 
     @PostMapping("/accounts/balance/get")
     ResponseEntity<String> retrieveAccountBalance(@RequestBody RetrieveBalanceRequest retrieveBalanceRequest);
