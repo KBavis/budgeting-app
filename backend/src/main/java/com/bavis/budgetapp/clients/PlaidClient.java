@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface PlaidClient {
 
     @PostMapping("/link/token/create")
-    ResponseEntity<LinkTokenResponse> createLinkToken(@RequestBody LinkTokenRequest linkTokenRequest);
+    ResponseEntity<LinkTokenResponse> createLinkToken(@RequestBody LinkTokenRequest linkTokenRequest) throws FeignClientException;
 
     @PostMapping("/item/public_token/exchange")
     ResponseEntity<AccessTokenResponse> createAccessToken(@RequestBody ExchangeTokenRequest exchangeTokenRequest) throws FeignClientException;
 
     @PostMapping("/accounts/balance/get")
-    ResponseEntity<String> retrieveAccountBalance(@RequestBody RetrieveBalanceRequest retrieveBalanceRequest);
+    ResponseEntity<String> retrieveAccountBalance(@RequestBody RetrieveBalanceRequest retrieveBalanceRequest) throws FeignClientException;
 
     //@PostMapping("/transactions/sync")
     //ResponseEntity<?> syncTransactions(@RequestBody SyncTransactionsRequest syncTransactionsRequest);

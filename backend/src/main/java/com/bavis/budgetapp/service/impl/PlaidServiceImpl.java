@@ -59,9 +59,18 @@ public class PlaidServiceImpl implements PlaidService{
 
         LOG.debug("Link Token Request in `generateLinkToken()`: {}", linkTokenRequest.toString());
 
-        ResponseEntity<LinkTokenResponse> responseEntity = _plaidClient.createLinkToken(linkTokenRequest);
+        //Validate & Handle FeignClientException
+        ResponseEntity<LinkTokenResponse> responseEntity;
+        try{
+            responseEntity = _plaidClient.createLinkToken(linkTokenRequest);
+        } catch (FeignClientException e){
+            String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
+            throw new PlaidServiceException(plaidClientExceptionMessage);
+        }
+
         LOG.debug("Response Entity returned when generating link token: {}", responseEntity.getBody());
 
+        //Validate Successful Response from PlaidClient
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             LOG.debug("Response Body From LinkToken Request: {}", responseEntity.getBody());
             LinkTokenResponse responseBody = responseEntity.getBody();
@@ -100,6 +109,8 @@ public class PlaidServiceImpl implements PlaidService{
                 .build();
 
         LOG.debug("ExchangeTokenRequest created in 'exchangeToken' in PlaidService: {}", exchangeTokenRequest);
+
+        //Validate & Handle Feign Client Exceptions
         ResponseEntity<AccessTokenResponse> responseEntity;
         try{
             responseEntity = _plaidClient.createAccessToken(exchangeTokenRequest);
@@ -108,6 +119,7 @@ public class PlaidServiceImpl implements PlaidService{
             throw new PlaidServiceException(plaidClientExceptionMessage);
         }
 
+        //Validate Successful Response from PlaidClient
         if(responseEntity.getStatusCode().is2xxSuccessful()){
             LOG.debug("Response Body From Exchange Token Request: {}", responseEntity.getBody());
             AccessTokenResponse responseBody = responseEntity.getBody();
@@ -150,7 +162,16 @@ public class PlaidServiceImpl implements PlaidService{
 
         LOG.debug("RetrieveBalanceRequest created in 'retrieveBalance' in PlaidService: {}", retrieveBalanceRequest);
 
-        ResponseEntity<String> responseEntity = _plaidClient.retrieveAccountBalance(retrieveBalanceRequest);
+        //Catch any FeignClientExceptions & Handle Properly
+        ResponseEntity<String> responseEntity;
+        try{
+            responseEntity = _plaidClient.retrieveAccountBalance(retrieveBalanceRequest);
+        } catch (FeignClientException e){
+            String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
+            throw new PlaidServiceException(plaidClientExceptionMessage);
+        }
+
+        //Validate Successful Response From PlaidClient
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             String responseBody = responseEntity.getBody();
 

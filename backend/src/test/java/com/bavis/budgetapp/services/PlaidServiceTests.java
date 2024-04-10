@@ -29,8 +29,7 @@ import org.springframework.http.ResponseEntity;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -337,37 +336,121 @@ public class PlaidServiceTests {
     }
 
     /**
-     * Validates that our PlaidService properly handles FeignClientExceptions
+     * Validates that our PlaidService properly handles FeignClientExceptions when Exchanging Public Tokens
      */
-    //TODO: fix me
     @Test
-    public void testExchangeToken_FeignClientException_Failed() throws Exception {
+    public void testExchangeToken_FeignClientException_Failed() {
         // Arrange
         String errorMessage = "provided public token is expired. Public tokens expire 30 minutes after creation at which point they can no longer be exchanged";
-        String responseBody = "{\"error_message\":\"" + errorMessage + "\"}";
+        String expectedExceptionMessage = "PlaidServiceException: [" + errorMessage + "]";
 
-        Request request = Request.create(Request.HttpMethod.POST, "/item/public_token/exchange", Collections.emptyMap(), new byte[0], StandardCharsets.UTF_8);
-        Response response = Response.builder()
-                .status(400)
-                .reason("Bad Request")
-                .headers(Collections.emptyMap())
-                .body(responseBody, StandardCharsets.UTF_8)
-                .request(request)
-                .build();
+        Request request = Request.create(
+                Request.HttpMethod.POST,
+                "/item/public_token/exchange",
+                Collections.emptyMap(),
+                "request_body".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8,
+                null
+        );
 
-        FeignException feignException = FeignException.errorStatus("createAccessToken", response);
+        FeignException.FeignClientException feignClientException = new FeignException.FeignClientException(
+                400, "Bad Request", request, null, null);
 
-        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class))).thenThrow(feignException);
+        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class)))
+                .thenThrow(feignClientException);
+
+        when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
+                .thenReturn(errorMessage);
 
         // Act & Assert
         PlaidServiceException thrownException = assertThrows(PlaidServiceException.class, () -> {
             plaidService.exchangeToken("fake-public-token");
         });
+        assertNotNull(thrownException);
+        assertEquals(expectedExceptionMessage, thrownException.getMessage());
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        byte[] responseBodyBytes = feignException.content();
-        String actualErrorMessage = objectMapper.readTree(new String(responseBodyBytes, StandardCharsets.UTF_8)).get("error_message").asText();
+        //Verify
+        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequest.class));
+        verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
+    }
 
-        assertEquals("PlaidServiceException: [" + actualErrorMessage + "]", thrownException.getMessage());
+    /**
+     * Validates that our PlaidService properly handles FeignClientExceptions when Creating Link Token
+     */
+    @Test
+    public void testCreateLinkToken_FeignClientException_Failed() {
+        // Arrange
+        String errorMessage = "invalid user passed in as argument.";
+        String expectedExceptionMessage = "PlaidServiceException: [" + errorMessage + "]";
+        Long userId = 10L;
+
+        Request request = Request.create(
+                Request.HttpMethod.POST,
+                "/link/token/create",
+                Collections.emptyMap(),
+                "request_body".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8,
+                null
+        );
+        FeignException.FeignClientException feignClientException = new FeignException.FeignClientException(
+                400, "Bad Request", request, null, null);
+
+        //Mock
+        when(plaidClient.createLinkToken(any(LinkTokenRequest.class)))
+                .thenThrow(feignClientException);
+        when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
+                .thenReturn(errorMessage);
+
+        // Act & Assert
+        PlaidServiceException thrownException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.generateLinkToken(userId);
+        });
+        assertNotNull(thrownException);
+        assertEquals(expectedExceptionMessage, thrownException.getMessage());
+
+        //Verify
+        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequest.class));
+        verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
+    }
+
+
+    /**
+     * Validates that our PlaidService properly handles FeignClientExceptions when Retrieving Balance
+     */
+    @Test
+    public void testRetrieveBalance_FeignClientException_Failed() {
+        // Arrange
+        String errorMessage = "invalid account id passed as argument.";
+        String expectedExceptionMessage = "PlaidServiceException: [" + errorMessage + "]";
+        String accountId = "account-id";
+        String accessToken = "access-token";
+
+        Request request = Request.create(
+                Request.HttpMethod.POST,
+                "/link/token/create",
+                Collections.emptyMap(),
+                "request_body".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8,
+                null
+        );
+        FeignException.FeignClientException feignClientException = new FeignException.FeignClientException(
+                400, "Bad Request", request, null, null);
+
+        //Mock
+        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequest.class)))
+                .thenThrow(feignClientException);
+        when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
+                .thenReturn(errorMessage);
+
+        // Act & Assert
+        PlaidServiceException thrownException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.retrieveBalance(accountId, accessToken);
+        });
+        assertNotNull(thrownException);
+        assertEquals(expectedExceptionMessage, thrownException.getMessage());
+
+        //Verify
+        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequest.class));
+        verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
     }
 }
