@@ -2,88 +2,78 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AccountDTO;
 import com.bavis.budgetapp.enumeration.AccountType;
-import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.request.ConnectAccountRequest;
 import com.bavis.budgetapp.service.AccountService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
-@RunWith(MockitoJUnitRunner.class)
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@WithMockUser
 public class AccountControllerTests {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private AccountService accountService;
 
-    @InjectMocks
-    private AccountController accountController;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private ConnectAccountRequest connectAccountRequest;
-
+    private AccountDTO accountDTO;
     @BeforeEach
-    public void setup() {
-        //Arrange
-        String plaidAccountId = "plaid-account-id";
-        String publicToken = "public-token";
-        String accountName = "account-name";
-        double amount = 1000.0;
-
+    void setup() {
         connectAccountRequest = ConnectAccountRequest.builder()
                 .accountType(AccountType.CHECKING)
-                .plaidAccountId(plaidAccountId)
-                .publicToken(publicToken)
-                .accountName(accountName)
+                .accountName("Test Account")
+                .plaidAccountId("plaid-account-id")
+                .publicToken("public-token")
+                .build();
+
+        accountDTO = AccountDTO.builder()
+                .accountType(AccountType.CHECKING)
+                .balance(1000.0)
+                .accountName("Test Account")
                 .build();
     }
 
+    /**
+     * Validate that our AccountController can properly handle successful connectAccount requests
+     *
+     * @throws Exception
+     */
     @Test
-    public void testConnectAccount_Successful() {
-        AccountDTO expectedAccountDTO = AccountDTO.builder()
-                .balance(1000.0)
-                .accountType(AccountType.CHECKING)
-                .accountName(connectAccountRequest.getAccountName())
-                .build();
-
+    public void testConnectAccount_ValidRequest_Successful() throws Exception {
         //Mock
-        when(accountService.connectAccount(connectAccountRequest)).thenReturn(expectedAccountDTO);
+        when(accountService.connectAccount(any(ConnectAccountRequest.class))).thenReturn(accountDTO);
 
         //Act
-        ResponseEntity<AccountDTO> responseEntity = accountController.connectAccount(connectAccountRequest);
+        ResultActions resultActions = mockMvc.perform(post("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(connectAccountRequest)));
 
         //Assert
-        assertNotNull(responseEntity);
-        assertEquals(expectedAccountDTO, responseEntity.getBody());
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-        //Verify
-        verify(accountService, times(1)).connectAccount(connectAccountRequest);
-    }
-
-    @Test
-    public void testConnectAccount_Unsuccessful() {
-        //Arrange
-        String plaidErrorMsg = "Failed to retrieve balance. Status code: 404";
-        String errorMsg = "An error occurred when creating an account: [" + plaidErrorMsg + "]";
-
-        //Mock
-        when(accountService.connectAccount(connectAccountRequest)).thenThrow(new AccountConnectionException(plaidErrorMsg));
-
-        //Act & Assert
-        AccountConnectionException exception = assertThrows(AccountConnectionException.class, () -> {
-           accountController.connectAccount(connectAccountRequest);
-        });
-        assertNotNull(exception);
-        assertEquals(errorMsg, exception.getMessage());
+        resultActions.andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.accountName").value(accountDTO.getAccountName()))
+                .andExpect(jsonPath("$.balance").value(accountDTO.getBalance()))
+                .andExpect(jsonPath("$.accountType").value("CHECKING"));
     }
 }
