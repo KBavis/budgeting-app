@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.config;
 
 import com.auth0.jwt.algorithms.Algorithm;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,6 +10,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
 @Configuration
+@Log4j2
 public class JwtConfig {
 
     private final RSAPublicKey rsaPublicKey;
@@ -22,6 +24,7 @@ public class JwtConfig {
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
             this.rsaPublicKey = (RSAPublicKey) keyPair.getPublic();
             this.rsaPrivateKey = (RSAPrivateKey) keyPair.getPrivate();
+
         } catch (Exception ex) {
             throw new RuntimeException("Failed to create JWT Algorithm", ex);
         }

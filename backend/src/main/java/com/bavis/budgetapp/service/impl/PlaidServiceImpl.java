@@ -29,6 +29,7 @@ public class PlaidServiceImpl implements PlaidService{
     private final JsonUtil _jsonUtil;
 
 
+
     @Autowired
     public PlaidServiceImpl(PlaidClient _plaidClient, PlaidConfig _plaidConfig, JsonUtil _jsonUtil){
         this._plaidConfig = _plaidConfig;
@@ -103,7 +104,8 @@ public class PlaidServiceImpl implements PlaidService{
         try{
             responseEntity = _plaidClient.createAccessToken(exchangeTokenRequest);
         } catch(FeignClientException e){
-            throw new PlaidServiceException(e.getMessage());
+            String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
+            throw new PlaidServiceException(plaidClientExceptionMessage);
         }
 
         if(responseEntity.getStatusCode().is2xxSuccessful()){

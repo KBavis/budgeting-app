@@ -1,5 +1,6 @@
 application.properties
 application.yaml
+.env
 /.gradle/
 .gradle/
 build/

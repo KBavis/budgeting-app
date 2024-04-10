@@ -3,6 +3,7 @@ package com.bavis.budgetapp.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -74,6 +75,26 @@ public class JsonUtil {
             LOG.error("Error occurred while extracting balance for account ID '{}': {}", accountId, e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Utility function to extract relevant message from FeignClientException for PlaidServiceException cleanliness
+     *
+     * @param e
+     *      - Feign Client exception
+     * @return
+     *      - relevant error message regarding our PlaidClient
+     */
+    public String extractErrorMessage(FeignException.FeignClientException e) {
+        try {
+            String responseBody = e.contentUTF8();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
+            return jsonNode.get("error_message").asText();
+        } catch (Exception ex) {
+            // Fallback to returning the original exception message if parsing fails
+            return e.getMessage();
+        }
     }
 
 

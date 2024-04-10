@@ -13,6 +13,9 @@ import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
 import com.bavis.budgetapp.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
+import feign.Request;
+import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +25,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -167,7 +173,7 @@ public class PlaidServiceTests {
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
             plaidService.exchangeToken(publicToken);
         });
-        assertEquals(exception.getMessage(), "Response Body from Plaid Client when Exchanging Public Token Is Null");
+        assertEquals(exception.getMessage(), "PlaidServiceException: [Response Body from Plaid Client when Exchanging Public Token Is Null]");
 
         //Verify
         verify(plaidConfig, times(1)).getClientId();
@@ -197,7 +203,7 @@ public class PlaidServiceTests {
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
             plaidService.exchangeToken(publicToken);
         });
-        assertEquals(exception.getMessage(), "Invalid Response Code When Exchanging Public Token Via Plaid Client: [" + responseEntity.getStatusCode() + "]");
+        assertEquals(exception.getMessage(), "PlaidServiceException: [Invalid Response Code When Exchanging Public Token Via Plaid Client: [" + responseEntity.getStatusCode() + "]]");
 
         //Verify
         verify(plaidConfig, times(1)).getClientId();
@@ -227,7 +233,7 @@ public class PlaidServiceTests {
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
             double actualBalance = plaidService.retrieveBalance(accountId, accessToken);
         });
-        assertEquals(exception.getMessage(), "Invalid Response Code When Retrieving Balance Via Plaid Client: [" + responseEntity.getStatusCode() + "]");
+        assertEquals(exception.getMessage(), "PlaidServiceException: [Invalid Response Code When Retrieving Balance Via Plaid Client: [" + responseEntity.getStatusCode() + "]]");
 
 
         //Verify
@@ -262,7 +268,7 @@ public class PlaidServiceTests {
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
             double actualBalance = plaidService.retrieveBalance(validAccountId, accessToken);
         });
-        assertEquals(exception.getMessage(), "No Matching Account ID Found In Plaid Client Response When Attempting To Retrieve Balance");
+        assertEquals(exception.getMessage(), "PlaidServiceException: [No Matching Account ID Found In Plaid Client Response When Attempting To Retrieve Balance]");
 
 
         //Verify
@@ -291,7 +297,7 @@ public class PlaidServiceTests {
          PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
              plaidService.generateLinkToken(userId);
          });
-        assertEquals(exception.getMessage(), "Response Body from Plaid Client when Generating Link Token Is Null");
+        assertEquals(exception.getMessage(), "PlaidServiceException: [Response Body from Plaid Client when Generating Link Token Is Null]");
 
         //Verify
         verify(plaidConfig, times(1)).getClientId();
@@ -322,11 +328,46 @@ public class PlaidServiceTests {
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
             plaidService.generateLinkToken(userId);
         });
-        assertEquals(exception.getMessage(), "Invalid Response Code When Generating Link Token Via PlaidClient: [" + responseEntity.getStatusCode() + "]");
+        assertEquals(exception.getMessage(), "PlaidServiceException: [Invalid Response Code When Generating Link Token Via PlaidClient: [" + responseEntity.getStatusCode() + "]]");
 
         //Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
         verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequest.class));
+    }
+
+    /**
+     * Validates that our PlaidService properly handles FeignClientExceptions
+     */
+    //TODO: fix me
+    @Test
+    public void testExchangeToken_FeignClientException_Failed() throws Exception {
+        // Arrange
+        String errorMessage = "provided public token is expired. Public tokens expire 30 minutes after creation at which point they can no longer be exchanged";
+        String responseBody = "{\"error_message\":\"" + errorMessage + "\"}";
+
+        Request request = Request.create(Request.HttpMethod.POST, "/item/public_token/exchange", Collections.emptyMap(), new byte[0], StandardCharsets.UTF_8);
+        Response response = Response.builder()
+                .status(400)
+                .reason("Bad Request")
+                .headers(Collections.emptyMap())
+                .body(responseBody, StandardCharsets.UTF_8)
+                .request(request)
+                .build();
+
+        FeignException feignException = FeignException.errorStatus("createAccessToken", response);
+
+        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class))).thenThrow(feignException);
+
+        // Act & Assert
+        PlaidServiceException thrownException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.exchangeToken("fake-public-token");
+        });
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        byte[] responseBodyBytes = feignException.content();
+        String actualErrorMessage = objectMapper.readTree(new String(responseBodyBytes, StandardCharsets.UTF_8)).get("error_message").asText();
+
+        assertEquals("PlaidServiceException: [" + actualErrorMessage + "]", thrownException.getMessage());
     }
 }
