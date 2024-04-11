@@ -16,6 +16,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -75,5 +76,82 @@ public class AccountControllerTests {
                 .andExpect(jsonPath("$.accountName").value(accountDTO.getAccountName()))
                 .andExpect(jsonPath("$.balance").value(accountDTO.getBalance()))
                 .andExpect(jsonPath("$.accountType").value("CHECKING"));
+    }
+
+    @Test
+    public void testConnectAccount_InvalidRequest_EmptyPlaidAccountId_Failure() throws Exception {
+        //Arrange
+        connectAccountRequest.setPlaidAccountId("");
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+
+        // Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("plaidAccountId must not be empty")));
+    }
+
+    @Test
+    public void testConnectAccount_InvalidRequest_EmptyAccountName_Failure() throws Exception {
+        //Arrange
+        connectAccountRequest.setAccountName("");
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+
+        // Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("accountName must not be empty")));
+    }
+
+
+    @Test
+    public void testConnectAccount_InvalidRequest_EmptyPublicToken_Failure() throws Exception {
+        //Arrange
+        connectAccountRequest.setPublicToken("");
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+
+        // Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("publicToken must not be empty")));
+    }
+
+
+    @Test
+    public void testConnectAccount_InvalidRequest_EmptyAccountType_Failure() throws Exception {
+        //Arrange
+        connectAccountRequest.setAccountType(null);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+
+        // Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("accountType must not be null")));
+    }
+
+    @Test
+    public void testConnectAccount_InvalidRequest_InvalidAccountType_Failure() throws Exception {
+        // Arrange
+        String invalidAccountType = "FAILURE";
+
+        // Act
+        ResultActions resultActions = mockMvc.perform(post("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"plaidAccountId\":\"plaid-account-id\",\"accountName\":\"Test Account\",\"publicToken\":\"public-token\",\"accountType\":\"" + invalidAccountType + "\"}"));
+
+        // Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Invalid AccountType value: '" + invalidAccountType + "'. Accepted values are: CREDIT, CHECKING, SAVING, INVESTMENT, LOAN")));
     }
 }

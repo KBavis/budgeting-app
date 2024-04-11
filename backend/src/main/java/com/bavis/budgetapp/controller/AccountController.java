@@ -2,9 +2,11 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AccountDTO;
 import com.bavis.budgetapp.request.ConnectAccountRequest;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +39,7 @@ public class AccountController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<AccountDTO> connectAccount(@RequestBody ConnectAccountRequest connectAccountRequest){
+	public ResponseEntity<AccountDTO> connectAccount(@Valid @RequestBody ConnectAccountRequest connectAccountRequest){
 		LOG.info("Received request to connect new account: [{}]", connectAccountRequest);
 		return ResponseEntity.ok( _accountService.connectAccount(connectAccountRequest));
 	}
