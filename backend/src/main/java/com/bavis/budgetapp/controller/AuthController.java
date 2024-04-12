@@ -33,24 +33,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest authRequest) {
-       try {
-           return ResponseEntity.ok(_authService.register(authRequest));
-       } catch(BadRegistrationRequestException ex) {
-           return ResponseEntity.badRequest().body(ex.getMessage());
-       } catch(RuntimeException ex) {
-           return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
-       }
+        return ResponseEntity.ok(_authService.register(authRequest));
     }
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody AuthRequest authRequest) {
-        try {
-            return ResponseEntity.ok(_authService.authenticate(authRequest));
-        } catch (AuthenticationException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
-        } catch (BadAuthenticationRequest ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
+        return ResponseEntity.ok(_authService.authenticate(authRequest));
     }
 
     /**
