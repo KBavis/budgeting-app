@@ -2,6 +2,7 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AccountDTO;
 import com.bavis.budgetapp.enumeration.AccountType;
+import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.request.ConnectAccountRequest;
 import com.bavis.budgetapp.service.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -153,5 +155,24 @@ public class AccountControllerTests {
         // Assert
         resultActions.andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Invalid AccountType value: '" + invalidAccountType + "'. Accepted values are: CREDIT, CHECKING, SAVING, INVESTMENT, LOAN")));
+    }
+
+    @Test
+    public void testConnectAccount_AccountConnectionException_Failure() throws Exception {
+        //Arrange
+        String plaidErrorMsg = "PlaidServiceException: [failed to retrieve you account balance]";
+        String expectedErrorMsg = "An error occurred when creating an account: [" + plaidErrorMsg+ "]";
+
+        //Mock
+        when(accountService.connectAccount(connectAccountRequest)).thenThrow(new AccountConnectionException(expectedErrorMsg));
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+
+        //Assert
+        resultActions.andExpect(status().isConflict())
+                .andExpect(content().string(containsString(expectedErrorMsg)));
     }
 }
