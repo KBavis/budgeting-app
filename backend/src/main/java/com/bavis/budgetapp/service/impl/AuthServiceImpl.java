@@ -1,9 +1,6 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.enumeration.Role;
-import com.bavis.budgetapp.exception.BadAuthenticationRequest;
-import com.bavis.budgetapp.exception.BadRegistrationRequestException;
-import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.exception.UsernameTakenException;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.request.AuthRequest;
@@ -62,12 +59,6 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse register(AuthRequest authRequest) throws RuntimeException{
 
-
-
-        //Validate that the user filled out the required fields
-        validateAuthRequest(authRequest);
-
-
         User user = User.builder()
                 .name(authRequest.getName())
                 .username(authRequest.getUsername())
@@ -99,12 +90,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponse authenticate(AuthRequest authRequest) throws AuthenticationException, BadAuthenticationRequest {
-        //Ensure Validity of Auth Request
-        if(authRequest.getUsername() == null || authRequest.getUsername().isEmpty() ||
-                authRequest.getPasswordOne() == null || authRequest.getPasswordOne().isEmpty()) {
-            throw new BadAuthenticationRequest("Please fill out required fields: [Username, Password]");
-        }
+    public AuthResponse authenticate(AuthRequest authRequest) throws AuthenticationException{
 
         //Authenticate User using our AuthenticationManager Bean
         _authenticationManager.authenticate(
@@ -133,35 +119,4 @@ public class AuthServiceImpl implements AuthService {
         return null;
     }
 
-    //TODO: Consider introducing necessary inclusion for password strength (i.e minimunm 10 letters, must contain uppercase/lowercase, etc)
-    private void validateAuthRequest(AuthRequest authRequest) throws UsernameTakenException, BadRegistrationRequestException {
-        //Ensure username is filled out
-        if(authRequest.getUsername() == null || authRequest.getUsername().isEmpty()) {
-            throw new BadRegistrationRequestException("Username field was not filled out.");
-        }
-
-
-        //Validate that the username is indeed unique
-        String username = authRequest.getUsername();
-        if(_userService.existsByUsername(authRequest.getUsername())){
-            throw new UsernameTakenException(authRequest.getUsername());
-        }
-
-        //Ensure name field is field out
-        if(authRequest.getName() == null || authRequest.getName().isEmpty()){
-            throw new BadRegistrationRequestException("Name field was not filled out.");
-        }
-
-
-        //Ensure password fields are filled out
-        if(authRequest.getPasswordOne() == null || authRequest.getPasswordOne().isEmpty()){
-            throw new BadRegistrationRequestException("Password fields were not filled out.");
-        }
-
-        //Ensure passwords match
-        if(!authRequest.getPasswordOne().equals(authRequest.getPasswordTwo())){
-            throw new BadRegistrationRequestException("Password fields do not match.") ;
-        }
-
-    }
 }

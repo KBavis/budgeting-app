@@ -4,7 +4,9 @@ import com.bavis.budgetapp.annotation.AuthRequestValidName;
 import com.bavis.budgetapp.request.AuthRequest;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class AuthRequestNameValidator implements ConstraintValidator<AuthRequestValidName, AuthRequest> {
 
     //Validates proper name format
@@ -22,6 +24,8 @@ public class AuthRequestNameValidator implements ConstraintValidator<AuthRequest
             return false;
         }
 
-        return name.matches(nameRegex);
+        boolean validName = name.matches(nameRegex);
+        log.debug("AuthRequest Name Passed In Validity: {}", validName);
+        return validName;
     }
 }

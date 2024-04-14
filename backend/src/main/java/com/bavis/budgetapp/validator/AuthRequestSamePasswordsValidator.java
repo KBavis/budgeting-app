@@ -4,7 +4,9 @@ import com.bavis.budgetapp.annotation.AuthRequestSamePasswords;
 import com.bavis.budgetapp.request.AuthRequest;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class AuthRequestSamePasswordsValidator implements ConstraintValidator<AuthRequestSamePasswords, AuthRequest> {
 
     @Override
@@ -22,6 +24,8 @@ public class AuthRequestSamePasswordsValidator implements ConstraintValidator<Au
             return false;
         }
 
-        return passwordTwo.equals(passwordOne);
+        boolean passwordsMatch = passwordTwo.equals(passwordOne);
+        log.debug("AuthRequest Passwords Match: {}", passwordsMatch);
+        return passwordsMatch;
     }
 }

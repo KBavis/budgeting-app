@@ -1,8 +1,6 @@
 package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.enumeration.Role;
-import com.bavis.budgetapp.exception.BadAuthenticationRequest;
-import com.bavis.budgetapp.exception.BadRegistrationRequestException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.exception.UsernameTakenException;
 import com.bavis.budgetapp.model.User;
@@ -101,7 +99,6 @@ public class AuthServiceTests {
                 .build();
 
         //Mock
-        when(userService.existsByUsername(registerAuthRequest.getUsername())).thenReturn(false);
         when(passwordEncoder.encode(registerAuthRequest.getPasswordOne())).thenReturn(encryptedPassword);
         when(userService.create(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0); //update User Id accordingly when creating user
@@ -121,7 +118,6 @@ public class AuthServiceTests {
         assertEquals(authResponse.getUserDetails(), testUser);
 
         //Verify
-        verify(userService, times(1)).existsByUsername(registerAuthRequest.getUsername());
         verify(passwordEncoder, times(1)).encode(registerAuthRequest.getPasswordOne());
         verify(userService, times(1)).create(any(User.class));
         verify(plaidService, times(1)).generateLinkToken(any(Long.class));
@@ -129,113 +125,6 @@ public class AuthServiceTests {
         verify(jwtService, times(1)).generateToken(any(User.class));
     }
 
-
-    /**
-     * Validate proper exception thrown when username is already taken
-     */
-    @Test
-    public void testRegister_UsernameTaken_Failure() {
-        //Arrange
-        String username = registerAuthRequest.getUsername();
-        String errorMessage = "The username [" + username + "] has already been taken.";
-
-        //Mock
-        when(userService.existsByUsername(username)).thenReturn(true);
-
-        //Act & Assert
-        UsernameTakenException usernameTakenException = assertThrows(UsernameTakenException.class, () -> {
-            authService.register(registerAuthRequest);
-        });
-        assertEquals(usernameTakenException.getMessage(), errorMessage);
-
-        //Verify
-        verify(userService, times(1)).existsByUsername(username);
-
-    }
-
-    /**
-     * Validate proper exception thrown when username field isn't filled ouit
-     */
-    @Test
-    public void testRegister_UsernameMissing_Failure() {
-        //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
-                .username(null)
-                .passwordOne("password")
-                .passwordTwo("password")
-                .name("name")
-                .build();
-        String errorMessage = "Username field was not filled out.";
-
-        //Act & Assert
-        BadRegistrationRequestException badRegistrationRequestException = assertThrows(BadRegistrationRequestException.class, () -> {
-            authService.register(invalidAuthRequest);
-        });
-        assertEquals(badRegistrationRequestException.getMessage(), errorMessage);
-    }
-
-    /**
-     * Validate proper exception thrown when name field isn't filled out
-     */
-    @Test
-    public void testRegister_NameMissing_Failure() {
-        //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
-                .username("username")
-                .passwordOne("password")
-                .passwordTwo("password")
-                .name(null)
-                .build();
-        String errorMessage = "Name field was not filled out.";
-
-        //Act & Assert
-        BadRegistrationRequestException badRegistrationRequestException = assertThrows(BadRegistrationRequestException.class, () -> {
-            authService.register(invalidAuthRequest);
-        });
-        assertEquals(badRegistrationRequestException.getMessage(), errorMessage);
-    }
-
-    /**
-     * Validate that missing password field results in necessary exception
-     */
-    @Test
-    public void testRegister_PasswordMissing_Failure() {
-        //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
-                .username("username")
-                .passwordOne("")
-                .passwordTwo("")
-                .name("name")
-                .build();
-        String errorMessage = "Password fields were not filled out.";
-
-        //Act & Assert
-        BadRegistrationRequestException badRegistrationRequestException = assertThrows(BadRegistrationRequestException.class, () -> {
-            authService.register(invalidAuthRequest);
-        });
-        assertEquals(badRegistrationRequestException.getMessage(), errorMessage);
-    }
-
-    /**
-     * Validate that mismatching passwords results in necessary exception
-     */
-    @Test
-    public void testRegister_PasswordMismatch_Failure() {
-        //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
-                .username("username")
-                .passwordOne("right-password")
-                .passwordTwo("wrong-password")
-                .name("name")
-                .build();
-        String errorMessage = "Password fields do not match.";
-
-        //Act & Assert
-        BadRegistrationRequestException badRegistrationRequestException = assertThrows(BadRegistrationRequestException.class, () -> {
-            authService.register(invalidAuthRequest);
-        });
-        assertEquals(badRegistrationRequestException.getMessage(), errorMessage);
-    }
 
     /**
      * Validate necessary exception is being thrown when Plaid Service fails
@@ -247,7 +136,6 @@ public class AuthServiceTests {
         Long userId = 10L;
 
         //Mock
-        when(userService.existsByUsername(registerAuthRequest.getUsername())).thenReturn(false);
         when(passwordEncoder.encode(registerAuthRequest.getPasswordOne())).thenReturn(encryptedPassword);
         when(userService.create(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0); //update User Id accordingly when creating user
@@ -260,7 +148,7 @@ public class AuthServiceTests {
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
             authService.register(registerAuthRequest);
         });
-        assertEquals(exception.getMessage(), "Invalid Response Code When Generating Link Token Via PlaidClient: [404]");
+        assertEquals("PlaidServiceException: [Invalid Response Code When Generating Link Token Via PlaidClient: [404]]", exception.getMessage());
     }
 
 
@@ -286,7 +174,6 @@ public class AuthServiceTests {
                 .build();
 
         // Mock
-        when(userService.existsByUsername(registerAuthRequest.getUsername())).thenReturn(false);
         when(passwordEncoder.encode(registerAuthRequest.getPasswordOne())).thenReturn(encryptedPassword);
         when(userService.create(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
@@ -350,51 +237,6 @@ public class AuthServiceTests {
         verify(jwtService, times(1)).generateToken(testUser);
     }
 
-    /**
-     * Validate that authenticate correctly handles null username
-     */
-    @Test
-    public void testAuthenticate_NullUsername_Failed() {
-        //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
-                .username("")
-                .passwordOne("password")
-                .build();
-
-        //Act & Assert
-        BadAuthenticationRequest badAuthenticationRequest = assertThrows(BadAuthenticationRequest.class, () -> {
-            authService.authenticate(invalidAuthRequest);
-        });
-        assertEquals("Please fill out required fields: [Username, Password]", badAuthenticationRequest.getMessage());
-
-        //Verify
-        verify(authenticationManager, times(0)).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(userService, times(0)).readByUsername("");
-        verify(jwtService, times(0)).generateToken(any(User.class));
-    }
-
-    /**
-     * Validate that authenticate correctly handles null password
-     */
-    @Test
-    public void testAuthenticate_NullPassword_Failed() {
-        //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
-                .username("username")
-                .passwordOne("")
-                .build();
-
-        //Act & Assert
-        BadAuthenticationRequest badAuthenticationRequest = assertThrows(BadAuthenticationRequest.class, () -> {
-            authService.authenticate(invalidAuthRequest);
-        });
-        assertEquals("Please fill out required fields: [Username, Password]", badAuthenticationRequest.getMessage());
-
-        //Verify
-        verify(authenticationManager, times(0)).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(userService, times(0)).readByUsername("");
-        verify(jwtService, times(0)).generateToken(any(User.class));
-    }
 
     /**
      * Validate authenticate can correctly handle invalid credentials

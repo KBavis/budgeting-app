@@ -6,10 +6,12 @@ import com.bavis.budgetapp.request.AuthRequest;
 import com.bavis.budgetapp.service.UserService;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Log4j2
 public class AuthRequestDuplicateUsernameValidator implements ConstraintValidator<AuthRequestDuplicateUsername, AuthRequest> {
 
     @Autowired
@@ -29,6 +31,10 @@ public class AuthRequestDuplicateUsernameValidator implements ConstraintValidato
             return false;
         }
 
-        return userService.existsByUsername(username);
+        boolean userExists = userService.existsByUsername(username);
+        log.debug("AuthRequest Username Already Doesn't Exist: {}", !userExists);
+
+        //note: existsByUsername returns false if user DNE, meaning it's valid
+        return !userExists;
     }
 }

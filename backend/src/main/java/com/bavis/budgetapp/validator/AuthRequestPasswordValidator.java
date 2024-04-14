@@ -5,7 +5,9 @@ import com.bavis.budgetapp.annotation.AuthRequestValidPassword;
 import com.bavis.budgetapp.request.AuthRequest;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class AuthRequestPasswordValidator implements ConstraintValidator<AuthRequestValidPassword, AuthRequest> {
 
     /**
@@ -30,6 +32,8 @@ public class AuthRequestPasswordValidator implements ConstraintValidator<AuthReq
             return false;
         }
 
-        return password.matches(passwordRegex);
+        boolean passwordValid = password.matches(passwordRegex);
+        log.debug("AuthRequest Password Validity: {}", passwordValid);
+        return passwordValid;
     }
 }

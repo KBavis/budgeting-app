@@ -4,11 +4,13 @@ import com.bavis.budgetapp.annotation.AuthRequestValidUsername;
 import com.bavis.budgetapp.request.AuthRequest;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class AuthRequestUsernameFormatValidator implements ConstraintValidator<AuthRequestValidUsername, AuthRequest> {
 
-    //Validates all characters are a letter ,digit, underscore, or hyphen AND is between 8 and 20 characters
-    private static final String usernameRegex = "^[a-zA-Z0-9_-]{8,20}$";
+    //Validates all characters are a letter ,digit, underscore, or hyphen AND is between 6 and 20 characters
+    private static final String usernameRegex = "^[a-zA-Z0-9_-]{6,20}$";
 
     @Override
     public void initialize(AuthRequestValidUsername constraintAnnotation) {
@@ -23,6 +25,8 @@ public class AuthRequestUsernameFormatValidator implements ConstraintValidator<A
             return false;
         }
 
-        return username.matches(usernameRegex);
+        boolean validUsername = username.matches(usernameRegex);
+        log.debug("AuthRequest Valid Username: {}", validUsername);
+        return validUsername;
     }
 }
