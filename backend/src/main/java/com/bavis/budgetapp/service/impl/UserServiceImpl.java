@@ -1,7 +1,6 @@
 package com.bavis.budgetapp.service.impl;
 
-import com.bavis.budgetapp.controller.AuthController;
-import com.bavis.budgetapp.exception.UserNotFoundException;
+import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +11,6 @@ import org.springframework.stereotype.Service;
 import com.bavis.budgetapp.dao.UserRepository;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.UserService;
-
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -35,20 +32,20 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
-	public User readById(Long id) throws UserNotFoundException {
+	public User readById(Long id) throws UserServiceException {
 		return _userRepository.findById(id)
-				.orElseThrow(() -> new UserNotFoundException(id));
+				.orElseThrow(() -> new UserServiceException("Could not find user with the ID" + id));
 	}
 
 	@Override
-	public User readByUsername(String username) throws UserNotFoundException {
+	public User readByUsername(String username) throws UserServiceException {
 		return _userRepository.findByUsername(username)
-				.orElseThrow(() -> new UserNotFoundException("User with the username [" + username + "] not found."));
+				.orElseThrow(() -> new UserServiceException("Could not find user with the username " + username));
 	}
 
 
 	@Override
-	public User update(Long id, User updatedUser) throws UserNotFoundException{
+	public User update(Long id, User updatedUser) throws UserServiceException {
 		User foundUser = readById(id);
 		_userMapper.updateUserProfile(foundUser, updatedUser);
 		return _userRepository.save(foundUser);
@@ -64,7 +61,7 @@ public class UserServiceImpl implements UserService{
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String username = authentication.getName().trim();
 		User user = _userRepository.findByUsername(username)
-				.orElseThrow(() -> new UserNotFoundException("User with the username [" + username + "] not found."));
+				.orElseThrow(() -> new UserServiceException("Could not find user with the username " + username));
 		return  user;
 	}
 }

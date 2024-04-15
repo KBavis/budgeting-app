@@ -1,7 +1,9 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.enumeration.Role;
-import com.bavis.budgetapp.exception.UsernameTakenException;
+import com.bavis.budgetapp.exception.JwtServiceException;
+import com.bavis.budgetapp.exception.PlaidServiceException;
+import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.request.AuthRequest;
 import com.bavis.budgetapp.response.AuthResponse;
@@ -57,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public AuthResponse register(AuthRequest authRequest) throws RuntimeException{
+    public AuthResponse register(AuthRequest authRequest) throws UserServiceException, PlaidServiceException, JwtServiceException {
 
         User user = User.builder()
                 .name(authRequest.getName())

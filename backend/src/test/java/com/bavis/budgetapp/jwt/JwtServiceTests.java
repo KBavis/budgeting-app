@@ -3,6 +3,7 @@ package com.bavis.budgetapp.jwt;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bavis.budgetapp.enumeration.TimeType;
+import com.bavis.budgetapp.exception.JwtServiceException;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.impl.JwtServiceImpl;
 import com.bavis.budgetapp.util.GeneralUtil;
@@ -141,7 +142,7 @@ public class JwtServiceTests {
         when(algorithm.sign(any(byte[].class), any(byte[].class))).thenReturn(null); //ensures run time exception
 
         //Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        JwtServiceException exception = assertThrows(JwtServiceException.class, () -> {
             jwtService.generateToken(user);
         });
         assertTrue(exception.getMessage().contains("Failed to Generate JWT Token:"));

@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
+@Log4j2
 public class JsonUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(JsonUtil.class);
@@ -90,6 +92,7 @@ public class JsonUtil {
             String responseBody = e.contentUTF8();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(responseBody);
+            log.debug("ERROR MESSAGE EXTRACTED FROM JSONUTIL: {}", jsonNode.get("error_message").asText());
             return jsonNode.get("error_message").asText();
         } catch (Exception ex) {
             // Fallback to returning the original exception message if parsing fails

@@ -2,7 +2,6 @@ package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.enumeration.Role;
 import com.bavis.budgetapp.exception.PlaidServiceException;
-import com.bavis.budgetapp.exception.UsernameTakenException;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.request.AuthRequest;
 import com.bavis.budgetapp.response.AuthResponse;

@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.exception.advice;
 
+import com.bavis.budgetapp.exception.JwtServiceException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,13 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
-public class PlaidServiceAdvice {
+public class JwtServiceAdvice {
     @ResponseBody
-    @ExceptionHandler(PlaidServiceException.class)
+    @ExceptionHandler(JwtServiceException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    Map<String,String> handlePlaidServiceException(PlaidServiceException ex) {
+    Map<String,String> handleJwtServiceException(JwtServiceException exception) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("error", ex.getMessage());
+        errors.put("error", exception.getMessage());
         return errors;
     }
 }

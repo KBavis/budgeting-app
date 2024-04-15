@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bavis.budgetapp.enumeration.TimeType;
+import com.bavis.budgetapp.exception.JwtServiceException;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.util.GeneralUtil;
@@ -59,7 +60,7 @@ public class JwtServiceImpl implements JwtService {
      *          - JWT Token
      */
     @Override
-    public String generateToken(User user) throws RuntimeException {
+    public String generateToken(User user) throws JwtServiceException {
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime expirationTime = GeneralUtil.addTimeToDate(currentTime,3, TimeType.HOURS);
 
@@ -71,7 +72,7 @@ public class JwtServiceImpl implements JwtService {
                     .sign(_algorithm);
         } catch (Exception e) {
             LOG.error("Failed to generated JWT Token for User [{}]", user.toString());
-            throw new RuntimeException("Failed to Generate JWT Token: ", e);
+            throw new JwtServiceException("Failed to Generate JWT Token: " + e.getMessage());
         }
     }
 

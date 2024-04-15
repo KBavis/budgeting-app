@@ -131,10 +131,10 @@ public class AccountServiceTests {
     @Test
     public void testConnectAccount_PlaidServiceException_ExchangeToken_Failure(){
         //Arrange
-        String plaidServiceExceptionMsg = "Invalid Response Code When Exchanging Public Token Via PlaidClient: [404]";
+        String plaidServiceExceptionMsg = "PlaidServiceException: [Invalid Response Code When Exchanging Public Token Via Plaid Client: [404]]";
         String connectAccountExceptionMsg = "An error occurred when creating an account: [" + plaidServiceExceptionMsg + "]";
        //Mock
-       when(plaidService.exchangeToken(connectAccountRequest.getPublicToken())).thenThrow(new PlaidServiceException(plaidServiceExceptionMsg));
+       when(plaidService.exchangeToken(connectAccountRequest.getPublicToken())).thenThrow(new PlaidServiceException("Invalid Response Code When Exchanging Public Token Via Plaid Client: [404]"));
 
        //Act & Assert
         AccountConnectionException runtimeException = assertThrows(AccountConnectionException.class, () -> {

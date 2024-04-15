@@ -91,8 +91,8 @@ public class AccountControllerTests {
                 .content(objectMapper.writeValueAsString(connectAccountRequest)));
 
         // Assert
-        resultActions.andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("plaidAccountId must not be empty")));
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$.error").value("plaidAccountId must not be empty"));
     }
 
     @Test

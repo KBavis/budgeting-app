@@ -1,6 +1,8 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AccountDTO;
+import com.bavis.budgetapp.exception.JwtServiceException;
+import com.bavis.budgetapp.exception.PlaidServiceException;
+import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.request.AuthRequest;
 import com.bavis.budgetapp.response.AuthResponse;
@@ -9,24 +11,18 @@ import com.bavis.budgetapp.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.util.ArrayList;
-
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,8 +46,6 @@ public class AuthControllerTests {
 
     private AuthRequest registerAuthRequest;
     private AuthRequest authenticationAuthRequest;
-
-    private AccountDTO accountDTO;
 
     private AuthResponse expectedAuthResponse;
 
@@ -289,19 +283,83 @@ public class AuthControllerTests {
     }
 
     @Test
-    public void testRegister_PlaidServiceException_Failure() {
+    public void testRegister_PlaidServiceException_Failure() throws Exception{
+        //Mock
+        when(authService.register(any(AuthRequest.class))).thenThrow(new PlaidServiceException("Link Token Returned From Client Is Null"));
 
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+
+        //Assert
+        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("PlaidServiceException: [Link Token Returned From Client Is Null]"));
     }
 
     @Test
-    public void testRegister_JwtServiceException_Failure() {
+    public void testRegister_JwtServiceException_Failure() throws Exception{
+        //Mock
+        when(authService.register(any(AuthRequest.class))).thenThrow(new JwtServiceException("Failed to Generate Jwt Token: invalid usages"));
 
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+
+        //Assert
+        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("JwtServiceException: [Failed to Generate Jwt Token: invalid usages]"));
     }
 
     @Test
-    public void testAuthenticate_JwtServiceException_Failure() {
+    public void testRegister_UserServiceException_Failure() throws Exception {
+        //Mock
+        when(authService.register(any(AuthRequest.class))).thenThrow(new UserServiceException("Could not find user with the username " + registerAuthRequest.getUsername()));
 
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+
+        //Assert
+        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("UserServiceException: [Could not find user with the username " + registerAuthRequest.getUsername() + "]"));
     }
-    //todo: add test cases for handling external service exceptions (Plaid, JWT, User, etc)
+
+    @Test
+    public void testAuthenticate_UserServiceException_Failure() throws Exception{
+        //Mock
+        when(authService.authenticate(any(AuthRequest.class))).thenThrow(new UserServiceException("Could not find user with the username " + authenticationAuthRequest.getUsername()));
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/auth/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+
+        //Assert
+        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("UserServiceException: [Could not find user with the username authentication-user]"));
+    }
+
+    @Test
+    public void testAuthenticate_JwtServiceException_Failure() throws Exception {
+        //Mock
+        when(authService.authenticate(any(AuthRequest.class))).thenThrow(new JwtServiceException("Failed to Generate Jwt Token: invalid usages"));
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/auth/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+
+        //Assert
+        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("JwtServiceException: [Failed to Generate Jwt Token: invalid usages]"));
+    }
 
 }

@@ -2,11 +2,13 @@ package com.bavis.budgetapp.exception.advice;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import lombok.extern.log4j.Log4j2;
+import org.mapstruct.ap.shaded.freemarker.template.utility.StringUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,11 +53,16 @@ public class GlobalExceptionAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        log.debug("In MethodArgumentNotValidException Handler");
+        log.debug(ex.getMessage());
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
-            String errorMessage = error.getDefaultMessage();
-            errors.put("error", errorMessage);
+            if (error instanceof FieldError) {
+                String fieldName = ((FieldError) error).getField();
+                String errorMessage = error.getDefaultMessage();
+                errors.put("error", String.format("%s %s", fieldName, errorMessage));
+            } else {
+                errors.put("error", error.getDefaultMessage());
+            }
         });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
