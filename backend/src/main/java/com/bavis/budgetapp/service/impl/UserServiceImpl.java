@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService{
 	@Override
 	public User readById(Long id) throws UserServiceException {
 		return _userRepository.findById(id)
-				.orElseThrow(() -> new UserServiceException("Could not find user with the ID" + id));
+				.orElseThrow(() -> new UserServiceException("Could not find user with the ID " + id));
 	}
 
 	@Override
@@ -57,11 +57,13 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
-	public User getCurrentAuthUser(){
+	public User getCurrentAuthUser() throws UserServiceException{
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if(authentication == null) {
+			return null; //no auth user
+		}
 		String username = authentication.getName().trim();
-		User user = _userRepository.findByUsername(username)
-				.orElseThrow(() -> new UserServiceException("Could not find user with the username " + username));
+		User user = readByUsername(username);
 		return  user;
 	}
 }
