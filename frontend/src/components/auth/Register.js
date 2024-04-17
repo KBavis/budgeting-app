@@ -113,12 +113,40 @@ const Register = () => {
                   />
                </div>
                <div className="mb-4">
-                  <label
-                     className="block text-gray-700 font-bold mb-2"
-                     htmlFor="password1"
-                  >
-                     Password
-                  </label>
+                  <div className="flex items-center mb-2">
+                     <label
+                        className="block text-gray-700 font-bold"
+                        htmlFor="password1"
+                     >
+                        Password
+                     </label>
+                     <div className="relative ml-2 group">
+                        <i className="fa-solid fa-circle-info text-indigo-600 hover:text-indigo-500 cursor-pointer duration-75"></i>{" "}
+                        <div className="absolute z-10 hidden group-hover:block w-72 right-0 mt-2 px-4 py-2 text-sm bg-white rounded-lg shadow-lg border border-gray-200 whitespace-normal">
+                           <p className="mb-2 font-bold">
+                              Password Requirements:
+                           </p>
+                           <ul className="list-inside text-xs list-none italic">
+                              <li className="mb-1">
+                                 - At least one digit (0 - 9)
+                              </li>
+                              <li className="mb-1">
+                                 - At least one alphabetical letter (a-zA-Z)
+                              </li>
+                              <li className="mb-1">
+                                 - At least one special character
+                                 (@#$%^&amp;+=!)
+                              </li>
+                              <li className="mb-1">
+                                 - No white space characters
+                              </li>
+                              <li className="mb-1">
+                                 - Minimum length of 10 characters
+                              </li>
+                           </ul>
+                        </div>
+                     </div>
+                  </div>
                   <input
                      className="shadow appearance-none border rounded w-full py-2 px-3 bg-slate-100 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
                      id="passwordOne"

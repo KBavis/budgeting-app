@@ -33,7 +33,10 @@ const AccountState = (props) => {
          dispatch({ type: ACCOUNT_CREATED, payload: res.data });
       } catch (err) {
          console.error(err);
-         dispatch({ type: ACCOUNT_FAILED_CRATED, payload: err.response.data });
+         dispatch({
+            type: ACCOUNT_FAILED_CRATED,
+            payload: err.response.data.error,
+         });
       }
    };
 

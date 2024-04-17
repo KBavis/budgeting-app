@@ -32,7 +32,7 @@ const AuthState = (props) => {
          dispatch({ type: REGISTER_SUCCESS, payload: res.data });
       } catch (err) {
          console.error(err);
-         dispatch({ type: REGISTER_FAIL, payload: err.response.data });
+         dispatch({ type: REGISTER_FAIL, payload: err.response.data.error });
       }
    };
 
@@ -52,7 +52,7 @@ const AuthState = (props) => {
          dispatch({ type: AUTH_SUCCESS, payload: res.data });
       } catch (err) {
          console.error(err);
-         dispatch({ type: AUTH_FAIL, payload: err.response.data });
+         dispatch({ type: AUTH_FAIL, payload: err.response.data.error });
       }
    };
 
