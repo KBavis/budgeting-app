@@ -7,10 +7,20 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Controller Advice for Our AccountConnectionException
+ */
 @ControllerAdvice
 public class AccountConnectionAdvice {
     @ResponseBody
     @ExceptionHandler(AccountConnectionException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    String badAccountConnectionHandler(AccountConnectionException ex) { return ex.getMessage(); }
+    Map<String, String> badAccountConnectionException(AccountConnectionException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+        return errors;
+    }
 }
