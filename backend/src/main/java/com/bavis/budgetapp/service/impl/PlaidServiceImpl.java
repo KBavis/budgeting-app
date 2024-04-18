@@ -54,7 +54,7 @@ public class PlaidServiceImpl implements PlaidService{
                 .countryCodes(new String[]{"US"})
                 .language("en")
                 .user(new PlaidUserDTO(userId.toString()))
-                .products(new String[]{"auth"})
+                .products(new String[]{"transactions"})
                 .build();
 
         LOG.debug("Link Token Request in `generateLinkToken()`: {}", linkTokenRequest.toString());
