@@ -15,8 +15,6 @@ import lombok.Setter;
  * 
  *  	Entity To Relate an Account with a User
  *
- *  	TODO: Fetch Accounts By /development/accounts/get
- *  			Use this inform
  *
  */
 @Entity

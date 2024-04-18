@@ -1,6 +1,5 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.annotation.AuthRequestValidName;
 import com.bavis.budgetapp.annotation.AuthRequestValidPassword;
 import com.bavis.budgetapp.request.AuthRequest;
 import jakarta.validation.ConstraintValidator;
