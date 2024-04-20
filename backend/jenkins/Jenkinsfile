@@ -1,0 +1,69 @@
+pipeline {
+    agent any
+
+    tools {
+        gradle 'gradle8.3'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/KBavis/budgeting-app']])
+            }
+        }
+
+        stage('Extract Version') {
+            steps {
+                script {
+                    def props = readProperties file: 'backend/gradle.properties'
+                    env.VERSION = props['projectVersion']
+                    echo "Version: ${env.VERSION}"
+                }
+            }
+        }
+
+        stage('Copy Config Files') {
+            steps {
+                dir('backend/src/resources/') {
+                    bat 'copy "D:\\Code\\Workplace\\BudgetApp\\budgeting-app\\backend\\src\\resources\\application.yaml" .'
+                    bat 'copy "D:\\Code\\Workplace\\BudgetApp\\budgeting-app\\backend\\src\\resources\\.env" .'
+                }
+            }
+        }
+
+        stage('Build Gradle') {
+            steps {
+                dir('backend') {
+                    bat 'gradle clean build'
+                }
+            }
+        }
+
+        stage('Build Backend Docker Image') {
+            steps {
+                dir('backend') {
+                    script {
+                        def version = env.VERSION
+                        bat "docker build -t budget-app:${version} --build-arg VERSION=${version} -f docker/Dockerfile ."
+                    }
+                }
+            }
+        }
+
+        stage('Push Backend Docker Image to Docker Hub') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhubpwd', variable: 'dockerhubpwd')]) {
+                    script {
+                        def version = env.VERSION
+                        def dockerImage = "budget-app:${version}"
+                        def dockerHubImage = "baviske/budget-app:${version}"
+
+                        bat "docker login -u baviske -p ${dockerhubpwd} docker.io"
+                        bat "docker tag ${dockerImage} ${dockerHubImage}"
+                        bat "docker push ${dockerHubImage}"
+                    }
+                }
+            }
+        }
+    }
+}
