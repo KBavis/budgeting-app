@@ -133,7 +133,6 @@ public class User implements UserDetails{
 	}
 
 	/**
-	 * TODO: Maybe setup some logic regarding users needing to reset password after X amount of time from initial creation of account
 	 *
 	 * @return
 	 * 		whether the users credentials must be updated
