@@ -22,6 +22,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 
@@ -33,6 +35,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(MockitoJUnitRunner.class)
+@ActiveProfiles(profiles = "test")
 public class AuthServiceTests {
 
     @Mock
@@ -59,6 +62,7 @@ public class AuthServiceTests {
 
     @BeforeEach
     public void setup() {
+
         //init authService and auth request
         authService = new AuthServiceImpl(jwtService, userService, passwordEncoder, authenticationManager, plaidService);
         registerAuthRequest = AuthRequest.builder()

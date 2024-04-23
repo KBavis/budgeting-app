@@ -25,6 +25,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -34,6 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles(profiles = "test")
 public class PlaidServiceTests {
 
     @Mock
@@ -53,6 +56,7 @@ public class PlaidServiceTests {
 
     @BeforeEach
     public void setup() {
+
         ObjectMapper mapper = new ObjectMapper();
         _jsonUtil = new JsonUtil(mapper);
         _testHelper = new TestHelper();

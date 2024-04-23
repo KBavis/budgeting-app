@@ -27,6 +27,7 @@ pipeline {
                 dir('backend/src/resources/') {
                     bat 'copy "D:\\Code\\Workplace\\BudgetApp\\budgeting-app\\backend\\src\\resources\\application.yaml" .'
                     bat 'copy "D:\\Code\\Workplace\\BudgetApp\\budgeting-app\\backend\\src\\resources\\.env" .'
+                    bat 'copy "D:\\Code\\Workplace\\BudgetApp\\budgeting-app\\backend\\src\\resources\\application-test.yaml" .'
                 }
             }
         }

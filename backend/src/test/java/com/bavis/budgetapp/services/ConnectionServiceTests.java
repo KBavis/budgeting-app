@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 
@@ -22,6 +24,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(MockitoJUnitRunner.class)
+@ActiveProfiles(profiles = "test")
 public class ConnectionServiceTests {
 
     @Mock
@@ -35,7 +38,8 @@ public class ConnectionServiceTests {
     private LocalDateTime now;
 
     @BeforeEach
-    public void setup() {
+    public void setup(){
+
         connectionService = new ConnectionServiceImpl(connectionRepository);
         now = LocalDateTime.now();
         connection = Connection.builder()

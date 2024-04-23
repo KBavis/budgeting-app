@@ -26,6 +26,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 
@@ -35,6 +37,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(MockitoJUnitRunner.class)
+@ActiveProfiles(profiles = "test")
 public class AccountServiceTests {
 
     @Mock
@@ -58,7 +61,7 @@ public class AccountServiceTests {
     private ConnectAccountRequest connectAccountRequest;
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         connectAccountRequest = ConnectAccountRequest.builder()
                 .plaidAccountId("plaid-account-id")
                 .accountName("account-name")
