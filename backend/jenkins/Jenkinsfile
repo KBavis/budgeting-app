@@ -45,7 +45,7 @@ pipeline {
                 dir('backend') {
                     script {
                         def version = env.VERSION
-                        bat "docker build -t budget-app:${version} --build-arg VERSION=${version} -f docker/Dockerfile ."
+                        bat "docker build -t budget-app-backend:${version} --build-arg VERSION=${version} -f docker/Dockerfile ."
                     }
                 }
             }
@@ -56,8 +56,8 @@ pipeline {
                 withCredentials([string(credentialsId: 'dockerhubpwd', variable: 'dockerhubpwd')]) {
                     script {
                         def version = env.VERSION
-                        def dockerImage = "budget-app:${version}"
-                        def dockerHubImage = "baviske/budget-app:${version}"
+                        def dockerImage = "budget-app-backend:${version}"
+                        def dockerHubImage = "baviske/budget-app-backend:${version}"
 
                         bat "docker login -u baviske -p ${dockerhubpwd} docker.io"
                         bat "docker tag ${dockerImage} ${dockerHubImage}"
