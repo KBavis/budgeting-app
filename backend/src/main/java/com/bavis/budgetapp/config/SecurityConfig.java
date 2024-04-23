@@ -53,12 +53,15 @@ public class SecurityConfig {
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
+
+        //TODO: Configure these URLs in our application-yaml file
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                                "http://localhost:3000"
+                                "http://localhost:3000",
+                                "https://budget-app-frontend-6cfcivaeda-pd.a.run.app" //google cloud run
                         )
                         .allowedMethods("*")
                         .allowedHeaders("*")
