@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/KBavis/budgeting-app']])
+            }
+        }
+
+        stage('Extract Version') {
+            steps {
+                script {
+                    def packageJson = readJSON file: 'frontend/package.json'
+                    env.VERSION = packageJson.version
+                    echo "Version: ${env.VERSION}"
+                }
+            }
+        }
+
+
+        stage('Build Frontend Docker Image') {
+            steps {
+                dir('frontend') {
+                    script {
+                        def version = env.VERSION
+                        bat "docker build -t budget-app-frontend:${version} --build-arg VERSION=${version} -f docker/Dockerfile ."
+                    }
+                }
+            }
+        }
+
+        stage('Push Frontend Docker Image to Docker Hub') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhubpwd', variable: 'dockerhubpwd')]) {
+                    script {
+                        def version = env.VERSION
+                        def dockerImage = "budget-app-frontend:${version}"
+                        def dockerHubImage = "baviske/budget-app-frontend:${version}"
+                        bat "docker login -u baviske -p ${dockerhubpwd} docker.io"
+                        bat "docker tag ${dockerImage} ${dockerHubImage}"
+                        bat "docker push ${dockerHubImage}"
+                    }
+                }
+            }
+        }
+    }
+}
