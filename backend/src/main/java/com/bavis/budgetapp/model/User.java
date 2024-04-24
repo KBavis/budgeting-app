@@ -73,6 +73,13 @@ public class User implements UserDetails{
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Account> accounts; //connected user accounts
 
+	/**
+	 * User Can Have Multiple Sources of Income
+	 */
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private List<Income> incomes;
+
+
 	public void incrementFailedLoginAttempts() {
 		failedLoginAttempts++;
 	}

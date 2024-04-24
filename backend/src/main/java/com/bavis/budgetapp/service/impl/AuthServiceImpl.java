@@ -69,6 +69,7 @@ public class AuthServiceImpl implements AuthService {
                 .profileImage(null)
                 .accounts(new ArrayList<>())
                 .categories(new ArrayList<>())
+                .incomes(new ArrayList<>())
                 .linkToken(null)
                 .build();
 
