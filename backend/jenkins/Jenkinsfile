@@ -75,7 +75,7 @@ pipeline {
                         def version = env.VERSION
                         def imageUrl = "docker.io/baviske/budget-app-backend:${version}"
                         def serviceName = "budget-app-backend"
-                        def region = "us-east1"
+                        def region = "northamerica-northeast2"
                         def projectId = "budget-application-421004"
                         bat "gcloud run deploy ${serviceName} --image ${imageUrl} --region ${region} --platform managed --allow-unauthenticated --set-env-vars VERSION=${version} --project ${projectId}"
                         bat 'echo backend docker image deployed to google cloud run'
