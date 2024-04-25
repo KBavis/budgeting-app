@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @WithMockUser
 @ActiveProfiles(profiles = "test")
-public class IncomeContollerTests {
+public class IncomeControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
