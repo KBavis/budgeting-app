@@ -13,9 +13,4 @@ public interface IncomeMapper {
     @Mapping(target = "incomeId", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Income toIncome(IncomeDto incomeDTO);
-
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "incomeId", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    void updateIncomeFromDTO(@MappingTarget Income income, IncomeDto incomeDTO);
 }

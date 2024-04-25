@@ -9,10 +9,6 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface AccountMapper {
-    @Mapping(target = "accountName", source = "accountName")
-    @Mapping(target = "balance", source = "balance")
-    @Mapping(target = "accountType", source = "accountType")
-    void updateAccountDTO(@MappingTarget AccountDTO target, Account source);
 
     @Mapping(target = "accountName", source = "accountName")
     @Mapping(target = "balance", source = "balance")

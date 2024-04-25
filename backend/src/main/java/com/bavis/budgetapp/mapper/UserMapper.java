@@ -15,6 +15,7 @@ public interface UserMapper {
             @Mapping(target = "target.failedLoginAttempts", source = "source.failedLoginAttempts"),
             @Mapping(target = "target.lockoutEndTime", source = "source.lockoutEndTime"),
             @Mapping(target = "categories", ignore = true),
+            @Mapping(target = "incomes", ignore = true),
             @Mapping(target = "accounts", ignore = true),
             @Mapping(target = "authorities", ignore = true)
     })
