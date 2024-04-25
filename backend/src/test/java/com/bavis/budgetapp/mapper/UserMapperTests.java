@@ -25,22 +25,6 @@ public class UserMapperTests {
     @Autowired
     private UserMapper userMapper;
 
-    /**
-     *
-     @Mappings({
-     @Mapping(target = "target.name", source = "source.name"),
-     @Mapping(target = "target.username", source = "source.username"),
-     @Mapping(target = "target.password", source = "source.password"),
-     @Mapping(target = "target.profileImage", source = "source.profileImage"),
-     @Mapping(target = "target.linkToken", source = "source.linkToken"),
-     @Mapping(target = "target.failedLoginAttempts", source = "source.failedLoginAttempts"),
-     @Mapping(target = "target.lockoutEndTime", source = "source.lockoutEndTime"),
-     @Mapping(target = "categories", ignore = true),
-     @Mapping(target = "accounts", ignore = true),
-     @Mapping(target = "authorities", ignore = true)
-     })
-     */
-
     @Test
     public void testUpdateUserProfile_Successful() {
         //Arrange
