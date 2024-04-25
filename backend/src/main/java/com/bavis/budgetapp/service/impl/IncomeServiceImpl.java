@@ -1,13 +1,12 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dao.IncomeRepository;
-import com.bavis.budgetapp.dto.IncomeDTO;
+import com.bavis.budgetapp.dto.IncomeDto;
 import com.bavis.budgetapp.mapper.IncomeMapper;
 import com.bavis.budgetapp.model.Income;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.IncomeService;
 import com.bavis.budgetapp.service.UserService;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +28,7 @@ public class IncomeServiceImpl implements IncomeService {
         this._incomeMapper = _incomeMapper;
     }
     @Override
-    public Income create(IncomeDTO incomeDto) {
+    public Income create(IncomeDto incomeDto) {
         log.info("Creating Income: [{}]", incomeDto);
 
         User currentUser = _userService.getCurrentAuthUser();

@@ -1,11 +1,10 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.dto.IncomeDTO;
+import com.bavis.budgetapp.dto.IncomeDto;
 import com.bavis.budgetapp.model.Income;
-import org.springframework.stereotype.Service;
 
 public interface IncomeService {
-    Income create(IncomeDTO income);
+    Income create(IncomeDto income);
 
     Income readById(Long incomeId);
 

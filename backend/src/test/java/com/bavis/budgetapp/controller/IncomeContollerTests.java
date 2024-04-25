@@ -1,13 +1,12 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.IncomeDTO;
+import com.bavis.budgetapp.dto.IncomeDto;
 import com.bavis.budgetapp.enumeration.IncomeSource;
 import com.bavis.budgetapp.enumeration.IncomeType;
 import com.bavis.budgetapp.model.Income;
 import com.bavis.budgetapp.model.User;
 import com.bavis.budgetapp.service.impl.IncomeServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,7 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.LocalDateTime;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,7 +42,7 @@ public class IncomeContollerTests {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private IncomeDTO validIncomeDto;
+    private IncomeDto validIncomeDto;
 
     private Income income;
 
@@ -58,7 +56,7 @@ public class IncomeContollerTests {
                 .userId(10L)
                 .build();
 
-       validIncomeDto = IncomeDTO.builder()
+       validIncomeDto = IncomeDto.builder()
                .incomeSource(IncomeSource.EMPLOYER)
                .incomeType(IncomeType.SALARY)
                .amount(5000.0)
@@ -95,6 +93,89 @@ public class IncomeContollerTests {
                 .andExpect(jsonPath("$.incomeId").value(income.getIncomeId()))
                 .andExpect(jsonPath("$.updatedAt").value(income.getUpdatedAt()));
 
+        verify(incomeService, times(1)).create(validIncomeDto);
     }
+
+    @Test
+    public void testCreate_InvalidAmount_Failure() throws Exception {
+        //Arrange
+        IncomeDto invalidAmountDto = IncomeDto.builder()
+                .amount(-1)
+                .description("test description")
+                .incomeType(IncomeType.CAPITAL_GAINS)
+                .incomeSource(IncomeSource.EMPLOYER)
+                .build();
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/income")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidAmountDto)));
+
+        //Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("The provided income amount is not valid"));
+    }
+
+    @Test
+    public void testCreate_EmptyDescription_Failure() throws Exception{
+        //Arrange
+        IncomeDto invalidAmountDto = IncomeDto.builder()
+                .amount(1000)
+                .description("")
+                .incomeType(IncomeType.CAPITAL_GAINS)
+                .incomeSource(IncomeSource.EMPLOYER)
+                .build();
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/income")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidAmountDto)));
+
+        //Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("description must not be empty"));
+    }
+
+    @Test
+    public void testCreate_NullIncomeType_Failure() throws Exception{
+        //Arrange
+        IncomeDto invalidAmountDto = IncomeDto.builder()
+                .amount(1000)
+                .description("description")
+                .incomeType(null)
+                .incomeSource(IncomeSource.EMPLOYER)
+                .build();
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/income")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidAmountDto)));
+
+        //Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("incomeType must not be null"));
+    }
+
+    @Test
+    public void testCreate_NullIncomeSource_Failure() throws Exception{
+        //Arrange
+        IncomeDto invalidAmountDto = IncomeDto.builder()
+                .amount(1000)
+                .description("description")
+                .incomeType(IncomeType.CAPITAL_GAINS)
+                .incomeSource(null)
+                .build();
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/income")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidAmountDto)));
+
+        //Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("incomeSource must not be null"));
+    }
+
+
 
 }

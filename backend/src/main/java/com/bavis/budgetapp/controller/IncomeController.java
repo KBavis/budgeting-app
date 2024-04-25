@@ -1,9 +1,9 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.IncomeDTO;
+import com.bavis.budgetapp.dto.IncomeDto;
 import com.bavis.budgetapp.model.Income;
 import com.bavis.budgetapp.service.IncomeService;
-import com.bavis.budgetapp.service.impl.IncomeServiceImpl;
+import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +23,7 @@ public class IncomeController {
     }
 
     @PostMapping
-    public ResponseEntity<Income> create(@RequestBody IncomeDTO income){
+    public ResponseEntity<Income> create(@Valid @RequestBody IncomeDto income){
         log.info("Received Income creation request for Income [{}]", income);
         return ResponseEntity.ok(_incomeService.create(income));
     }

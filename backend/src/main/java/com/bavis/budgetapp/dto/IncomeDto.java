@@ -1,20 +1,29 @@
 package com.bavis.budgetapp.dto;
 
+import com.bavis.budgetapp.annotation.IncomeDtoValidAmount;
 import com.bavis.budgetapp.enumeration.IncomeSource;
 import com.bavis.budgetapp.enumeration.IncomeType;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 
-@Data
+@IncomeDtoValidAmount
 @Builder
-public class IncomeDTO {
+@Data
+public class IncomeDto {
 
     private double amount;
 
+    @NotNull
     private IncomeType incomeType;
 
+    @NotNull
     private IncomeSource incomeSource;
 
+    @NotEmpty
     private String description;
 }

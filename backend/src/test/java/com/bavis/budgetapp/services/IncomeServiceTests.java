@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.dao.IncomeRepository;
-import com.bavis.budgetapp.dto.IncomeDTO;
+import com.bavis.budgetapp.dto.IncomeDto;
 import com.bavis.budgetapp.enumeration.IncomeSource;
 import com.bavis.budgetapp.enumeration.IncomeType;
 import com.bavis.budgetapp.mapper.IncomeMapper;
@@ -19,10 +19,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.hamcrest.Matchers.any;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(MockitoJUnitRunner.class)
@@ -41,7 +40,7 @@ public class IncomeServiceTests {
     @InjectMocks
     private IncomeServiceImpl incomeService;
 
-    private IncomeDTO incomeDTO;
+    private IncomeDto incomeDTO;
 
     private Income income;
 
@@ -51,7 +50,7 @@ public class IncomeServiceTests {
     @BeforeEach
     public void setup() {
 
-        incomeDTO = IncomeDTO.builder()
+        incomeDTO = IncomeDto.builder()
                 .incomeSource(IncomeSource.EMPLOYER)
                 .incomeType(IncomeType.SALARY)
                 .amount(5000.0)
@@ -90,6 +89,11 @@ public class IncomeServiceTests {
         assertEquals(income.getDescription(), actualIncome.getDescription());
         assertEquals(income.getAmount(), actualIncome.getAmount());
         assertNotNull(income.getUpdatedAt()); //not able to validate exact time
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
+        verify(incomeMapper, times(1)).toIncome(incomeDTO);
+        verify(incomeRepository, times(1)).save(income);
     }
 
 }
