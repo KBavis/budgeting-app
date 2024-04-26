@@ -22,6 +22,8 @@ public class IncomeController {
         this._incomeService = _incomeService;
     }
 
+    //TODO: Consider adding multiple incomes at once
+
     @PostMapping
     public ResponseEntity<Income> create(@Valid @RequestBody IncomeDto income){
         log.info("Received Income creation request for Income [{}]", income);

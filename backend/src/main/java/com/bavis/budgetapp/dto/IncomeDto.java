@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-
+//todo: consider adding custom validations for errors with NotNull/NotEmpty so message is more meaningful in response
 @IncomeDtoValidAmount
 @Builder
 @Data
