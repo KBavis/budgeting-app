@@ -4,7 +4,7 @@ export const quotes = [
    '"Budgeting has only one rule: Do not go over budget." - Leslie Tayne',
    '"A penny saved is a penny earned." - Benjamin Franklin',
    '"Beware of little expenses; a small leak will sink a great ship." - Benjamin Franklin',
-   '"Do not tell me wha you value, show me your budget, and I will tell you what your value." - Benjamin Franklin',
+   '"Do not tell me what you value, show me your budget, and I will tell you what your value." - Benjamin Franklin',
    '"The art is not in making money, but in keeping it." - Proverb',
    '"The philosophy behind budgeting is to prioritize your spending and manage your money wisely." - Eleanor Roosevelt',
    '"Budgeting is the process of allocating limited resources across unlimited wants." - John F. Kennedy',
