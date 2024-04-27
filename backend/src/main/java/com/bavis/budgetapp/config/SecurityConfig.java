@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
                 .authorizeHttpRequests((authz) ->
                         authz
-                                .requestMatchers("/auth/**").permitAll() // Allow /auth/** endpoints
+                                .requestMatchers("/auth/**", "/error").permitAll() // Allow /auth/** endpoints
                                 .anyRequest().authenticated() // Authenticate all other requests
                 )
                 .sessionManagement((session) ->

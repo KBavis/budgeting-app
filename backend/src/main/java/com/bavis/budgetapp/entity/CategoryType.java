@@ -3,13 +3,10 @@ package com.bavis.budgetapp.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,9 +27,19 @@ import lombok.Setter;
 @Setter
 @Builder 
 public class CategoryType {
-	@Id @JsonProperty("categoryTypeId") @GeneratedValue private Long categoryTypeId;
+	@Id @JsonProperty("categoryTypeId") @GeneratedValue
+	private Long categoryTypeId;
+
 	private String name;
-	private double budgetAllocation;
+
+	private double budgetAllocationPercentage;
+
+	private double budgetAmount;
+
+	@ManyToOne
+	@JoinColumn(name = "userId")
+	@JsonIgnore
+	private User user;
 	
 	@Builder.Default
 	@OneToMany(mappedBy = "categoryType", cascade = CascadeType.ALL)

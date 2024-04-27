@@ -19,6 +19,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
@@ -94,6 +96,41 @@ public class IncomeServiceTests {
         verify(userService, times(1)).getCurrentAuthUser();
         verify(incomeMapper, times(1)).toIncome(incomeDTO);
         verify(incomeRepository, times(1)).save(income);
+    }
+
+    @Test
+    public void testReadByUserId_Successful() {
+        //Arrange
+        List<Income> incomes = List.of(income, income, income);
+
+        //Mock
+        when(incomeRepository.findByUserUserId(user.getUserId())).thenReturn(incomes);
+
+        //Act
+        List<Income> foundIncomes = incomeService.readByUserId(user.getUserId());
+
+        //Assert
+        assertNotNull(foundIncomes);
+        assertEquals(3, foundIncomes.size());
+        for(Income foundIncome: foundIncomes) {
+            assertEquals(income.getIncomeId(), foundIncome.getIncomeId());
+        }
+    }
+
+    @Test
+    public void testFindUserTotalIncomeAmount_Successful() {
+        //Arrange
+        double expectedAmount = 15000.0;
+        List<Income> incomes = List.of(income, income, income);
+
+        //Mock
+        when(incomeRepository.findByUserUserId(user.getUserId())).thenReturn(incomes);
+
+        //Act
+        double totalAmount = incomeService.findUserTotalIncomeAmount(user.getUserId());
+
+        //Assert
+        assertEquals(expectedAmount, totalAmount);
     }
 
 }

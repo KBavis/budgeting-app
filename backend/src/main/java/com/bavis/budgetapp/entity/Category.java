@@ -2,6 +2,7 @@ package com.bavis.budgetapp.entity;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -35,6 +36,10 @@ public class Category {
 	private Long categoryId;
 
 	private String name;
+
+	private double budgetAllocationPercentage;
+
+	private double budgetAmount;
 	
 	@ManyToOne
 	@JoinColumn(name = "categoryTypeId")
@@ -47,6 +52,7 @@ public class Category {
 	 */
 	@ManyToOne
 	@JoinColumn(name = "userId")
+	@JsonIgnore
 	private User user;
 
 	@Override

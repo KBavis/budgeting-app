@@ -1,5 +1,11 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.dto.CategoryTypeDto;
+import com.bavis.budgetapp.entity.Income;
+import com.bavis.budgetapp.entity.User;
+import com.bavis.budgetapp.mapper.CategoryTypeMapper;
+import com.bavis.budgetapp.service.IncomeService;
+import com.bavis.budgetapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -10,25 +16,62 @@ import com.bavis.budgetapp.service.CategoryTypeService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CategoryTypeServiceImpl implements CategoryTypeService {
 	private static Logger LOG = LoggerFactory.getLogger(CategoryTypeServiceImpl.class);
-	private final CategoryTypeRepository repository;
 
+	private CategoryTypeRepository repository;
+
+	private UserService userService;
+
+	private CategoryTypeMapper categoryTypeMapper;
+
+	private IncomeService incomeService;
+
+	public CategoryTypeServiceImpl(CategoryTypeRepository repository, UserService userService, CategoryTypeMapper categoryTypeMapper, IncomeService incomeService){
+		this.repository = repository;
+		this.userService = userService;
+		this.categoryTypeMapper = categoryTypeMapper;
+		this.incomeService = incomeService;
+	}
+
+
+	//TODO: Update this to use DTO
 	@Override
 	public CategoryType create(CategoryType categoryType) {
+		//Fetch Auth User to Associate To CategoryType
+		User authUser = userService.getCurrentAuthUser();
+		categoryType.setUser(authUser);
+
 		LOG.info("Creating CategoryType [{}]", categoryType);
 		return repository.save(categoryType);
 	}
 
 	@Override
+	public List<CategoryType> createMany(List<CategoryTypeDto> categoryTypeDtos) {
+		User currentAuthUser = userService.getCurrentAuthUser();
+		double userTotalIncome = incomeService.findUserTotalIncomeAmount(currentAuthUser.getUserId());
+
+		List<CategoryType> categoryTypes =
+				categoryTypeDtos.stream().map((categoryTypeDto -> categoryTypeMapper.toEntity(categoryTypeDto)))
+						.peek(categoryType -> categoryType.setUser(currentAuthUser))
+						.peek(categoryType -> categoryType.setCategories(new ArrayList<>()))
+						.peek(categoryType -> categoryType.setBudgetAmount(userTotalIncome * categoryType.getBudgetAllocationPercentage()))
+						.toList();
+		LOG.info("Creating Category Types: [{}]", categoryTypes);
+		return repository.saveAllAndFlush(categoryTypes);
+	}
+
+	//TODO: Update this to use mapper
+	@Override
 	public CategoryType update(CategoryType categoryType, Long id) {
 		LOG.info("Updating CategoryType [{}]", id);
 		CategoryType updatedCategory = repository.findById(id).orElse(categoryType);
-		updatedCategory.setBudgetAllocation(categoryType.getBudgetAllocation());
+		updatedCategory.setBudgetAllocationPercentage(categoryType.getBudgetAllocationPercentage());
 		updatedCategory.setCategories(categoryType.getCategories());
 		updatedCategory.setName(categoryType.getName());
 		return repository.save(updatedCategory);

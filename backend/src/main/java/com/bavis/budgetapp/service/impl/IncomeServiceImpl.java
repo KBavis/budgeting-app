@@ -11,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Log4j2
@@ -45,8 +46,15 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public Income readByUserId(Long userId) {
-        return null;
+    public List<Income> readByUserId(Long userId) {
+        return _incomeRepository.findByUserUserId(userId);
+    }
+
+    @Override
+    public double findUserTotalIncomeAmount(Long userId) {
+        return readByUserId(userId).stream()
+                .map(Income::getAmount)
+                .reduce(0.0, Double::sum);
     }
 
     @Override

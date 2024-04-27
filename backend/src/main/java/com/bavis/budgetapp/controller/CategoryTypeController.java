@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.controller;
 
+import com.bavis.budgetapp.dto.CategoryTypeDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -37,7 +38,14 @@ public class CategoryTypeController {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access - unable to category type");
 		}
 	}
-	
+
+	@PostMapping("/bulk")
+	public List<CategoryType> createManyCategoryTypes(@RequestBody List<CategoryTypeDto> categoryTypes) {
+		LOG.info("Received request to create multiple CategoryTypes: [{}]", categoryTypes);
+		return service.createMany(categoryTypes);
+	}
+
+
 	@GetMapping("/{categoryTypeId}")
 	public CategoryType read(@PathVariable(value = "categoryTypeId") Long categoryTypeId) {
 		LOG.info("Received CategoryType read request for Category Type with ID of {}", categoryTypeId);

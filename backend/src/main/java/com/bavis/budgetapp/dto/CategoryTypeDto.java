@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryTypesDto {
+@Builder
+public class CategoryTypeDto {
+    String name;
 
+    double budgetAllocationPercentage;
 }
