@@ -2,16 +2,11 @@ package com.bavis.budgetapp.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.UserService;
 
-import lombok.RequiredArgsConstructor;
-
-import java.util.Collection;
 import java.util.List;
 
 /**

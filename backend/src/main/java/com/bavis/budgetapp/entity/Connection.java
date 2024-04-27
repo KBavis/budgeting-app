@@ -1,8 +1,8 @@
-package com.bavis.budgetapp.model;
+package com.bavis.budgetapp.entity;
 
 import java.time.LocalDateTime;
 
-import com.bavis.budgetapp.enumeration.ConnectionStatus;
+import com.bavis.budgetapp.constants.ConnectionStatus;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;

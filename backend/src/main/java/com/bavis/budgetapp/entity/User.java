@@ -1,14 +1,13 @@
-package com.bavis.budgetapp.model;
+package com.bavis.budgetapp.entity;
 
 import java.io.Serial;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
 
-import com.bavis.budgetapp.enumeration.Role;
+import com.bavis.budgetapp.constants.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

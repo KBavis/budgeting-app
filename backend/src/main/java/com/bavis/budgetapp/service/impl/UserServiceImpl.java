@@ -9,7 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.UserRepository;
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.UserService;
 
 @Service

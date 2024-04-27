@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.CategoryRepository;
 import com.bavis.budgetapp.dao.CategoryTypeRepository;
-import com.bavis.budgetapp.model.Category;
-import com.bavis.budgetapp.model.CategoryType;
+import com.bavis.budgetapp.entity.Category;
+import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryService;
 
 @Service 

@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.enumeration;
+package com.bavis.budgetapp.constants;
 
 /**
  * 

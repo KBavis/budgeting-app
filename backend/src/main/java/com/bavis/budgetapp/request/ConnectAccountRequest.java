@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.request;
 
-import com.bavis.budgetapp.enumeration.AccountType;
+import com.bavis.budgetapp.constants.AccountType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

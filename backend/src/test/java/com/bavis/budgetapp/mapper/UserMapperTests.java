@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.mapper;
 
 
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.entity.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;

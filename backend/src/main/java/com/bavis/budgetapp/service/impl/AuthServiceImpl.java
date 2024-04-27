@@ -1,10 +1,10 @@
 package com.bavis.budgetapp.service.impl;
 
-import com.bavis.budgetapp.enumeration.Role;
+import com.bavis.budgetapp.constants.Role;
 import com.bavis.budgetapp.exception.JwtServiceException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.exception.UserServiceException;
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.request.AuthRequest;
 import com.bavis.budgetapp.response.AuthResponse;
 import com.bavis.budgetapp.service.AuthService;

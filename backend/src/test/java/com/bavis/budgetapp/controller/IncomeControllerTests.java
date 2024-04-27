@@ -1,10 +1,10 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.IncomeDto;
-import com.bavis.budgetapp.enumeration.IncomeSource;
-import com.bavis.budgetapp.enumeration.IncomeType;
-import com.bavis.budgetapp.model.Income;
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.constants.IncomeSource;
+import com.bavis.budgetapp.constants.IncomeType;
+import com.bavis.budgetapp.entity.Income;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.IncomeServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

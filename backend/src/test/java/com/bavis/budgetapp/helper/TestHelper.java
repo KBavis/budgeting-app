@@ -3,14 +3,11 @@ package com.bavis.budgetapp.helper;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.bavis.budgetapp.config.JwtConfig;
-import com.bavis.budgetapp.enumeration.TimeType;
-import com.bavis.budgetapp.model.User;
-import com.bavis.budgetapp.service.JwtService;
-import com.bavis.budgetapp.service.impl.JwtServiceImpl;
+import com.bavis.budgetapp.constants.TimeType;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.util.GeneralUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

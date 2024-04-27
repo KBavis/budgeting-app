@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.util;
 
-import com.bavis.budgetapp.enumeration.TimeType;
+import com.bavis.budgetapp.constants.TimeType;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

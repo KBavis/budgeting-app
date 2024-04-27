@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.model;
+package com.bavis.budgetapp.entity;
 
 import java.time.LocalDate;
 import java.util.Objects;

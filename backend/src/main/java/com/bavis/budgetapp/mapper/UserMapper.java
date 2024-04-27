@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.mapper;
 
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.entity.User;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

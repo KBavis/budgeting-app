@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bavis.budgetapp.model.Connection;
+import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.service.ConnectionService;
 
 import lombok.RequiredArgsConstructor;

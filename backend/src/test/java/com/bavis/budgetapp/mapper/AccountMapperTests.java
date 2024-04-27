@@ -2,12 +2,11 @@ package com.bavis.budgetapp.mapper;
 
 
 import com.bavis.budgetapp.dto.AccountDTO;
-import com.bavis.budgetapp.enumeration.AccountType;
-import com.bavis.budgetapp.model.Account;
+import com.bavis.budgetapp.constants.AccountType;
+import com.bavis.budgetapp.entity.Account;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;

@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.entity.User;
 
 public interface UserService {
 	User create(User category);

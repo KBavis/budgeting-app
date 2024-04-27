@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.model.CategoryType;
+import com.bavis.budgetapp.entity.CategoryType;
 
 import java.util.List;
 

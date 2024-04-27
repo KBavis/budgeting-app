@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.AccountDTO;
-import com.bavis.budgetapp.model.Account;
+import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.request.ConnectAccountRequest;
 
 public interface AccountService {

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.bavis.budgetapp.model.Category;
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.service.CategoryService;
 
 import lombok.RequiredArgsConstructor;

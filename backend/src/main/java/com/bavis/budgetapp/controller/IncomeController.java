@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.IncomeDto;
-import com.bavis.budgetapp.model.Income;
+import com.bavis.budgetapp.entity.Income;
 import com.bavis.budgetapp.service.IncomeService;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;

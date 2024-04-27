@@ -4,7 +4,7 @@ package com.bavis.budgetapp.dao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.entity.User;
 
 import java.util.Optional;
 

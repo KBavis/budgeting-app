@@ -1,10 +1,9 @@
 package com.bavis.budgetapp.mapper;
 
 import com.bavis.budgetapp.dto.IncomeDto;
-import com.bavis.budgetapp.model.Income;
+import com.bavis.budgetapp.entity.Income;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.bavis.budgetapp.dao.CategoryTypeRepository;
-import com.bavis.budgetapp.model.CategoryType;
+import com.bavis.budgetapp.entity.CategoryType;
 
 import lombok.RequiredArgsConstructor;
 

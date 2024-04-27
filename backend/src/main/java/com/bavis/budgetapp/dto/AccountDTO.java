@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.dto;
 
-import com.bavis.budgetapp.enumeration.AccountType;
+import com.bavis.budgetapp.constants.AccountType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

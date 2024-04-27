@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AccountDTO;
-import com.bavis.budgetapp.enumeration.AccountType;
+import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.request.ConnectAccountRequest;
 import com.bavis.budgetapp.service.AccountService;

@@ -5,13 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.CategoryTypeRepository;
-import com.bavis.budgetapp.model.CategoryType;
+import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryTypeService;
 
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

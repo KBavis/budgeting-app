@@ -2,9 +2,9 @@ package com.bavis.budgetapp.jwt;
 
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.bavis.budgetapp.enumeration.TimeType;
+import com.bavis.budgetapp.constants.TimeType;
 import com.bavis.budgetapp.exception.JwtServiceException;
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.JwtServiceImpl;
 import com.bavis.budgetapp.util.GeneralUtil;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;

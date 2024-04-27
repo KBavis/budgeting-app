@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.IncomeDto;
-import com.bavis.budgetapp.model.Income;
+import com.bavis.budgetapp.entity.Income;
 
 public interface IncomeService {
     Income create(IncomeDto income);

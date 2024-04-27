@@ -6,10 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.ConnectionRepository;
-import com.bavis.budgetapp.model.Connection;
+import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.service.ConnectionService;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 public class ConnectionServiceImpl implements ConnectionService{

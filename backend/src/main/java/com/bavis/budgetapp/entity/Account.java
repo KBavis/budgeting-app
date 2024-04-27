@@ -1,6 +1,6 @@
-package com.bavis.budgetapp.model;
+package com.bavis.budgetapp.entity;
 
-import com.bavis.budgetapp.enumeration.AccountType;
+import com.bavis.budgetapp.constants.AccountType;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

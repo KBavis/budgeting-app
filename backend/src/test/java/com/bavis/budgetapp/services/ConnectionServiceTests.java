@@ -1,9 +1,9 @@
 package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.dao.ConnectionRepository;
-import com.bavis.budgetapp.enumeration.ConnectionStatus;
+import com.bavis.budgetapp.constants.ConnectionStatus;
 import com.bavis.budgetapp.exception.ConnectionCreationException;
-import com.bavis.budgetapp.model.Connection;
+import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.service.impl.ConnectionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;

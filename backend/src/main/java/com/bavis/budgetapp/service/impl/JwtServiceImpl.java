@@ -3,23 +3,17 @@ package com.bavis.budgetapp.service.impl;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.bavis.budgetapp.enumeration.TimeType;
+import com.bavis.budgetapp.constants.TimeType;
 import com.bavis.budgetapp.exception.JwtServiceException;
-import com.bavis.budgetapp.model.User;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.util.GeneralUtil;
-import org.apache.commons.lang3.time.DateUtils;
-import org.hibernate.annotations.DialectOverride;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 
 

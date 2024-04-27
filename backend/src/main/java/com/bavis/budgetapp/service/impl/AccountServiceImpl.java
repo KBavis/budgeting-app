@@ -1,12 +1,11 @@
 package com.bavis.budgetapp.service.impl;
 
-import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.dto.AccountDTO;
-import com.bavis.budgetapp.enumeration.ConnectionStatus;
+import com.bavis.budgetapp.constants.ConnectionStatus;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
-import com.bavis.budgetapp.model.Connection;
+import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.request.ConnectAccountRequest;
 import com.bavis.budgetapp.service.ConnectionService;
 import com.bavis.budgetapp.service.PlaidService;
@@ -17,10 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.AccountRepository;
-import com.bavis.budgetapp.model.Account;
+import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.service.AccountService;
-
-import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 

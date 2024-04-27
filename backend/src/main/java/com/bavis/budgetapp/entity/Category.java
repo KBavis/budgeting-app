@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.model;
+package com.bavis.budgetapp.entity;
 
 import java.util.Objects;
 
@@ -31,7 +31,9 @@ import lombok.Setter;
 @Setter
 @Builder 
 public class Category {
-	@Id @JsonProperty("categoryId") @GeneratedValue private Long categoryId;
+	@Id @JsonProperty("categoryId") @GeneratedValue
+	private Long categoryId;
+
 	private String name;
 	
 	@ManyToOne

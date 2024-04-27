@@ -1,9 +1,9 @@
 package com.bavis.budgetapp.mapper;
 
 import com.bavis.budgetapp.dto.IncomeDto;
-import com.bavis.budgetapp.enumeration.IncomeSource;
-import com.bavis.budgetapp.enumeration.IncomeType;
-import com.bavis.budgetapp.model.Income;
+import com.bavis.budgetapp.constants.IncomeSource;
+import com.bavis.budgetapp.constants.IncomeType;
+import com.bavis.budgetapp.entity.Income;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

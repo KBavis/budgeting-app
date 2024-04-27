@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.model.Category;
+import com.bavis.budgetapp.entity.Category;
 
 public interface CategoryService {
 	Category create(Category category, Long categoryTypeId) throws Exception;
