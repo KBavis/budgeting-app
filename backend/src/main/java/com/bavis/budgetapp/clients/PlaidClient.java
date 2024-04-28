@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "plaidClient", url = "https://development.plaid.com")
+@FeignClient(name = "plaidClient", url = "${plaid.api.baseUrl}")
 public interface PlaidClient {
 
     @PostMapping("/link/token/create")
