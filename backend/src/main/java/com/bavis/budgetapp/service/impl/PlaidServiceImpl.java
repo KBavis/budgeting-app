@@ -113,10 +113,15 @@ public class PlaidServiceImpl implements PlaidService{
         //Validate & Handle Feign Client Exceptions
         ResponseEntity<AccessTokenResponse> responseEntity;
         try{
+            LOG.debug("Utilizing PlaidClient to create access token with following exchangeTokenRequest: [{}]", exchangeTokenRequest);
             responseEntity = _plaidClient.createAccessToken(exchangeTokenRequest);
         } catch(FeignClientException e){
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
             throw new PlaidServiceException(plaidClientExceptionMessage);
+        } catch(Exception e){
+            LOG.debug("ERROR : {}",e.getMessage());
+            LOG.error(e.getLocalizedMessage());
+            throw new PlaidServiceException(e.getMessage());
         }
 
         //Validate Successful Response from PlaidClient
