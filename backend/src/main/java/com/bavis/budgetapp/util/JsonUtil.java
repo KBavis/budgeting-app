@@ -89,6 +89,7 @@ public class JsonUtil {
      */
     public String extractErrorMessage(FeignException.FeignClientException e) {
         try {
+            LOG.error("An error occurred while utilizing Feign Client: [{}]", e.getMessage());
             String responseBody = e.contentUTF8();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(responseBody);
@@ -96,6 +97,7 @@ public class JsonUtil {
             return jsonNode.get("error_message").asText();
         } catch (Exception ex) {
             // Fallback to returning the original exception message if parsing fails
+            LOG.error("An exception occurred while extractingErrorMessage: [{}]", ex.getMessage());
             return e.getMessage();
         }
     }
