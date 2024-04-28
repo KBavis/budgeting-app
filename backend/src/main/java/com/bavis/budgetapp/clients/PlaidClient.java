@@ -1,18 +1,20 @@
 package com.bavis.budgetapp.clients;
 
 
+import com.bavis.budgetapp.config.PlaidConfig;
 import com.bavis.budgetapp.request.ExchangeTokenRequest;
 import com.bavis.budgetapp.request.LinkTokenRequest;
 import com.bavis.budgetapp.request.RetrieveBalanceRequest;
 import com.bavis.budgetapp.response.AccessTokenResponse;
 import com.bavis.budgetapp.response.LinkTokenResponse;
+import feign.Feign;
 import feign.FeignException.FeignClientException;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "plaidClient", url = "${plaid.api.baseUrl}")
+@FeignClient(name = "plaidClient", url = "${plaid.api.baseUrl}", configuration = PlaidConfig.class)
 public interface PlaidClient {
 
     @PostMapping("/link/token/create")
