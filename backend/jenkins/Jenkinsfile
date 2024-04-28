@@ -40,6 +40,16 @@ pipeline {
             }
         }
 
+         stage('Remove Previous Docker Image') {
+            steps {
+                script {
+                    def version = env.VERSION
+                    def dockerImage = "budget-app-backend:${version}"
+                    bat "docker rmi -f ${dockerImage} || true"
+                }
+            }
+         }
+
         stage('Build Backend Docker Image') {
             steps {
                 dir('backend') {
@@ -50,6 +60,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Push Backend Docker Image to Docker Hub') {
             steps {
