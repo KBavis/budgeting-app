@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.config;
 
 import com.bavis.budgetapp.response.AccessTokenResponse;
+import com.bavis.budgetapp.response.LinkTokenResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import feign.Response;
@@ -26,12 +27,17 @@ public class CustomAccessTokenDecoder implements Decoder {
 
     @Override
     public Object decode(Response response, Type type) throws IOException, DecodeException, FeignException {
-        String responseBody = response.body().toString();
-        log.info("Raw response body: [{}]", responseBody);
-
-        responseBody = Util.toString(response.body().asReader(Util.UTF_8));
+        String responseBody = Util.toString(response.body().asReader(Util.UTF_8));
         log.info("Raw response body using Feign Util: {}", responseBody);
 
-        return objectMapper.readValue(responseBody, AccessTokenResponse.class);
+        if (type == AccessTokenResponse.class) {
+            return objectMapper.readValue(responseBody, AccessTokenResponse.class);
+        } else if (type == LinkTokenResponse.class) {
+            return objectMapper.readValue(responseBody, LinkTokenResponse.class);
+        } else if (type == String.class) {
+            return responseBody;
+        } else {
+            throw new DecodeException(response.status(), "Unsupported response type: " + type, response.request());
+        }
     }
 }
