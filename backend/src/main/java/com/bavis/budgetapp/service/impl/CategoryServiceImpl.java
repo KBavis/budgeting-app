@@ -27,9 +27,6 @@ public class CategoryServiceImpl implements CategoryService{
 	
 	@Autowired 
 	CategoryRepository categoryRepository;
-	
-	@Autowired
-	CategoryTypeRepository categoryTypeRepository;
 
 	@Autowired
 	CategoryTypeService categoryTypeService;
@@ -61,9 +58,9 @@ public class CategoryServiceImpl implements CategoryService{
 	@Override
 	public Category create(Category category, Long categoryTypeId) throws Exception{
 		LOG.info("Creating Category [{}] for category type with id [{}]", category, categoryTypeId);
-		
-		CategoryType type = categoryTypeRepository.findById(categoryTypeId).orElseThrow(() -> new Exception("Category Type not found for id " + categoryTypeId));
-		
+
+		CategoryType type = categoryTypeService.read(categoryTypeId);
+
 		category.setCategoryType(type);
 		//TODO: Set User of this category to be the authenticated user once JWT established
 		return categoryRepository.save(category);

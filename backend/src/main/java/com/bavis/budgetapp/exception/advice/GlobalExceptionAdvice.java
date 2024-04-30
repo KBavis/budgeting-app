@@ -60,13 +60,7 @@ public class GlobalExceptionAdvice {
         log.debug("In MethodArgumentNotValidException.class");
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
-            if (error instanceof FieldError) {
-                String fieldName = ((FieldError) error).getField();
-                String errorMessage = error.getDefaultMessage();
-                errors.put("error", String.format("%s", errorMessage));
-            } else {
-                errors.put("error", error.getDefaultMessage());
-            }
+            errors.put("error", error.getDefaultMessage());
         });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
