@@ -1,6 +1,11 @@
 package com.bavis.budgetapp.service.impl;
 
 
+import com.bavis.budgetapp.dto.BulkCategoryDto;
+import com.bavis.budgetapp.entity.User;
+import com.bavis.budgetapp.mapper.CategoryMapper;
+import com.bavis.budgetapp.service.CategoryTypeService;
+import com.bavis.budgetapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +17,9 @@ import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryService;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service 
 public class CategoryServiceImpl implements CategoryService{
 	
@@ -22,8 +30,33 @@ public class CategoryServiceImpl implements CategoryService{
 	
 	@Autowired
 	CategoryTypeRepository categoryTypeRepository;
-	
 
+	@Autowired
+	CategoryTypeService categoryTypeService;
+
+	@Autowired
+	UserService userService;
+
+	@Autowired
+	CategoryMapper categoryMapper;
+
+
+
+
+	@Override
+	public List<Category> bulkCreate(BulkCategoryDto categoryDtos) {
+		User user = userService.getCurrentAuthUser();
+		CategoryType categoryType = categoryTypeService.read(categoryDtos.getCategories().get(0).getCategoryTypeId());
+
+		//For Each Category DTO --> 1) set user, set category type, calculate budget amount
+		List<Category> categories = categoryDtos.getCategories().stream()
+				.map(categoryMapper::toEntity)
+				.peek(category -> category.setCategoryType(categoryType))
+				.peek(category -> category.setUser(user))
+				.toList();
+
+		return categoryRepository.saveAllAndFlush(categories);
+	}
 
 	@Override
 	public Category create(Category category, Long categoryTypeId) throws Exception{

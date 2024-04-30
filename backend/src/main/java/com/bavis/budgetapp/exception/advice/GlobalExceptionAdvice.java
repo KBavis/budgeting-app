@@ -57,12 +57,13 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         log.debug(ex.getMessage());
+        log.debug("In MethodArgumentNotValidException.class");
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             if (error instanceof FieldError) {
                 String fieldName = ((FieldError) error).getField();
                 String errorMessage = error.getDefaultMessage();
-                errors.put("error", String.format("%s %s", fieldName, errorMessage));
+                errors.put("error", String.format("%s", errorMessage));
             } else {
                 errors.put("error", error.getDefaultMessage());
             }
@@ -72,6 +73,7 @@ public class GlobalExceptionAdvice {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, String>> handle(ConstraintViolationException constraintViolationException) {
+        log.debug("In ConstraintViolationException.class");
         Set<ConstraintViolation<?>> violations = constraintViolationException.getConstraintViolations();
         String errorMessage = "";
         Map<String, String> errors = new HashMap<>();
