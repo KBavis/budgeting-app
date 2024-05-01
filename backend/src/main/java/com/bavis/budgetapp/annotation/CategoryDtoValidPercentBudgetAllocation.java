@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = CategoryDtoPercentBudgetValidator.class)
 public @interface CategoryDtoValidPercentBudgetAllocation {
-    String message() default "Category must be a valid percentage between 1 - 100&";
+    String message() default "Category must be a valid percentage between 1 - 100%";
 
     Class<?>[] groups() default {};
 

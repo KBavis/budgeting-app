@@ -41,12 +41,12 @@ public class CategoryServiceImpl implements CategoryService{
 
 
 	@Override
-	public List<Category> bulkCreate(BulkCategoryDto categoryDtos) {
+	public List<Category> bulkCreate(BulkCategoryDto bulkCategoryDto) {
 		User user = userService.getCurrentAuthUser();
-		CategoryType categoryType = categoryTypeService.read(categoryDtos.getCategories().get(0).getCategoryTypeId());
+		CategoryType categoryType = categoryTypeService.read(bulkCategoryDto.getCategories().get(0).getCategoryTypeId());
 
 		//For Each Category DTO --> 1) set user, set category type, calculate budget amount
-		List<Category> categories = categoryDtos.getCategories().stream()
+		List<Category> categories = bulkCategoryDto.getCategories().stream()
 				.map(categoryMapper::toEntity)
 				.peek(category -> category.setCategoryType(categoryType))
 				.peek(category -> category.setUser(user))

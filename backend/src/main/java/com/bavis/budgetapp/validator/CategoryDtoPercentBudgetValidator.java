@@ -5,7 +5,9 @@ import com.bavis.budgetapp.annotation.CategoryDtoValidPercentBudgetAllocation;
 import com.bavis.budgetapp.dto.CategoryDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class CategoryDtoPercentBudgetValidator implements ConstraintValidator<CategoryDtoValidPercentBudgetAllocation, CategoryDto>{
 
     @Override
@@ -15,6 +17,8 @@ public class CategoryDtoPercentBudgetValidator implements ConstraintValidator<Ca
 
     @Override
     public boolean isValid(CategoryDto categoryDto, ConstraintValidatorContext constraintValidatorContext) {
-        return categoryDto != null && categoryDto.getBudgetAllocationPercentage() > 0 && categoryDto.getBudgetAllocationPercentage() < 100;
+        boolean valid = categoryDto != null && categoryDto.getBudgetAllocationPercentage() > 0 && categoryDto.getBudgetAllocationPercentage() < 100;
+        log.debug("CategoryDtoPercentBudgetAllocation: {}", valid);
+        return  valid;
     }
 }

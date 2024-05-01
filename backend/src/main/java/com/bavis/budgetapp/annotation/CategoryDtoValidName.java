@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = CategoryDtoNameValidator.class)
 public @interface CategoryDtoValidName {
 
-    String message() default "Category name must be under 30 characters.";
+    String message() default "Category name must be a valid combination of letters between 1 and 50 characters.";
 
 
     Class<?>[] groups() default {};

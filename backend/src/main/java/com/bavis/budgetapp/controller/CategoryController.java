@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.BulkCategoryDto;
+import com.bavis.budgetapp.validator.group.BulkCategoryDtoValidationGroup;
 import com.bavis.budgetapp.validator.group.CategoryDtoValidationGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class CategoryController {
 	 * 			- Saved List of Categories
 	 */
 	@PostMapping("/bulk")
-	public List<Category> bulkCreate(@RequestBody @Validated(CategoryDtoValidationGroup.class) BulkCategoryDto categories){
+	public List<Category> bulkCreate(@RequestBody @Validated({CategoryDtoValidationGroup.class, BulkCategoryDtoValidationGroup.class}) BulkCategoryDto categories){
 		return categoryService.bulkCreate(categories);
 	}
 

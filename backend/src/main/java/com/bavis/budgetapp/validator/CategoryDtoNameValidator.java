@@ -5,7 +5,9 @@ import com.bavis.budgetapp.annotation.CategoryDtoValidName;
 import com.bavis.budgetapp.dto.CategoryDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class CategoryDtoNameValidator implements ConstraintValidator<CategoryDtoValidName, CategoryDto>{
 
     @Override
@@ -15,7 +17,10 @@ public class CategoryDtoNameValidator implements ConstraintValidator<CategoryDto
 
     @Override
     public boolean isValid(CategoryDto categoryDto, ConstraintValidatorContext constraintValidatorContext) {
-        String REGEX = "^[a-zA-Z]{1,29}$";
-        return categoryDto != null && categoryDto.getName() != null && !categoryDto.getName().isEmpty() && categoryDto.getName().matches(REGEX);
+        String REGEX = "^[a-zA-Z\\s]{1,49}$";
+        boolean valid = categoryDto != null && categoryDto.getName() != null && !categoryDto.getName().isEmpty()
+                && categoryDto.getName().matches(REGEX);
+        log.debug("CategoryDtoNameValidator: {}", valid);
+        return valid;
     }
 }
