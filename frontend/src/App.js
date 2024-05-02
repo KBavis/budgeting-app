@@ -15,46 +15,74 @@ import IncomeState from "./context/income/IncomeState";
 import CategoryTypeInputPage from "./pages/CategoryTypeInputPage";
 import CategoryTypeState from "./context/categoryTypes/CategoryTypeState";
 import CategoryState from "./context/category/CategoryState";
+import CategoryCreationPage from "./pages/CategoryCreationPage";
 
 function App() {
-  return (
-    <AlertState>
-      <AuthState>
-        <AccountState>
-          <IncomeState>
-            <CategoryTypeState>
-              <CategoryState>
-                <Router>
-                  <Fragment>
-                    <Alerts />
-                    <Routes>
-                      <Route
-                        path="/connect-accounts"
-                        element={<ConnectAccounts />}
-                      />
-                      <Route path="/" element={<LoginRegisterPage />} />
-                      <Route path="/home" element={<HomePage />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      <Route
-                        path="/forgot-password"
-                        element={<ForgotPassword />}
-                      />
-                      <Route path="/income" element={<IncomeInputPage />} />
-                      <Route
-                        path="/category-types"
-                        element={<CategoryTypeInputPage />}
-                      />
-                    </Routes>
-                  </Fragment>
-                </Router>
-              </CategoryState>
-            </CategoryTypeState>
-          </IncomeState>
-        </AccountState>
-      </AuthState>
-    </AlertState>
-  );
+   return (
+      <AlertState>
+         <AuthState>
+            <AccountState>
+               <IncomeState>
+                  <CategoryTypeState>
+                     <CategoryState>
+                        <Router>
+                           <Fragment>
+                              <Alerts />
+                              <Routes>
+                                 <Route
+                                    path="/connect-accounts"
+                                    element={<ConnectAccounts />}
+                                 />
+                                 <Route
+                                    path="/"
+                                    element={<LoginRegisterPage />}
+                                 />
+                                 <Route path="/home" element={<HomePage />} />
+                                 <Route path="/login" element={<Login />} />
+                                 <Route
+                                    path="/register"
+                                    element={<Register />}
+                                 />
+                                 <Route
+                                    path="/forgot-password"
+                                    element={<ForgotPassword />}
+                                 />
+                                 <Route
+                                    path="/income"
+                                    element={<IncomeInputPage />}
+                                 />
+                                 <Route
+                                    path="/category-types"
+                                    element={<CategoryTypeInputPage />}
+                                 />
+                                 <Route
+                                    path="/category/needs"
+                                    element={
+                                       <CategoryCreationPage categoryType="Needs" />
+                                    }
+                                 />
+                                 <Route
+                                    path="/category/wants"
+                                    element={
+                                       <CategoryCreationPage categoryType="Wants" />
+                                    }
+                                 />
+                                 <Route
+                                    path="/category/investments"
+                                    element={
+                                       <CategoryCreationPage categoryType="Investments" />
+                                    }
+                                 />
+                              </Routes>
+                           </Fragment>
+                        </Router>
+                     </CategoryState>
+                  </CategoryTypeState>
+               </IncomeState>
+            </AccountState>
+         </AuthState>
+      </AlertState>
+   );
 }
 
 export default App;

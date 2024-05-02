@@ -27,13 +27,13 @@ const LoginRegisterPage = () => {
                <div className="flex flex-col space-y-4">
                   <Link
                      to="/login"
-                     className="bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 text-white font-bold py-2 px-4 rounded mx-auto w-48 md:w-64"
+                     className="bg-indigo-600 border-[1px] border-white hover:bg-indigo-700 transition-colors duration-300 text-white font-bold py-2 px-4 rounded mx-auto w-48 md:w-64"
                   >
                      Login
                   </Link>
                   <Link
                      to="/register"
-                     className="bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 text-white font-bold py-2 px-4 rounded mx-auto w-48 md:w-64"
+                     className="bg-indigo-600 border-white border-[1px] hover:bg-indigo-700 transition-colors duration-300 text-white font-bold py-2 px-4 rounded mx-auto w-48 md:w-64"
                   >
                      Register
                   </Link>

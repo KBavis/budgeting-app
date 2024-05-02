@@ -18,7 +18,7 @@ const CategoryTypeInputPage = () => {
    useEffect(() => {
       if (categoryTypes && categoryTypes.length > 0) {
          setAlert("Category types added successfully", "SUCCESS");
-         navigate("/home");
+         navigate("/category/needs");
       }
    }, [categoryTypes]);
 
