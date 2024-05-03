@@ -83,18 +83,31 @@ const CategoryCreationContent = ({ categoryType }) => {
    };
 
    const handleSubmit = () => {
+      const totalPercentage = selectedCategories.reduce(
+         (sum, cat) => sum + cat.budgetAllocationPercentage,
+         0
+      );
+
+      if (totalPercentage !== 1) {
+         setAlert("You must utilize 100% of your allocated budget.", "danger");
+         return;
+      }
+
       const categoriesWithType = selectedCategories.map((category) => ({
          ...category,
          categoryTypeId: getCategoryTypeId(categoryType),
       }));
+      console.log(categoriesWithType);
       addCategories(categoriesWithType);
    };
 
    const getCategoryTypeId = (categoryTypeName) => {
-      const categoryType = categoryTypes.find(
-         (type) => type.name === categoryTypeName
+      const filteredCategoryTypes = categoryTypes.filter(
+         (type) => type.name.toLowerCase() === categoryTypeName.toLowerCase()
       );
-      return categoryType ? categoryType.id : null;
+      return filteredCategoryTypes.length > 0
+         ? filteredCategoryTypes[0].categoryTypeId
+         : null;
    };
 
    const getTotalIncome = () => {

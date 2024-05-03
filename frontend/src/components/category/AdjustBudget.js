@@ -33,7 +33,7 @@ const AdjustBudget = ({
    };
 
    const getAmountColor = () => {
-      if (remainingBudget <= 0) {
+      if (remainingBudget < 0) {
          return "text-red-500";
       } else if (remainingBudget < 500) {
          return "text-yellow-500";

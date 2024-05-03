@@ -33,9 +33,11 @@ const BubbleOptions = ({ onSelect, categoryType, selectedCategories }) => {
 
    return (
       <div className="mt-16 mb-8">
-         <h2 className="text-xl font-semibold mb-2 text-white tracking-wide">
-            Select from Options
-         </h2>
+         {filteredOptions.length > 0 && (
+            <h2 className="text-xl font-semibold mb-2 text-white tracking-wide">
+               Select from Options
+            </h2>
+         )}
          <TransitionGroup
             component="div"
             className="flex flex-wrap justify-center"
