@@ -32,14 +32,24 @@ const AdjustBudget = ({
       }
    };
 
+   const getAmountColor = () => {
+      if (remainingBudget <= 0) {
+         return "text-red-500";
+      } else if (remainingBudget < 500) {
+         return "text-yellow-500";
+      } else {
+         return "text-green-500";
+      }
+   };
+
    return (
-      <div className="mb-8 p-6 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-lg shadow-md relative">
-         <h2 className="text-3xl font-bold mb-2 text-indigo-700">
+      <div className="mb-8 p-6 bg-white border-[3px] border-indigo-600 rounded-lg shadow-md relative">
+         <h2 className="text-2xl font-bold mb-2 text-indigo-700">
             Adjust Budget
          </h2>
-         <p className="mb-6 text-lg text-indigo-600">
+         <p className="mb-6 text-base text-gray-600">
             Total Amount Available to Allocate:{" "}
-            <span className="font-bold text-indigo-800">
+            <span className={`font-bold ${getAmountColor()}`}>
                ${remainingBudget.toFixed(2)}
             </span>
          </p>
@@ -49,17 +59,15 @@ const AdjustBudget = ({
          >
             {categories.map((category) => (
                <div key={category.name} className="mb-6">
-                  <div className="flex justify-center items-center mb-2">
+                  <div className="flex justify-center items-center mt-3 mb-[2px]">
                      <label className="block font-bold mr-2">
                         {category.name}
                      </label>
                      <button
-                        className="text-red-500 hover:text-red-700 focus:outline-none"
+                        className="text-red-500 hover:text-gray-700 focus:outline-none"
                         onClick={() => onRemoveCategory(category.name)}
                      >
-                        <div className="w-6 h-6 flex items-center justify-center bg-white rounded-full border-2 border-red-500">
-                           <FaTimes size={14} />
-                        </div>
+                        <FaTimes size={14} />
                      </button>
                   </div>
                   <div className="relative mb-2 py-4 flex justify-between items-center">
