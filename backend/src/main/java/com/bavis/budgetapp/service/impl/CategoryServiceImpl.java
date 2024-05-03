@@ -42,6 +42,7 @@ public class CategoryServiceImpl implements CategoryService{
 
 	@Override
 	public List<Category> bulkCreate(BulkCategoryDto bulkCategoryDto) {
+		LOG.info("CategoryService: Bulk Creating the following bulkCategoryDto: [{}]", bulkCategoryDto);
 		User user = userService.getCurrentAuthUser();
 		CategoryType categoryType = categoryTypeService.read(bulkCategoryDto.getCategories().get(0).getCategoryTypeId());
 

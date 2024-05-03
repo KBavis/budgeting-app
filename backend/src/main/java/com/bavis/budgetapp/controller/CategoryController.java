@@ -42,6 +42,7 @@ public class CategoryController {
 	 */
 	@PostMapping("/bulk")
 	public List<Category> bulkCreate(@RequestBody @Validated({CategoryDtoValidationGroup.class, BulkCategoryDtoValidationGroup.class}) BulkCategoryDto categories){
+		LOG.info("Received request to create categories: [{}]", categories.toString());
 		return categoryService.bulkCreate(categories);
 	}
 
