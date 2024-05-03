@@ -6,19 +6,25 @@ import categoryContext from "../../context/category/categoryContext";
 import IncomeContext from "../../context/income/incomeContext";
 import categoryTypeContext from "../../context/categoryTypes/categoryTypeContext";
 import AlertContext from "../../context/alert/alertContext";
+import { useNavigate } from "react-router-dom";
 
 const CategoryCreationContent = ({ categoryType }) => {
    const [selectedCategories, setSelectedCategories] = useState([]);
    const [remainingBudget, setRemainingBudget] = useState(0);
-   const { addCategories } = useContext(categoryContext);
+   const { addCategories, categories } = useContext(categoryContext);
    const { categoryTypes } = useContext(categoryTypeContext);
    const { setAlert } = useContext(AlertContext);
    const { incomes } = useContext(IncomeContext);
 
+   const navigate = useNavigate();
+
    useEffect(() => {
       const totalIncome = getTotalIncome();
-      setRemainingBudget(totalIncome);
-   }, [incomes]);
+      const budgetAllocationPercentage =
+         getBudgetAllocationPercentage(categoryType);
+      const initialRemainingBudget = totalIncome * budgetAllocationPercentage;
+      setRemainingBudget(initialRemainingBudget);
+   }, [incomes, categoryTypes, categoryType]);
 
    const handleOptionSelect = (category) => {
       if (
@@ -82,14 +88,17 @@ const CategoryCreationContent = ({ categoryType }) => {
       setRemainingBudget(getTotalBudget() - totalAllocated);
    };
 
-   const handleSubmit = () => {
+   const handleSubmit = async () => {
       const totalPercentage = selectedCategories.reduce(
          (sum, cat) => sum + cat.budgetAllocationPercentage,
          0
       );
 
       if (totalPercentage !== 1) {
-         setAlert("You must utilize 100% of your allocated budget.", "danger");
+         setAlert(
+            "You must utilize exactly 100% of your allocated budget.",
+            "danger"
+         );
          return;
       }
 
@@ -98,7 +107,25 @@ const CategoryCreationContent = ({ categoryType }) => {
          categoryTypeId: getCategoryTypeId(categoryType),
       }));
       console.log(categoriesWithType);
-      addCategories(categoriesWithType);
+
+      try {
+         await addCategories(categoriesWithType);
+         setAlert(
+            `${categoryType} sub-categories were added succesfully`,
+            "success"
+         );
+         setSelectedCategories([]);
+
+         if (categoryType === "Needs") {
+            navigate("/category/wants");
+         } else if (categoryType === "Wants") {
+            navigate("/category/investments");
+         } else if (categoryType === "Investments") {
+            navigate("/home");
+         }
+      } catch (error) {
+         setAlert("Failed to add categories", "danger");
+      }
    };
 
    const getCategoryTypeId = (categoryTypeName) => {
@@ -115,10 +142,10 @@ const CategoryCreationContent = ({ categoryType }) => {
    };
 
    const getBudgetAllocationPercentage = (categoryTypeName) => {
-      const categoryType = categoryTypes.find(
-         (type) => type.name === categoryTypeName
+      const categoryTypeObj = categoryTypes.find(
+         (type) => type.name.toLowerCase() === categoryTypeName.toLowerCase()
       );
-      return categoryType ? categoryType.budgetAllocationPercentage : 0;
+      return categoryTypeObj ? categoryTypeObj.budgetAllocationPercentage : 0;
    };
 
    const getTotalBudget = () => {
