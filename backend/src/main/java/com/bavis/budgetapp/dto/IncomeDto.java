@@ -5,13 +5,21 @@ import com.bavis.budgetapp.constants.IncomeSource;
 import com.bavis.budgetapp.constants.IncomeType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-//todo: consider adding custom validations for errors with NotNull/NotEmpty so message is more meaningful in response
+/**
+ * @author Kellen Bavis
+ *
+ * DTO to encapsulate needed information for creating a new Income for a User
+ */
 @IncomeDtoValidAmount
 @Builder
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class IncomeDto {
 
     private double amount;

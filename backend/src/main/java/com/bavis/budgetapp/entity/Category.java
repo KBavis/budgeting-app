@@ -20,9 +20,9 @@ import lombok.Setter;
 
 /**
  * 
- * @author bavis
+ * @author Kellen Bavis
  * 	
- * 		Class To Store Relationship Between Parent Categories (Wants, Needs, Investments) And Sub Categories
+ * 	Entitiy to Store Relationship Between Parent Categories (Wants, Needs, Investments) And Sub Categories
  *
  */
 @AllArgsConstructor

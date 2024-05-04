@@ -11,6 +11,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * @author Kellen Bavis
+ *
+ * DTO to encapsulate a list of CategoryDtos for bulk Category creation requests
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

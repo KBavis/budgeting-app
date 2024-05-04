@@ -14,9 +14,9 @@ import lombok.Setter;
 
 /**
  * 
- * @author bavis
+ * @author Kellen Bavis
  * 
- *  	Entity Used To Establish a Connection With an Account and a Specified User
+ *  Entity Used To Establish a Connection With an Account and a Specified User
  *
  */
 

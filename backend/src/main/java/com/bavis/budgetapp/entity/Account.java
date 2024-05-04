@@ -11,11 +11,9 @@ import lombok.Setter;
 
 /**
  * 
- * @author bavis
+ * @author Kellen Bavis
  * 
- *  	Entity To Relate an Account with a User
- *
- *
+ *  Entity To Relate an Account with a User
  */
 @Entity
 @Table(name = "account")

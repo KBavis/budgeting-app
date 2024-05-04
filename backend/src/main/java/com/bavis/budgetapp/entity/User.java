@@ -31,9 +31,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * 
- * @author bavis
+ * @author Kellen Bavis
  * 	
- * 		User Entity For Allowing Users To Authenticate and Generate Account Specific Configurations 
+ * User Entity For Allowing Users To Authenticate and Generate Account Specific Configurations
  *
  */
 @Entity

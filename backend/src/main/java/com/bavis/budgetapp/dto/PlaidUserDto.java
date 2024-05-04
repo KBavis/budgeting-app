@@ -1,15 +1,17 @@
 package com.bavis.budgetapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
-@Getter
-@Setter
-@ToString
+/**
+ * @author Kellen Bavis
+ *
+ * DTO for storing a client user ID needed for generating Plaid Link token
+ */
+@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class PlaidUserDto {
 
     @JsonProperty("client_user_id")

@@ -1,10 +1,9 @@
 package com.bavis.budgetapp.constants;
 
 /**
- * 
- * @author bavis 
+ * @author bavis
  *
- *		Enum Class To Represent Admin or User Privlege 
+ * Constants utilized for potential user roles
  */
 public enum Role {
 	USER,

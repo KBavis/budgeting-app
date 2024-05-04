@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Data Transfer Object to Pass All Updates To Percent Budget Allocation of a Given User
+ * @author Kellen Bavis
+ *
+ * DTO to Pass All Updates To Percent Budget Allocation of a Given User
  */
 @Data
 @NoArgsConstructor

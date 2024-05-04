@@ -1,11 +1,9 @@
 package com.bavis.budgetapp.constants;
 
 /**
- * 
- * @author bavis
- * 
- *  	Enum To Determine Connection Status
+ * @author Kellen Bavis
  *
+ *  Constants for the current status of a connection to a financial institution
  */
 public enum ConnectionStatus {
 	CONNECTED, DISCONNECTED, CONNECTING

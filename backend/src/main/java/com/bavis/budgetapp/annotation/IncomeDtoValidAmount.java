@@ -10,6 +10,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Annotation for validating that a passed in income is valid
+ */
 @Constraint(validatedBy = IncomeDtoAmountValidator.class)
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

@@ -10,6 +10,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author Kellen Bavis
+ *
+ *  DTO to encapsulate needed information for creating a Category
+ */
 @Builder
 @Data
 @AllArgsConstructor

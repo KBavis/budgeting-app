@@ -9,6 +9,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+/**
+ * @author Kellen Bavis
+ *
+ * DTO to encapsulate needed information for connecting a new Account
+ */
 @Data
 @Builder
 @AllArgsConstructor

@@ -9,6 +9,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Annotation utilized for validating that a bulk creeation request of categories contains at least one category
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = BulkCategoryDtoListValidator.class)

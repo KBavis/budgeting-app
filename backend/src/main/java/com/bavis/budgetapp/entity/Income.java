@@ -13,6 +13,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Entity for storing information regarding a user's monthly income
+ */
 @Entity
 @Table(name = "income")
 @Data

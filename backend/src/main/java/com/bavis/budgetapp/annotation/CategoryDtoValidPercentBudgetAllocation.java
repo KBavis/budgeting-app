@@ -1,7 +1,6 @@
 package com.bavis.budgetapp.annotation;
 
 
-import com.bavis.budgetapp.validator.BulkCategoryDtoListValidator;
 import com.bavis.budgetapp.validator.CategoryDtoPercentBudgetValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -11,6 +10,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @author Kellen Bavis
+ *
+ *  Annotation for validating that a budget allocation is a valid percentage
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = CategoryDtoPercentBudgetValidator.class)

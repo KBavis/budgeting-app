@@ -10,7 +10,7 @@ import com.bavis.budgetapp.service.UserService;
 import java.util.List;
 
 /**
- * TODO: Finalize this implementation
+ * TODO: Finalize this implementation, add proper commments and logging
  */
 @RestController
 @RequestMapping("/users")

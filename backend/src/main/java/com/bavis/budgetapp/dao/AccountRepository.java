@@ -4,6 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.bavis.budgetapp.entity.Account;
 
-public interface AccountRepository extends JpaRepository<Account, Long> {
-
-}
+/**
+ * @author Kellen Bavis
+ *
+ * DAO for working with Account entities
+ */
+public interface AccountRepository extends JpaRepository<Account, Long> { }

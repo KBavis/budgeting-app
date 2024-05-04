@@ -11,12 +11,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Controller for working with Income entities
+ */
 @RestController
 @Log4j2
 @RequestMapping("/income")
 public class IncomeController {
 
-    private IncomeService _incomeService;
+    private final IncomeService _incomeService;
 
     public IncomeController(IncomeService _incomeService){
         this._incomeService = _incomeService;
@@ -24,6 +29,14 @@ public class IncomeController {
 
     //TODO: Consider adding multiple incomes at once
 
+    /**
+     * Creation of a single income
+     *
+     * @param income
+     *          - Income to create
+     * @return
+     *          - newly created Income
+     */
     @PostMapping
     public ResponseEntity<Income> create(@Valid @RequestBody IncomeDto income){
         log.info("Received Income creation request for Income [{}]", income);

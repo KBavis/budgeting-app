@@ -6,6 +6,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @author Kellen Bavis
+ *
+ * DTO for encapsulating needed information for creating new Account
+ */
 @Data
 @Builder
 @NoArgsConstructor

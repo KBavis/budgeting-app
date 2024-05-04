@@ -6,7 +6,9 @@ import lombok.*;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
- * Class To Encapsulate Necessary Details To Return To User Upon Authenticating/Registering
+ * @author Kellen Bavis
+ *
+ *DTO To Encapsulate Necessary Details To Return To User Upon Authenticating/Registering
  */
 @Builder
 @Data

@@ -9,6 +9,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Annotation utilized for validating that an usernmae is in the proper format
+ */
 @Constraint(validatedBy = AuthRequestUsernameFormatValidator.class)
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

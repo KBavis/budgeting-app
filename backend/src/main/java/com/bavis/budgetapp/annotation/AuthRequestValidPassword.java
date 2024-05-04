@@ -11,6 +11,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 
+/**
+ * @author Kellen Bavis '
+ *
+ * Annotation utilized for validating that a user has configured a valid password
+ */
 @Constraint(validatedBy = AuthRequestPasswordValidator.class)
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

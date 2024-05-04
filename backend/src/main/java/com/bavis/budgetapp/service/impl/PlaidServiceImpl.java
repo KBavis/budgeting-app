@@ -7,7 +7,7 @@ import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.dto.ExchangeTokenRequestDto;
 import com.bavis.budgetapp.dto.LinkTokenRequestDto;
 import com.bavis.budgetapp.dto.RetrieveBalanceRequestDto;
-import com.bavis.budgetapp.dto.AccessTokenRequestDto;
+import com.bavis.budgetapp.dto.AccessTokenResponseDto;
 import com.bavis.budgetapp.dto.LinkTokenResponseDto;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.util.JsonUtil;
@@ -111,7 +111,7 @@ public class PlaidServiceImpl implements PlaidService{
         LOG.debug("ExchangeTokenRequest created in 'exchangeToken' in PlaidService: {}", exchangeTokenRequestDto);
 
         //Validate & Handle Feign Client Exceptions
-        ResponseEntity<AccessTokenRequestDto> responseEntity;
+        ResponseEntity<AccessTokenResponseDto> responseEntity;
         try{
             LOG.debug("Utilizing PlaidClient to create access token with following exchangeTokenRequest: [{}]", exchangeTokenRequestDto);
             responseEntity = _plaidClient.createAccessToken(exchangeTokenRequestDto);
@@ -127,7 +127,7 @@ public class PlaidServiceImpl implements PlaidService{
         //Validate Successful Response from PlaidClient
         if(responseEntity.getStatusCode().is2xxSuccessful()){
             LOG.debug("Response Body From Exchange Token Request: {}", responseEntity.getBody());
-            AccessTokenRequestDto responseBody = responseEntity.getBody();
+            AccessTokenResponseDto responseBody = responseEntity.getBody();
             if(responseBody != null){
                 if(responseBody.getAccessToken().isEmpty()){
                     LOG.error("Access Token returned from PlaidClient is NULL");

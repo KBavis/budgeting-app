@@ -18,9 +18,9 @@ import lombok.Setter;
 
 /**
  * 
- * @author bavis
+ * @author Kellen Bavis
  * 
- *  	Transaction Entity To Hold Information Regarding What User Spends Money On
+ *  Transaction Entity To Hold Information Regarding What User Spends Money On
  *
  */
 @Entity

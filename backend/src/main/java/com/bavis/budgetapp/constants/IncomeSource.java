@@ -1,5 +1,10 @@
 package com.bavis.budgetapp.constants;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Constants for potential sources of income
+ */
 public enum IncomeSource {
     EMPLOYER,
     CLIENT,

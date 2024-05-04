@@ -1,6 +1,5 @@
 package com.bavis.budgetapp.annotation;
 
-import com.bavis.budgetapp.validator.BulkCategoryDtoListValidator;
 import com.bavis.budgetapp.validator.CategoryDtoCategoryTypeValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -10,6 +9,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Annotation utilized for validating that a proper CategoryType was referenced in the request
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = CategoryDtoCategoryTypeValidator.class)

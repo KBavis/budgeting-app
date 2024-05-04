@@ -8,6 +8,11 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+/**
+ * @author Kellen Bavis
+ *
+ * DTO for encapsulating needed information for either registering/authenticating user
+ */
 @AuthRequestSamePasswords(groups = AuthRequestRegistrationValidationGroup.class)
 @AuthRequestDuplicateUsername(groups = AuthRequestRegistrationValidationGroup.class)
 @AuthRequestValidUsername(groups = {AuthRequestRegistrationValidationGroup.class, AuthRequestAuthenticationValidationGroup.class})

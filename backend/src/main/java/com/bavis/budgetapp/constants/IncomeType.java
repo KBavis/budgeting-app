@@ -1,5 +1,10 @@
 package com.bavis.budgetapp.constants;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Constants for potential types of income
+ */
 public enum IncomeType {
     SALARY,
     BONUS,

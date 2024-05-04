@@ -3,15 +3,22 @@ package com.bavis.budgetapp.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+/**
+ * @author Kellen Bavis
+ *
+ * DTO for encapsulating information needed to generate a link token via Plaid API in order to access Plaid Link on frontend
+ */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LinkTokenRequestDto {
 
     @JsonProperty("client_id")
-    private final String clientId;
+    private String clientId;
 
     @JsonProperty("secret")
-    private final String secretKey;
+    private String secretKey;
 
     @JsonProperty("client_name")
     private String clientName;

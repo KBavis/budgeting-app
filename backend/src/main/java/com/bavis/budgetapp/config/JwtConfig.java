@@ -1,7 +1,6 @@
 package com.bavis.budgetapp.config;
 
 import com.auth0.jwt.algorithms.Algorithm;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,14 +8,21 @@ import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
-@Configuration
-@Log4j2
+/**
+ * @author Kellen Bavis
+ *
+ * Configuration for our JWT Implementation
+ */
+@Configuration("jwtConfig")
 public class JwtConfig {
 
     private final RSAPublicKey rsaPublicKey;
     private final RSAPrivateKey rsaPrivateKey;
 
-    //Constructor generates RSA Key Pair Single Time To Be Reused For Signing/Verifying JWT Tokens
+
+    /**
+     * Generate RSA Key Pair to be utilized in validating/signing JWT Tokens
+     */
     public JwtConfig() {
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");

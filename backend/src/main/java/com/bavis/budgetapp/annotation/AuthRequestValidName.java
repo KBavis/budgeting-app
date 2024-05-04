@@ -1,7 +1,6 @@
 package com.bavis.budgetapp.annotation;
 
 import com.bavis.budgetapp.validator.AuthRequestNameValidator;
-import com.bavis.budgetapp.validator.AuthRequestSamePasswordsValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -10,6 +9,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Annotation for validating that the registration request has valid name
+ */
 @Constraint(validatedBy = AuthRequestNameValidator.class)
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

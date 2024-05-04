@@ -7,7 +7,7 @@ import com.bavis.budgetapp.helper.TestHelper;
 import com.bavis.budgetapp.dto.ExchangeTokenRequestDto;
 import com.bavis.budgetapp.dto.LinkTokenRequestDto;
 import com.bavis.budgetapp.dto.RetrieveBalanceRequestDto;
-import com.bavis.budgetapp.dto.AccessTokenRequestDto;
+import com.bavis.budgetapp.dto.AccessTokenResponseDto;
 import com.bavis.budgetapp.dto.LinkTokenResponseDto;
 import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
 import com.bavis.budgetapp.util.JsonUtil;
@@ -131,10 +131,10 @@ public class PlaidServiceTests {
         //Arrange
         String publicToken = "public-token";
         String expectedAccessToken = "access-token";
-        AccessTokenRequestDto accessTokenRequestDto = AccessTokenRequestDto.builder()
+        AccessTokenResponseDto accessTokenResponseDto = AccessTokenResponseDto.builder()
                 .accessToken(expectedAccessToken)
                 .build();
-        ResponseEntity<AccessTokenRequestDto> responseEntity = new ResponseEntity<>(accessTokenRequestDto, HttpStatus.OK);
+        ResponseEntity<AccessTokenResponseDto> responseEntity = new ResponseEntity<>(accessTokenResponseDto, HttpStatus.OK);
 
 
         //Mock
@@ -161,7 +161,7 @@ public class PlaidServiceTests {
     public void testExchangeToken_NullResponseBody_Failed() {
         //Arrange
         String publicToken = "public-token";
-        ResponseEntity<AccessTokenRequestDto> responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
+        ResponseEntity<AccessTokenResponseDto> responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
 
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
@@ -188,10 +188,10 @@ public class PlaidServiceTests {
         //Arrange
         String publicToken = "public-token";
         String expectedAccessToken = "access-token";
-        AccessTokenRequestDto accessTokenRequestDto = AccessTokenRequestDto.builder()
+        AccessTokenResponseDto accessTokenResponseDto = AccessTokenResponseDto.builder()
                 .accessToken(expectedAccessToken)
                 .build();
-        ResponseEntity<AccessTokenRequestDto> responseEntity = new ResponseEntity<>(accessTokenRequestDto, HttpStatus.BAD_REQUEST);
+        ResponseEntity<AccessTokenResponseDto> responseEntity = new ResponseEntity<>(accessTokenResponseDto, HttpStatus.BAD_REQUEST);
 
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
