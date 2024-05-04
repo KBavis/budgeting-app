@@ -1,13 +1,13 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.AuthRequestValidPassword;
-import com.bavis.budgetapp.request.AuthRequest;
+import com.bavis.budgetapp.dto.AuthRequestDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class AuthRequestPasswordValidator implements ConstraintValidator<AuthRequestValidPassword, AuthRequest> {
+public class AuthRequestPasswordValidator implements ConstraintValidator<AuthRequestValidPassword, AuthRequestDto> {
 
     /**
      * Validations:
@@ -25,8 +25,8 @@ public class AuthRequestPasswordValidator implements ConstraintValidator<AuthReq
     }
 
     @Override
-    public boolean isValid(AuthRequest authRequest, ConstraintValidatorContext constraintValidatorContext) {
-        String password = authRequest.getPasswordOne();
+    public boolean isValid(AuthRequestDto authRequestDto, ConstraintValidatorContext constraintValidatorContext) {
+        String password = authRequestDto.getPasswordOne();
         if(password == null || password.isEmpty()){
             return false;
         }

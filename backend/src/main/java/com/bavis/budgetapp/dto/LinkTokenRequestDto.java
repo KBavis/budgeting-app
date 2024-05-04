@@ -1,13 +1,11 @@
-package com.bavis.budgetapp.request;
+package com.bavis.budgetapp.dto;
 
-import com.bavis.budgetapp.dto.PlaidUserDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import org.springframework.beans.factory.annotation.Value;
 
 @Data
 @Builder
-public class LinkTokenRequest {
+public class LinkTokenRequestDto {
 
     @JsonProperty("client_id")
     private final String clientId;
@@ -23,7 +21,7 @@ public class LinkTokenRequest {
 
     private String language;
 
-    private PlaidUserDTO user;
+    private PlaidUserDto user;
 
     private String[] products;
 }

@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.request;
+package com.bavis.budgetapp.dto;
 
 import com.bavis.budgetapp.annotation.*;
 import com.bavis.budgetapp.validator.group.AuthRequestAuthenticationValidationGroup;
@@ -17,7 +17,7 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @ToString
 @Builder
-public class AuthRequest {
+public class AuthRequestDto {
     private final String name;
     private final String username;
     private final String passwordOne;

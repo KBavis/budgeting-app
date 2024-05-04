@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AccountDTO;
-import com.bavis.budgetapp.request.ConnectAccountRequest;
+import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +38,9 @@ public class AccountController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<AccountDTO> connectAccount(@Valid @RequestBody ConnectAccountRequest connectAccountRequest){
-		LOG.info("Received request to connect new account: [{}]", connectAccountRequest);
-		return ResponseEntity.ok( _accountService.connectAccount(connectAccountRequest));
+	public ResponseEntity<AccountDto> connectAccount(@Valid @RequestBody ConnectAccountRequestDto connectAccountRequestDto){
+		LOG.info("Received request to connect new account: [{}]", connectAccountRequestDto);
+		return ResponseEntity.ok( _accountService.connectAccount(connectAccountRequestDto));
 	}
 	
 	@PutMapping("/{accountId}")

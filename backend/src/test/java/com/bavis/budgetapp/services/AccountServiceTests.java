@@ -2,7 +2,7 @@ package com.bavis.budgetapp.services;
 
 
 import com.bavis.budgetapp.dao.AccountRepository;
-import com.bavis.budgetapp.dto.AccountDTO;
+import com.bavis.budgetapp.dto.AccountDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.constants.ConnectionStatus;
 import com.bavis.budgetapp.exception.AccountConnectionException;
@@ -11,7 +11,7 @@ import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.entity.User;
-import com.bavis.budgetapp.request.ConnectAccountRequest;
+import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.ConnectionService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.UserService;
@@ -55,11 +55,11 @@ public class AccountServiceTests {
     @InjectMocks
     AccountServiceImpl accountService;
 
-    private ConnectAccountRequest connectAccountRequest;
+    private ConnectAccountRequestDto connectAccountRequestDto;
 
     @BeforeEach
     public void setup() {
-        connectAccountRequest = ConnectAccountRequest.builder()
+        connectAccountRequestDto = ConnectAccountRequestDto.builder()
                 .plaidAccountId("plaid-account-id")
                 .accountName("account-name")
                 .publicToken("public-token")
@@ -73,10 +73,10 @@ public class AccountServiceTests {
     @Test
     public void testConnectAccount_Success() {
         //Arrange
-        AccountDTO accountDTO = AccountDTO.builder()
-                .accountName(connectAccountRequest.getAccountName())
+        AccountDto accountDTO = AccountDto.builder()
+                .accountName(connectAccountRequestDto.getAccountName())
                 .balance(1000.0)
-                .accountType(connectAccountRequest.getAccountType())
+                .accountType(connectAccountRequestDto.getAccountType())
                 .build();
         User user = User.builder()
                 .userId(10L)
@@ -93,22 +93,22 @@ public class AccountServiceTests {
         Account account = Account.builder()
                 .accountId("account-id")
                 .accountName("account-name")
-                .accountType(connectAccountRequest.getAccountType())
+                .accountType(connectAccountRequestDto.getAccountType())
                 .connection(connection)
                 .balance(accountDTO.getBalance())
                 .build();
         double balance = 1000.0;
 
         //Mock
-        when(plaidService.exchangeToken(connectAccountRequest.getPublicToken())).thenReturn(accessToken);
-        when(plaidService.retrieveBalance(connectAccountRequest.getPlaidAccountId(), accessToken)).thenReturn(balance);
+        when(plaidService.exchangeToken(connectAccountRequestDto.getPublicToken())).thenReturn(accessToken);
+        when(plaidService.retrieveBalance(connectAccountRequestDto.getPlaidAccountId(), accessToken)).thenReturn(balance);
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(connectionService.create(any(Connection.class))).thenReturn(connection);
         when(accountRepository.save(any(Account.class))).thenReturn(account);
         when(accountMapper.toDTO(any(Account.class))).thenReturn(accountDTO);
 
         //Act
-        AccountDTO createdAccountDto = accountService.connectAccount(connectAccountRequest);
+        AccountDto createdAccountDto = accountService.connectAccount(connectAccountRequestDto);
 
         //Assert
         assertNotNull(createdAccountDto);
@@ -117,8 +117,8 @@ public class AccountServiceTests {
         assertEquals("account-name", accountDTO.getAccountName());
 
         //Verify
-        verify(plaidService, times(1)).exchangeToken(connectAccountRequest.getPublicToken());
-        verify(plaidService, times(1)).retrieveBalance(connectAccountRequest.getPlaidAccountId(), accessToken);
+        verify(plaidService, times(1)).exchangeToken(connectAccountRequestDto.getPublicToken());
+        verify(plaidService, times(1)).retrieveBalance(connectAccountRequestDto.getPlaidAccountId(), accessToken);
         verify(userService, times(1)).getCurrentAuthUser();
         verify(connectionService, times(1)).create(any(Connection.class));
         verify(accountRepository, times(1)).save(any(Account.class));
@@ -134,11 +134,11 @@ public class AccountServiceTests {
         String plaidServiceExceptionMsg = "PlaidServiceException: [Invalid Response Code When Exchanging Public Token Via Plaid Client: [404]]";
         String connectAccountExceptionMsg = "An error occurred when creating an account: [" + plaidServiceExceptionMsg + "]";
        //Mock
-       when(plaidService.exchangeToken(connectAccountRequest.getPublicToken())).thenThrow(new PlaidServiceException("Invalid Response Code When Exchanging Public Token Via Plaid Client: [404]"));
+       when(plaidService.exchangeToken(connectAccountRequestDto.getPublicToken())).thenThrow(new PlaidServiceException("Invalid Response Code When Exchanging Public Token Via Plaid Client: [404]"));
 
        //Act & Assert
         AccountConnectionException runtimeException = assertThrows(AccountConnectionException.class, () -> {
-            accountService.connectAccount(connectAccountRequest);
+            accountService.connectAccount(connectAccountRequestDto);
         });
         assertEquals(connectAccountExceptionMsg, runtimeException.getMessage());
     }
@@ -152,11 +152,11 @@ public class AccountServiceTests {
         String connectAccountExceptionMsg = "An error occurred when creating an account: [" + plaidServiceExceptionMsg + "]";
 
         //Mock
-        when(plaidService.exchangeToken(connectAccountRequest.getPublicToken())).thenThrow(new PlaidServiceException(plaidServiceExceptionMsg));
+        when(plaidService.exchangeToken(connectAccountRequestDto.getPublicToken())).thenThrow(new PlaidServiceException(plaidServiceExceptionMsg));
 
         //Act & Assert
         AccountConnectionException runtimeException = assertThrows(AccountConnectionException.class, () -> {
-            accountService.connectAccount(connectAccountRequest);
+            accountService.connectAccount(connectAccountRequestDto);
         });
         assertNotNull(runtimeException);
         assertEquals(connectAccountExceptionMsg, runtimeException.getMessage());

@@ -10,7 +10,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @AllArgsConstructor
-public class PlaidUserDTO {
+public class PlaidUserDto {
 
     @JsonProperty("client_user_id")
     private String client_user_id;

@@ -1,9 +1,9 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AccountDTO;
+import com.bavis.budgetapp.dto.AccountDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.exception.AccountConnectionException;
-import com.bavis.budgetapp.request.ConnectAccountRequest;
+import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,18 +41,18 @@ public class AccountControllerTests {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private ConnectAccountRequest connectAccountRequest;
-    private AccountDTO accountDTO;
+    private ConnectAccountRequestDto connectAccountRequestDto;
+    private AccountDto accountDTO;
     @BeforeEach
     void setup() {
-        connectAccountRequest = ConnectAccountRequest.builder()
+        connectAccountRequestDto = ConnectAccountRequestDto.builder()
                 .accountType(AccountType.CHECKING)
                 .accountName("Test Account")
                 .plaidAccountId("plaid-account-id")
                 .publicToken("public-token")
                 .build();
 
-        accountDTO = AccountDTO.builder()
+        accountDTO = AccountDto.builder()
                 .accountType(AccountType.CHECKING)
                 .balance(1000.0)
                 .accountName("Test Account")
@@ -67,12 +67,12 @@ public class AccountControllerTests {
     @Test
     public void testConnectAccount_ValidRequest_Successful() throws Exception {
         //Mock
-        when(accountService.connectAccount(any(ConnectAccountRequest.class))).thenReturn(accountDTO);
+        when(accountService.connectAccount(any(ConnectAccountRequestDto.class))).thenReturn(accountDTO);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/account")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+                .content(objectMapper.writeValueAsString(connectAccountRequestDto)));
 
         //Assert
         resultActions.andExpect(status().isOk())
@@ -85,12 +85,12 @@ public class AccountControllerTests {
     @Test
     public void testConnectAccount_InvalidRequest_EmptyPlaidAccountId_Failure() throws Exception {
         //Arrange
-        connectAccountRequest.setPlaidAccountId("");
+        connectAccountRequestDto.setPlaidAccountId("");
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/account")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+                .content(objectMapper.writeValueAsString(connectAccountRequestDto)));
 
         // Assert
         resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -100,12 +100,12 @@ public class AccountControllerTests {
     @Test
     public void testConnectAccount_InvalidRequest_EmptyAccountName_Failure() throws Exception {
         //Arrange
-        connectAccountRequest.setAccountName("");
+        connectAccountRequestDto.setAccountName("");
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/account")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+                .content(objectMapper.writeValueAsString(connectAccountRequestDto)));
 
         // Assert
         resultActions.andExpect(status().isBadRequest())
@@ -116,12 +116,12 @@ public class AccountControllerTests {
     @Test
     public void testConnectAccount_InvalidRequest_EmptyPublicToken_Failure() throws Exception {
         //Arrange
-        connectAccountRequest.setPublicToken("");
+        connectAccountRequestDto.setPublicToken("");
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/account")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+                .content(objectMapper.writeValueAsString(connectAccountRequestDto)));
 
         // Assert
         resultActions.andExpect(status().isBadRequest())
@@ -132,12 +132,12 @@ public class AccountControllerTests {
     @Test
     public void testConnectAccount_InvalidRequest_EmptyAccountType_Failure() throws Exception {
         //Arrange
-        connectAccountRequest.setAccountType(null);
+        connectAccountRequestDto.setAccountType(null);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/account")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+                .content(objectMapper.writeValueAsString(connectAccountRequestDto)));
 
         // Assert
         resultActions.andExpect(status().isBadRequest())
@@ -166,12 +166,12 @@ public class AccountControllerTests {
         String expectedErrorMsg = "An error occurred when creating an account: [" + plaidErrorMsg+ "]";
 
         //Mock
-        when(accountService.connectAccount(connectAccountRequest)).thenThrow(new AccountConnectionException(expectedErrorMsg));
+        when(accountService.connectAccount(connectAccountRequestDto)).thenThrow(new AccountConnectionException(expectedErrorMsg));
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/account")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(connectAccountRequest)));
+                .content(objectMapper.writeValueAsString(connectAccountRequestDto)));
 
         //Assert
         resultActions.andExpect(status().isConflict())

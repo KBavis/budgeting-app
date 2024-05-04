@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.request;
+package com.bavis.budgetapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ExchangeTokenRequest {
+public class ExchangeTokenRequestDto {
     @JsonProperty("client_id")
     private final String clientId;
 

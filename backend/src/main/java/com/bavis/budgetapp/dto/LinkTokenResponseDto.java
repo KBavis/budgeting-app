@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.response;
+package com.bavis.budgetapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class LinkTokenResponse {
+public class LinkTokenResponseDto {
     @JsonProperty("link_token")
     private String linkToken;
 

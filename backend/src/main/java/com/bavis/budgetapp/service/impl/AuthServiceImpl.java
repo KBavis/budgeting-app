@@ -5,8 +5,8 @@ import com.bavis.budgetapp.exception.JwtServiceException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.entity.User;
-import com.bavis.budgetapp.request.AuthRequest;
-import com.bavis.budgetapp.response.AuthResponse;
+import com.bavis.budgetapp.dto.AuthRequestDto;
+import com.bavis.budgetapp.dto.AuthResponseDto;
 import com.bavis.budgetapp.service.AuthService;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.service.PlaidService;
@@ -48,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
     /**
      * Register user within our application
      *
-     * @param authRequest
+     * @param authRequestDto
      *          - Authentication Request sent to server
      * @return
      * `        - AuthResposne containing UserDetails and JWT Token
@@ -59,12 +59,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public AuthResponse register(AuthRequest authRequest) throws UserServiceException, PlaidServiceException, JwtServiceException {
+    public AuthResponseDto register(AuthRequestDto authRequestDto) throws UserServiceException, PlaidServiceException, JwtServiceException {
 
         User user = User.builder()
-                .name(authRequest.getName())
-                .username(authRequest.getUsername())
-                .password(_passwordEncoder.encode(authRequest.getPasswordOne()))
+                .name(authRequestDto.getName())
+                .username(authRequestDto.getUsername())
+                .password(_passwordEncoder.encode(authRequestDto.getPasswordOne()))
                 .role(Role.USER) //TODO: Consider having seperate roles
                 .profileImage(null)
                 .accounts(new ArrayList<>())
@@ -85,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
         LOG.info("User Following Plaid Link Token Generation: [{}]", user.toString());
 
         String jwtToken = _jwtService.generateToken(user);
-        return AuthResponse.builder()
+        return AuthResponseDto.builder()
                 .token(jwtToken)
                 .userDetails(user)
                 .build();
@@ -93,32 +93,32 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponse authenticate(AuthRequest authRequest) throws AuthenticationException{
+    public AuthResponseDto authenticate(AuthRequestDto authRequestDto) throws AuthenticationException{
 
         //Authenticate User using our AuthenticationManager Bean
         _authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        authRequest.getUsername(),
-                        authRequest.getPasswordOne()
+                        authRequestDto.getUsername(),
+                        authRequestDto.getPasswordOne()
                 )
         );
 
         //Generate JWT Token For Authenticated User
-        User user = _userService.readByUsername(authRequest.getUsername());
+        User user = _userService.readByUsername(authRequestDto.getUsername());
         String jwtToken = _jwtService.generateToken(user);
-        return AuthResponse.builder()
+        return AuthResponseDto.builder()
                 .token(jwtToken)
                 .userDetails(user)
                 .build();
     }
 
     @Override
-    public AuthResponse refresh(AuthRequest authRequest) {
+    public AuthResponseDto refresh(AuthRequestDto authRequestDto) {
         return null;
     }
 
     @Override
-    public AuthResponse logout() {
+    public AuthResponseDto logout() {
         return null;
     }
 

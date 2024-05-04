@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.response;
+package com.bavis.budgetapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class AccessTokenResponse {
+public class AccessTokenRequestDto {
     @JsonProperty("access_token")
     private String accessToken;
 

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountDTO {
+public class AccountDto {
     private String accountName;
     private double balance;
     private AccountType accountType;

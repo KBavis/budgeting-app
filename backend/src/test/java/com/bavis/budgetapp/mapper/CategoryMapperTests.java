@@ -1,9 +1,6 @@
 package com.bavis.budgetapp.mapper;
 
-import com.bavis.budgetapp.constants.AccountType;
-import com.bavis.budgetapp.dto.AccountDTO;
 import com.bavis.budgetapp.dto.CategoryDto;
-import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Category;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

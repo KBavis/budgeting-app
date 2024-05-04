@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.mapper;
 
 
-import com.bavis.budgetapp.dto.AccountDTO;
+import com.bavis.budgetapp.dto.AccountDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.entity.Account;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ public class AccountMapperTests {
                 .balance(1000.0)
                 .accountType(AccountType.CHECKING)
                 .build();
-        AccountDTO target = new AccountDTO();
+        AccountDto target = new AccountDto();
 
         //Act
         target = accountMapper.toDTO(source);

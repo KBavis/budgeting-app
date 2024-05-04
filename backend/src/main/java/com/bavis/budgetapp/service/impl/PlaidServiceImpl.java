@@ -2,13 +2,13 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.config.PlaidConfig;
-import com.bavis.budgetapp.dto.PlaidUserDTO;
+import com.bavis.budgetapp.dto.PlaidUserDto;
 import com.bavis.budgetapp.exception.PlaidServiceException;
-import com.bavis.budgetapp.request.ExchangeTokenRequest;
-import com.bavis.budgetapp.request.LinkTokenRequest;
-import com.bavis.budgetapp.request.RetrieveBalanceRequest;
-import com.bavis.budgetapp.response.AccessTokenResponse;
-import com.bavis.budgetapp.response.LinkTokenResponse;
+import com.bavis.budgetapp.dto.ExchangeTokenRequestDto;
+import com.bavis.budgetapp.dto.LinkTokenRequestDto;
+import com.bavis.budgetapp.dto.RetrieveBalanceRequestDto;
+import com.bavis.budgetapp.dto.AccessTokenRequestDto;
+import com.bavis.budgetapp.dto.LinkTokenResponseDto;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.util.JsonUtil;
 import feign.FeignException.FeignClientException;
@@ -47,22 +47,22 @@ public class PlaidServiceImpl implements PlaidService{
      */
     @Override
     public String generateLinkToken(Long userId) throws PlaidServiceException {
-        LinkTokenRequest linkTokenRequest = LinkTokenRequest.builder()
+        LinkTokenRequestDto linkTokenRequestDto = LinkTokenRequestDto.builder()
                 .clientId(_plaidConfig.getClientId())
                 .secretKey(_plaidConfig.getSecretKey())
                 .clientName("Bavis Budget Application")
                 .countryCodes(new String[]{"US"})
                 .language("en")
-                .user(new PlaidUserDTO(userId.toString()))
+                .user(new PlaidUserDto(userId.toString()))
                 .products(new String[]{"transactions"})
                 .build();
 
-        LOG.debug("Link Token Request in `generateLinkToken()`: {}", linkTokenRequest.toString());
+        LOG.debug("Link Token Request in `generateLinkToken()`: {}", linkTokenRequestDto.toString());
 
         //Validate & Handle FeignClientException
-        ResponseEntity<LinkTokenResponse> responseEntity;
+        ResponseEntity<LinkTokenResponseDto> responseEntity;
         try{
-            responseEntity = _plaidClient.createLinkToken(linkTokenRequest);
+            responseEntity = _plaidClient.createLinkToken(linkTokenRequestDto);
         } catch (FeignClientException e){
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
             throw new PlaidServiceException(plaidClientExceptionMessage);
@@ -73,7 +73,7 @@ public class PlaidServiceImpl implements PlaidService{
         //Validate Successful Response from PlaidClient
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             LOG.debug("Response Body From LinkToken Request: {}", responseEntity.getBody());
-            LinkTokenResponse responseBody = responseEntity.getBody();
+            LinkTokenResponseDto responseBody = responseEntity.getBody();
             if (responseBody != null) {
                 if(responseBody.getLinkToken().isEmpty()){
                     LOG.error("Link Token returned from Plaid Client is NULL");
@@ -102,19 +102,19 @@ public class PlaidServiceImpl implements PlaidService{
      */
     @Override
     public String exchangeToken(String publicToken) throws PlaidServiceException{
-        ExchangeTokenRequest exchangeTokenRequest = ExchangeTokenRequest.builder()
+        ExchangeTokenRequestDto exchangeTokenRequestDto = ExchangeTokenRequestDto.builder()
                 .publicToken(publicToken)
                 .clientId(_plaidConfig.getClientId())
                 .secretKey(_plaidConfig.getSecretKey())
                 .build();
 
-        LOG.debug("ExchangeTokenRequest created in 'exchangeToken' in PlaidService: {}", exchangeTokenRequest);
+        LOG.debug("ExchangeTokenRequest created in 'exchangeToken' in PlaidService: {}", exchangeTokenRequestDto);
 
         //Validate & Handle Feign Client Exceptions
-        ResponseEntity<AccessTokenResponse> responseEntity;
+        ResponseEntity<AccessTokenRequestDto> responseEntity;
         try{
-            LOG.debug("Utilizing PlaidClient to create access token with following exchangeTokenRequest: [{}]", exchangeTokenRequest);
-            responseEntity = _plaidClient.createAccessToken(exchangeTokenRequest);
+            LOG.debug("Utilizing PlaidClient to create access token with following exchangeTokenRequest: [{}]", exchangeTokenRequestDto);
+            responseEntity = _plaidClient.createAccessToken(exchangeTokenRequestDto);
         } catch(FeignClientException e){
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
             throw new PlaidServiceException(plaidClientExceptionMessage);
@@ -127,7 +127,7 @@ public class PlaidServiceImpl implements PlaidService{
         //Validate Successful Response from PlaidClient
         if(responseEntity.getStatusCode().is2xxSuccessful()){
             LOG.debug("Response Body From Exchange Token Request: {}", responseEntity.getBody());
-            AccessTokenResponse responseBody = responseEntity.getBody();
+            AccessTokenRequestDto responseBody = responseEntity.getBody();
             if(responseBody != null){
                 if(responseBody.getAccessToken().isEmpty()){
                     LOG.error("Access Token returned from PlaidClient is NULL");
@@ -159,18 +159,18 @@ public class PlaidServiceImpl implements PlaidService{
     @Override
     public double retrieveBalance(String accountId, String accessToken) throws PlaidServiceException{
         //Create RetrieveBalanceRequest
-        RetrieveBalanceRequest retrieveBalanceRequest = RetrieveBalanceRequest.builder()
+        RetrieveBalanceRequestDto retrieveBalanceRequestDto = RetrieveBalanceRequestDto.builder()
                 .accessToken(accessToken)
                 .clientId(_plaidConfig.getClientId())
                 .secret(_plaidConfig.getSecretKey())
                 .build();
 
-        LOG.debug("RetrieveBalanceRequest created in 'retrieveBalance' in PlaidService: {}", retrieveBalanceRequest);
+        LOG.debug("RetrieveBalanceRequest created in 'retrieveBalance' in PlaidService: {}", retrieveBalanceRequestDto);
 
         //Catch any FeignClientExceptions & Handle Properly
         ResponseEntity<String> responseEntity;
         try{
-            responseEntity = _plaidClient.retrieveAccountBalance(retrieveBalanceRequest);
+            responseEntity = _plaidClient.retrieveAccountBalance(retrieveBalanceRequestDto);
         } catch (FeignClientException e){
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
             throw new PlaidServiceException(plaidClientExceptionMessage);

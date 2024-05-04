@@ -1,8 +1,7 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.AuthRequestDuplicateUsername;
-import com.bavis.budgetapp.annotation.AuthRequestValidUsername;
-import com.bavis.budgetapp.request.AuthRequest;
+import com.bavis.budgetapp.dto.AuthRequestDto;
 import com.bavis.budgetapp.service.UserService;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Log4j2
-public class AuthRequestDuplicateUsernameValidator implements ConstraintValidator<AuthRequestDuplicateUsername, AuthRequest> {
+public class AuthRequestDuplicateUsernameValidator implements ConstraintValidator<AuthRequestDuplicateUsername, AuthRequestDto> {
 
     @Autowired
     UserService userService;
@@ -24,8 +23,8 @@ public class AuthRequestDuplicateUsernameValidator implements ConstraintValidato
     }
 
     @Override
-    public boolean isValid(AuthRequest authRequest, ConstraintValidatorContext constraintValidatorContext) {
-        String username = authRequest.getUsername();
+    public boolean isValid(AuthRequestDto authRequestDto, ConstraintValidatorContext constraintValidatorContext) {
+        String username = authRequestDto.getUsername();
 
         if(username == null || username.isEmpty()) {
             return false;

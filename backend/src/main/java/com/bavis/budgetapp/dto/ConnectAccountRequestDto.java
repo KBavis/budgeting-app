@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.request;
+package com.bavis.budgetapp.dto;
 
 import com.bavis.budgetapp.constants.AccountType;
 import jakarta.validation.constraints.NotEmpty;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ConnectAccountRequest {
+public class ConnectAccountRequestDto {
 
     @NotEmpty(message = "plaidAccountId must not be empty")
     private String plaidAccountId; //plaids account ID

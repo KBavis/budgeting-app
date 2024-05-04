@@ -1,12 +1,12 @@
 package com.bavis.budgetapp.service.impl;
 
-import com.bavis.budgetapp.dto.AccountDTO;
+import com.bavis.budgetapp.dto.AccountDto;
 import com.bavis.budgetapp.constants.ConnectionStatus;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.entity.Connection;
-import com.bavis.budgetapp.request.ConnectAccountRequest;
+import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.ConnectionService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.UserService;
@@ -51,20 +51,20 @@ public class AccountServiceImpl implements AccountService{
 
 	@Override
 	@Transactional
-	public AccountDTO connectAccount(ConnectAccountRequest connectAccountRequest) throws AccountConnectionException{
+	public AccountDto connectAccount(ConnectAccountRequestDto connectAccountRequestDto) throws AccountConnectionException{
 
-		LOG.debug("Attempting To ConnectAccount via ConnectAccountRequest: [{}]", connectAccountRequest);
+		LOG.debug("Attempting To ConnectAccount via ConnectAccountRequest: [{}]", connectAccountRequestDto);
 
 		double balance;
 		String accessToken;
 
 		try{
 			//Exchange Public Token With Access Token
-			accessToken = _plaidService.exchangeToken(connectAccountRequest.getPublicToken());
+			accessToken = _plaidService.exchangeToken(connectAccountRequestDto.getPublicToken());
 			LOG.debug("Access Token Retrieved From Plaid Service: [{}]", accessToken);
 
 			//Retrieve Balance Pertaining To Account
-			balance = _plaidService.retrieveBalance(connectAccountRequest.getPlaidAccountId(), accessToken);
+			balance = _plaidService.retrieveBalance(connectAccountRequestDto.getPlaidAccountId(), accessToken);
 			LOG.debug("Balance Retrieved From Plaid Service: [{}]", balance);
 		} catch (PlaidServiceException exception){
 			LOG.debug("A PlaidServiceException was thrown by PlaidService while attempting to connect account: [{}]", exception.getMessage());
@@ -74,10 +74,10 @@ public class AccountServiceImpl implements AccountService{
 
 		// Initialize Account to be persisted
 		Account newAccount = Account.builder()
-				.accountId(connectAccountRequest.getPlaidAccountId())
-				.accountName(connectAccountRequest.getAccountName())
+				.accountId(connectAccountRequestDto.getPlaidAccountId())
+				.accountName(connectAccountRequestDto.getAccountName())
 				.balance(balance)
-				.accountType(connectAccountRequest.getAccountType())
+				.accountType(connectAccountRequestDto.getAccountType())
 				.user(_userService.getCurrentAuthUser())
 				.build();
 
@@ -86,7 +86,7 @@ public class AccountServiceImpl implements AccountService{
 		Connection newConnection = Connection.builder()
 				.connectionStatus(ConnectionStatus.CONNECTED)
 				.accessToken(accessToken)
-				.institutionName(connectAccountRequest.getAccountName())
+				.institutionName(connectAccountRequestDto.getAccountName())
 				.lastSyncTime(LocalDateTime.now())
 				.build();
 

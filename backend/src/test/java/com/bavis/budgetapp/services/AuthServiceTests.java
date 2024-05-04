@@ -3,8 +3,8 @@ package com.bavis.budgetapp.services;
 import com.bavis.budgetapp.constants.Role;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.entity.User;
-import com.bavis.budgetapp.request.AuthRequest;
-import com.bavis.budgetapp.response.AuthResponse;
+import com.bavis.budgetapp.dto.AuthRequestDto;
+import com.bavis.budgetapp.dto.AuthResponseDto;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.UserService;
@@ -55,8 +55,8 @@ public class AuthServiceTests {
     @InjectMocks
     private AuthServiceImpl authService;
 
-    private AuthRequest registerAuthRequest;
-    private AuthRequest authenticateAuthRequest;
+    private AuthRequestDto registerAuthRequestDto;
+    private AuthRequestDto authenticateAuthRequestDto;
 
 
     @BeforeEach
@@ -64,13 +64,13 @@ public class AuthServiceTests {
 
         //init authService and auth request
         authService = new AuthServiceImpl(jwtService, userService, passwordEncoder, authenticationManager, plaidService);
-        registerAuthRequest = AuthRequest.builder()
+        registerAuthRequestDto = AuthRequestDto.builder()
                 .name("Test User")
                 .passwordOne("password")
                 .passwordTwo("password")
                 .username("test-user")
                 .build();
-        authenticateAuthRequest = AuthRequest.builder()
+        authenticateAuthRequestDto = AuthRequestDto.builder()
                 .username("username")
                 .passwordOne("password")
                 .build();
@@ -90,8 +90,8 @@ public class AuthServiceTests {
 
         User testUser = User.builder()
                 .userId(userId)
-                .name(registerAuthRequest.getName())
-                .username(registerAuthRequest.getUsername())
+                .name(registerAuthRequestDto.getName())
+                .username(registerAuthRequestDto.getUsername())
                 .password(encryptedPassword)
                 .role(Role.USER)
                 .profileImage(null)
@@ -101,7 +101,7 @@ public class AuthServiceTests {
                 .build();
 
         //Mock
-        when(passwordEncoder.encode(registerAuthRequest.getPasswordOne())).thenReturn(encryptedPassword);
+        when(passwordEncoder.encode(registerAuthRequestDto.getPasswordOne())).thenReturn(encryptedPassword);
         when(userService.create(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0); //update User Id accordingly when creating user
             user.setUserId(userId);
@@ -112,15 +112,15 @@ public class AuthServiceTests {
         when(jwtService.generateToken(any(User.class))).thenReturn(jwtToken);
 
         //Act
-        AuthResponse authResponse = authService.register(registerAuthRequest);
+        AuthResponseDto authResponseDto = authService.register(registerAuthRequestDto);
 
         //Assert
-        assertNotNull(authResponse);
-        assertEquals(authResponse.getToken(), jwtToken);
-        assertEquals(authResponse.getUserDetails(), testUser);
+        assertNotNull(authResponseDto);
+        assertEquals(authResponseDto.getToken(), jwtToken);
+        assertEquals(authResponseDto.getUserDetails(), testUser);
 
         //Verify
-        verify(passwordEncoder, times(1)).encode(registerAuthRequest.getPasswordOne());
+        verify(passwordEncoder, times(1)).encode(registerAuthRequestDto.getPasswordOne());
         verify(userService, times(1)).create(any(User.class));
         verify(plaidService, times(1)).generateLinkToken(any(Long.class));
         verify(userService, times(1)).update(any(Long.class), any(User.class));
@@ -138,7 +138,7 @@ public class AuthServiceTests {
         Long userId = 10L;
 
         //Mock
-        when(passwordEncoder.encode(registerAuthRequest.getPasswordOne())).thenReturn(encryptedPassword);
+        when(passwordEncoder.encode(registerAuthRequestDto.getPasswordOne())).thenReturn(encryptedPassword);
         when(userService.create(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0); //update User Id accordingly when creating user
             user.setUserId(userId);
@@ -148,7 +148,7 @@ public class AuthServiceTests {
 
         //Act & Assert
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
-            authService.register(registerAuthRequest);
+            authService.register(registerAuthRequestDto);
         });
         assertEquals("PlaidServiceException: [Invalid Response Code When Generating Link Token Via PlaidClient: [404]]", exception.getMessage());
     }
@@ -165,8 +165,8 @@ public class AuthServiceTests {
         Long userId = 10L;
         User testUser = User.builder()
                 .userId(userId)
-                .name(registerAuthRequest.getName())
-                .username(registerAuthRequest.getUsername())
+                .name(registerAuthRequestDto.getName())
+                .username(registerAuthRequestDto.getUsername())
                 .password(encryptedPassword)
                 .role(Role.USER)
                 .profileImage(null)
@@ -176,7 +176,7 @@ public class AuthServiceTests {
                 .build();
 
         // Mock
-        when(passwordEncoder.encode(registerAuthRequest.getPasswordOne())).thenReturn(encryptedPassword);
+        when(passwordEncoder.encode(registerAuthRequestDto.getPasswordOne())).thenReturn(encryptedPassword);
         when(userService.create(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             user.setUserId(userId);
@@ -190,7 +190,7 @@ public class AuthServiceTests {
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            authService.register(registerAuthRequest);
+            authService.register(registerAuthRequestDto);
         });
         assertEquals(errorMessage, exception.getMessage());
 
@@ -202,8 +202,8 @@ public class AuthServiceTests {
     @Test
     public void testAuthenticate_Success() {
         //Arrange
-        String username = authenticateAuthRequest.getUsername();
-        String password = authenticateAuthRequest.getPasswordOne();
+        String username = authenticateAuthRequestDto.getUsername();
+        String password = authenticateAuthRequestDto.getPasswordOne();
         String jwtToken = "jwt-token";
         Long userId = 0L;
         Authentication authenticatedUser = new UsernamePasswordAuthenticationToken(username, password);
@@ -225,13 +225,13 @@ public class AuthServiceTests {
         when(jwtService.generateToken(testUser)).thenReturn(jwtToken);
 
         //Act
-        AuthResponse authResponse = authService.authenticate(authenticateAuthRequest);
+        AuthResponseDto authResponseDto = authService.authenticate(authenticateAuthRequestDto);
 
 
         //Assert
-        assertNotNull(authResponse);
-        assertEquals(authResponse.getToken(), jwtToken);
-        assertEquals(authResponse.getUserDetails(), testUser);
+        assertNotNull(authResponseDto);
+        assertEquals(authResponseDto.getToken(), jwtToken);
+        assertEquals(authResponseDto.getUserDetails(), testUser);
 
         //Verify
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
@@ -246,7 +246,7 @@ public class AuthServiceTests {
     @Test
     public void testAuthenticate_InvalidCredentials_Failed() {
         //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
+        AuthRequestDto invalidAuthRequestDto = AuthRequestDto.builder()
                 .username("username")
                 .passwordOne("password")
                 .build();
@@ -257,7 +257,7 @@ public class AuthServiceTests {
 
         //Act & Assert
         BadCredentialsException badCredentialsException = assertThrows(BadCredentialsException.class, () -> {
-            authService.authenticate(invalidAuthRequest);
+            authService.authenticate(invalidAuthRequestDto);
         });
         assertEquals("Invalid credentials", badCredentialsException.getMessage());
 

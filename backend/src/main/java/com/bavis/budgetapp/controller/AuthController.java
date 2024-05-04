@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.request.AuthRequest;
-import com.bavis.budgetapp.response.AuthResponse;
+import com.bavis.budgetapp.dto.AuthRequestDto;
+import com.bavis.budgetapp.dto.AuthResponseDto;
 import com.bavis.budgetapp.service.AuthService;
 import com.bavis.budgetapp.validator.group.AuthRequestAuthenticationValidationGroup;
 import com.bavis.budgetapp.validator.group.AuthRequestRegistrationValidationGroup;
@@ -31,13 +31,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Validated(AuthRequestRegistrationValidationGroup.class) @RequestBody AuthRequest authRequest) {
-        return ResponseEntity.ok(_authService.register(authRequest));
+    public ResponseEntity<AuthResponseDto> register(@Validated(AuthRequestRegistrationValidationGroup.class) @RequestBody AuthRequestDto authRequestDto) {
+        return ResponseEntity.ok(_authService.register(authRequestDto));
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthResponse> authenticate(@Validated(AuthRequestAuthenticationValidationGroup.class) @RequestBody AuthRequest authRequest) {
-        return ResponseEntity.ok(_authService.authenticate(authRequest));
+    public ResponseEntity<AuthResponseDto> authenticate(@Validated(AuthRequestAuthenticationValidationGroup.class) @RequestBody AuthRequestDto authRequestDto) {
+        return ResponseEntity.ok(_authService.authenticate(authRequestDto));
     }
 
     /**
@@ -45,16 +45,16 @@ public class AuthController {
      *
      * TODO: Determine how to implement this logic
      *
-     * @param authRequest
+     * @param authRequestDto
      * @return
      */
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponse> refresh(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<AuthResponseDto> refresh(@RequestBody AuthRequestDto authRequestDto) {
         return null;
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<AuthResponse> logout() {
+    public ResponseEntity<AuthResponseDto> logout() {
         return null;
     }
 

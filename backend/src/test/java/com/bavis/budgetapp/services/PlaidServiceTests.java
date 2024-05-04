@@ -4,28 +4,24 @@ import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.config.PlaidConfig;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.helper.TestHelper;
-import com.bavis.budgetapp.request.ExchangeTokenRequest;
-import com.bavis.budgetapp.request.LinkTokenRequest;
-import com.bavis.budgetapp.request.RetrieveBalanceRequest;
-import com.bavis.budgetapp.response.AccessTokenResponse;
-import com.bavis.budgetapp.response.LinkTokenResponse;
-import com.bavis.budgetapp.service.PlaidService;
+import com.bavis.budgetapp.dto.ExchangeTokenRequestDto;
+import com.bavis.budgetapp.dto.LinkTokenRequestDto;
+import com.bavis.budgetapp.dto.RetrieveBalanceRequestDto;
+import com.bavis.budgetapp.dto.AccessTokenRequestDto;
+import com.bavis.budgetapp.dto.LinkTokenResponseDto;
 import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
 import com.bavis.budgetapp.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import feign.Request;
-import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.nio.charset.StandardCharsets;
@@ -71,16 +67,16 @@ public class PlaidServiceTests {
         //Arrange
         Long userId = 123L;
         String expectedLinkToken = "link-token";
-        LinkTokenResponse linkTokenResponse = LinkTokenResponse.builder()
+        LinkTokenResponseDto linkTokenResponseDto = LinkTokenResponseDto.builder()
                 .linkToken(expectedLinkToken)
                 .build();
-        ResponseEntity<LinkTokenResponse> responseEntity = new ResponseEntity<>(linkTokenResponse, HttpStatus.OK);
+        ResponseEntity<LinkTokenResponseDto> responseEntity = new ResponseEntity<>(linkTokenResponseDto, HttpStatus.OK);
 
 
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
-        when(plaidClient.createLinkToken(any(LinkTokenRequest.class))).thenReturn(responseEntity);
+        when(plaidClient.createLinkToken(any(LinkTokenRequestDto.class))).thenReturn(responseEntity);
 
         //Act
         String actualLinkToken = plaidService.generateLinkToken(userId);
@@ -91,7 +87,7 @@ public class PlaidServiceTests {
         //Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
-        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequest.class));
+        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequestDto.class));
     }
 
     /**
@@ -109,7 +105,7 @@ public class PlaidServiceTests {
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
-        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequest.class))).thenReturn(responseEntity);
+        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequestDto.class))).thenReturn(responseEntity);
         when(jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available"))
                 .thenReturn(_jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available"));
 
@@ -123,7 +119,7 @@ public class PlaidServiceTests {
         //Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
-        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequest.class));
+        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
         verify(jsonUtil, times(1)).extractBalanceByAccountId(responseBody, accountId, "/balances/available");
     }
 
@@ -135,16 +131,16 @@ public class PlaidServiceTests {
         //Arrange
         String publicToken = "public-token";
         String expectedAccessToken = "access-token";
-        AccessTokenResponse accessTokenResponse = AccessTokenResponse.builder()
+        AccessTokenRequestDto accessTokenRequestDto = AccessTokenRequestDto.builder()
                 .accessToken(expectedAccessToken)
                 .build();
-        ResponseEntity<AccessTokenResponse> responseEntity = new ResponseEntity<>(accessTokenResponse, HttpStatus.OK);
+        ResponseEntity<AccessTokenRequestDto> responseEntity = new ResponseEntity<>(accessTokenRequestDto, HttpStatus.OK);
 
 
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
-        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class))).thenReturn(responseEntity);
+        when(plaidClient.createAccessToken(any(ExchangeTokenRequestDto.class))).thenReturn(responseEntity);
 
         //Act
         String actualAccessToken = plaidService.exchangeToken(publicToken);
@@ -155,7 +151,7 @@ public class PlaidServiceTests {
         // Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
-        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequest.class));
+        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequestDto.class));
     }
 
     /**
@@ -165,12 +161,12 @@ public class PlaidServiceTests {
     public void testExchangeToken_NullResponseBody_Failed() {
         //Arrange
         String publicToken = "public-token";
-        ResponseEntity<AccessTokenResponse> responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
+        ResponseEntity<AccessTokenRequestDto> responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
 
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
-        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class))).thenReturn(responseEntity);
+        when(plaidClient.createAccessToken(any(ExchangeTokenRequestDto.class))).thenReturn(responseEntity);
 
         //Act & Assert
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
@@ -181,7 +177,7 @@ public class PlaidServiceTests {
         //Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
-        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequest.class));
+        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequestDto.class));
     }
 
     /**
@@ -192,15 +188,15 @@ public class PlaidServiceTests {
         //Arrange
         String publicToken = "public-token";
         String expectedAccessToken = "access-token";
-        AccessTokenResponse accessTokenResponse = AccessTokenResponse.builder()
+        AccessTokenRequestDto accessTokenRequestDto = AccessTokenRequestDto.builder()
                 .accessToken(expectedAccessToken)
                 .build();
-        ResponseEntity<AccessTokenResponse> responseEntity = new ResponseEntity<>(accessTokenResponse, HttpStatus.BAD_REQUEST);
+        ResponseEntity<AccessTokenRequestDto> responseEntity = new ResponseEntity<>(accessTokenRequestDto, HttpStatus.BAD_REQUEST);
 
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
-        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class))).thenReturn(responseEntity);
+        when(plaidClient.createAccessToken(any(ExchangeTokenRequestDto.class))).thenReturn(responseEntity);
 
         //Act & Assert
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
@@ -211,7 +207,7 @@ public class PlaidServiceTests {
         //Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
-        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequest.class));
+        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequestDto.class));
     }
 
     /**
@@ -229,7 +225,7 @@ public class PlaidServiceTests {
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
-        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequest.class))).thenReturn(responseEntity);
+        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequestDto.class))).thenReturn(responseEntity);
 
 
         //Act & Assert
@@ -242,7 +238,7 @@ public class PlaidServiceTests {
         //Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
-        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequest.class));
+        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
         verify(jsonUtil, times(0)).extractBalanceByAccountId(responseBody, accountId, "/balances/available");
     }
 
@@ -263,7 +259,7 @@ public class PlaidServiceTests {
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
-        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequest.class))).thenReturn(responseEntity);
+        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequestDto.class))).thenReturn(responseEntity);
         when(jsonUtil.extractBalanceByAccountId(responseBody, validAccountId, "/balances/available")).thenReturn(null);
 
 
@@ -277,7 +273,7 @@ public class PlaidServiceTests {
         //Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
-        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequest.class));
+        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
         verify(jsonUtil, times(1)).extractBalanceByAccountId(responseBody, validAccountId, "/balances/available");
     }
 
@@ -288,13 +284,13 @@ public class PlaidServiceTests {
     public void testGenerateLinkToken_NullResponseBody_Failed() {
         //Arrange
         Long userId = 123L;
-        ResponseEntity<LinkTokenResponse> responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
+        ResponseEntity<LinkTokenResponseDto> responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
 
 
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
-        when(plaidClient.createLinkToken(any(LinkTokenRequest.class))).thenReturn(responseEntity);
+        when(plaidClient.createLinkToken(any(LinkTokenRequestDto.class))).thenReturn(responseEntity);
 
         //Act & Assert
          PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
@@ -305,7 +301,7 @@ public class PlaidServiceTests {
         //Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
-        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequest.class));
+        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequestDto.class));
     }
 
     /**
@@ -316,16 +312,16 @@ public class PlaidServiceTests {
         //Arrange
         Long userId = 123L;
         String linkToken = "link-token";
-        LinkTokenResponse linkTokenResponse = LinkTokenResponse.builder()
+        LinkTokenResponseDto linkTokenResponseDto = LinkTokenResponseDto.builder()
                 .linkToken(linkToken)
                 .build();
-        ResponseEntity<LinkTokenResponse> responseEntity = new ResponseEntity<>(linkTokenResponse, HttpStatus.BAD_REQUEST);
+        ResponseEntity<LinkTokenResponseDto> responseEntity = new ResponseEntity<>(linkTokenResponseDto, HttpStatus.BAD_REQUEST);
 
 
         //Mock
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
-        when(plaidClient.createLinkToken(any(LinkTokenRequest.class))).thenReturn(responseEntity);
+        when(plaidClient.createLinkToken(any(LinkTokenRequestDto.class))).thenReturn(responseEntity);
 
         //Act & Assert
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
@@ -336,7 +332,7 @@ public class PlaidServiceTests {
         //Verify
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
-        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequest.class));
+        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequestDto.class));
     }
 
     /**
@@ -360,7 +356,7 @@ public class PlaidServiceTests {
         FeignException.FeignClientException feignClientException = new FeignException.FeignClientException(
                 400, "Bad Request", request, null, null);
 
-        when(plaidClient.createAccessToken(any(ExchangeTokenRequest.class)))
+        when(plaidClient.createAccessToken(any(ExchangeTokenRequestDto.class)))
                 .thenThrow(feignClientException);
 
         when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
@@ -374,7 +370,7 @@ public class PlaidServiceTests {
         assertEquals(expectedExceptionMessage, thrownException.getMessage());
 
         //Verify
-        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequest.class));
+        verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequestDto.class));
         verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
     }
 
@@ -400,7 +396,7 @@ public class PlaidServiceTests {
                 400, "Bad Request", request, null, null);
 
         //Mock
-        when(plaidClient.createLinkToken(any(LinkTokenRequest.class)))
+        when(plaidClient.createLinkToken(any(LinkTokenRequestDto.class)))
                 .thenThrow(feignClientException);
         when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
                 .thenReturn(errorMessage);
@@ -413,7 +409,7 @@ public class PlaidServiceTests {
         assertEquals(expectedExceptionMessage, thrownException.getMessage());
 
         //Verify
-        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequest.class));
+        verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequestDto.class));
         verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
     }
 
@@ -441,7 +437,7 @@ public class PlaidServiceTests {
                 400, "Bad Request", request, null, null);
 
         //Mock
-        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequest.class)))
+        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequestDto.class)))
                 .thenThrow(feignClientException);
         when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
                 .thenReturn(errorMessage);
@@ -454,7 +450,7 @@ public class PlaidServiceTests {
         assertEquals(expectedExceptionMessage, thrownException.getMessage());
 
         //Verify
-        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequest.class));
+        verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
         verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
     }
 }

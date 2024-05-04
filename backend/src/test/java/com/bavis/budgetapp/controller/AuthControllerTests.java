@@ -4,8 +4,8 @@ import com.bavis.budgetapp.exception.JwtServiceException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.entity.User;
-import com.bavis.budgetapp.request.AuthRequest;
-import com.bavis.budgetapp.response.AuthResponse;
+import com.bavis.budgetapp.dto.AuthRequestDto;
+import com.bavis.budgetapp.dto.AuthResponseDto;
 import com.bavis.budgetapp.service.AuthService;
 import com.bavis.budgetapp.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,23 +46,23 @@ public class AuthControllerTests {
     @Autowired
     ObjectMapper objectMapper;
 
-    private AuthRequest registerAuthRequest;
-    private AuthRequest authenticationAuthRequest;
+    private AuthRequestDto registerAuthRequestDto;
+    private AuthRequestDto authenticationAuthRequestDto;
 
-    private AuthResponse expectedAuthResponse;
+    private AuthResponseDto expectedAuthResponseDto;
 
     private User testUser;
 
     @BeforeEach
     public void setup() {
-        registerAuthRequest = AuthRequest.builder()
+        registerAuthRequestDto = AuthRequestDto.builder()
                 .name("Register User")
                 .passwordOne("testPassword12!")
                 .passwordTwo("testPassword12!")
                 .username("register-user")
                 .build();
 
-       authenticationAuthRequest = AuthRequest.builder()
+       authenticationAuthRequestDto = AuthRequestDto.builder()
                 .username("authentication-user")
                 .passwordOne("testPassword12!")
                 .build();
@@ -73,7 +73,7 @@ public class AuthControllerTests {
                .username("test-username")
                .build();
 
-        expectedAuthResponse = AuthResponse.builder()
+        expectedAuthResponseDto = AuthResponseDto.builder()
                 .token("jwt-token")
                 .userDetails(testUser)
                 .build();
@@ -82,67 +82,67 @@ public class AuthControllerTests {
     @Test
     public void testAuthenticate_Successful() throws Exception {
         // Mock
-        when(authService.authenticate(any(AuthRequest.class))).thenReturn(expectedAuthResponse);
+        when(authService.authenticate(any(AuthRequestDto.class))).thenReturn(expectedAuthResponseDto);
 
         // Act
         ResultActions resultActions = mockMvc.perform(post("/auth/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(authenticationAuthRequest)));
+                .content(objectMapper.writeValueAsString(authenticationAuthRequestDto)));
 
         // Assert
         resultActions.andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.token").value(expectedAuthResponse.getToken()))
+                .andExpect(jsonPath("$.token").value(expectedAuthResponseDto.getToken()))
                 .andExpect(jsonPath("$.user.name").value(testUser.getName()))
                 .andExpect(jsonPath("$.user.userName").value(testUser.getUsername()))
                 .andExpect(jsonPath("$.user.linkToken").value(testUser.getLinkToken()));
         // Verify
-        verify(authService, times(1)).authenticate(any(AuthRequest.class));
+        verify(authService, times(1)).authenticate(any(AuthRequestDto.class));
     }
 
     @Test
     public void testRegister_Successful() throws Exception{
         //Mock
-        when(authService.register(any(AuthRequest.class))).thenReturn(expectedAuthResponse);
+        when(authService.register(any(AuthRequestDto.class))).thenReturn(expectedAuthResponseDto);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+                .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.token").value(expectedAuthResponse.getToken()))
+                .andExpect(jsonPath("$.token").value(expectedAuthResponseDto.getToken()))
                 .andExpect(jsonPath("$.user.name").value(testUser.getName()))
                 .andExpect(jsonPath("$.user.userName").value(testUser.getUsername()))
                 .andExpect(jsonPath("$.user.linkToken").value(testUser.getLinkToken()));
 
-        verify(authService, times(1)).register(any(AuthRequest.class));
+        verify(authService, times(1)).register(any(AuthRequestDto.class));
     }
 
     @Test
     public void testAuthenticate_InvalidCredentials_Failure() throws Exception{
         //Mock
-        when(authService.authenticate(any(AuthRequest.class))).thenThrow(new BadCredentialsException("Bad credentials"));
+        when(authService.authenticate(any(AuthRequestDto.class))).thenThrow(new BadCredentialsException("Bad credentials"));
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(authenticationAuthRequest)));
+                .content(objectMapper.writeValueAsString(authenticationAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(status().isForbidden())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("Bad credentials"));
 
-        verify(authService, times(1)).authenticate(any(AuthRequest.class));
+        verify(authService, times(1)).authenticate(any(AuthRequestDto.class));
     }
 
     @Test
     public void testAuthenticate_EmptyUsername_Failure() throws Exception{
         //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
+        AuthRequestDto invalidAuthRequestDto = AuthRequestDto.builder()
                 .username(null)
                 .passwordOne("testPassword12!")
                 .build();
@@ -150,7 +150,7 @@ public class AuthControllerTests {
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidAuthRequest)));
+                .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -161,7 +161,7 @@ public class AuthControllerTests {
     @Test
     public void testAuthenticate_EmptyPassword_Failure() throws Exception{
         //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
+        AuthRequestDto invalidAuthRequestDto = AuthRequestDto.builder()
                 .username("testUsername")
                 .passwordOne(null)
                 .build();
@@ -169,7 +169,7 @@ public class AuthControllerTests {
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidAuthRequest)));
+                .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -180,7 +180,7 @@ public class AuthControllerTests {
     @Test
     public void testRegister_UsernameInvalid_Failure() throws Exception{
         //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
+        AuthRequestDto invalidAuthRequestDto = AuthRequestDto.builder()
                 .username("1")
                 .passwordOne("validPassword123!")
                 .passwordTwo("validPassword123!")
@@ -190,7 +190,7 @@ public class AuthControllerTests {
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidAuthRequest)));
+                .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -204,7 +204,7 @@ public class AuthControllerTests {
         when(userService.existsByUsername("taken-username")).thenReturn(true);
 
         //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
+        AuthRequestDto invalidAuthRequestDto = AuthRequestDto.builder()
                 .username("taken-username")
                 .passwordOne("validPassword123!")
                 .passwordTwo("validPassword123!")
@@ -214,7 +214,7 @@ public class AuthControllerTests {
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidAuthRequest)));
+                .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -227,7 +227,7 @@ public class AuthControllerTests {
     @Test
     public void testRegister_NameInvalid_Failure() throws Exception{
         //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
+        AuthRequestDto invalidAuthRequestDto = AuthRequestDto.builder()
                 .username("valid-username")
                 .passwordOne("validPassword123!")
                 .passwordTwo("validPassword123!")
@@ -237,7 +237,7 @@ public class AuthControllerTests {
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidAuthRequest)));
+                .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -247,7 +247,7 @@ public class AuthControllerTests {
     @Test
     public void testRegister_PasswordInvalid_Failure() throws Exception{
         //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
+        AuthRequestDto invalidAuthRequestDto = AuthRequestDto.builder()
                 .username("valid-username")
                 .passwordOne("weakpass")
                 .passwordTwo("weakpass")
@@ -257,7 +257,7 @@ public class AuthControllerTests {
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidAuthRequest)));
+                .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -267,7 +267,7 @@ public class AuthControllerTests {
     @Test
     public void testRegister_PasswordMismatch_Failure() throws Exception{
         //Arrange
-        AuthRequest invalidAuthRequest = AuthRequest.builder()
+        AuthRequestDto invalidAuthRequestDto = AuthRequestDto.builder()
                 .username("valid-username")
                 .passwordOne("passwordValid1!")
                 .passwordTwo("passwordValid2!") //different passwords
@@ -277,7 +277,7 @@ public class AuthControllerTests {
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidAuthRequest)));
+                .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -287,12 +287,12 @@ public class AuthControllerTests {
     @Test
     public void testRegister_PlaidServiceException_Failure() throws Exception{
         //Mock
-        when(authService.register(any(AuthRequest.class))).thenThrow(new PlaidServiceException("Link Token Returned From Client Is Null"));
+        when(authService.register(any(AuthRequestDto.class))).thenThrow(new PlaidServiceException("Link Token Returned From Client Is Null"));
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+                .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -303,12 +303,12 @@ public class AuthControllerTests {
     @Test
     public void testRegister_JwtServiceException_Failure() throws Exception{
         //Mock
-        when(authService.register(any(AuthRequest.class))).thenThrow(new JwtServiceException("Failed to Generate Jwt Token: invalid usages"));
+        when(authService.register(any(AuthRequestDto.class))).thenThrow(new JwtServiceException("Failed to Generate Jwt Token: invalid usages"));
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+                .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -319,28 +319,28 @@ public class AuthControllerTests {
     @Test
     public void testRegister_UserServiceException_Failure() throws Exception {
         //Mock
-        when(authService.register(any(AuthRequest.class))).thenThrow(new UserServiceException("Could not find user with the username " + registerAuthRequest.getUsername()));
+        when(authService.register(any(AuthRequestDto.class))).thenThrow(new UserServiceException("Could not find user with the username " + registerAuthRequestDto.getUsername()));
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+                .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("UserServiceException: [Could not find user with the username " + registerAuthRequest.getUsername() + "]"));
+                .andExpect(jsonPath("$.error").value("UserServiceException: [Could not find user with the username " + registerAuthRequestDto.getUsername() + "]"));
     }
 
     @Test
     public void testAuthenticate_UserServiceException_Failure() throws Exception{
         //Mock
-        when(authService.authenticate(any(AuthRequest.class))).thenThrow(new UserServiceException("Could not find user with the username " + authenticationAuthRequest.getUsername()));
+        when(authService.authenticate(any(AuthRequestDto.class))).thenThrow(new UserServiceException("Could not find user with the username " + authenticationAuthRequestDto.getUsername()));
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+                .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -351,12 +351,12 @@ public class AuthControllerTests {
     @Test
     public void testAuthenticate_JwtServiceException_Failure() throws Exception {
         //Mock
-        when(authService.authenticate(any(AuthRequest.class))).thenThrow(new JwtServiceException("Failed to Generate Jwt Token: invalid usages"));
+        when(authService.authenticate(any(AuthRequestDto.class))).thenThrow(new JwtServiceException("Failed to Generate Jwt Token: invalid usages"));
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/auth/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerAuthRequest)));
+                .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))

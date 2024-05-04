@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.response;
+package com.bavis.budgetapp.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponse {
+public class AuthResponseDto {
     private String token; //jwt token
     @JsonProperty("user")
 
