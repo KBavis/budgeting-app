@@ -1,7 +1,7 @@
 import React, { useReducer } from "react";
 import categoryTypeReducer from "./categoryTypeReducer";
 import axios from "axios";
-import apiUrl from "../../utils/url";
+import apiUrl from "../../../utils/url";
 import {
    CREATE_CATEGORY_TYPES_SUCCESS,
    CREATE_CATEGORY_TYPES_FAIL,
@@ -9,7 +9,7 @@ import {
 } from "./types";
 import initialState from "./initialState";
 import CategoryTypeContext from "./categoryTypeContext";
-import setAuthToken from "../../utils/setAuthToken";
+import setAuthToken from "../../../utils/setAuthToken";
 
 const CategoryTypeState = (props) => {
    const [state, dispatch] = useReducer(categoryTypeReducer, initialState);

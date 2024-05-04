@@ -13,7 +13,7 @@ import AccountState from "./context/account/AccountState";
 import IncomeInputPage from "./pages/IncomeInputPage";
 import IncomeState from "./context/income/IncomeState";
 import CategoryTypeInputPage from "./pages/CategoryTypeInputPage";
-import CategoryTypeState from "./context/categoryTypes/CategoryTypeState";
+import CategoryTypeState from "./context/category/types/CategoryTypeState";
 import CategoryState from "./context/category/CategoryState";
 import CategoryCreationPage from "./pages/CategoryCreationPage";
 

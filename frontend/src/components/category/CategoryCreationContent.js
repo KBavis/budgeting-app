@@ -4,7 +4,7 @@ import UserInput from "./UserInput";
 import AdjustBudget from "./AdjustBudget";
 import categoryContext from "../../context/category/categoryContext";
 import IncomeContext from "../../context/income/incomeContext";
-import categoryTypeContext from "../../context/categoryTypes/categoryTypeContext";
+import categoryTypeContext from "../../context/category/types/categoryTypeContext";
 import AlertContext from "../../context/alert/alertContext";
 import { useNavigate } from "react-router-dom";
 

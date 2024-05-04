@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AlertContext from "../context/alert/alertContext";
-import categoryTypeContext from "../context/categoryTypes/categoryTypeContext";
+import categoryTypeContext from "../context/category/types/categoryTypeContext";
 import CategoryTypeSlider from "../components/category/types/CategoryTypeSlider";
 
 const CategoryTypeInputPage = () => {
@@ -47,7 +47,6 @@ const CategoryTypeInputPage = () => {
       if (totalPercentage === 1) {
          addCategoryTypes(categoryTypesInput);
       } else {
-         // Show an alert to the user if the total percentage is not 1
          setAlert("Total percentage must equal 100%", "danger");
       }
    };
