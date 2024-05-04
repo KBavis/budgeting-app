@@ -16,12 +16,12 @@ public class IncomeDto {
 
     private double amount;
 
-    @NotNull
+    @NotNull(message = "incomeType must not be null")
     private IncomeType incomeType;
 
-    @NotNull
+    @NotNull(message = "incomeSource must not be null")
     private IncomeSource incomeSource;
 
-    @NotEmpty
+    @NotEmpty(message = "description must not be empty")
     private String description;
 }

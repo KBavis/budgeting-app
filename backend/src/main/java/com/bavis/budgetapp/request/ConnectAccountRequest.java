@@ -15,16 +15,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ConnectAccountRequest {
 
-    @NotEmpty
+    @NotEmpty(message = "plaidAccountId must not be empty")
     private String plaidAccountId; //plaids account ID
 
-    @NotEmpty
+    @NotEmpty(message = "accountName must not be empty")
     private String accountName;
 
-    @NotEmpty
+    @NotEmpty(message = "publicToken must not be empty")
     private String publicToken;
 
-    @NotNull
+    @NotNull(message = "accountType must not be null")
     private AccountType accountType;
 
 }

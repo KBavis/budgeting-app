@@ -300,7 +300,7 @@ public class CategoryControllerTests {
                 .budgetAmount(100.0)
                 .categoryTypeId(10L)
                 .name("Test Category")
-                .budgetAllocationPercentage(-90.0)
+                .budgetAllocationPercentage(90.0)
                 .build();
         List<CategoryDto> categories = Arrays.asList(categoryDto);
         BulkCategoryDto invalidBulkCategoryDto = BulkCategoryDto.builder()
