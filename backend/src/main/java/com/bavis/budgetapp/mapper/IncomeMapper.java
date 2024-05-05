@@ -6,6 +6,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Mapper used to map IncomeDTO to Income Entity
+ */
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface IncomeMapper {
     @Mapping(target = "user", ignore = true)

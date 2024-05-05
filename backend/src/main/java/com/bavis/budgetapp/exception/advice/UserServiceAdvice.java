@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Controller Advice for our UserServiceException
+ */
 @ControllerAdvice
 public class UserServiceAdvice {
     @ResponseBody

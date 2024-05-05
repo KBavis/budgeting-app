@@ -4,18 +4,14 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bavis.budgetapp.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,12 +20,13 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.net.ssl.KeyStoreBuilderParameters;
 import java.io.IOException;
-import java.security.*;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Filter to verify valid authentication of incoming HTTP request
+ */
 @Component("jwtAuthFilter")
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static Logger LOG = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
@@ -50,6 +47,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
     /**
+     * Filter incoming HTTP requests
+     *
      *
      * @param request
      *          - incoming HTTP request
@@ -74,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         //Ensure request contains proper JWT Token prior to continuing
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            LOG.debug("HTTP Request Does Not Contain Proper Authorization!");
+            LOG.debug("HTTP Request Does Not Contain Proper Authorization Header!");
             filterChain.doFilter(request, response);
             return;
         }
@@ -111,7 +110,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch(JWTVerificationException e){
-            LOG.error("JWT Verification Failed! Exception: {}", e.getMessage());
+            LOG.warn("HTTP Request does did not contain proper JWT Authentication: [{}]", e.getMessage());
         } finally {
             filterChain.doFilter(request, response);
         }

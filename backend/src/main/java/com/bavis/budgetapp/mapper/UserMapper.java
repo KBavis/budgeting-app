@@ -3,6 +3,12 @@ package com.bavis.budgetapp.mapper;
 import com.bavis.budgetapp.entity.User;
 import org.mapstruct.*;
 
+
+/**
+ * @author Kellen Bavis
+ *
+ * Mapper used to map updated User entity to another User entity
+ */
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface UserMapper {
 

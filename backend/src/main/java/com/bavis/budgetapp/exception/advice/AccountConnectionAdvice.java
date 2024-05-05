@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * @author Kellen Bavis
+ *
  * Controller Advice for Our AccountConnectionException
  */
 @ControllerAdvice

@@ -7,7 +7,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 /**
- * Mapper used to Map CategoryTypeDto to CategoryType Entity
+ * @author Kellen Bavis
+ *
+ * Mapper used to map CategoryTypeDto to CategoryType Entity
  */
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CategoryTypeMapper {

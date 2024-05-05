@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author
+ *
+ * Controller Advice for our PlaidServiceException
+ */
 @ControllerAdvice
 public class PlaidServiceAdvice {
     @ResponseBody
