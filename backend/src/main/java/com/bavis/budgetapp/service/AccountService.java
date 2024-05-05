@@ -8,7 +8,7 @@ import com.bavis.budgetapp.exception.AccountConnectionException;
 /**
  * @author Kellen Bavis
  *
- * Account Service to house the functionality of working with Account Entities
+ * Service to house the functionality of working with Account Entities
  */
 public interface AccountService {
 
