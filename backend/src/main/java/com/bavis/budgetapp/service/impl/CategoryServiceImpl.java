@@ -6,6 +6,7 @@ import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.UserService;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,10 @@ import com.bavis.budgetapp.service.CategoryService;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service 
+@Service
+@Log4j2
 public class CategoryServiceImpl implements CategoryService{
-	
-	private static final Logger LOG = LoggerFactory.getLogger(CategoryServiceImpl.class);
-	
+
 	@Autowired 
 	CategoryRepository categoryRepository;
 
@@ -42,9 +42,11 @@ public class CategoryServiceImpl implements CategoryService{
 
 	@Override
 	public List<Category> bulkCreate(BulkCategoryDto bulkCategoryDto) {
-		LOG.info("CategoryService: Bulk Creating the following bulkCategoryDto: [{}]", bulkCategoryDto);
+		log.info("Attempting to Bulk Create the following bulkCategoryDto: [{}]", bulkCategoryDto);
+
 		User user = userService.getCurrentAuthUser();
 		CategoryType categoryType = categoryTypeService.read(bulkCategoryDto.getCategories().get(0).getCategoryTypeId());
+		log.debug("CategoryType corresponding to BulkCategoryDto: [{}], corresponding User: [{}]", categoryType, user);
 
 		//For Each Category DTO --> 1) set user, set category type, calculate budget amount
 		List<Category> categories = bulkCategoryDto.getCategories().stream()
@@ -52,13 +54,15 @@ public class CategoryServiceImpl implements CategoryService{
 				.peek(category -> category.setCategoryType(categoryType))
 				.peek(category -> category.setUser(user))
 				.toList();
+		log.debug("Successfully set User, CategoryType, and budget amount for each Category");
 
 		return categoryRepository.saveAllAndFlush(categories);
 	}
 
+	//todo: finish this logic and add logging
 	@Override
 	public Category create(Category category, Long categoryTypeId) throws Exception{
-		LOG.info("Creating Category [{}] for category type with id [{}]", category, categoryTypeId);
+		log.info("Creating Category [{}] for category type with id [{}]", category, categoryTypeId);
 
 		CategoryType type = categoryTypeService.read(categoryTypeId);
 
@@ -67,9 +71,10 @@ public class CategoryServiceImpl implements CategoryService{
 		return categoryRepository.save(category);
 	}
 
+	//todo: finish this logic and add logging
 	@Override
 	public Category update(Category category, Long id){
-		LOG.info("Updating Category [{}]", id);
+		log.info("Updating Category with ID {} with the following Category entity: [{}]", id, category);
 		
 		Category cat = categoryRepository.findById(id).orElse(category);
 		cat.setCategoryType(category.getCategoryType());
@@ -78,9 +83,10 @@ public class CategoryServiceImpl implements CategoryService{
 		return categoryRepository.save(cat);
 	}
 
+	//todo: finish this logic and add logging
 	@Override
 	public Category read(Long categoryId){
-		LOG.info("Reading Category with id [{}]", categoryId);
+		log.info("Reading Category with id [{}]", categoryId);
 		
 		Category category = categoryRepository.findByCategoryId(categoryId);
 		
@@ -91,9 +97,10 @@ public class CategoryServiceImpl implements CategoryService{
 		return category;
 	}
 
+	//todo: finish this logic and add logging
 	@Override
 	public void delete(Long categoryId) {
-		LOG.info("Deleting Category with id [{categoryId}]", categoryId);
+		log.info("Deleting Category with id [{}]", categoryId);
 		categoryRepository.deleteById(categoryId);
 	}
 

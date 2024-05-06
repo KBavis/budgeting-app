@@ -12,6 +12,7 @@ import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.UserService;
 import jakarta.transaction.Transactional;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,9 +24,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
 @Service
+@Log4j2
 public class AuthServiceImpl implements AuthService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final JwtService _jwtService;
     private final UserService _userService;
@@ -45,21 +46,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
-    /**
-     * Register user within our application
-     *
-     * @param authRequestDto
-     *          - Authentication Request sent to server
-     * @return
-     * `        - AuthResposne containing UserDetails and JWT Token
-     * @throws RuntimeException
-     *          - Exception for any potential BadRegistrationException, PlaidServiceException, JWTException
-     */
-
 
     @Override
     @Transactional
     public AuthResponseDto register(AuthRequestDto authRequestDto) throws UserServiceException, PlaidServiceException, JwtServiceException {
+        log.info("Attempting to Register new user pertaining to AuthRequestDto: [{}]", authRequestDto);
 
         User user = User.builder()
                 .name(authRequestDto.getName())
@@ -73,18 +64,21 @@ public class AuthServiceImpl implements AuthService {
                 .linkToken(null)
                 .build();
 
-        LOG.info("Registered User: [" + _userService.create(user) + "]");
+        log.info("Registered User: [" + _userService.create(user) + "]");
 
         //Generate Plaid Link Token for authenticated user
         String linkToken = _plaidService.generateLinkToken(user.getUserId());
         user.setLinkToken(linkToken);
-        LOG.debug("Link Token Generated for User {} : {}", user.getUserId(), linkToken);
+        log.debug("Link Token Generated for User {} : {}", user.getUserId(), linkToken);
 
         //Ensure Plaid Link Token persisted
         user = _userService.update(user.getUserId(), user);
-        LOG.info("User Following Plaid Link Token Generation: [{}]", user.toString());
+        log.info("User Following Plaid Link Token Generation: [{}]", user.toString());
 
+        //Generate JWT Token for newly registered user
         String jwtToken = _jwtService.generateToken(user);
+
+        //Return response containing JWT Token & persisted user
         return AuthResponseDto.builder()
                 .token(jwtToken)
                 .userDetails(user)
@@ -94,6 +88,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponseDto authenticate(AuthRequestDto authRequestDto) throws AuthenticationException{
+        log.info("Attempting to Authenticate an user via following AuthRequestDto: [{}]", authRequestDto);
 
         //Authenticate User using our AuthenticationManager Bean
         _authenticationManager.authenticate(
@@ -102,10 +97,13 @@ public class AuthServiceImpl implements AuthService {
                         authRequestDto.getPasswordOne()
                 )
         );
+        log.debug("Successfully Authenticated User: [{}]", authRequestDto.getUsername());
 
         //Generate JWT Token For Authenticated User
         User user = _userService.readByUsername(authRequestDto.getUsername());
         String jwtToken = _jwtService.generateToken(user);
+
+        //Return response containing JWT Token & persisted user
         return AuthResponseDto.builder()
                 .token(jwtToken)
                 .userDetails(user)

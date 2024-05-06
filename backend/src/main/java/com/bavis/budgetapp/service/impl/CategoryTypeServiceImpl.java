@@ -6,6 +6,7 @@ import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryTypeMapper;
 import com.bavis.budgetapp.service.IncomeService;
 import com.bavis.budgetapp.service.UserService;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 public class CategoryTypeServiceImpl implements CategoryTypeService {
-	private static Logger LOG = LoggerFactory.getLogger(CategoryTypeServiceImpl.class);
-
 	private CategoryTypeRepository repository;
 
 	private UserService userService;
@@ -41,20 +41,24 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 
 
 	//TODO: Update this to use DTO
+	//todo: finish this logic and add logging
 	@Override
 	public CategoryType create(CategoryType categoryType) {
 		//Fetch Auth User to Associate To CategoryType
 		User authUser = userService.getCurrentAuthUser();
 		categoryType.setUser(authUser);
 
-		LOG.info("Creating CategoryType [{}]", categoryType);
+		log.info("Creating CategoryType [{}]", categoryType);
 		return repository.save(categoryType);
 	}
 
 	@Override
 	public List<CategoryType> createMany(List<CategoryTypeDto> categoryTypeDtos) {
+		log.info("Attempting to create many Categories: [{}]", categoryTypeDtos);
+
 		User currentAuthUser = userService.getCurrentAuthUser();
 		double userTotalIncome = incomeService.findUserTotalIncomeAmount(currentAuthUser.getUserId());
+		log.debug("Total Income for user [{}] is [{}]", currentAuthUser, userTotalIncome);
 
 		List<CategoryType> categoryTypes =
 				categoryTypeDtos.stream().map((categoryTypeDto -> categoryTypeMapper.toEntity(categoryTypeDto)))
@@ -62,14 +66,15 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 						.peek(categoryType -> categoryType.setCategories(new ArrayList<>()))
 						.peek(categoryType -> categoryType.setBudgetAmount(userTotalIncome * categoryType.getBudgetAllocationPercentage()))
 						.toList();
-		LOG.info("Creating Category Types: [{}]", categoryTypes);
+		log.debug("Successfully mapped CategoryTypes to corresponding user and correctly allocated amounts of income");
 		return repository.saveAllAndFlush(categoryTypes);
 	}
 
 	//TODO: Update this to use mapper
+	//todo: finish this logic and add logging
 	@Override
 	public CategoryType update(CategoryType categoryType, Long id) {
-		LOG.info("Updating CategoryType [{}]", id);
+		log.info("Updating CategoryType [{}]", id);
 		CategoryType updatedCategory = repository.findById(id).orElse(categoryType);
 		updatedCategory.setBudgetAllocationPercentage(categoryType.getBudgetAllocationPercentage());
 		updatedCategory.setCategories(categoryType.getCategories());
@@ -77,24 +82,19 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 		return repository.save(updatedCategory);
 	}
 
+	//todo: finish this logic and add logging
 	@Override
 	public CategoryType read(Long categoryTypeId) {
-		LOG.info("Reading CategoryType with id [{}]", categoryTypeId);
+		log.info("Reading CategoryType with id [{}]", categoryTypeId);
 
         return repository.findById(categoryTypeId).orElseThrow(
 				() -> (new RuntimeException("Invalid category type id: " + categoryTypeId)));
 	}
 
-	@Override
-	public List<CategoryType> readMany() {
-		LOG.info("Reading all available CategoryTypes");
-
-        return repository.findAll();
-	}
-
+	//todo: finish this logic and add logging
 	@Override
 	public void delete(Long categoryTypeId) {
-		LOG.debug("Deleting Category Type with id [{}]", categoryTypeId);
+		log.info("Deleting Category Type with id [{}]", categoryTypeId);
 		repository.deleteById(categoryTypeId);
 	}
 

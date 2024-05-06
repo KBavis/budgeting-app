@@ -2,6 +2,7 @@ package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.entity.User;
 
+//TODO: Delete or update this logic, and then add javadocs
 public interface UserService {
 	User create(User category);
 

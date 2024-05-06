@@ -31,7 +31,7 @@ public class ConnectionServiceImpl implements ConnectionService{
 	}
 
 	@Override
-	public Connection update(Connection connection) {
+	public Connection update(Connection connection, Long connectionId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
