@@ -9,55 +9,54 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Utility class to store all needed JSON Operations
+ */
 @Component
 @Log4j2
 public class JsonUtil {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JsonUtil.class);
     private final ObjectMapper _objectMapper;
 
     public JsonUtil(ObjectMapper _objectMapper) {
         this._objectMapper = _objectMapper;
     }
 
-    public <T> T fromJson(String json, Class<T> klass) {
-        try {
-            return _objectMapper.readValue(json, klass);
-        } catch(Exception e) {
-           LOG.error("Failed To Map Json [" + json + "] to Class " + klass.toString(), e.getMessage());
-        }
-        return null;
-    }
-
-    public String toJson(Object object){
+    /**
+     * Functionality to transform an Object to JSON Format
+     *
+     * @param object
+     *          - Object to be written to JSON Format
+     * @return
+     *          - Object written as JSON String
+     */
+    public String toJson(Object object) throws RuntimeException{
         try {
             return _objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e){
-            LOG.error("Failed to convert the object [{}] to JSON due to following reason: {}", object.toString(), e.getMessage());
+            log.error("Failed to convert the object [{}] to JSON due to following reason: {}", object.toString(), e.getMessage());
             throw new RuntimeException("Failed to convert object to JSON", e);
         }
     }
 
-    public String extractAttribute(String jsonString, String attributeName) {
-        try{
-            JsonNode jsonNode = _objectMapper.readTree(jsonString);
-            JsonNode attributeNode = jsonNode.get(attributeName);
-
-            if(attributeNode != null) {
-                return attributeNode.asText();
-            } else {
-                LOG.error("Attribute [" + attributeName +"] does not exist in JSON Object [{}]", jsonString);
-                return null;
-            }
-        } catch (Exception e) {
-            LOG.error("Error Occured While Extracting Attribute [{}] from Json String [{}]", attributeName, jsonString);
-        }
-        return null;
-    }
-
+    /**
+     * TODO: This logic is specific to one use case. Should be generalized for other use cases
+     *
+     * Functionality to extract the balance of a specified account based on JSON response
+     *
+     * @param jsonString
+     *          - JSON Response to extract account balance from
+     * @param accountId
+     *          - Account ID to locate specific balance for
+     * @param balancePath
+     *          - Path needed to extract our balance
+     * @return
+     *          - Extracted balance for Account
+     */
     public Double extractBalanceByAccountId(String jsonString, String accountId, String balancePath) {
         try {
-            LOG.info("Attempting to extract balance from response for the following Account ID: [{}]", accountId);
+            log.info("Attempting to extract balance from response for the following Account ID: [{}]", accountId);
             JsonNode rootNode = _objectMapper.readTree(jsonString);
             JsonNode accountsNode = rootNode.path("accounts");
 
@@ -66,16 +65,16 @@ public class JsonUtil {
                 if (currentAccountId.equals(accountId)) {
                     JsonNode balanceNode = accountNode.at(balancePath);
                     if (balanceNode.isMissingNode()) {
-                        LOG.error("Balance attribute '{}' not found for account ID '{}'", balancePath, accountId);
+                        log.error("Balance attribute '{}' not found for account ID '{}'", balancePath, accountId);
                         return null;
                     }
                     return balanceNode.asDouble();
                 }
             }
 
-            LOG.error("Account ID '{}' not found in the JSON response", accountId);
+            log.error("Account ID '{}' not found in the JSON response", accountId);
         } catch (Exception e) {
-            LOG.error("Error occurred while extracting balance for account ID '{}': {}", accountId, e.getMessage());
+            log.error("Error occurred while extracting balance for account ID '{}': {}", accountId, e.getMessage());
         }
         return null;
     }
@@ -99,7 +98,7 @@ public class JsonUtil {
             return errorMsg;
         } catch (Exception ex) {
             // Fallback to returning the original exception message if parsing fails
-            LOG.error("An exception occurred while extracting error message from FeignClientException: [{}]", ex.getMessage());
+            log.error("An exception occurred while extracting error message from FeignClientException: [{}]", ex.getMessage());
             return e.getMessage();
         }
     }
