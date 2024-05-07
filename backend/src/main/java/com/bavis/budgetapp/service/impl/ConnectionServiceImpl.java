@@ -10,6 +10,11 @@ import com.bavis.budgetapp.dao.ConnectionRepository;
 import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.service.ConnectionService;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Implementation of our Connection Service functionality
+ */
 @Service
 @Log4j2
 public class ConnectionServiceImpl implements ConnectionService{

@@ -21,6 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Implementation of our CategoryType Service functionality
+ */
 @Service
 @Log4j2
 public class CategoryTypeServiceImpl implements CategoryTypeService {

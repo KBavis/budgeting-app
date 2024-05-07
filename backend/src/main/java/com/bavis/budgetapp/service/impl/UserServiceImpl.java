@@ -13,6 +13,11 @@ import com.bavis.budgetapp.dao.UserRepository;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.UserService;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Implementation of our User Service functionality
+ */
 @Service
 @Log4j2
 public class UserServiceImpl implements UserService{

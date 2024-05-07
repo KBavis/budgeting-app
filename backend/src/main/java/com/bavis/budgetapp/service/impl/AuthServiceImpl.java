@@ -23,6 +23,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Implementation of our Authentication Service functionality
+ */
 @Service
 @Log4j2
 public class AuthServiceImpl implements AuthService {

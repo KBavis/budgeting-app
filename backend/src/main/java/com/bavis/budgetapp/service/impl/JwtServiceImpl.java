@@ -18,6 +18,11 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 
+/**
+ * @author Kellen Bavis
+ *
+ * Implementation of our Jwt Service functionality
+ */
 @Service
 @Log4j2
 public class JwtServiceImpl implements JwtService {

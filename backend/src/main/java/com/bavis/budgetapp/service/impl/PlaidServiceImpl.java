@@ -19,6 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Implementation of our Plaid Service functionality
+ */
 @Service
 @Log4j2
 public class PlaidServiceImpl implements PlaidService{

@@ -13,6 +13,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Implementation of our Income Service functionality
+ */
 @Service
 @Log4j2
 public class IncomeServiceImpl implements IncomeService {

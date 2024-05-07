@@ -6,6 +6,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+/**
+ *
+ */
 public class GeneralUtil {
 
     public static LocalDateTime addTimeToDate(LocalDateTime dateTime, long amount, TimeType timeType){

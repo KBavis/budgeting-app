@@ -21,6 +21,11 @@ import com.bavis.budgetapp.service.CategoryService;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Implementation of our Category Service functionality
+ */
 @Service
 @Log4j2
 public class CategoryServiceImpl implements CategoryService{
