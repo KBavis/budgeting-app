@@ -32,36 +32,44 @@ public class IncomeServiceImpl implements IncomeService {
     public Income create(IncomeDto incomeDto) {
         log.info("Creating Income: [{}]", incomeDto);
 
+        //Map DTO to Income Entity
         User currentUser = _userService.getCurrentAuthUser();
         Income income = _incomeMapper.toIncome(incomeDto);
         income.setUser(currentUser);
         income.setUpdatedAt(LocalDateTime.now());
 
+        log.info("Saving the following Income: [{}]", income);
         return _incomeRepository.save(income);
     }
 
+    //TODO: finish impl and add comments
     @Override
     public Income readById(Long incomeId) {
         return null;
     }
 
+
     @Override
     public List<Income> readByUserId(Long userId) {
+        log.info("Attempting to find Income[s] for User with ID {}", userId);
         return _incomeRepository.findByUserUserId(userId);
     }
 
     @Override
     public double findUserTotalIncomeAmount(Long userId) {
+        log.info("Calculating total User monthly income for User with ID {}", userId);
         return readByUserId(userId).stream()
                 .map(Income::getAmount)
                 .reduce(0.0, Double::sum);
     }
 
+    //TODO: complete and add comments/logging
     @Override
     public Income update(Income income, Long incomeId) {
         return null;
     }
 
+    //TODO: complete and add comments/logging
     @Override
     public void detete(Long incomeId) {
 

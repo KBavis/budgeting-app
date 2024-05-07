@@ -57,6 +57,7 @@ public class JsonUtil {
 
     public Double extractBalanceByAccountId(String jsonString, String accountId, String balancePath) {
         try {
+            LOG.info("Attempting to extract balance from response for the following Account ID: [{}]", accountId);
             JsonNode rootNode = _objectMapper.readTree(jsonString);
             JsonNode accountsNode = rootNode.path("accounts");
 
@@ -87,17 +88,18 @@ public class JsonUtil {
      * @return
      *      - relevant error message regarding our PlaidClient
      */
-    public String extractErrorMessage(FeignException.FeignClientException e) {
+    public String extractErrorMessage(FeignException.FeignClientException e){
         try {
-            LOG.error("An error occurred while utilizing Feign Client: [{}]", e.getMessage());
+            log.info("Attempting to extract relevant error message for following FeignClientException: [{}]", e.getMessage());
             String responseBody = e.contentUTF8();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(responseBody);
-            log.debug("ERROR MESSAGE EXTRACTED FROM JSONUTIL: {}", jsonNode.get("error_message").asText());
-            return jsonNode.get("error_message").asText();
+            String errorMsg = jsonNode.get("error_message").asText();
+            log.debug("Relevant error message extracted from FeignClientException: [{}]", e.getMessage());
+            return errorMsg;
         } catch (Exception ex) {
             // Fallback to returning the original exception message if parsing fails
-            LOG.error("An exception occurred while extractingErrorMessage: [{}]", ex.getMessage());
+            LOG.error("An exception occurred while extracting error message from FeignClientException: [{}]", ex.getMessage());
             return e.getMessage();
         }
     }

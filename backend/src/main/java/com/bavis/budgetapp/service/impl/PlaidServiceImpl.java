@@ -12,6 +12,7 @@ import com.bavis.budgetapp.dto.LinkTokenResponseDto;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.util.JsonUtil;
 import feign.FeignException.FeignClientException;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
+@Log4j2
 public class PlaidServiceImpl implements PlaidService{
-
-    private static final Logger LOG = LoggerFactory.getLogger(PlaidServiceImpl.class);
-
     private final PlaidClient _plaidClient;
     private final PlaidConfig _plaidConfig;
 
@@ -37,14 +36,6 @@ public class PlaidServiceImpl implements PlaidService{
         this._jsonUtil = _jsonUtil;
     }
 
-    /**
-     * Generate a link token for a specified user
-     *
-     * @param userId
-     *          - specified User ID pertaining to our application
-     * @return
-     *      - Link token specific to designated user used to access Plaid Link
-     */
     @Override
     public String generateLinkToken(Long userId) throws PlaidServiceException {
         LinkTokenRequestDto linkTokenRequestDto = LinkTokenRequestDto.builder()
@@ -57,49 +48,40 @@ public class PlaidServiceImpl implements PlaidService{
                 .products(new String[]{"transactions"})
                 .build();
 
-        LOG.debug("Link Token Request in `generateLinkToken()`: {}", linkTokenRequestDto.toString());
+        log.info("Fetching Link Token for User with ID {} with following LinkTokenRequest: [{}]", userId, linkTokenRequestDto);
 
         //Validate & Handle FeignClientException
         ResponseEntity<LinkTokenResponseDto> responseEntity;
         try{
             responseEntity = _plaidClient.createLinkToken(linkTokenRequestDto);
         } catch (FeignClientException e){
+            log.error("An error occurred while fetching Link Token from Plaid API: [{}]", e.getMessage());
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
             throw new PlaidServiceException(plaidClientExceptionMessage);
+        } catch (Exception ex){
+            log.error(ex.getLocalizedMessage());
+            throw new PlaidServiceException(ex.getMessage());
         }
-
-        LOG.debug("Response Entity returned when generating link token: {}", responseEntity.getBody());
 
         //Validate Successful Response from PlaidClient
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            LOG.debug("Response Body From LinkToken Request: {}", responseEntity.getBody());
             LinkTokenResponseDto responseBody = responseEntity.getBody();
             if (responseBody != null) {
-                if(responseBody.getLinkToken().isEmpty()){
-                    LOG.error("Link Token returned from Plaid Client is NULL");
+                if(responseBody.getLinkToken().isBlank()){
+                    log.error("Link Token fetched from Plaid API was null/blank");
                     throw new PlaidServiceException("Link Token returned from Plaid Client is NULL");
                 }
                 return responseBody.getLinkToken();
             } else {
-                LOG.error("Response Body From LinkTokenRequest is NULL.");
+                log.error("Response from Plaid API when attempting to retrieve Link Token was null");
                 throw new PlaidServiceException("Response Body from Plaid Client when Generating Link Token Is Null");
             }
         } else {
-            LOG.error("Response Code From Plaid API is not successful. Status Code: {}", responseEntity.getStatusCode());
+            log.error("Response Code From Plaid API when extracting Link Token was not successful. Status Code: {}", responseEntity.getStatusCode());
             throw new PlaidServiceException("Invalid Response Code When Generating Link Token Via PlaidClient: [" + responseEntity.getStatusCode() + "]");
         }
     }
 
-    /**
-     * Exchange a user's public token for an access token
-     *
-     * @param publicToken
-     *          - public token retrieved from Plaid Link connection
-     * @return
-     *          - access token needed for subsequent requests to Plaid API
-     * @throws PlaidServiceException
-     *          - exception in the case of unsuccessful Plaid API response
-     */
     @Override
     public String exchangeToken(String publicToken) throws PlaidServiceException{
         ExchangeTokenRequestDto exchangeTokenRequestDto = ExchangeTokenRequestDto.builder()
@@ -108,54 +90,40 @@ public class PlaidServiceImpl implements PlaidService{
                 .secretKey(_plaidConfig.getSecretKey())
                 .build();
 
-        LOG.debug("ExchangeTokenRequest created in 'exchangeToken' in PlaidService: {}", exchangeTokenRequestDto);
+        log.info("Exchanging Plaid API Public Token [{}] for Access Token via the following ExchangeTokenRequest: [{}]", publicToken, exchangeTokenRequestDto);
 
         //Validate & Handle Feign Client Exceptions
         ResponseEntity<AccessTokenResponseDto> responseEntity;
         try{
-            LOG.debug("Utilizing PlaidClient to create access token with following exchangeTokenRequest: [{}]", exchangeTokenRequestDto);
             responseEntity = _plaidClient.createAccessToken(exchangeTokenRequestDto);
         } catch(FeignClientException e){
+            log.error("An error occurred while exchanging Public Token for Access Token via Plaid API: [{}]", e.getMessage());
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
             throw new PlaidServiceException(plaidClientExceptionMessage);
         } catch(Exception e){
-            LOG.debug("ERROR : {}",e.getMessage());
-            LOG.error(e.getLocalizedMessage());
+            log.error(e.getLocalizedMessage());
             throw new PlaidServiceException(e.getMessage());
         }
 
         //Validate Successful Response from PlaidClient
         if(responseEntity.getStatusCode().is2xxSuccessful()){
-            LOG.debug("Response Body From Exchange Token Request: {}", responseEntity.getBody());
             AccessTokenResponseDto responseBody = responseEntity.getBody();
             if(responseBody != null){
-                if(responseBody.getAccessToken().isEmpty()){
-                    LOG.error("Access Token returned from PlaidClient is NULL");
+                if(responseBody.getAccessToken().isBlank()){
+                    log.error("AccessToken retrieved from Plaid API is null/blank");
                     throw new PlaidServiceException("Access Token returned from Plaid Client is NULL");
                 }
                 return responseBody.getAccessToken();
             } else {
-                LOG.error("Response Body From ExchangeTokenRequest is NULL.");
+                log.error("Response from Plaid API while exchanging Public Token for Access Token is Null");
                 throw new PlaidServiceException("Response Body from Plaid Client when Exchanging Public Token Is Null");
             }
         } else {
-            LOG.error("Response Code From Plaid API is not successful. Status Code: {}", responseEntity.getStatusCode());
+            log.error("Response Code From Plaid API while Exchanging Public Token is not successful. Status Code: {}", responseEntity.getStatusCode());
             throw new PlaidServiceException("Invalid Response Code When Exchanging Public Token Via Plaid Client: [" + responseEntity.getStatusCode() + "]");
         }
     }
 
-    /**
-     * Retrieve a balance for a particular bank account
-     *
-     * @param accountId
-     *          - account ID to retrieve balance for
-     * @param accessToken
-     *          - access token needed to hit Plaid API endpoint
-     * @return
-     *          - balance of specified account
-     * @throws PlaidServiceException
-     *          - exception in the case of invalid response from Plaid API
-     */
     @Override
     public double retrieveBalance(String accountId, String accessToken) throws PlaidServiceException{
         //Create RetrieveBalanceRequest
@@ -165,16 +133,21 @@ public class PlaidServiceImpl implements PlaidService{
                 .secret(_plaidConfig.getSecretKey())
                 .build();
 
-        LOG.debug("RetrieveBalanceRequest created in 'retrieveBalance' in PlaidService: {}", retrieveBalanceRequestDto);
+        log.info("Retrieving Account Balance via Plaid API for Account with ID {} and the following RetrieveBalanceRequest : [{}]", accountId, retrieveBalanceRequestDto);
 
         //Catch any FeignClientExceptions & Handle Properly
         ResponseEntity<String> responseEntity;
         try{
             responseEntity = _plaidClient.retrieveAccountBalance(retrieveBalanceRequestDto);
         } catch (FeignClientException e){
+            log.error("An error occurred while retrieving account balance via Plaid API: [{}]", e.getMessage());
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
             throw new PlaidServiceException(plaidClientExceptionMessage);
+        } catch(Exception e){
+            log.error(e.getLocalizedMessage());
+            throw new PlaidServiceException(e.getMessage());
         }
+
 
         //Validate Successful Response From PlaidClient
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
@@ -185,10 +158,10 @@ public class PlaidServiceImpl implements PlaidService{
                 return balance;
             }
 
-            LOG.warn("No matching account found for account ID: {}", accountId);
+            log.error("No matching account found for account ID {} while attempting to extract balance from Plaid API response", accountId);
             throw new PlaidServiceException("No Matching Account ID Found In Plaid Client Response When Attempting To Retrieve Balance");
         } else {
-            LOG.error("Failed to retrieve balance. Status code: {}", responseEntity.getStatusCode());
+            log.error("Unsuccessful response from Plaid API while attempting to retrieve account balance. Status code: {}", responseEntity.getStatusCode());
             throw new PlaidServiceException("Invalid Response Code When Retrieving Balance Via Plaid Client: [" + responseEntity.getStatusCode() + "]");
         }
     }

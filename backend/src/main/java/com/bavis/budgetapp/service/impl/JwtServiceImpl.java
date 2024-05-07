@@ -8,6 +8,7 @@ import com.bavis.budgetapp.exception.JwtServiceException;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.util.GeneralUtil;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,43 +19,25 @@ import java.util.Date;
 
 
 @Service
+@Log4j2
 public class JwtServiceImpl implements JwtService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JwtServiceImpl.class);
-
     private final Algorithm _algorithm;
 
     public JwtServiceImpl(Algorithm _algorithm) {
         this._algorithm = _algorithm;
     }
 
-    /**
-     * Validate token is non-expired and is corresponding to the authenticated user
-     * TODO: Consider where we should implement the logic regarding a users locked account
-     *
-     * @param decodedJWT
-     *             - decoded/verified JWT token
-     * @param userDetails
-     *              - user details corresponding to authenticated user
-     * @return
-     *       - boolean determine the validity of the token
-     */
     @Override
     public boolean validateToken(DecodedJWT decodedJWT, UserDetails userDetails) {
+        log.info("Validating JWT Token for User with username '{}'", userDetails.getUsername());
         Date expirationDate = decodedJWT.getExpiresAt();
         final String username = decodedJWT.getSubject();
         return (username.equals(userDetails.getUsername()) && expirationDate.after(new Date()));
     }
-    /**
-     * Generates JWT Token For the Respective User
-     *
-     * @param user
-     *          - user being authenticated
-     * @return
-     *          - JWT Token
-     */
+
     @Override
     public String generateToken(User user) throws JwtServiceException {
+        log.info("Generating JWT Token for User [{}]", user);
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime expirationTime = GeneralUtil.addTimeToDate(currentTime,3, TimeType.HOURS);
 
@@ -65,7 +48,7 @@ public class JwtServiceImpl implements JwtService {
                     .withExpiresAt(GeneralUtil.localDateTimeToDate(expirationTime))
                     .sign(_algorithm);
         } catch (Exception e) {
-            LOG.error("Failed to generated JWT Token for User [{}]", user.toString());
+            log.error("Failed to generated JWT Token for User [{}]", user.toString());
             throw new JwtServiceException("Failed to Generate JWT Token: " + e.getMessage());
         }
     }
