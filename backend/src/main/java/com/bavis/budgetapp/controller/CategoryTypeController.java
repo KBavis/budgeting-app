@@ -86,17 +86,6 @@ public class CategoryTypeController {
 		}
 	}
 
-	/**
-	 * Read all CategoryTypes of a particular User
-	 *
-	 * @return
-	 * 		- all CategoryTypes of a user
-	 */
-	@GetMapping
-	public List<CategoryType> readAll(){
-		log.info("Received CategoryType read many request");
-		return _categoryTypeService.readMany();
-	}
 
 	/**
 	 * Update a particular CategoryType
