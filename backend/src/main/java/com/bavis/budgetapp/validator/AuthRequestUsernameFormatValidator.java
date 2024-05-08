@@ -6,6 +6,13 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Validation class for ensuring AuthRequest contains valid username
+ *      - Contains only lowercase/uppercase letters, digits, underscores, or hyphens
+ *      - Minimum of 6 characters long and at most 20 characters long
+ */
 @Log4j2
 public class AuthRequestUsernameFormatValidator implements ConstraintValidator<AuthRequestValidUsername, AuthRequestDto> {
 
@@ -17,6 +24,16 @@ public class AuthRequestUsernameFormatValidator implements ConstraintValidator<A
         //nothing to initalize
     }
 
+    /**
+     * Validates the passed in 'username' attribute format for our AuthRequestDto
+     *
+     * @param authRequestDto
+     *          - AuthRequestDto to validate 'username' attribute for
+     * @param constraintValidatorContext
+     *          - provides additional context information for our constraint
+     * @return
+     *          - validity of the 'username' attribute in the AuthRequestDto
+     */
     @Override
     public boolean isValid(AuthRequestDto authRequestDto, ConstraintValidatorContext constraintValidatorContext) {
         String username = authRequestDto.getUsername();
@@ -26,7 +43,7 @@ public class AuthRequestUsernameFormatValidator implements ConstraintValidator<A
         }
 
         boolean validUsername = username.matches(usernameRegex);
-        log.debug("AuthRequest Valid Username: {}", validUsername);
+        log.debug("Validity of the username passed in via AuthRequestDto: [{}]", validUsername);
         return validUsername;
     }
 }

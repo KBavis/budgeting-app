@@ -6,6 +6,13 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.log4j.Log4j2;
 
+
+/**
+ * @author Kellen Bavis
+ *
+ * Validation class for ensuring AuthRequest correctly confirm their password
+ *      - Each password specified in AuthRequest are the same
+ */
 @Log4j2
 public class AuthRequestSamePasswordsValidator implements ConstraintValidator<AuthRequestSamePasswords, AuthRequestDto> {
 
@@ -14,6 +21,16 @@ public class AuthRequestSamePasswordsValidator implements ConstraintValidator<Au
         //nothing to initalize
     }
 
+    /**
+     * Validates each of the passed in 'password' attributes for our AuthRequestDto match
+     *
+     * @param authRequestDto
+     *          - AuthRequestDto to validate 'password' attributes for
+     * @param constraintValidatorContext
+     *          - provides additional context information for our constraint
+     * @return
+     *          - validity of the 'password' attribute's in the AuthRequestDto
+     */
     @Override
     public boolean isValid(AuthRequestDto authRequestDto, ConstraintValidatorContext constraintValidatorContext) {
         String passwordOne = authRequestDto.getPasswordOne();
@@ -25,7 +42,7 @@ public class AuthRequestSamePasswordsValidator implements ConstraintValidator<Au
         }
 
         boolean passwordsMatch = passwordTwo.equals(passwordOne);
-        log.debug("AuthRequest Passwords Match: {}", passwordsMatch);
+        log.debug("Validity of the confirmation of user's registered password: [{}]", passwordsMatch);
         return passwordsMatch;
     }
 }

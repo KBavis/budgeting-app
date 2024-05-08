@@ -6,6 +6,14 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Validation class for ensuring AuthRequest contains a valid name
+ *      - Name must start with upper case letter
+ *      - Consists of one or more parts (seperated by single space)
+ *      - Can contain any combination of lowercase/uppercase letters and apostrophes
+ */
 @Log4j2
 public class AuthRequestNameValidator implements ConstraintValidator<AuthRequestValidName, AuthRequestDto> {
 
@@ -16,6 +24,16 @@ public class AuthRequestNameValidator implements ConstraintValidator<AuthRequest
         //nothing to initalize
     }
 
+    /**
+     * Validates the format of the passed in 'Name' for our AuthRequestDto
+     *
+     * @param authRequestDto
+     *          - AuthRequestDto to validate 'name' for
+     * @param constraintValidatorContext
+     *          - provides additional context information for our constraint
+     * @return
+     *          - validity of the 'name' attribute in the AuthRequestDto
+     */
     @Override
     public boolean isValid(AuthRequestDto authRequestDto, ConstraintValidatorContext constraintValidatorContext) {
         String name = authRequestDto.getName();
@@ -25,7 +43,7 @@ public class AuthRequestNameValidator implements ConstraintValidator<AuthRequest
         }
 
         boolean validName = name.matches(nameRegex);
-        log.debug("AuthRequest Name Passed In Validity: {}", validName);
+        log.debug("Validity of the passed in name: [{}]", validName);
         return validName;
     }
 }

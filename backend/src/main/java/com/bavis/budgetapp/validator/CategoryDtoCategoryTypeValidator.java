@@ -14,6 +14,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Validation Class to ensure that our passed in CategoryDto has a valid CategoryType associated with it
+ *          - CategoryType ID references valid CategoryType attribute associated with authenticated user making request
+ */
 @Component
 @Log4j2
 public class CategoryDtoCategoryTypeValidator implements ConstraintValidator<CategoryDtoValidCategoryType, CategoryDto> {
@@ -29,23 +35,33 @@ public class CategoryDtoCategoryTypeValidator implements ConstraintValidator<Cat
         //nothing to initialize
     }
 
+    /**|
+     * Validates that our CategoryType attribute for our CategoryDto is valid
+     *
+     * @param categoryDto
+     *          - CategoryDto to validate CategoryType for
+     * @param constraintValidatorContext
+     *          - provides additional context information for our constraint
+     * @return
+     *          - validity of the passed in CategoryType for our CategoryDto
+     */
     @Override
     public boolean isValid(CategoryDto categoryDto, ConstraintValidatorContext constraintValidatorContext) {
         CategoryType categoryType = null;
         boolean valid = false;
 
-        //Handle potential RuntimeException
         try{
             categoryType = categoryTypeService.read(categoryDto.getCategoryTypeId());
         } catch(Exception e){
             if(e.getMessage().contains("Invalid category type id:")){
+                log.debug("CategoryType does not exist. CategoryType corresponding to CategoryDto is invalid!");
                 return false;
             }
         }
 
         if(categoryType != null) {
            valid = Objects.equals(categoryType.getUser().getUserId(), userService.getCurrentAuthUser().getUserId());
-           log.debug("CategoryDtoCategoryTypeValidator: {}", valid);
+           log.debug("Validity of our CategoryType passed in : [{}]", valid);
            return valid;
         }
         return valid;

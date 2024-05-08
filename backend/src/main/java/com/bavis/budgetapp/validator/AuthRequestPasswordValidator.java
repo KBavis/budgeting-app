@@ -6,17 +6,19 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Validation class for ensuring AuthRequest contains a valid password
+ *      - At least one digit (0 - 9)
+ *      - At least one alphabetical letter (a-zA-Z)
+ *      - At least one special character (@#$%^&+=!)
+ *      - No white space characters
+ *      - Minimum length of 10 characters
+ */
 @Log4j2
 public class AuthRequestPasswordValidator implements ConstraintValidator<AuthRequestValidPassword, AuthRequestDto> {
 
-    /**
-     * Validations:
-     *      - At least one digit (0 - 9)
-     *      - At least one alphabetical letter (a-zA-Z)
-     *      - At least one special character (@#$%^&+=!)
-     *      - No white space characters
-     *      - Minimum length of 10 characters
-     */
     private static final String passwordRegex = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{10,}$";
 
     @Override
@@ -24,6 +26,16 @@ public class AuthRequestPasswordValidator implements ConstraintValidator<AuthReq
         //nothing to initalize
     }
 
+    /**
+     * Validates the format of the passed in 'password' for our AuthRequestDto
+     *
+     * @param authRequestDto
+     *          - AuthRequestDto to validate 'password' for
+     * @param constraintValidatorContext
+     *          - provides additional context information for our constraint
+     * @return
+     *          - validity of the 'password' attribute in the AuthRequestDto
+     */
     @Override
     public boolean isValid(AuthRequestDto authRequestDto, ConstraintValidatorContext constraintValidatorContext) {
         String password = authRequestDto.getPasswordOne();
@@ -32,7 +44,7 @@ public class AuthRequestPasswordValidator implements ConstraintValidator<AuthReq
         }
 
         boolean passwordValid = password.matches(passwordRegex);
-        log.debug("AuthRequest Password Validity: {}", passwordValid);
+        log.debug("Validity of the passed in password: [{}]", passwordValid);
         return passwordValid;
     }
 }

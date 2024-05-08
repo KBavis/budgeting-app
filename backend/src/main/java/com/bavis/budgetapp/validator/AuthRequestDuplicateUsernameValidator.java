@@ -9,6 +9,12 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Validation class to ensure that the 'username' passed in for our AuthRequest is unique
+ *          - Username isn't already registered to corresponding user
+ */
 @Component
 @Log4j2
 public class AuthRequestDuplicateUsernameValidator implements ConstraintValidator<AuthRequestDuplicateUsername, AuthRequestDto> {
@@ -22,6 +28,16 @@ public class AuthRequestDuplicateUsernameValidator implements ConstraintValidato
         //nothing to initalize
     }
 
+    /**
+     * Validates that the username passed in for AuthRequestDto is unique
+     *
+     * @param authRequestDto
+     *              - AuthRequestDto to validate username for
+     * @param constraintValidatorContext
+     *              - provides additional context information for our constraint
+     * @return
+     *              - Validity of passed in username attribute in AuthRequestDto
+     */
     @Override
     public boolean isValid(AuthRequestDto authRequestDto, ConstraintValidatorContext constraintValidatorContext) {
         String username = authRequestDto.getUsername();
@@ -31,7 +47,7 @@ public class AuthRequestDuplicateUsernameValidator implements ConstraintValidato
         }
 
         boolean userExists = userService.existsByUsername(username);
-        log.debug("AuthRequest Username Already Doesn't Exist: {}", !userExists);
+        log.debug("Validity of the uniqueness for our username in our AuthRequestDto: [{}]", userExists);
 
         //note: existsByUsername returns false if user DNE, meaning it's valid
         return !userExists;
