@@ -8,9 +8,18 @@ import categoryTypeContext from "../../context/category/types/categoryTypeContex
 import AlertContext from "../../context/alert/alertContext";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * Main compnent for storing our CategoryCreation Content, allowing this component to be utilized for each CategoryType page
+ *
+ * @param categoryType
+ *          - category type we are creating categories for
+ */
 const CategoryCreationContent = ({ categoryType }) => {
+   //Local State functionality
    const [selectedCategories, setSelectedCategories] = useState([]);
    const [remainingBudget, setRemainingBudget] = useState(0);
+
+   //Global State functionality
    const { addCategories, categories } = useContext(categoryContext);
    const { categoryTypes } = useContext(categoryTypeContext);
    const { setAlert } = useContext(AlertContext);
@@ -18,6 +27,7 @@ const CategoryCreationContent = ({ categoryType }) => {
 
    const navigate = useNavigate();
 
+   //Use Effect for updating the remaining budget
    useEffect(() => {
       const totalIncome = getTotalIncome();
       const budgetAllocationPercentage =
@@ -26,7 +36,9 @@ const CategoryCreationContent = ({ categoryType }) => {
       setRemainingBudget(initialRemainingBudget);
    }, [incomes, categoryTypes, categoryType]);
 
+   //Function to handle selecting a specific category
    const handleOptionSelect = (category) => {
+      //Ensures this option hasn't already been selected
       if (
          !selectedCategories.some(
             (cat) => cat.name.toLowerCase() === category.toLowerCase()
@@ -41,7 +53,9 @@ const CategoryCreationContent = ({ categoryType }) => {
       }
    };
 
+   //Function for handling when a user enters their own specific category
    const handleUserInput = (category) => {
+      //Ensures this option hasn't already been selected
       if (
          !selectedCategories.some(
             (cat) => cat.name.toLowerCase() === category.toLowerCase()
@@ -56,6 +70,7 @@ const CategoryCreationContent = ({ categoryType }) => {
       }
    };
 
+   //Function to adjust the state of the corresponidng Category budget amount/allocation based on updates to slider
    const handleSliderChange = (name, value, totalBudget) => {
       const updatedCategories = selectedCategories.map((cat) =>
          cat.name === name
@@ -75,12 +90,14 @@ const CategoryCreationContent = ({ categoryType }) => {
       setRemainingBudget(totalBudget - totalAllocated);
    };
 
+   //Function to handle the removal of a Category when deselected
    const handleRemoveCategory = (categoryName) => {
       const updatedCategories = selectedCategories.filter(
          (cat) => cat.name !== categoryName
       );
       setSelectedCategories(updatedCategories);
 
+      //Adjust the budget accordingly
       const totalAllocated = updatedCategories.reduce(
          (sum, cat) => sum + cat.budgetAmount,
          0
@@ -88,12 +105,14 @@ const CategoryCreationContent = ({ categoryType }) => {
       setRemainingBudget(getTotalBudget() - totalAllocated);
    };
 
+   //Function to handle the submission of our Category budget allocations
    const handleSubmit = async () => {
       const totalPercentage = selectedCategories.reduce(
          (sum, cat) => sum + cat.budgetAllocationPercentage,
          0
       );
 
+      //Ensures the user utilized the entirety of their budget
       if (totalPercentage !== 1) {
          setAlert(
             "You must utilize exactly 100% of your allocated budget.",
@@ -102,12 +121,13 @@ const CategoryCreationContent = ({ categoryType }) => {
          return;
       }
 
+      //Sets the corresponding CategoryType of each of these Categoires
       const categoriesWithType = selectedCategories.map((category) => ({
          ...category,
          categoryTypeId: getCategoryTypeId(categoryType),
       }));
-      console.log(categoriesWithType);
 
+      //Attempts to POST to API and navigates to next page
       try {
          await addCategories(categoriesWithType);
          setAlert(
@@ -128,6 +148,7 @@ const CategoryCreationContent = ({ categoryType }) => {
       }
    };
 
+   //Funnctionality to fetch corresponding CategoryType ID based on which CategoryType this content is for
    const getCategoryTypeId = (categoryTypeName) => {
       const filteredCategoryTypes = categoryTypes.filter(
          (type) => type.name.toLowerCase() === categoryTypeName.toLowerCase()
@@ -137,10 +158,13 @@ const CategoryCreationContent = ({ categoryType }) => {
          : null;
    };
 
+   //Function to fetch the total income of all incomes in state
+   //TODO: Move this to Global State?
    const getTotalIncome = () => {
       return incomes.reduce((total, income) => total + income.amount, 0);
    };
 
+   //Function to fetch the budget allocation perecentage for the specified CategoryType from global state
    const getBudgetAllocationPercentage = (categoryTypeName) => {
       const categoryTypeObj = categoryTypes.find(
          (type) => type.name.toLowerCase() === categoryTypeName.toLowerCase()
@@ -148,6 +172,7 @@ const CategoryCreationContent = ({ categoryType }) => {
       return categoryTypeObj ? categoryTypeObj.budgetAllocationPercentage : 0;
    };
 
+   //Function to determine initial total budget based on total income and allocated budget percentage
    const getTotalBudget = () => {
       const totalIncome = getTotalIncome();
       const budgetAllocationPercentage =

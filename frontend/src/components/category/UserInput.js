@@ -1,8 +1,16 @@
 import React, { useState } from "react";
 
+/**
+ * Component to allow users the freedom to add their own Category
+ *
+ * @param onSubmit
+ *       - function to handle the submission of our Category
+ * @returns
+ */
 const UserInput = ({ onSubmit }) => {
    const [category, setCategory] = useState("");
 
+   //Handles the submission of our Category
    const handleSubmit = (e) => {
       e.preventDefault();
       if (category.trim() !== "") {

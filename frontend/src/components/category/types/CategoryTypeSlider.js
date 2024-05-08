@@ -2,7 +2,16 @@ import React from "react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css"; // Import default styles for rc-slider
 
+/**
+ *
+ * @param categoryType
+ *          - The CategoryType this specififed slider is being used for
+ * @param onSliderChange
+ *          - function to handle the changing of allocations for our CategoryType
+ * @returns
+ */
 const CategoryTypeSlider = ({ categoryType, onSliderChange }) => {
+   //Handling of the slider change
    const handleSliderChange = (value) => {
       const clampedValue = Math.max(0.01, Math.min(0.99, value));
       onSliderChange(categoryType.name, clampedValue);

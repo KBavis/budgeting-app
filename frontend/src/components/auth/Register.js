@@ -4,6 +4,9 @@ import authContext from "../../context/auth/authContext";
 import { useNavigate } from "react-router-dom";
 import AlertContext from "../../context/alert/alertContext";
 
+/**
+ *  Component utilized for Registering a new User to our application
+ */
 const Register = () => {
    /**
     * Global States
@@ -48,7 +51,7 @@ const Register = () => {
     */
    const navigate = useNavigate();
 
-   //Navigate User To Connect Accounts Or Home Page
+   //Navigate User To Connect Accounts Or Home Page based on if they have account setup
    useEffect(() => {
       if (isAuthenticated) {
          if (authUser && authUser.accounts) {
@@ -59,6 +62,7 @@ const Register = () => {
       }
    }, [isAuthenticated]);
 
+   //Handle alerting when errors occur while registering
    useEffect(() => {
       if (error) {
          setAlert(error, "danger");

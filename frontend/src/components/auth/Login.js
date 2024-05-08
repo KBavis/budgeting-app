@@ -5,6 +5,9 @@ import React from "react";
 import { Link } from "react-router-dom";
 import AlertContext from "../../context/alert/alertContext";
 
+/**
+ *  Component to allow user to authenticate with their account
+ */
 const Login = () => {
    const navigate = useNavigate();
    /**
@@ -42,7 +45,7 @@ const Login = () => {
     * Use Efects
     */
 
-   //Navigate User To Connect Accounts Or Home Page
+   //Navigate User To Connect Accounts Or Home Page depending on if they've already connected accounts
    useEffect(() => {
       if (isAuthenticated) {
          if (authUser && authUser.accounts) {
@@ -53,7 +56,7 @@ const Login = () => {
       }
    }, [isAuthenticated]);
 
-   //Utilize Alert Context To Notify User of Unsuccesfull Authentication
+   //Utilize Alert Context To Notify User of Unsuccesfull/Succesful Authentication
    useEffect(() => {
       if (error) {
          setAlert(error, "danger");

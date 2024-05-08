@@ -1,6 +1,9 @@
 import React, { useContext } from "react";
 import AlertContext from "../../context/alert/alertContext";
 
+/**
+ *  Alert Component for displaying relevant messages to our User
+ */
 const Alerts = () => {
    const { alerts } = useContext(AlertContext);
 

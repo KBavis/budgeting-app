@@ -1,6 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+/**
+ *  Forgot Password component utilized for cases where user forgets password
+ *
+ * TODO: Complete logic
+ */
 const ForgotPassword = () => {
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">

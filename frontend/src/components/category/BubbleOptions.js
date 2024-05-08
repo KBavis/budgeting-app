@@ -1,9 +1,20 @@
 import React from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
+/**
+ *
+ * @param onSelect
+ *          - functionality to handle when a user selects one of our BubbleOptions
+ * @param categoryType
+ *          -  cateogory type used to determine which options to display
+ * @param selectedCategories
+ *          - selected categories utilized to filter out bubble options already selected
+ * @returns
+ */
 const BubbleOptions = ({ onSelect, categoryType, selectedCategories }) => {
    let options = [];
 
+   //Swithc case for determining list of options to use
    switch (categoryType) {
       case "Needs":
          options = [
@@ -24,6 +35,7 @@ const BubbleOptions = ({ onSelect, categoryType, selectedCategories }) => {
          options = [];
    }
 
+   //Filters our potential bubble options based on selected categories
    const filteredOptions = options.filter(
       (option) =>
          !selectedCategories.some(

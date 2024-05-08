@@ -3,6 +3,21 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { FaChevronUp, FaChevronDown, FaTimes } from "react-icons/fa";
 
+/**
+ * Component utilized to allow users to adjust their budget as they see fit
+ *
+ * @param categories
+ *          -  selected Categories to display in the AdjustBudget component
+ * @param onSliderChange
+ *          - on slider change function to correctly adjust amounts allocated and amount remaining of budget
+ * @param onRemoveCategory
+ *          - on remove function to handle when a user de-selects a selected cateogory
+ * @param totalBudget
+ *          - total budget user has to work with (total sum of incomes)A
+ * @param remainingBudget
+ *          - total budget remaining based on allocated amount to each category
+ *
+ */
 const AdjustBudget = ({
    categories,
    onSliderChange,
@@ -10,9 +25,11 @@ const AdjustBudget = ({
    totalBudget,
    remainingBudget,
 }) => {
+   //Local State
    const containerRef = useRef(null);
    const [showArrows, setShowArrows] = useState(false);
 
+   //Use Effect for displaying arrows for user to scroll within component
    useEffect(() => {
       const container = containerRef.current;
       if (container) {
@@ -21,6 +38,7 @@ const AdjustBudget = ({
       }
    }, [categories]);
 
+   //Customize scroll functionality based on arrows
    const handleScroll = (direction) => {
       if (containerRef.current) {
          const container = containerRef.current;
@@ -32,6 +50,7 @@ const AdjustBudget = ({
       }
    };
 
+   //Function to get appropaite font color based on amount of budget remaining
    const getAmountColor = () => {
       if (remainingBudget < 0) {
          return "text-red-500";
