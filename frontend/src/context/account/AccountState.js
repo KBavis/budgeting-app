@@ -13,10 +13,21 @@ import {
 import setAuthToken from "../../utils/setAuthToken";
 import AccountContext from "./accountContext";
 
+/**
+ * File to store the global state for our Account
+ *
+ * @param props
+ *       - props from main App file
+ */
 const AccountState = (props) => {
    const [state, dispatch] = useReducer(connReducer, initalState);
 
-   //TODO: Should pass our account meta data and our public token to our server to 1) create connection, 2) create account
+   /**
+    * Functionality to create account via REST API
+    *
+    * @param formData
+    *       - payload to send to API
+    */
    const createAccount = async (formData) => {
       if (localStorage.token) {
          setAuthToken(localStorage.token);
@@ -40,10 +51,11 @@ const AccountState = (props) => {
       }
    };
 
-   //Clear Errors
+   /**
+    *  Functionality to clear any errors that may have occured
+    */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
 
-   //Return Auth Global Provider
    return (
       <AccountContext.Provider
          value={{

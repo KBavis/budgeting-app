@@ -11,9 +11,22 @@ import initialState from "./initialState";
 import CategoryTypeContext from "./categoryTypeContext";
 import setAuthToken from "../../../utils/setAuthToken";
 
+/**
+ * Global State for our global CategoryType state
+ *
+ * @param props
+ *       - props from our main App file
+ * @returns
+ */
 const CategoryTypeState = (props) => {
    const [state, dispatch] = useReducer(categoryTypeReducer, initialState);
 
+   /**
+    * Functionality to Bulk Create Category Types
+    *
+    * @param categoryTypes
+    *          - payload consisting of CategoryTypes to send to REST API
+    */
    const addCategoryTypes = async (categoryTypes) => {
       if (localStorage.token) {
          setAuthToken(localStorage.token);
@@ -41,6 +54,9 @@ const CategoryTypeState = (props) => {
       }
    };
 
+   /**
+    * Functionality to Clear Exisiting Errors
+    */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
 
    return (

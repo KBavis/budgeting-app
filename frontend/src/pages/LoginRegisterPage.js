@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
 import { quotes } from "../utils/quotes";
 import { Link } from "react-router-dom";
-import authContext from "../context/auth/authContext";
-import AlertContext from "../context/alert/alertContext";
 
+/**
+ *  Page to store the functionality to allow user to either login or register
+ */
 const LoginRegisterPage = () => {
+   //Local State
    const [currentQuote, setCurrentQuote] = useState("");
-   const { error } = useContext(authContext);
-   const { setAlert } = useContext(AlertContext);
 
+   //Functionality to set a random quote about budgeting
    useEffect(() => {
       const randomIndex = Math.floor(Math.random() * quotes.length);
       setCurrentQuote(quotes[randomIndex]);

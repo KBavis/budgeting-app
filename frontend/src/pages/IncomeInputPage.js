@@ -3,15 +3,22 @@ import { useNavigate } from "react-router-dom";
 import AlertContext from "../context/alert/alertContext";
 import IncomeContext from "../context/income/incomeContext";
 
+/**
+ *  Page for users to enter their monthly income
+ */
 const IncomeInputPage = () => {
-   const navigate = useNavigate();
-   const { setAlert } = useContext(AlertContext);
-   const { error, addIncome, clearErrors, incomes } = useContext(IncomeContext);
+   //Local States
    const [income, setIncome] = useState("");
    const [incomeSource, setIncomeSource] = useState("");
    const [incomeType, setIncomeType] = useState("");
    const [description, setDescription] = useState("");
 
+   const navigate = useNavigate();
+   //Global States
+   const { setAlert } = useContext(AlertContext);
+   const { error, addIncome, clearErrors, incomes } = useContext(IncomeContext);
+
+   //List of potential income sources
    const incomeSources = [
       "Employer",
       "Client",
@@ -29,6 +36,7 @@ const IncomeInputPage = () => {
       "Other",
    ];
 
+   //List of potential income types
    const incomeTypes = [
       "Salary",
       "Bonus",
@@ -46,6 +54,7 @@ const IncomeInputPage = () => {
       "Other",
    ];
 
+   //Alert use and navigate in the successful case
    useEffect(() => {
       if (incomes && incomes.length > 0) {
          setAlert("Income added successfully", "SUCCESS");
@@ -61,17 +70,18 @@ const IncomeInputPage = () => {
       }
    }, [error]);
 
+   //Functionality to submit users selected incomes
    const handleSubmit = (e) => {
       e.preventDefault();
       const capitalizedSource = incomeSource.toUpperCase().replace(/\s/g, "_");
       const capitalizedType = incomeType.toUpperCase().replace(/\s/g, "_");
+      //Generate payload to send to API
       const formData = {
          amount: parseFloat(income),
          incomeSource: capitalizedSource,
          incomeType: capitalizedType,
          description: description,
       };
-      console.log(formData);
       addIncome(formData);
    };
 

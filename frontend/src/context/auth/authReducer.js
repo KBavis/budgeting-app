@@ -7,6 +7,9 @@ import {
    CLEAR_ERRORS,
 } from "./types";
 
+/**
+ * Reducer for handling updating state for specific actions for Authentication
+ */
 export default (state, action) => {
    switch (action.type) {
       case AUTH_SUCCESS:

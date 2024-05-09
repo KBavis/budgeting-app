@@ -1,11 +1,14 @@
 import {
    ACCOUNT_CREATED,
    ACCOUNT_DELETED,
-   ACCOUNT_FAILED_CRATED,
+   ACCOUNT_FAILED_CREATED,
    ACCOUNT_FAILED_DELETED,
    CLEAR_ERRORS,
 } from "./types";
 
+/**
+ *  Reducer to handle different actions for our Account management
+ */
 export default (state, action) => {
    switch (action.type) {
       case ACCOUNT_CREATED:
@@ -17,7 +20,7 @@ export default (state, action) => {
          return {
             ...state,
          };
-      case ACCOUNT_FAILED_CRATED:
+      case ACCOUNT_FAILED_CREATED:
          return {
             ...state,
          };

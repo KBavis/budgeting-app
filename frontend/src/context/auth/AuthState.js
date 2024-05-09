@@ -13,10 +13,22 @@ import {
 import initalState from "./initalState";
 import AuthContext from "./authContext";
 
+/**
+ * Global Authentication State
+ *
+ * @param props
+ *      - props from our global App file
+ * @returns
+ */
 const AuthState = (props) => {
    const [state, dispatch] = useReducer(authReducer, initalState);
 
-   //Register
+   /**
+    * Functionality to Register a new User
+    *
+    * @param formData
+    *       - payload to send to our REST API
+    */
    const register = async (formData) => {
       const config = {
          headers: {
@@ -36,6 +48,12 @@ const AuthState = (props) => {
       }
    };
 
+   /**
+    * Functionality to Authenticate User
+    *
+    * @param formData
+    *       - payload to send to our REST API
+    */
    const login = async (formData) => {
       const config = {
          headers: {
@@ -56,10 +74,11 @@ const AuthState = (props) => {
       }
    };
 
-   //Clear Errors
+   /**
+    * Functionality to Clear Errors
+    */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
 
-   //Return Auth Global Provider
    return (
       <AuthContext.Provider
          value={{

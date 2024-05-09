@@ -4,6 +4,9 @@ import {
    CLEAR_ERRORS,
 } from "./types";
 
+/**
+ * Reducer to update CategoryType state based on specified actions
+ */
 export default (state, action) => {
    switch (action.type) {
       case CREATE_CATEGORY_TYPES_SUCCESS:

@@ -1,3 +1,8 @@
+/**
+ * Global Quotes variable to store relevant quotes about budgeting
+ *
+ * TODO: Consider moving this to a global constants file
+ */
 export const quotes = [
    '"A budget is telling your money where to go instead of wondering where it went." - John Maxwell',
    '"A budget is the ultimate self-care tool." - Gemma Hartley',

@@ -5,14 +5,22 @@ import { SET_ALERT, REMOVE_ALERT } from "./types";
 import AlertContext from "./alertContext";
 import alertReducer from "./alertReducer";
 
+/**
+ * Global State for our Alerts
+ *
+ * @param props
+ *          - props from global App file
+ */
 const AlertState = (props) => {
    const [state, dispatch] = useReducer(alertReducer, initialState);
 
    /**
     * Set an alert (on success or error)
     *
-    * @param {string} msg - message of alert
-    * @param {string} type - type of alert
+    * @param msg
+    *    - message of alert
+    * @param type
+    *    - type of alert
     */
    const setAlert = (msg, type) => {
       const id = uuidv4(); // Generate a random UUID for the alert ID
@@ -26,9 +34,6 @@ const AlertState = (props) => {
       setTimeout(() => dispatch({ type: REMOVE_ALERT, payload: id }), 5000);
    };
 
-   /**
-    * Alert Provider
-    */
    return (
       <AlertContext.Provider
          value={{

@@ -1,6 +1,12 @@
 import React from "react";
 import CategoryCreationContent from "../components/category/CategoryCreationContent";
 
+/**
+ *
+ * @param categoryType
+ *          - Category Type we are creating Categories for (Wants, Needs, Investments )
+ * @returns
+ */
 const CategoryCreationPage = ({ categoryType }) => {
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center">

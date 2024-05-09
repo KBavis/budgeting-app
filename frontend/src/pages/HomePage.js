@@ -1,11 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { quotes } from "../utils/quotes";
 
+/**
+ *  Home Page will contain main functionality of our application
+ */
 const HomePage = () => {
-   const [currentQuote, setCurrentQuote] = React.useState("");
+   //Local State
+   const [currentQuote, setCurrentQuote] = useState("");
 
-   React.useEffect(() => {
+   //Use Effect to randomize the quote displayed via our Home Page
+   useEffect(() => {
       const randomIndex = Math.floor(Math.random() * quotes.length);
       setCurrentQuote(quotes[randomIndex]);
    }, []);

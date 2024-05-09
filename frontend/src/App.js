@@ -17,6 +17,9 @@ import CategoryTypeState from "./context/category/types/CategoryTypeState";
 import CategoryState from "./context/category/CategoryState";
 import CategoryCreationPage from "./pages/CategoryCreationPage";
 
+/**
+ *  Main Application File
+ */
 function App() {
    return (
       <AlertState>

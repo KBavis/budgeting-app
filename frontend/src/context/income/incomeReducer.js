@@ -1,32 +1,35 @@
 import {
-  CREATE_INCOME_SUCCESS,
-  CREATE_INCOME_FAIL,
-  CLEAR_ERRORS,
+   CREATE_INCOME_SUCCESS,
+   CREATE_INCOME_FAIL,
+   CLEAR_ERRORS,
 } from "./types";
 
+/**
+ * Reducer to update our Income State based on specified actions
+ */
 export default (state, action) => {
-  switch (action.type) {
-    case CREATE_INCOME_SUCCESS:
-      return {
-        ...state,
-        incomes: state.incomes
-          ? [...state.incomes, action.payload]
-          : [action.payload],
-        loading: false,
-        error: null,
-      };
-    case CREATE_INCOME_FAIL:
-      return {
-        ...state,
-        error: action.payload,
-        loading: false,
-      };
-    case CLEAR_ERRORS:
-      return {
-        ...state,
-        error: null,
-      };
-    default:
-      return state;
-  }
+   switch (action.type) {
+      case CREATE_INCOME_SUCCESS:
+         return {
+            ...state,
+            incomes: state.incomes
+               ? [...state.incomes, action.payload]
+               : [action.payload],
+            loading: false,
+            error: null,
+         };
+      case CREATE_INCOME_FAIL:
+         return {
+            ...state,
+            error: action.payload,
+            loading: false,
+         };
+      case CLEAR_ERRORS:
+         return {
+            ...state,
+            error: null,
+         };
+      default:
+         return state;
+   }
 };
