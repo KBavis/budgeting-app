@@ -6,6 +6,7 @@ import com.bavis.budgetapp.config.JwtConfig;
 import com.bavis.budgetapp.constants.TimeType;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.util.GeneralUtil;
+import lombok.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,9 @@ import java.time.LocalDateTime;
 @Component
 public class TestHelper {
     private static final Logger LOG = LoggerFactory.getLogger(TestHelper.class);
+
+
+
 
 
 
@@ -44,12 +48,29 @@ public class TestHelper {
         }
     }
 
+
+    /**
+     * Function to create valid JWT Algorithm
+     *
+     * @return
+     *      - valid JWT Algorithm
+     *
+     */
     public Algorithm createAlgorithm() {
         JwtConfig jwtConfig = new JwtConfig();
         return jwtConfig.jwtAlgorithm();
     }
 
-    // Helper function to create Balance Response Object
+    /**
+     * Helper function to generate valid Balance Response
+     *
+     * @param accountId
+     *              - Account ID to generate response for
+     * @param balance
+     *              - Balance to generate response for
+     * @return
+     *              - Balance Response
+     */
     public Object createBalanceResponse(String accountId, double balance) {
         return new Object() {
             public final Object[] accounts = {

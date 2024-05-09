@@ -57,6 +57,7 @@ public class JsonUtil {
     public Double extractBalanceByAccountId(String jsonString, String accountId, String balancePath) {
         try {
             log.info("Attempting to extract balance from response for the following Account ID: [{}]", accountId);
+            log.info("Json String to parse for Account Balance: {}", jsonString);
             JsonNode rootNode = _objectMapper.readTree(jsonString);
             JsonNode accountsNode = rootNode.path("accounts");
 
