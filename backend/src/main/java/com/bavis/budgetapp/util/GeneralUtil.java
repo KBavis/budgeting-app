@@ -30,7 +30,6 @@ public class GeneralUtil {
             case HOURS -> dateTime.plusHours(amount);
             case MINUTES -> dateTime.plusMinutes(amount);
             case SECONDS -> dateTime.plusSeconds(amount);
-            default -> throw new IllegalArgumentException("Unsupported Time Type: " + timeType);
         };
     }
 
