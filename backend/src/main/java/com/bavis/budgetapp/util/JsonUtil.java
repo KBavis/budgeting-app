@@ -76,6 +76,7 @@ public class JsonUtil {
             log.error("Account ID '{}' not found in the JSON response", accountId);
         } catch (Exception e) {
             log.error("Error occurred while extracting balance for account ID '{}': {}", accountId, e.getMessage());
+            return null;
         }
         return null;
     }
@@ -92,15 +93,14 @@ public class JsonUtil {
         try {
             log.info("Attempting to extract relevant error message for following FeignClientException: [{}]", e.getMessage());
             String responseBody = e.contentUTF8();
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(responseBody);
+            JsonNode jsonNode = _objectMapper.readTree(responseBody);
             String errorMsg = jsonNode.get("error_message").asText();
             log.debug("Relevant error message extracted from FeignClientException: [{}]", e.getMessage());
             return errorMsg;
         } catch (Exception ex) {
             // Fallback to returning the original exception message if parsing fails
             log.error("An exception occurred while extracting error message from FeignClientException: [{}]", ex.getMessage());
-            return e.getMessage();
+            return e.getMessage() != null ? e.getMessage() : "FeignClientException occurred. Unable to extract error message";
         }
     }
 
