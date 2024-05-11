@@ -3,10 +3,7 @@ package com.bavis.budgetapp.dto;
 import com.bavis.budgetapp.annotation.*;
 import com.bavis.budgetapp.validator.group.AuthRequestAuthenticationValidationGroup;
 import com.bavis.budgetapp.validator.group.AuthRequestRegistrationValidationGroup;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * @author Kellen Bavis
@@ -18,13 +15,14 @@ import lombok.ToString;
 @AuthRequestValidUsername(groups = {AuthRequestRegistrationValidationGroup.class, AuthRequestAuthenticationValidationGroup.class})
 @AuthRequestValidName(groups = AuthRequestRegistrationValidationGroup.class)
 @AuthRequestValidPassword(groups = {AuthRequestRegistrationValidationGroup.class, AuthRequestAuthenticationValidationGroup.class})
-@Getter
-@RequiredArgsConstructor
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @ToString
 @Builder
 public class AuthRequestDto {
-    private final String name;
-    private final String username;
-    private final String passwordOne;
-    private final String passwordTwo; //validate same password
+    private String name;
+    private String username;
+    private String passwordOne;
+    private String passwordTwo; //validate same password
 }
