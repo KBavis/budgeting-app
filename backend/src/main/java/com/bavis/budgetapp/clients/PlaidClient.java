@@ -2,11 +2,7 @@ package com.bavis.budgetapp.clients;
 
 
 import com.bavis.budgetapp.config.PlaidConfig;
-import com.bavis.budgetapp.dto.ExchangeTokenRequestDto;
-import com.bavis.budgetapp.dto.LinkTokenRequestDto;
-import com.bavis.budgetapp.dto.RetrieveBalanceRequestDto;
-import com.bavis.budgetapp.dto.AccessTokenResponseDto;
-import com.bavis.budgetapp.dto.LinkTokenResponseDto;
+import com.bavis.budgetapp.dto.*;
 import feign.FeignException.FeignClientException;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +26,6 @@ public interface PlaidClient {
     @PostMapping("/accounts/balance/get")
     ResponseEntity<String> retrieveAccountBalance(@RequestBody RetrieveBalanceRequestDto retrieveBalanceRequestDto) throws FeignClientException;
 
-    //@PostMapping("/transactions/sync")
-    //ResponseEntity<?> syncTransactions(@RequestBody SyncTransactionsRequest syncTransactionsRequest);
+    @PostMapping("/transactions/sync")
+    ResponseEntity<PlaidTransactionSyncResponseDto> syncTransactions(@RequestBody PlaidTransactionSyncRequestDto plaidTransactionSyncRequestDto) throws FeignClientException;
 }
