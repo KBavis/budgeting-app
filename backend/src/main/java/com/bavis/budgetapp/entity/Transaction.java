@@ -3,6 +3,7 @@ package com.bavis.budgetapp.entity;
 import java.time.LocalDate;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,13 +41,15 @@ public class Transaction {
 	/**
 	 * Many Transactions To One Account
 	 */
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "accountId", referencedColumnName = "accountId")
-	private Account accountSource; 
+	private Account account;
 	
 	/**
 	 * Many Transactions To One Category 
 	 */
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "categoryId", referencedColumnName = "categoryId")
 	private Category category;
@@ -60,7 +63,7 @@ public class Transaction {
 		if (getClass() != obj.getClass())
 			return false;
 		Transaction other = (Transaction) obj;
-		return Objects.equals(accountSource, other.accountSource)
+		return Objects.equals(account, other.account)
 				&& Double.doubleToLongBits(amount) == Double.doubleToLongBits(other.amount)
 				&& Objects.equals(category, other.category) && Objects.equals(date, other.date)
 				&& Objects.equals(name, other.name);
@@ -68,7 +71,7 @@ public class Transaction {
 	@Override
 	public String toString() {
 		return "Transaction [name=" + name + ", amount=" + amount + ", category=" + category + ", date=" + date
-				+ ", accountSource=" + accountSource + "]";
+				+ ", accountSource=" + account + "]";
 	}
 	
 }

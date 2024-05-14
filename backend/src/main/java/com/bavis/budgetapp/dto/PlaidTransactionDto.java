@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,10 +19,17 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class PlaidTransactionDto {
     private String account_id;
+
     private String transaction_id;
+
     private double amount;
-    private LocalDate localDate;
+
+    private LocalDate datetime;
+
+    @JsonProperty("counterparties")
     private CounterpartyDto countrpartyDto;
+
+    @JsonProperty("personal_finance_category")
     private PersonalFinanceCategoryDto personalFinanceCategoryDto;
 
     @Data
