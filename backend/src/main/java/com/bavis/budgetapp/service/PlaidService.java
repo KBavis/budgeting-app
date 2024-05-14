@@ -1,7 +1,10 @@
 package com.bavis.budgetapp.service;
 
 
+import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.exception.PlaidServiceException;
+
+import java.util.List;
 
 /**
  * @author Kellen Bavis
@@ -45,6 +48,19 @@ public interface PlaidService {
      * @throws PlaidServiceException
      *          - Thrown in the case that an error occurs while fetching balance 
      */
-
     public double retrieveBalance(String accountId, String accessToken) throws PlaidServiceException;
+
+
+    /**
+     * Functionality to retrieve all modified, added, or removed transactions from Plaid API
+     *
+     * @param accessToken
+     *      - Access Token pertaining to specific Connection
+     * @param previousCursor
+     *      - Connection ID corresponding to Account to sync transactions for
+     * @return
+     *      - DTO containing all added, modified, and removed Transactions, and a cursor for subsequent requests
+     */
+    public PlaidTransactionSyncResponseDto syncTransactions(String accessToken, String previousCursor);
+
 }

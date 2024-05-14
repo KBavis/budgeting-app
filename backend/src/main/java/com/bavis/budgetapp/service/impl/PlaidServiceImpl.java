@@ -2,22 +2,16 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.config.PlaidConfig;
-import com.bavis.budgetapp.dto.PlaidUserDto;
+import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
-import com.bavis.budgetapp.dto.ExchangeTokenRequestDto;
-import com.bavis.budgetapp.dto.LinkTokenRequestDto;
-import com.bavis.budgetapp.dto.RetrieveBalanceRequestDto;
-import com.bavis.budgetapp.dto.AccessTokenResponseDto;
-import com.bavis.budgetapp.dto.LinkTokenResponseDto;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.util.JsonUtil;
 import feign.FeignException.FeignClientException;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 
 /**
  * @author Kellen Bavis
@@ -31,6 +25,7 @@ public class PlaidServiceImpl implements PlaidService{
     private final PlaidConfig _plaidConfig;
 
     private final JsonUtil _jsonUtil;
+
 
 
 
@@ -170,5 +165,52 @@ public class PlaidServiceImpl implements PlaidService{
             throw new PlaidServiceException("Invalid Response Code When Retrieving Balance Via Plaid Client: [" + responseEntity.getStatusCode() + "]");
         }
     }
+
+    @Override
+    public PlaidTransactionSyncResponseDto syncTransactions(String accessToken, String previousCursor) throws PlaidServiceException{
+        log.debug("Attempting to Sync Transactions via Plaid Service");
+
+
+        //Create Plaid API Request
+        PlaidTransactionSyncRequestDto syncRequestDto = PlaidTransactionSyncRequestDto.builder()
+                .client_id(_plaidConfig.getClientId())
+                .secret(_plaidConfig.getSecretKey())
+                .access_token(accessToken)
+                .count(100) //TODO: move this to properties file
+                .build();
+
+        //Append Cursor If Non-Null
+        if(previousCursor != null) {
+            syncRequestDto.setCursor(previousCursor);
+        }
+
+        //Sync Transactions via Plaid API
+        ResponseEntity<PlaidTransactionSyncResponseDto> responseEntity;
+        try{
+            responseEntity = _plaidClient.syncTransactions(syncRequestDto);
+        } catch (FeignClientException e){
+            log.error("An error occurred while attempting to Sync Transactions via Plaid API: [{}]", e.getMessage());
+            String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
+            throw new PlaidServiceException(plaidClientExceptionMessage);
+        } catch(Exception e){
+            log.error(e.getLocalizedMessage());
+            throw new PlaidServiceException(e.getMessage());
+        }
+
+        //Validate Response
+        if(responseEntity.getStatusCode().is2xxSuccessful()) {
+            if(responseEntity.getBody() != null) {
+               return responseEntity.getBody();
+            } else {
+                log.error("Plaid API's response body when syncing transactions is null");
+                throw new PlaidServiceException("Response Body when Syncing Transactions is Null");
+            }
+
+        } else {
+            log.error("Unsuccessful response from Plaid API while attempting to sync transactions via Plaid Client. Status code: {}", responseEntity.getStatusCode());
+            throw new PlaidServiceException("Invalid Response Code When Retrieving Balance Via Plaid Client: [" +responseEntity.getStatusCode() + "]");
+        }
+    }
+
 
 }
