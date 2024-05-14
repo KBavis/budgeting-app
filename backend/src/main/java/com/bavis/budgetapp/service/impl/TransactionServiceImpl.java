@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dao.TransactionRepository;
+import com.bavis.budgetapp.dto.PlaidTransactionDto;
 import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Account;
@@ -10,7 +11,10 @@ import com.bavis.budgetapp.service.TransactionService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Kellen Bavis
@@ -36,6 +40,8 @@ public class TransactionServiceImpl implements TransactionService {
     }
     @Override
     public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto) {
+        List<Transaction> addedOrModifiedTransactions = new ArrayList<>();
+
         //Sync Transaction for each specified Account
         for(String accountId: transactionSyncRequestDto.getAccounts()){
             try{
@@ -48,6 +54,24 @@ public class TransactionServiceImpl implements TransactionService {
                 //Fetch Added, Modified, and Removed Transactions
                 PlaidTransactionSyncResponseDto syncResponseDto = _plaidService.syncTransactions(accessToken, previousCursor);
                 log.info("PlaidTransactionSyncResponseDto for Account ID {} : [{}]", accountId, syncResponseDto);
+
+                //Update/Create Transactions
+                //TODO: Add error handling for the cases where ADDED or MODIFIED is null
+                List<PlaidTransactionDto> addedOrModifiedTransactionsDtos = Stream.concat(
+                        syncResponseDto.getAdded().stream(),
+                        syncResponseDto.getModified().stream()
+                )
+                        .toList();
+
+                for(PlaidTransactionDto plaidTransactionDto: addedOrModifiedTransactionsDtos) {
+                    log.info("PlaidTransactionDto to be ADDED or UPDATED: [{}]", plaidTransactionDto);
+
+                    //Map To Transaction Entity
+
+                    //Persist
+                }
+
+                //Update
 
                 /**
                  *  TODO:

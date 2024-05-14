@@ -6,4 +6,4 @@ application.yaml
 build/
 src/resources/.env
 .idea/
-frontend/**
+frontend/
