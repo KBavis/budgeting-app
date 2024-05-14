@@ -3,6 +3,7 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.service.TransactionService;
+import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class TransactionController {
     private TransactionService _transactionService;
 
     @PostMapping("/sync")
-    public ResponseEntity<List<Transaction>> syncTransactions(@RequestBody TransactionSyncRequestDto transactionSyncRequestDto){
+    public ResponseEntity<List<Transaction>> syncTransactions(@Valid @RequestBody TransactionSyncRequestDto transactionSyncRequestDto){
         log.info("Received request to SyncTransactions for following TransactionSyncRequest: [{}]", transactionSyncRequestDto);
         return ResponseEntity.ok(_transactionService.syncTransactions(transactionSyncRequestDto));
     }
