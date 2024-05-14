@@ -45,7 +45,9 @@ public class ConnectionServiceImpl implements ConnectionService{
 	// TODO: finish this logic and add comments
 	@Override
 	public Connection read(Long connectionId) {
-		return null;
+		log.info("Attempting to read a Connection entity with the ID {}", connectionId);
+		return _repository.findById(connectionId)
+				.orElseThrow(() -> new RuntimeException("Unable to locate Connection with ID " + connectionId));
 	}
 
 	// TODO: finish this logic and add comments
