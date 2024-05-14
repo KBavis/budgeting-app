@@ -1,6 +1,5 @@
 package com.bavis.budgetapp.service.impl;
 
-import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
@@ -13,6 +12,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * @author Kellen Bavis
+ *
+ * Implementation of our Transaction Service functionality
+ */
 @Service
 @Log4j2
 public class TransactionServiceImpl implements TransactionService {
