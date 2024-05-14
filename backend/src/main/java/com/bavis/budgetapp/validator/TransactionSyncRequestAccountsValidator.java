@@ -52,7 +52,7 @@ public class TransactionSyncRequestAccountsValidator implements ConstraintValida
             try{
                 account = accountService.read(accountId);
             } catch (RuntimeException e){
-                log.error("The following exception occured when reading Account wiht ID {}: [{}]", accountId, e.getMessage());
+                log.error("The following exception occurred when reading Account with ID {}: [{}]", accountId, e.getMessage());
                 return false;
             }
 

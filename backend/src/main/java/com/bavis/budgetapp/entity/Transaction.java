@@ -32,8 +32,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class Transaction {
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long transactionId;
+	@Id
+	private String transactionId;
 	private String name;
 	private double amount;
 	private LocalDate date;

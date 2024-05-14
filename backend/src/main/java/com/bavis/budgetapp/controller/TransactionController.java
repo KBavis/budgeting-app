@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * TODO: Finalize this implementation, add comments, add proper logging
+ * @author Kellen Bavis
+ *
+ * Controller utilized for working with Transaction entity
  */
 @RestController
 @Log4j2
