@@ -9,7 +9,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface TransactionMapper {
     @Mapping(target = "transactionId", source = "transaction_id")
-    @Mapping(target = "name", source = "counterparties.name")
+    @Mapping(target = "name", source = "counterpartyDto.name")
     @Mapping(target = "amount", source = "amount")
     @Mapping(target = "date", source = "datetime")
     @Mapping(target = "account", ignore = true)

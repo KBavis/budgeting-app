@@ -27,7 +27,7 @@ public class PlaidTransactionDto {
     private LocalDate datetime;
 
     @JsonProperty("counterparties")
-    private CounterpartyDto countrpartyDto;
+    private CounterpartyDto counterpartyDto;
 
     @JsonProperty("personal_finance_category")
     private PersonalFinanceCategoryDto personalFinanceCategoryDto;
