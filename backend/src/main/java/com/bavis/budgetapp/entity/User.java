@@ -64,18 +64,21 @@ public class User implements UserDetails{
 	 * One User Can Have Many Categories 
 	 */
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonIgnore
 	List<Category> categories;
 	
 	/**
 	 * User Can Have Multiple Accounts
 	 */
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonIgnore
 	private List<Account> accounts; //connected user accounts
 
 	/**
 	 * User Can Have Multiple Sources of Income
 	 */
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonIgnore
 	private List<Income> incomes;
 
 
