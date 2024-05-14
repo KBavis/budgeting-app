@@ -125,9 +125,10 @@ public class AccountServiceImpl implements AccountService{
 	}
 
 	@Override
-	public Account read(Long accountId) {
-		// TODO Auto-generated method stub
-		return null;
+	public Account read(String accountId) {
+		log.info("Attempting to read a Account entity with the ID {}", accountId);
+		return  _accountRepository.findByAccountId(accountId)
+				.orElseThrow(() -> new RuntimeException("Unable to locate Account with ID " + accountId));
 	}
 
 }

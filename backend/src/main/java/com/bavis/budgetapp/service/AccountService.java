@@ -52,5 +52,5 @@ public interface AccountService {
 	 * @return
 	 * 			- Fetched Account
 	 */
-	Account read(Long accountId);
+	Account read(String accountId);
 }

@@ -41,7 +41,7 @@ public class AccountController {
 	 * 			- Fetched account corresponding to passed in AccountID
 	 */
 	@GetMapping("/{accountId}")
-	public ResponseEntity<Account> read(@PathVariable(value = "accountId") Long accountId) {
+	public ResponseEntity<Account> read(@PathVariable(value = "accountId") String accountId) {
 		log.info("Received request to read account with ID {}", accountId);
 		return ResponseEntity.ok(_accountService.read(accountId));
 	}
