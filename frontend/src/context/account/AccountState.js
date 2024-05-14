@@ -6,7 +6,7 @@ import initalState from "./initialState";
 import {
    ACCOUNT_CREATED,
    ACCOUNT_DELETED,
-   ACCOUNT_FAILED_CRATED,
+   ACCOUNT_FAILED_CREATED,
    ACCOUNT_FAILED_DELETED,
    CLEAR_ERRORS,
 } from "./types";
@@ -40,12 +40,14 @@ const AccountState = (props) => {
       };
 
       try {
+         console.log("Creating Account with the following Request Body: ");
+         console.log(formData);
          const res = await axios.post(`${apiUrl}/account`, formData, config);
          dispatch({ type: ACCOUNT_CREATED, payload: res.data });
       } catch (err) {
          console.error(err);
          dispatch({
-            type: ACCOUNT_FAILED_CRATED,
+            type: ACCOUNT_FAILED_CREATED,
             payload: err.response.data.error,
          });
       }

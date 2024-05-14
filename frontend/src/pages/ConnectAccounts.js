@@ -80,7 +80,6 @@ const ConnectAccounts = () => {
                token={user.linkToken}
                onSuccess={handleOnSuccess}
                onExit={handleOnExit}
-               onEvent={handleOnEvent}
                className="plaid-link-wrapper"
             >
                <div className="font-bold py-3 px-5 rounded text-white bg-indigo-600 hover:bg-indigo-700">
