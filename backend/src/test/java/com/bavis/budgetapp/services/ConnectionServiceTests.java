@@ -16,7 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -39,7 +41,6 @@ public class ConnectionServiceTests {
     @BeforeEach
     public void setup(){
 
-        connectionService = new ConnectionServiceImpl(connectionRepository);
         now = LocalDateTime.now();
         connection = Connection.builder()
                 .connectionId(10L)
@@ -92,6 +93,78 @@ public class ConnectionServiceTests {
 
         //Verify
         verify(connectionRepository, times(1)).save(connection);
+    }
+
+    @Test
+    void testUpdateConnection_Successful() {
+        // Arrange
+        Long connectionId = 10L;
+        LocalDateTime lastSyncTime = LocalDateTime.now();
+        String accessToken = "access-token";
+        String institutionName = "J.P Morgan";
+        String previousCursor = "previous-cursor";
+
+        Connection connectionWithUpdates = Connection.builder()
+                .previousCursor(previousCursor)
+                .build();
+
+        Connection connectionToUpdate = Connection.builder()
+                .connectionId(connectionId)
+                .connectionStatus(ConnectionStatus.CONNECTED)
+                .lastSyncTime(lastSyncTime)
+                .accessToken(accessToken)
+                .institutionName(institutionName)
+                .previousCursor(null)
+                .build();
+
+        Connection expectedUpdatedConnection = Connection.builder()
+                .connectionId(connectionId)
+                .connectionStatus(ConnectionStatus.CONNECTED)
+                .lastSyncTime(lastSyncTime)
+                .accessToken(accessToken)
+                .institutionName(institutionName)
+                .previousCursor(previousCursor)
+                .build();
+
+        // Mock
+        when(connectionRepository.findById(10L)).thenReturn(Optional.of(connectionToUpdate));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Connection actualConnection = connectionService.update(connectionWithUpdates, 10L);
+
+        // Assert
+        assertNotNull(actualConnection);
+        assertEquals(expectedUpdatedConnection.getConnectionId(), actualConnection.getConnectionId());
+        assertEquals(expectedUpdatedConnection.getConnectionStatus(), actualConnection.getConnectionStatus());
+        assertEquals(expectedUpdatedConnection.getLastSyncTime(), actualConnection.getLastSyncTime());
+        assertEquals(expectedUpdatedConnection.getInstitutionName(), actualConnection.getInstitutionName());
+        assertEquals(expectedUpdatedConnection.getPreviousCursor(), actualConnection.getPreviousCursor());
+
+        // Verify
+        verify(connectionRepository, times(1)).findById(10L);
+        verify(connectionRepository, times(1)).save(any(Connection.class));
+    }
+    @Test
+    void testUpdateConnection_ConnectionIdNotFound_Failure() {
+        //Arrange
+        String previousCursor = "previousCursor";
+        Connection connectionWithUpdates = Connection.builder()
+                .previousCursor(previousCursor)
+                .build();
+
+        //Mock
+        when(connectionRepository.findById(10L)).thenReturn(Optional.empty());
+
+        //Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            connectionService.update(connectionWithUpdates, 10L);
+        });
+        assertNotNull(exception);
+        assertEquals("Unable to find Connection with ID 10 to update.", exception.getMessage());
+
+        //Verify
+        verify(connectionRepository, times(1)).findById(10L);
     }
 
 }
