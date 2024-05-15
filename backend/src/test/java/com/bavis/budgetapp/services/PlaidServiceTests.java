@@ -2,13 +2,9 @@ package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.config.PlaidConfig;
+import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.helper.TestHelper;
-import com.bavis.budgetapp.dto.ExchangeTokenRequestDto;
-import com.bavis.budgetapp.dto.LinkTokenRequestDto;
-import com.bavis.budgetapp.dto.RetrieveBalanceRequestDto;
-import com.bavis.budgetapp.dto.AccessTokenResponseDto;
-import com.bavis.budgetapp.dto.LinkTokenResponseDto;
 import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
 import com.bavis.budgetapp.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -452,5 +451,218 @@ public class PlaidServiceTests {
         //Verify
         verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
         verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
+    }
+
+    @Test
+    void testSyncTransactions_Success() {
+        //Arrange
+        String clientId = "client-id";
+        String secretKey = "secret-key";
+        String nextCursor = "next-cursor";
+        String previousCursor = "previous-cursor";
+        LocalDate date = LocalDate.now();
+        String accountId = "account-id";
+        String accessToken = "access-token";
+
+        PlaidTransactionDto.CounterpartyDto counterpartyDto = PlaidTransactionDto.CounterpartyDto.builder()
+                .logo_url("logo_url")
+                .name("Chase")
+                .build();
+
+        PlaidTransactionDto.PersonalFinanceCategoryDto personalFinanceCategoryDto = PlaidTransactionDto.PersonalFinanceCategoryDto.builder()
+                .primary("PRIMARY")
+                .detailed("DETAILED")
+                .confidence_level("HIGH")
+                .build();
+
+        PlaidTransactionDto plaidTransactionDtoOne = PlaidTransactionDto.builder()
+                .transaction_id("12345")
+                .counterpartyDto(counterpartyDto)
+                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .amount(1000.0)
+                .datetime(date)
+                .account_id(accountId)
+                .build();
+
+        PlaidTransactionDto plaidTransactionDtoTwo = PlaidTransactionDto.builder()
+                .transaction_id("6789")
+                .counterpartyDto(counterpartyDto)
+                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .amount(2000.0)
+                .datetime(date)
+                .account_id(accountId)
+                .build();
+
+
+        PlaidTransactionDto plaidTransactionDtoThree = PlaidTransactionDto.builder()
+                .transaction_id("6789")
+                .counterpartyDto(counterpartyDto)
+                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .amount(3000.0)
+                .datetime(date)
+                .account_id(accountId)
+                .build();
+
+        List<PlaidTransactionDto> addedTransactions = List.of(plaidTransactionDtoOne);
+        List<PlaidTransactionDto> removedTransactions = List.of(plaidTransactionDtoTwo);
+        List<PlaidTransactionDto> modifiedTransactions = List.of(plaidTransactionDtoThree);
+
+        PlaidTransactionSyncResponseDto syncResponseDto = PlaidTransactionSyncResponseDto.builder()
+                .added(addedTransactions)
+                .modified(modifiedTransactions)
+                .removed(removedTransactions)
+                .next_cursor(nextCursor)
+                .build();
+
+        ResponseEntity<PlaidTransactionSyncResponseDto> responseEntity = new ResponseEntity<>(syncResponseDto, HttpStatus.OK);
+
+
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn(clientId);
+        when(plaidConfig.getSecretKey()).thenReturn(secretKey);
+        when(plaidClient.syncTransactions(any(PlaidTransactionSyncRequestDto.class))).thenReturn(responseEntity);
+
+        //Act
+        PlaidTransactionSyncResponseDto actualSyncResponse = plaidService.syncTransactions(accessToken, previousCursor);
+
+        //Assert
+        assertNotNull(actualSyncResponse);
+        assertEquals(addedTransactions, actualSyncResponse.getAdded());
+        assertEquals(modifiedTransactions, actualSyncResponse.getModified());
+        assertEquals(removedTransactions, actualSyncResponse.getRemoved());
+        assertEquals(nextCursor, actualSyncResponse.getNext_cursor());
+
+        //Verify
+        verify(plaidClient, times(1)).syncTransactions(any(PlaidTransactionSyncRequestDto.class));
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+    }
+
+    @Test
+    void testSyncTransactions_FeignClientException_Failure() {
+        // Arrange
+        String errorMessage = "invalid argument at position[0].";
+        String expectedExceptionMessage = "PlaidServiceException: [" + errorMessage + "]";
+        String previousCursor = "previous-cursor";
+        String accessToken = "access-token";
+
+
+        Request request = Request.create(
+                Request.HttpMethod.POST,
+                "/transactions/sync",
+                Collections.emptyMap(),
+                "request_body".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8,
+                null
+        );
+        FeignException.FeignClientException feignClientException = new FeignException.FeignClientException(
+                400, "Bad Request", request, null, null);
+
+        //Mock
+        when(plaidClient.syncTransactions(any(PlaidTransactionSyncRequestDto.class)))
+                .thenThrow(feignClientException);
+        when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
+                .thenReturn(errorMessage);
+
+        // Act & Assert
+        PlaidServiceException thrownException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.syncTransactions(accessToken, previousCursor);
+        });
+        assertNotNull(thrownException);
+        assertEquals(expectedExceptionMessage, thrownException.getMessage());
+
+        //Verify
+        verify(plaidClient, times(1)).syncTransactions(any(PlaidTransactionSyncRequestDto.class));
+        verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+    }
+
+    @Test
+    void testSyncTransactions_Exception_Failure() {
+        // Arrange
+        String errorMessage = "NullPointerException at position[0].";
+        String expectedExceptionMessage = "PlaidServiceException: [" + errorMessage + "]";
+        String previousCursor = "previous-cursor";
+        String accessToken = "access-token";
+
+        //Mock
+        when(plaidClient.syncTransactions(any(PlaidTransactionSyncRequestDto.class)))
+                .thenThrow(new RuntimeException(errorMessage));
+
+        // Act & Assert
+        PlaidServiceException thrownException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.syncTransactions(accessToken, previousCursor);
+        });
+        assertNotNull(thrownException);
+        assertEquals(expectedExceptionMessage, thrownException.getMessage());
+
+        //Verify
+        verify(plaidClient, times(1)).syncTransactions(any(PlaidTransactionSyncRequestDto.class));
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+
+    }
+
+    @Test
+    void testSyncTransactions_InvalidResponseCode_Failure() {
+        // Arrange
+        String errorMessage = "Invalid Response Code When Retrieving Balance Via Plaid Client: [400 BAD_REQUEST]";
+        String expectedExceptionMessage = "PlaidServiceException: [" + errorMessage + "]";
+        String previousCursor = "previous-cursor";
+        String accessToken = "access-token";
+        String nextCursor = "next-cursor";
+        PlaidTransactionSyncResponseDto syncResponseDto = PlaidTransactionSyncResponseDto.builder()
+                .added(new ArrayList<>())
+                .modified(new ArrayList<>())
+                .removed(new ArrayList<>())
+                .next_cursor(nextCursor)
+                .build();
+
+
+        ResponseEntity<PlaidTransactionSyncResponseDto> responseEntity = new ResponseEntity<>(syncResponseDto, HttpStatus.BAD_REQUEST);
+
+        //Mock
+        when(plaidClient.syncTransactions(any(PlaidTransactionSyncRequestDto.class)))
+                .thenReturn(responseEntity);
+
+        // Act & Assert
+        PlaidServiceException thrownException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.syncTransactions(accessToken, previousCursor);
+        });
+        assertNotNull(thrownException);
+        assertEquals(expectedExceptionMessage, thrownException.getMessage());
+
+        //Verify
+        verify(plaidClient, times(1)).syncTransactions(any(PlaidTransactionSyncRequestDto.class));
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
+    }
+
+    @Test
+    void testSyncTransactions_NullResponseBody_Failure() {
+        // Arrange
+        String errorMessage = "Response Body when Syncing Transactions is Null";
+        String expectedExceptionMessage = "PlaidServiceException: [" + errorMessage + "]";
+        String previousCursor = "previous-cursor";
+        String accessToken = "access-token";
+        ResponseEntity<PlaidTransactionSyncResponseDto> responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
+
+        //Mock
+        when(plaidClient.syncTransactions(any(PlaidTransactionSyncRequestDto.class)))
+                .thenReturn(responseEntity);
+
+        // Act & Assert
+        PlaidServiceException thrownException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.syncTransactions(accessToken, previousCursor);
+        });
+        assertNotNull(thrownException);
+        assertEquals(expectedExceptionMessage, thrownException.getMessage());
+
+        //Verify
+        verify(plaidClient, times(1)).syncTransactions(any(PlaidTransactionSyncRequestDto.class));
+        verify(plaidConfig, times(1)).getClientId();
+        verify(plaidConfig, times(1)).getSecretKey();
     }
 }
