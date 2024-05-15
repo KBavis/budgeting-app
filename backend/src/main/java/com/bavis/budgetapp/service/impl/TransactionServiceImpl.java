@@ -44,9 +44,8 @@ public class TransactionServiceImpl implements TransactionService {
         this._connectionService = connectionService;
     }
     @Override
-    public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto) {
-        List<Transaction> addedOrModifiedTransactions;
-        List<Transaction> removedTransactions;
+    public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto){
+        List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
 
         //Sync Transaction for each specified Account
         for(String accountId: transactionSyncRequestDto.getAccounts()){
@@ -63,7 +62,7 @@ public class TransactionServiceImpl implements TransactionService {
                 log.info("PlaidTransactionSyncResponseDto for Account ID {} : [{}]", accountId, syncResponseDto);
 
                 //Combine Added & Modified List Together, Map to Transaction Entities, Set Account/Category
-                addedOrModifiedTransactions = Stream.concat(
+                List<Transaction> addedOrModifiedTransactions = Stream.concat(
                                 Optional.ofNullable(syncResponseDto.getAdded()).stream().flatMap(List::stream),
                                 Optional.ofNullable(syncResponseDto.getModified()).stream().flatMap(List::stream)
                         )
@@ -75,11 +74,14 @@ public class TransactionServiceImpl implements TransactionService {
                         })
                         .toList();
                 log.debug("Updating DB With The Following Added or Modified Transactions: [{}]", addedOrModifiedTransactions);
-                _transactionRepository.saveAllAndFlush(addedOrModifiedTransactions);
+                List<Transaction> persistedTransactions = _transactionRepository.saveAllAndFlush(addedOrModifiedTransactions);
+
+                //Add Persisted Transactions to List of Transactions to Return
+                allModifiedOrAddedTransactions.addAll(persistedTransactions);
 
 
                 //Remove Transaction Associated with 'Removed' List from Plaid API
-                removedTransactions = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
+                List<Transaction> removedTransactions = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
                                 .map(_transactionMapper::toEntity)
                                 .toList();
                 log.debug("Removing following Transaction due to Plaid API marking them as 'removed': [{}]", removedTransactions);
@@ -90,14 +92,11 @@ public class TransactionServiceImpl implements TransactionService {
                 accountConnection.setPreviousCursor(syncResponseDto.getNext_cursor());
                 _connectionService.update(accountConnection, accountConnection.getConnectionId()); //TODO: Implement Update logic for Connection Service or use Create Method
 
-                //Return Added or Modified Transactions
-                return addedOrModifiedTransactions;
-
             } catch(RuntimeException e){
                 log.error("An error occurred while Syncing Transactions: [{}]", e.getMessage());
                 throw new RuntimeException(e);
             }
         }
-        return null;
+        return allModifiedOrAddedTransactions;
     }
 }
