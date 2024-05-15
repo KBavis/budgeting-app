@@ -5,6 +5,7 @@ import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.AccountService;
+import com.bavis.budgetapp.service.impl.AccountServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ public class AccountControllerTests {
     private MockMvc mockMvc;
 
     @MockBean
-    private AccountService accountService;
+    private AccountServiceImpl accountService;
 
     @Autowired
     private ObjectMapper objectMapper;

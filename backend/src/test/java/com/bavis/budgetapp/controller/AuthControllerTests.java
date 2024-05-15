@@ -8,6 +8,8 @@ import com.bavis.budgetapp.dto.AuthRequestDto;
 import com.bavis.budgetapp.dto.AuthResponseDto;
 import com.bavis.budgetapp.service.AuthService;
 import com.bavis.budgetapp.service.UserService;
+import com.bavis.budgetapp.service.impl.AuthServiceImpl;
+import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,10 +40,10 @@ public class AuthControllerTests {
     MockMvc mockMvc;
 
     @MockBean
-    AuthService authService;
+    AuthServiceImpl authService;
 
     @MockBean
-    UserService userService;
+    UserServiceImpl userService;
 
     @Autowired
     ObjectMapper objectMapper;
