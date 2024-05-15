@@ -70,7 +70,6 @@ public class TransactionServiceImpl implements TransactionService {
                         .map(_transactionMapper::toEntity)
                         .peek(transaction -> {
                             //TODO: Intelligently assign CategoryType & Category in future
-                            //TODO: Set this as a pre-created category callef 'Miscellaneous'
                             transaction.setCategory(null);
                             transaction.setAccount(account);
                         })
