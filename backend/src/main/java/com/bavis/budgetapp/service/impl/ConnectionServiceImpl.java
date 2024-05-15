@@ -35,7 +35,7 @@ public class ConnectionServiceImpl implements ConnectionService{
 
 
 	@Override
-	public Connection update(Connection connection, Long connectionId) {
+	public Connection update(Connection connection, Long connectionId) throws RuntimeException{
 		//Fetch Connection corresponding to ID
 		Connection connectionToUpdate = _repository.findById(connectionId)
 				.orElseThrow(() -> new RuntimeException("Unable to find Connection with ID " + connectionId + " to update."));
@@ -48,7 +48,7 @@ public class ConnectionServiceImpl implements ConnectionService{
 
 	// TODO: finish this logic and add comments
 	@Override
-	public Connection read(Long connectionId) {
+	public Connection read(Long connectionId) throws RuntimeException{
 		log.info("Attempting to read a Connection entity with the ID {}", connectionId);
 		return _repository.findById(connectionId)
 				.orElseThrow(() -> new RuntimeException("Unable to locate Connection with ID " + connectionId));

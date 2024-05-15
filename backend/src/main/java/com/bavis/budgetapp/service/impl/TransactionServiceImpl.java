@@ -6,6 +6,7 @@ import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.entity.Transaction;
+import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.TransactionService;
 import lombok.extern.log4j.Log4j2;
@@ -44,7 +45,7 @@ public class TransactionServiceImpl implements TransactionService {
         this._connectionService = connectionService;
     }
     @Override
-    public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto){
+    public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto) throws PlaidServiceException{
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
 
         //Sync Transaction for each specified Account
@@ -92,7 +93,11 @@ public class TransactionServiceImpl implements TransactionService {
                 accountConnection.setPreviousCursor(syncResponseDto.getNext_cursor());
                 _connectionService.update(accountConnection, accountConnection.getConnectionId()); //TODO: Implement Update logic for Connection Service or use Create Method
 
-            } catch(RuntimeException e){
+            } catch (PlaidServiceException plaidServiceException){
+               log.error("PlaidServiceException occurred while syncing transactions via our TransactionService: [{}]", plaidServiceException.getMessage());
+               throw plaidServiceException;
+            }
+            catch(RuntimeException e){
                 log.error("An error occurred while Syncing Transactions: [{}]", e.getMessage());
                 throw new RuntimeException(e);
             }

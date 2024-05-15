@@ -125,7 +125,7 @@ public class AccountServiceImpl implements AccountService{
 	}
 
 	@Override
-	public Account read(String accountId) {
+	public Account read(String accountId) throws RuntimeException{
 		log.info("Attempting to read a Account entity with the ID {}", accountId);
 		return  _accountRepository.findByAccountId(accountId)
 				.orElseThrow(() -> new RuntimeException("Unable to locate Account with ID " + accountId));
