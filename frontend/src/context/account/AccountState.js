@@ -43,7 +43,13 @@ const AccountState = (props) => {
          console.log("Creating Account with the following Request Body: ");
          console.log(formData);
          const res = await axios.post(`${apiUrl}/account`, formData, config);
-         dispatch({ type: ACCOUNT_CREATED, payload: res.data });
+         //TODO: remove me
+         console.log("returned account(s)");
+         console.log(res.data);
+         dispatch({
+            type: ACCOUNT_CREATED,
+            payload: res.data,
+         });
       } catch (err) {
          console.error(err);
          dispatch({
@@ -61,6 +67,7 @@ const AccountState = (props) => {
    return (
       <AccountContext.Provider
          value={{
+            accounts: state.accounts,
             loading: state.loading,
             error: state.error,
             createAccount,

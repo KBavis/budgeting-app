@@ -42,6 +42,7 @@ const ConnectAccounts = () => {
             metadata.account.subtype
          ),
       };
+      console.log(accountData);
       createAccount(accountData);
 
       setAlert("Account added succesfully", "SUCCESS");

@@ -16,6 +16,7 @@ import CategoryTypeInputPage from "./pages/CategoryTypeInputPage";
 import CategoryTypeState from "./context/category/types/CategoryTypeState";
 import CategoryState from "./context/category/CategoryState";
 import CategoryCreationPage from "./pages/CategoryCreationPage";
+import TransactionState from "./context/transaction/TransactionState";
 
 /**
  *  Main Application File
@@ -28,57 +29,62 @@ function App() {
                <IncomeState>
                   <CategoryTypeState>
                      <CategoryState>
-                        <Router>
-                           <Fragment>
-                              <Alerts />
-                              <Routes>
-                                 <Route
-                                    path="/connect-accounts"
-                                    element={<ConnectAccounts />}
-                                 />
-                                 <Route
-                                    path="/"
-                                    element={<LoginRegisterPage />}
-                                 />
-                                 <Route path="/home" element={<HomePage />} />
-                                 <Route path="/login" element={<Login />} />
-                                 <Route
-                                    path="/register"
-                                    element={<Register />}
-                                 />
-                                 <Route
-                                    path="/forgot-password"
-                                    element={<ForgotPassword />}
-                                 />
-                                 <Route
-                                    path="/income"
-                                    element={<IncomeInputPage />}
-                                 />
-                                 <Route
-                                    path="/category-types"
-                                    element={<CategoryTypeInputPage />}
-                                 />
-                                 <Route
-                                    path="/category/needs"
-                                    element={
-                                       <CategoryCreationPage categoryType="Needs" />
-                                    }
-                                 />
-                                 <Route
-                                    path="/category/wants"
-                                    element={
-                                       <CategoryCreationPage categoryType="Wants" />
-                                    }
-                                 />
-                                 <Route
-                                    path="/category/investments"
-                                    element={
-                                       <CategoryCreationPage categoryType="Investments" />
-                                    }
-                                 />
-                              </Routes>
-                           </Fragment>
-                        </Router>
+                        <TransactionState>
+                           <Router>
+                              <Fragment>
+                                 <Alerts />
+                                 <Routes>
+                                    <Route
+                                       path="/connect-accounts"
+                                       element={<ConnectAccounts />}
+                                    />
+                                    <Route
+                                       path="/"
+                                       element={<LoginRegisterPage />}
+                                    />
+                                    <Route
+                                       path="/home"
+                                       element={<HomePage />}
+                                    />
+                                    <Route path="/login" element={<Login />} />
+                                    <Route
+                                       path="/register"
+                                       element={<Register />}
+                                    />
+                                    <Route
+                                       path="/forgot-password"
+                                       element={<ForgotPassword />}
+                                    />
+                                    <Route
+                                       path="/income"
+                                       element={<IncomeInputPage />}
+                                    />
+                                    <Route
+                                       path="/category-types"
+                                       element={<CategoryTypeInputPage />}
+                                    />
+                                    <Route
+                                       path="/category/needs"
+                                       element={
+                                          <CategoryCreationPage categoryType="Needs" />
+                                       }
+                                    />
+                                    <Route
+                                       path="/category/wants"
+                                       element={
+                                          <CategoryCreationPage categoryType="Wants" />
+                                       }
+                                    />
+                                    <Route
+                                       path="/category/investments"
+                                       element={
+                                          <CategoryCreationPage categoryType="Investments" />
+                                       }
+                                    />
+                                 </Routes>
+                              </Fragment>
+                           </Router>
+                        </TransactionState>
                      </CategoryState>
                   </CategoryTypeState>
                </IncomeState>

@@ -9,7 +9,7 @@
 /coverage
 
 #utils
-/src/utils/url.js
+src/utils/url.js
 
 # production
 /build
