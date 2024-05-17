@@ -477,8 +477,8 @@ public class PlaidServiceTests {
 
         PlaidTransactionDto plaidTransactionDtoOne = PlaidTransactionDto.builder()
                 .transaction_id("12345")
-                .counterpartyDto(counterpartyDto)
-                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
                 .amount(1000.0)
                 .datetime(date)
                 .account_id(accountId)
@@ -486,8 +486,8 @@ public class PlaidServiceTests {
 
         PlaidTransactionDto plaidTransactionDtoTwo = PlaidTransactionDto.builder()
                 .transaction_id("6789")
-                .counterpartyDto(counterpartyDto)
-                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
                 .amount(2000.0)
                 .datetime(date)
                 .account_id(accountId)
@@ -496,8 +496,8 @@ public class PlaidServiceTests {
 
         PlaidTransactionDto plaidTransactionDtoThree = PlaidTransactionDto.builder()
                 .transaction_id("6789")
-                .counterpartyDto(counterpartyDto)
-                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
                 .amount(3000.0)
                 .datetime(date)
                 .account_id(accountId)

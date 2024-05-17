@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -38,6 +39,8 @@ public class TransactionMapperTests {
                 .logo_url(logoUrl)
                 .build();
 
+        List<PlaidTransactionDto.CounterpartyDto> counterpartyDtoList = List.of(counterpartyDto);
+
         PlaidTransactionDto.PersonalFinanceCategoryDto personalFinanceCategoryDto = PlaidTransactionDto.PersonalFinanceCategoryDto.builder()
                 .confidence_level(confidenceLevel)
                 .primary(primary)
@@ -48,8 +51,8 @@ public class TransactionMapperTests {
 
         PlaidTransactionDto plaidTransactionDto = PlaidTransactionDto.builder()
                 .transaction_id(transactionId)
-                .counterpartyDto(counterpartyDto)
-                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .counterparties(counterpartyDtoList)
+                .personal_finance_category(personalFinanceCategoryDto)
                 .amount(amount)
                 .datetime(date)
                 .account_id(accountId)
@@ -60,12 +63,10 @@ public class TransactionMapperTests {
 
         //Assert
         assertNotNull(target);
-        assertEquals(transactionId, plaidTransactionDto.getTransaction_id());
-        assertEquals(counterpartyDto, plaidTransactionDto.getCounterpartyDto());
-        assertEquals(personalFinanceCategoryDto, plaidTransactionDto.getPersonalFinanceCategoryDto());
-        assertEquals(amount, plaidTransactionDto.getAmount());
-        assertEquals(date, plaidTransactionDto.getDatetime());
-        assertEquals(accountId, plaidTransactionDto.getAccount_id());
+        assertEquals(transactionId, target.getTransactionId());
+        assertEquals(counterpartyDto.getName(), target.getName());
+        assertEquals(amount, target.getAmount());
+        assertEquals(date, target.getDate());
     }
 
 }

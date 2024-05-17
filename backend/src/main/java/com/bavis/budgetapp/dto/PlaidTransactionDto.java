@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author Kellen Bavis
@@ -26,11 +27,9 @@ public class PlaidTransactionDto {
 
     private LocalDate datetime;
 
-    @JsonProperty("counterparties")
-    private CounterpartyDto counterpartyDto;
+    private List<CounterpartyDto> counterparties;
 
-    @JsonProperty("personal_finance_category")
-    private PersonalFinanceCategoryDto personalFinanceCategoryDto;
+    private PersonalFinanceCategoryDto personal_finance_category;
 
     @Data
     @NoArgsConstructor

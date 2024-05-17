@@ -95,8 +95,8 @@ public class TransactionServiceTests {
 
          plaidTransactionDtoOne = PlaidTransactionDto.builder()
                 .transaction_id("12345")
-                .counterpartyDto(counterpartyDto)
-                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
                 .amount(1000.0)
                 .datetime(date)
                 .account_id(accountId)
@@ -104,8 +104,8 @@ public class TransactionServiceTests {
 
         plaidTransactionDtoTwo = PlaidTransactionDto.builder()
                 .transaction_id("6789")
-                .counterpartyDto(counterpartyDto)
-                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
                 .amount(2000.0)
                 .datetime(date)
                 .account_id(accountId)
@@ -114,8 +114,8 @@ public class TransactionServiceTests {
 
          plaidTransactionDtoThree = PlaidTransactionDto.builder()
                 .transaction_id("6789")
-                .counterpartyDto(counterpartyDto)
-                .personalFinanceCategoryDto(personalFinanceCategoryDto)
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
                 .amount(3000.0)
                 .datetime(date)
                 .account_id(accountId)
@@ -175,7 +175,7 @@ public class TransactionServiceTests {
             PlaidTransactionDto dto = invocationOnMock.getArgument(0);
             return Transaction.builder()
                     .transactionId(dto.getTransaction_id())
-                    .name(dto.getCounterpartyDto().getName())
+                    .name(dto.getCounterparties().get(0).getName())
                     .amount(dto.getAmount())
                     .date(dto.getDatetime())
                     .account(null)  //mapper shouldn't map Account or Category entities
@@ -315,7 +315,7 @@ public class TransactionServiceTests {
             PlaidTransactionDto dto = invocationOnMock.getArgument(0);
             return Transaction.builder()
                     .transactionId(dto.getTransaction_id())
-                    .name(dto.getCounterpartyDto().getName())
+                    .name(dto.getCounterparties().get(0).getName())
                     .amount(dto.getAmount())
                     .date(dto.getDatetime())
                     .account(null)  //mapper shouldn't map Account or Category entities

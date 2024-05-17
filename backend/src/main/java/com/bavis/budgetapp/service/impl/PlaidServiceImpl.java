@@ -176,7 +176,7 @@ public class PlaidServiceImpl implements PlaidService{
                 .client_id(_plaidConfig.getClientId())
                 .secret(_plaidConfig.getSecretKey())
                 .access_token(accessToken)
-                .count(100) //TODO: move this to properties file
+                .count(50) //TODO: move this to properties file
                 .build();
 
         //Append Cursor If Non-Null
@@ -187,6 +187,7 @@ public class PlaidServiceImpl implements PlaidService{
         //Sync Transactions via Plaid API
         ResponseEntity<PlaidTransactionSyncResponseDto> responseEntity;
         try{
+            log.info("PlaidTransactionSyncRequestDto: [{}]", syncRequestDto);
             responseEntity = _plaidClient.syncTransactions(syncRequestDto);
         } catch (FeignClientException e){
             log.error("An error occurred while attempting to Sync Transactions via Plaid API: [{}]", e.getMessage());
