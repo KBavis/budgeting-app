@@ -49,7 +49,6 @@ public class Transaction {
 	/**
 	 * Many Transactions To One Category 
 	 */
-	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "categoryId", referencedColumnName = "categoryId")
 	private Category category;

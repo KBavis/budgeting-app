@@ -145,10 +145,13 @@ public class TransactionControllerTests {
                 .andExpect(jsonPath("$[0].date").value(transactionOne.getDate().toString()))
                 .andExpect(jsonPath("$[0].amount").value(transactionOne.getAmount()))
                 .andExpect(jsonPath("$[0].name").value(transactionOne.getName()))
+                .andExpect(jsonPath("$[0].category").value(transactionOne.getCategory()))
                 .andExpect(jsonPath("$[1].transactionId").value(transactionTwo.getTransactionId()))
                 .andExpect(jsonPath("$[1].date").value(transactionTwo.getDate().toString()))
                 .andExpect(jsonPath("$[1].amount").value(transactionTwo.getAmount()))
+                .andExpect(jsonPath("$[1].category").value(transactionTwo.getCategory()))
                 .andExpect(jsonPath("$[1].name").value(transactionTwo.getName()));
+
 
         //Verify
         verify(transactionService, times(1)).syncTransactions(validTransactionSyncRequest);
