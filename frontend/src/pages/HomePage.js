@@ -5,27 +5,30 @@ import accountContext from "../context/account/accountContext";
 import categoryTypeContext from "../context/category/types/categoryTypeContext";
 import CategoryType from "../components/category/types/CategoryType";
 import authContext from "../context/auth/authContext";
+import MiscellaneousTransactions from "../components/category/MiscellaneousTransactions";
 
+/**
+ * Home Page of our Application that users will first see after Authenticating
+ */
 const HomePage = () => {
-   const [currentQuote, setCurrentQuote] = useState("");
+   //Local State
    const [name, setName] = useState("");
+
+   //Global State
    const { syncTransactions } = useContext(transactionContext);
    const { accounts } = useContext(accountContext);
    const { categoryTypes } = useContext(categoryTypeContext);
    const { user } = useContext(authContext);
 
-   useEffect(() => {
-      const randomIndex = Math.floor(Math.random() * quotes.length);
-      setCurrentQuote(quotes[randomIndex]);
-   }, []);
-
+   //Set Authenticated User's Name
    useEffect(() => {
       setName(user.name);
    }, [user]);
 
+   //Function to Fetch Transactions for Added Accounts
    const fetchTransactions = async () => {
-      // const accountIds = accounts.map((account) => account.id);
-      const accountIds = ["pyrbOAvyPJtyMRkNPjg7c1K5nJzywJs3d7oZL"];
+      const accountIds = accounts.map((account) => account.accountId);
+      console.log(`Fetching Transactions for ${accountIds}`);
       await syncTransactions(accountIds);
    };
 
@@ -46,7 +49,7 @@ const HomePage = () => {
                   Sync Transactions
                </button>
             </div>
-            <div className="flex justify-center space-x-4 w-full border-2 border-red-500">
+            <div className="flex justify-center space-x-4 w-full mb-5">
                {categoryTypes.map((categoryType) => (
                   <CategoryType
                      key={categoryType.id}
@@ -54,6 +57,7 @@ const HomePage = () => {
                   />
                ))}
             </div>
+            <MiscellaneousTransactions />
          </div>
       </div>
    );
