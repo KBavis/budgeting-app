@@ -1,54 +1,58 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Link } from "react-router-dom";
 import { quotes } from "../utils/quotes";
 import transactionContext from "../context/transaction/transactionContext";
 import accountContext from "../context/account/accountContext";
+import categoryTypeContext from "../context/category/types/categoryTypeContext";
+import CategoryType from "../components/category/types/CategoryType";
+import authContext from "../context/auth/authContext";
 
-/**
- * Home Page will contain main functionality of our application
- */
 const HomePage = () => {
-   // Local State
    const [currentQuote, setCurrentQuote] = useState("");
-
-   // Access the syncTransactions method from the TransactionContext
+   const [name, setName] = useState("");
    const { syncTransactions } = useContext(transactionContext);
-
-   // Access the account IDs from the AccountContext
    const { accounts } = useContext(accountContext);
+   const { categoryTypes } = useContext(categoryTypeContext);
+   const { user } = useContext(authContext);
 
-   // Use Effect to randomize the quote displayed via our Home Page
    useEffect(() => {
       const randomIndex = Math.floor(Math.random() * quotes.length);
       setCurrentQuote(quotes[randomIndex]);
    }, []);
 
+   useEffect(() => {
+      setName(user.name);
+   }, [user]);
+
    const fetchTransactions = async () => {
-      //TODO: Change this logic to fetch all relevant account IDs from Context once we update ConnectAccount endpoint to incldue Account IDs
-      const accountIds = ["<accountId>"];
+      // const accountIds = accounts.map((account) => account.id);
+      const accountIds = ["pyrbOAvyPJtyMRkNPjg7c1K5nJzywJs3d7oZL"];
       await syncTransactions(accountIds);
    };
 
    return (
-      <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
-         <div className="w-32 bg-gray-800 text-white p-4">
-            {/* TODO: Add sidebar icons */}
-         </div>
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
-            <div className="max-w-md text-center">
-               <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white">
-                  Welcome to Bavis Budgeting
+            <div className="max-w-md text-center mb-8">
+               <h1 className="text-2xl md:text-3xl font-bold mb-4 text-white">
+                  Welcome <span className="text-indigo-500">{name}</span>
                </h1>
-               <p className="text-lg md:text-xl mb-8 text-gray-400 italic">
-                  {currentQuote}
-               </p>
+               <h2 className="text-4xl md:text-5xl font-bold text-white">
+                  Let's Start Budgeting
+               </h2>
                <button
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                  className="bg-indigo-600 hover:bg-indigo-700 duration-150 text-white font-bold py-2 px-4 rounded mt-4"
                   onClick={fetchTransactions}
                >
                   Sync Transactions
                </button>
-               {/* TODO: Add content for the home page */}
+            </div>
+            <div className="flex justify-center space-x-4 w-full border-2 border-red-500">
+               {categoryTypes.map((categoryType) => (
+                  <CategoryType
+                     key={categoryType.id}
+                     categoryType={categoryType}
+                  />
+               ))}
             </div>
          </div>
       </div>

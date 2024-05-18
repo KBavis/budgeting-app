@@ -12,7 +12,9 @@ export default (state, action) => {
       case CREATE_CATEGORIES_SUCCESS:
          return {
             ...state,
-            categories: action.payload,
+            categories: state.categories
+               ? [...state.categories, ...action.payload]
+               : action.payload,
             loading: false,
             error: null,
          };
