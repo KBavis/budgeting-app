@@ -68,6 +68,10 @@ public class TransactionServiceTests {
 
     PlaidTransactionDto plaidTransactionDtoThree;
 
+    PlaidTransactionDto plaidTransactionDtoFour;
+
+    PlaidTransactionDto plaidTransactionDtoFive;
+
     PlaidTransactionSyncResponseDto syncResponseDto;
 
     List<PlaidTransactionDto> addedTransactions;
@@ -121,8 +125,26 @@ public class TransactionServiceTests {
                 .account_id(accountId)
                 .build();
 
-        addedTransactions = List.of(plaidTransactionDtoOne);
-        removedTransactions = List.of(plaidTransactionDtoTwo);
+         plaidTransactionDtoFour = PlaidTransactionDto.builder()
+                 .transaction_id("1956")
+                 .counterparties(List.of(counterpartyDto))
+                 .personal_finance_category(personalFinanceCategoryDto)
+                 .amount(0)
+                 .datetime(date)
+                 .account_id(accountId)
+                 .build();
+
+         plaidTransactionDtoFive = PlaidTransactionDto.builder()
+                 .transaction_id("1735")
+                 .counterparties(List.of(counterpartyDto))
+                 .personal_finance_category(personalFinanceCategoryDto)
+                 .amount(-500.0)
+                 .datetime(date)
+                 .account_id(accountId)
+                 .build();
+
+        addedTransactions = List.of(plaidTransactionDtoOne, plaidTransactionDtoFour); //include transaction with 0 amount
+        removedTransactions = List.of(plaidTransactionDtoTwo, plaidTransactionDtoFive); //include transaction with negative amount
         modifiedTransactions = List.of(plaidTransactionDtoThree);
 
         syncResponseDto = PlaidTransactionSyncResponseDto.builder()
@@ -199,6 +221,10 @@ public class TransactionServiceTests {
         assertNotNull(actualTransactions);
         assertEquals(4, actualTransactions.size()); //2 modified, 2 added
 
+        //Ensure negative & 0 amounts are filtered out
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFour.getTransaction_id())));
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFive.getTransaction_id())));
+
        //Verify
         verify(accountService, times(1)).read(accountIdOne);
         verify(accountService, times(1)).read(accountIdTwo);
@@ -206,9 +232,8 @@ public class TransactionServiceTests {
         verify(connectionService, times(1)).update(accountConnectionTwo, accountConnectionTwo.getConnectionId());
         verify(transactionRepository, times(2)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(2)).deleteAll(anyList());
-        verify(transactionMapper, times(6)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionMapper, times(10)).toEntity(any(PlaidTransactionDto.class));
     }
-
 
     @Test
     void testSyncTransactions_AccountServiceException_Failure() {

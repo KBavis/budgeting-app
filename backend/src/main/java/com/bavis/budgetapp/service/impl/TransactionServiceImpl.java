@@ -44,6 +44,8 @@ public class TransactionServiceImpl implements TransactionService {
         this._transactionMapper = transactionMapper;
         this._connectionService = connectionService;
     }
+
+    //TODO: Implement filters for negative amounts & transactions that are older than 1 month
     @Override
     public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto) throws PlaidServiceException{
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
@@ -73,6 +75,7 @@ public class TransactionServiceImpl implements TransactionService {
                             transaction.setCategory(null);
                             transaction.setAccount(account);
                         })
+                        .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
                         .toList();
                 log.debug("Updating DB With The Following Added or Modified Transactions: [{}]", addedOrModifiedTransactions);
                 List<Transaction> persistedTransactions = _transactionRepository.saveAllAndFlush(addedOrModifiedTransactions);
@@ -91,7 +94,7 @@ public class TransactionServiceImpl implements TransactionService {
 
                 //Update Cursor for Connection & Persist
                 accountConnection.setPreviousCursor(syncResponseDto.getNext_cursor());
-                _connectionService.update(accountConnection, accountConnection.getConnectionId()); //TODO: Implement Update logic for Connection Service or use Create Method
+                _connectionService.update(accountConnection, accountConnection.getConnectionId());
 
             } catch (PlaidServiceException plaidServiceException){
                log.error("PlaidServiceException occurred while syncing transactions via our TransactionService: [{}]", plaidServiceException.getMessage());
