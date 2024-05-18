@@ -17,6 +17,5 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class AuthResponseDto {
     private String token; //jwt token
     @JsonProperty("user")
-
     private UserDetails userDetails; //details pertaining to authenticated user
 }

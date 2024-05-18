@@ -19,4 +19,5 @@ public class AccountDto {
     private String accountName;
     private double balance;
     private AccountType accountType;
+    private String accountId;
 }

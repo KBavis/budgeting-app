@@ -17,5 +17,6 @@ public interface AccountMapper {
     @Mapping(target = "accountName", source = "accountName")
     @Mapping(target = "balance", source = "balance")
     @Mapping(target = "accountType", source = "accountType")
+    @Mapping(target = "accountId", source = "accountId")
     AccountDto toDTO(Account account);
 }

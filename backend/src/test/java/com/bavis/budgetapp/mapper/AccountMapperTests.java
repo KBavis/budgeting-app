@@ -29,6 +29,7 @@ public class AccountMapperTests {
     public void testToDto_Successful() {
         //Arrange
         Account source = Account.builder()
+                .accountId("account-id-xyz")
                 .accountName("Test Account")
                 .balance(1000.0)
                 .accountType(AccountType.CHECKING)
@@ -42,6 +43,7 @@ public class AccountMapperTests {
         assertEquals("Test Account", target.getAccountName());
         assertEquals(1000.0, target.getBalance(), .001);
         assertEquals(AccountType.CHECKING, target.getAccountType());
+        assertEquals(source.getAccountId(), target.getAccountId());
     }
 
 }
