@@ -8,12 +8,13 @@ import { useDrop } from "react-dnd";
  */
 const MiscellaneousTransactions = () => {
    const [miscTransactions, setMiscTransactions] = useState([]);
-   const { transactions, updateCategory } = useContext(transactionContext);
+   const { transactions, removeTransactionCategory } =
+      useContext(transactionContext);
 
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
-         updateCategory(item.transaction.transactionId, null);
+         removeTransactionCategory(item.transaction.transactionId);
       },
       collect: (monitor) => ({
          isOver: !!monitor.isOver(),
@@ -45,7 +46,7 @@ const MiscellaneousTransactions = () => {
          )}
          <div className="grid grid-cols-10 gap-4">
             {miscTransactions.map((transaction) => (
-               <div key={transaction.id} className="w-full">
+               <div key={transaction.transactionId} className="w-full">
                   <Transaction transaction={transaction} />
                </div>
             ))}

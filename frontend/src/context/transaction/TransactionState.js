@@ -7,6 +7,7 @@ import {
    SYNC_TRANSACTIONS_FAIL,
    UPDATE_TRANSACTION_CATEGORY,
    CLEAR_ERRORS,
+   REMOVE_TRANSACTION_CATEGORY,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -66,15 +67,47 @@ const TransactionState = (props) => {
     *          - ID of the category to assign to the transaction
     */
    const updateCategory = (transactionId, categoryId) => {
-      console.log("in updateCateogyr in state");
-      console.log(transactionId);
-      console.log(categoryId);
+      console.log(
+         `In updateCategory() in TransactionState with following TransactionId & CategoryId: [${transactionId}, ${categoryId}]`
+      );
+      const category = { categoryId };
+      const payload = { transactionId, category };
+      console.log(`Sending the following payload over to reducer: ${payload}`);
       dispatch({
          type: UPDATE_TRANSACTION_CATEGORY,
-         payload: { transactionId, categoryId },
+         payload,
       });
 
       // TODO: Implement the backend API call to update the transaction's category
+      // You can use the following code as a starting point:
+      // try {
+      //   const response = await axios.put(
+      //     `${apiUrl}/transactions/${transactionId}/category`,
+      //     { categoryId }
+      //   );
+      //   console.log("Transaction category updated successfully:", response.data);
+      // } catch (error) {
+      //   console.error("Error updating transaction category:", error);
+      // }
+   };
+
+   /**
+    * Update a transaction's category on the frontend
+    *
+    * @param transactionId
+    *          - ID of the transaction to update
+    * @param categoryId
+    *          - ID of the category to assign to the transaction
+    */
+   const removeTransactionCategory = (transactionId) => {
+      console.log("in removeCategory in state");
+      console.log(transactionId);
+      dispatch({
+         type: REMOVE_TRANSACTION_CATEGORY,
+         payload: transactionId,
+      });
+
+      // TODO: Implement the backend API call to remove the transaction's category
       // You can use the following code as a starting point:
       // try {
       //   const response = await axios.put(
@@ -97,6 +130,7 @@ const TransactionState = (props) => {
             error: state.error,
             syncTransactions,
             updateCategory,
+            removeTransactionCategory,
             clearErrors,
          }}
       >

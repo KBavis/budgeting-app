@@ -7,18 +7,19 @@ import transactionContext from "../../context/transaction/transactionContext";
  * Component to store information regarding a Category
  *
  * @param category
- *          - Category we are generating Compnent for
+ *          - Category we are generating Component for
  */
 const Category = ({ category }) => {
-   //Global State
+   // Global State
    const { transactions, updateCategory } = useContext(transactionContext);
 
-   //Local State
+   // Local State
    const [recentTransactions, setRecentTransactions] = useState([]);
 
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
+         console.log("Dropped item:", item);
          updateCategory(item.transaction.transactionId, category.categoryId);
       },
       collect: (monitor) => ({
@@ -27,18 +28,22 @@ const Category = ({ category }) => {
       }),
    }));
 
-   //Set Transactions that are corresponding to current Category
+   // Set Transactions that are corresponding to current Category
    useEffect(() => {
       if (transactions) {
          const filtered = transactions.filter((transaction) => {
-            if (transaction.category && transaction.category.categoryId) {
-               return transaction.category.categoryId === category.categoryId;
-            }
-            return false;
+            return (
+               transaction.category &&
+               transaction.category.categoryId === category.categoryId
+            );
          });
-         console.log("New Filtered Transactions");
-         console.log(filtered);
+         // console.log("Filtered Transactions for Current Cateogyr");
+         // console.log(filtered);
          const mostRecent = filtered ? filtered.slice(0, 3) : [];
+         console.log(
+            `Most Recent Transactions for Category '${category.name}'`
+         );
+         console.log(mostRecent);
          setRecentTransactions(mostRecent);
       } else {
          setRecentTransactions([]);
@@ -55,7 +60,10 @@ const Category = ({ category }) => {
          <h4 className="text-lg font-bold mb-2">{category.name}</h4>
          <div className="space-y-2">
             {recentTransactions?.map((transaction) => (
-               <Transaction key={transaction.id} transaction={transaction} />
+               <Transaction
+                  key={transaction.transactionId}
+                  transaction={transaction}
+               />
             ))}
          </div>
       </div>

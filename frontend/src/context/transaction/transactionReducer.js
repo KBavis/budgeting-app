@@ -3,12 +3,13 @@ import {
    SYNC_TRANSACTIONS_FAIL,
    UPDATE_TRANSACTION_CATEGORY,
    CLEAR_ERRORS,
+   REMOVE_TRANSACTION_CATEGORY,
 } from "./types";
 
 export default (state, action) => {
    switch (action.type) {
       case SYNC_TRANSACTIONS_SUCCESS:
-         //New & Updated Transactions
+         // New & Updated Transactions
          const newTransactions = action.payload.reduce(
             (acc, transaction) => {
                if (state.transactions) {
@@ -34,13 +35,19 @@ export default (state, action) => {
             error: null,
          };
       case UPDATE_TRANSACTION_CATEGORY:
-         //Update Transactions Category ID
-         const { transactionId, categoryId } = action.payload;
+         // Update Transactions Category ID
+         console.log(
+            `In transactionReducer for action type UPDATE_TRANSACTION_CATEGORY with following payload`
+         );
+         console.log(action.payload);
+         const { transactionId, category } = action.payload;
          const updatedTransactions = state.transactions.map((transaction) => {
             if (transaction.transactionId === transactionId) {
                return {
                   ...transaction,
-                  category: { categoryId },
+                  category: {
+                     ...category,
+                  },
                };
             }
             return transaction;
@@ -54,6 +61,25 @@ export default (state, action) => {
             ...state,
             error: action.payload,
             loading: false,
+         };
+      case REMOVE_TRANSACTION_CATEGORY:
+         const updatedTransactionsRemove = state.transactions.map(
+            (transaction) => {
+               if (transaction.transactionId === action.payload) {
+                  return {
+                     ...transaction,
+                     category: {
+                        ...transaction.category,
+                        categoryId: null, // Set categoryId to null within the category object
+                     },
+                  };
+               }
+               return transaction;
+            }
+         );
+         return {
+            ...state,
+            transactions: updatedTransactionsRemove,
          };
       case CLEAR_ERRORS:
          return {
