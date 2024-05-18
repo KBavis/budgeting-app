@@ -364,6 +364,6 @@ public class TransactionServiceTests {
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
         verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(1)).deleteAll(anyList());
-        verify(transactionMapper, times(3)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionMapper, times(5)).toEntity(any(PlaidTransactionDto.class));
     }
 }
