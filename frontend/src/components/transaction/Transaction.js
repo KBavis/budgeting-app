@@ -1,4 +1,5 @@
 import React from "react";
+import { useDrag } from "react-dnd";
 
 /**
  * Component used to represent an Individual Transaction
@@ -7,8 +8,23 @@ import React from "react";
  * - Transaction to generate Component for
  */
 const Transaction = ({ transaction }) => {
+   const [{ isDragging }, drag] = useDrag(() => ({
+      type: "transaction",
+      item: { transaction },
+      collect: (monitor) => ({
+         isDragging: !!monitor.isDragging(),
+      }),
+   }));
+
+   const roundedAmount = Math.round(transaction.amount);
+
    return (
-      <div className="bg-gradient-to-br from-gray-800 to-indigo-900 rounded-lg shadow-md p-2 flex items-center space-x-2">
+      <div
+         ref={drag}
+         className={`cursor-pointer bg-indigo-900 rounded-lg shadow-md p-2 flex items-center space-x-2 ${
+            isDragging ? "opacity-50" : ""
+         }`}
+      >
          {transaction.logoUrl ? (
             <img
                src={transaction.logoUrl}
@@ -24,7 +40,7 @@ const Transaction = ({ transaction }) => {
          )}
          <div className="text-white">
             <p className="text-sm font-bold">{transaction.name}</p>
-            <p className="text-sm">${transaction.amount}</p>
+            <p className="text-sm">${roundedAmount}</p>
          </div>
       </div>
    );

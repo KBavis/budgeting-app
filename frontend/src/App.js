@@ -17,6 +17,8 @@ import CategoryTypeState from "./context/category/types/CategoryTypeState";
 import CategoryState from "./context/category/CategoryState";
 import CategoryCreationPage from "./pages/CategoryCreationPage";
 import TransactionState from "./context/transaction/TransactionState";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 /**
  *  Main Application File
@@ -44,7 +46,11 @@ function App() {
                                     />
                                     <Route
                                        path="/home"
-                                       element={<HomePage />}
+                                       element={
+                                          <DndProvider backend={HTML5Backend}>
+                                             <HomePage />
+                                          </DndProvider>
+                                       }
                                     />
                                     <Route path="/login" element={<Login />} />
                                     <Route

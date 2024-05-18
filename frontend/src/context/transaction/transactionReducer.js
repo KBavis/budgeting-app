@@ -1,6 +1,7 @@
 import {
    SYNC_TRANSACTIONS_SUCCESS,
    SYNC_TRANSACTIONS_FAIL,
+   UPDATE_TRANSACTION_CATEGORY,
    CLEAR_ERRORS,
 } from "./types";
 
@@ -31,6 +32,22 @@ export default (state, action) => {
             transactions: newTransactions,
             loading: false,
             error: null,
+         };
+      case UPDATE_TRANSACTION_CATEGORY:
+         //Update Transactions Category ID
+         const { transactionId, categoryId } = action.payload;
+         const updatedTransactions = state.transactions.map((transaction) => {
+            if (transaction.transactionId === transactionId) {
+               return {
+                  ...transaction,
+                  category: { categoryId },
+               };
+            }
+            return transaction;
+         });
+         return {
+            ...state,
+            transactions: updatedTransactions,
          };
       case SYNC_TRANSACTIONS_FAIL:
          return {
