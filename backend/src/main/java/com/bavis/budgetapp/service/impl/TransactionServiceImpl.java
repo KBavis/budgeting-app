@@ -45,7 +45,6 @@ public class TransactionServiceImpl implements TransactionService {
         this._connectionService = connectionService;
     }
 
-    //TODO: Implement filters for negative amounts & transactions that are older than 1 month
     @Override
     public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto) throws PlaidServiceException{
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();

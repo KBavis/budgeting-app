@@ -105,6 +105,7 @@ public class TransactionControllerTests {
                 .account(accountOne)
                 .category(null) //TODO: update this to be a category when we intelligently assign Category in future
                 .name("Chase Bank")
+                .logoUrl("https://chase-bank-logo.com")
                 .build();
 
         Transaction transactionTwo = Transaction.builder()
@@ -114,6 +115,7 @@ public class TransactionControllerTests {
                 .account(accountTwo)
                 .category(null) //TODO: update this to be a category when we intelligently assign Category in future
                 .name("Wegmans")
+                .logoUrl("https://wegmans-logo.com")
                 .build();
 
         validTransactions = List.of(transactionOne, transactionTwo);
@@ -146,10 +148,12 @@ public class TransactionControllerTests {
                 .andExpect(jsonPath("$[0].amount").value(transactionOne.getAmount()))
                 .andExpect(jsonPath("$[0].name").value(transactionOne.getName()))
                 .andExpect(jsonPath("$[0].category").value(transactionOne.getCategory()))
+                .andExpect(jsonPath("$[0].logoUrl").value(transactionOne.getLogoUrl()))
                 .andExpect(jsonPath("$[1].transactionId").value(transactionTwo.getTransactionId()))
                 .andExpect(jsonPath("$[1].date").value(transactionTwo.getDate().toString()))
                 .andExpect(jsonPath("$[1].amount").value(transactionTwo.getAmount()))
                 .andExpect(jsonPath("$[1].category").value(transactionTwo.getCategory()))
+                .andExpect(jsonPath("$[1].logoUrl").value(transactionTwo.getLogoUrl()))
                 .andExpect(jsonPath("$[1].name").value(transactionTwo.getName()));
 
 

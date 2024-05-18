@@ -200,6 +200,7 @@ public class TransactionServiceTests {
                     .name(dto.getCounterparties().get(0).getName())
                     .amount(dto.getAmount())
                     .date(dto.getDatetime())
+                    .logoUrl(dto.getCounterparties().get(0).getLogo_url())
                     .account(null)  //mapper shouldn't map Account or Category entities
                     .category(null)
                     .build();
@@ -220,6 +221,10 @@ public class TransactionServiceTests {
        //Assert
         assertNotNull(actualTransactions);
         assertEquals(4, actualTransactions.size()); //2 modified, 2 added
+
+        //Ensure Each Modified/Added account is present
+        assertTrue(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoOne.getTransaction_id())));
+        assertTrue(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoThree.getTransaction_id())));
 
         //Ensure negative & 0 amounts are filtered out
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFour.getTransaction_id())));
@@ -341,6 +346,7 @@ public class TransactionServiceTests {
             return Transaction.builder()
                     .transactionId(dto.getTransaction_id())
                     .name(dto.getCounterparties().get(0).getName())
+                    .logoUrl(dto.getCounterparties().get(0).getLogo_url())
                     .amount(dto.getAmount())
                     .date(dto.getDatetime())
                     .account(null)  //mapper shouldn't map Account or Category entities
