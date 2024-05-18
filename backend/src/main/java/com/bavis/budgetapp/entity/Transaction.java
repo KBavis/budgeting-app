@@ -37,6 +37,7 @@ public class Transaction {
 	private String name;
 	private double amount;
 	private LocalDate date;
+	private String logoUrl;
 	
 	/**
 	 * Many Transactions To One Account

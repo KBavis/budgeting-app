@@ -67,6 +67,7 @@ public class TransactionMapperTests {
         assertEquals(counterpartyDto.getName(), target.getName());
         assertEquals(amount, target.getAmount());
         assertEquals(date, target.getDate());
+        assertEquals(logoUrl, target.getLogoUrl());
     }
 
 }
