@@ -78,6 +78,8 @@ public class CategoryTypeControllerTests {
 
         //Act & Assert
         ResultActions resultActions = mockMvc.perform(get("/category/type"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].categoryTypeId").value(categoryTypeOne.getCategoryTypeId()))
                 .andExpect(jsonPath("$[0].name").value(categoryTypeOne.getName()))
                 .andExpect(jsonPath("$[0].budgetAllocationPercentage").value(categoryTypeOne.getBudgetAllocationPercentage()))
