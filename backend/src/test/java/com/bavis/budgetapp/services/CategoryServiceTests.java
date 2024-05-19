@@ -127,6 +127,20 @@ public class CategoryServiceTests {
                 .build();
     }
 
+    @Test
+    void testReadAll_Successful() {
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(categoryRepository.findByUserUserId(user.getUserId())).thenReturn(actualCategories);
+
+        //Act
+        List<Category> returnedCategories = categoryService.readAll();
+
+        //Assert
+        assertNotNull(returnedCategories);
+        assertEquals(actualCategories, returnedCategories);
+    }
+
     /**
      * Validate CategoryService ability to successfully bulk create Categories
      */
