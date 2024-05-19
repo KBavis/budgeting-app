@@ -6,6 +6,7 @@ import com.bavis.budgetapp.constants.IncomeType;
 import com.bavis.budgetapp.entity.Income;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.IncomeServiceImpl;
+import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,11 +22,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,6 +40,9 @@ public class IncomeControllerTests {
 
     @MockBean
     private IncomeServiceImpl incomeService;
+
+    @MockBean
+    private UserServiceImpl userService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -84,7 +89,7 @@ public class IncomeControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validIncomeDto)));
 
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.incomeSource").value(income.getIncomeSource().toString()))
                 .andExpect(jsonPath("$.incomeType").value(income.getIncomeType().toString()))
@@ -94,6 +99,61 @@ public class IncomeControllerTests {
                 .andExpect(jsonPath("$.updatedAt").value(income.getUpdatedAt()));
 
         verify(incomeService, times(1)).create(validIncomeDto);
+    }
+
+    @Test
+    void testReadAll_Successful() throws Exception{
+        //Arrange
+        Income incomeTwo = Income.builder()
+                .incomeSource(IncomeSource.STOCK)
+                .incomeType(IncomeType.CAPITAL_GAINS)
+                .amount(3000.0)
+                .description("Stock dividends")
+                .incomeId(2L)
+                .user(user)
+                .updatedAt(localDateTime)
+                .build();
+
+        Income incomeThree = Income.builder()
+                .incomeSource(IncomeSource.BOND)
+                .incomeType(IncomeType.CAPITAL_GAINS)
+                .amount(8000.0)
+                .description("Bond dividends")
+                .incomeId(3L)
+                .user(user)
+                .updatedAt(localDateTime)
+                .build();
+
+        List<Income> expectedIncomes = List.of(income, incomeTwo, incomeThree);
+
+        //Mock
+        when(incomeService.readAll()).thenReturn(expectedIncomes);
+
+        //Act & Assert
+        ResultActions resultActions = mockMvc.perform(get("/income"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].incomeSource").value(income.getIncomeSource().toString()))
+                .andExpect(jsonPath("$[0].incomeType").value(income.getIncomeType().toString()))
+                .andExpect(jsonPath("$[0].amount").value(income.getAmount()))
+                .andExpect(jsonPath("$[0].description").value(income.getDescription()))
+                .andExpect(jsonPath("$[0].incomeId").value(income.getIncomeId()))
+                .andExpect(jsonPath("$[0].updatedAt").value(income.getUpdatedAt()))
+                .andExpect(jsonPath("$[1].incomeSource").value(incomeTwo.getIncomeSource().toString()))
+                .andExpect(jsonPath("$[1].incomeType").value(incomeTwo.getIncomeType().toString()))
+                .andExpect(jsonPath("$[1].amount").value(incomeTwo.getAmount()))
+                .andExpect(jsonPath("$[1].description").value(incomeTwo.getDescription()))
+                .andExpect(jsonPath("$[1].incomeId").value(incomeTwo.getIncomeId()))
+                .andExpect(jsonPath("$[1].updatedAt").value(incomeTwo.getUpdatedAt()))
+                .andExpect(jsonPath("$[2].incomeSource").value(incomeThree.getIncomeSource().toString()))
+                .andExpect(jsonPath("$[2].incomeType").value(incomeThree.getIncomeType().toString()))
+                .andExpect(jsonPath("$[2].amount").value(incomeThree.getAmount()))
+                .andExpect(jsonPath("$[2].description").value(incomeThree.getDescription()))
+                .andExpect(jsonPath("$[2].incomeId").value(incomeThree.getIncomeId()))
+                .andExpect(jsonPath("$[2].updatedAt").value(incomeThree.getUpdatedAt()));
+
+        //Verify
+        verify(incomeService, times(1)).readAll();
     }
 
     @Test
@@ -112,7 +172,7 @@ public class IncomeControllerTests {
 
         //Assert
         resultActions.andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("The provided income amount is not valid"));
     }
 
@@ -132,7 +192,7 @@ public class IncomeControllerTests {
 
         //Assert
         resultActions.andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("description must not be empty"));
     }
 
@@ -152,7 +212,7 @@ public class IncomeControllerTests {
 
         //Assert
         resultActions.andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("incomeType must not be null"));
     }
 
@@ -172,7 +232,7 @@ public class IncomeControllerTests {
 
         //Assert
         resultActions.andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("incomeSource must not be null"));
     }
 

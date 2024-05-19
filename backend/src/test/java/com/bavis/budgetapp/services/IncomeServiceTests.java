@@ -21,8 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -108,6 +107,26 @@ public class IncomeServiceTests {
 
         //Act
         List<Income> foundIncomes = incomeService.readByUserId(user.getUserId());
+
+        //Assert
+        assertNotNull(foundIncomes);
+        assertEquals(3, foundIncomes.size());
+        for(Income foundIncome: foundIncomes) {
+            assertEquals(income.getIncomeId(), foundIncome.getIncomeId());
+        }
+    }
+
+    @Test
+    void testReadAll_Successful() {
+        //Arrange
+        List<Income> incomes = List.of(income, income, income);
+
+        //Mock
+        when(incomeRepository.findByUserUserId(user.getUserId())).thenReturn(incomes);
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+
+        //Act
+        List<Income> foundIncomes = incomeService.readAll();
 
         //Assert
         assertNotNull(foundIncomes);

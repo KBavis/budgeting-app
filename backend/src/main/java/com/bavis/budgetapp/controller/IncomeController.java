@@ -6,10 +6,9 @@ import com.bavis.budgetapp.service.IncomeService;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author Kellen Bavis
@@ -41,5 +40,17 @@ public class IncomeController {
     public ResponseEntity<Income> create(@Valid @RequestBody IncomeDto income){
         log.info("Received Income creation request for Income [{}]", income);
         return ResponseEntity.ok(_incomeService.create(income));
+    }
+
+    /**
+     * Fetching of all Income entities associated with authenticated user
+     *
+     * @return
+     *      - all Incomes associated with Auth user
+     */
+    @GetMapping
+    public ResponseEntity<List<Income>> readAll() {
+        log.info("Received request to fetch all incomes corresponding to authenticated user");
+        return ResponseEntity.ok(_incomeService.readAll());
     }
 }

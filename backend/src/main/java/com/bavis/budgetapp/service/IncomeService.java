@@ -71,5 +71,14 @@ public interface IncomeService {
      */
     void detete(Long incomeId);
 
+    /**
+     * Functionality to read all Income entities associated with Authenticated User
+     *
+     * @return
+     *      - all incomes associated with Auth user
+     */
+    List<Income> readAll();
+
+
 
 }

@@ -47,6 +47,13 @@ public class IncomeServiceImpl implements IncomeService {
         return _incomeRepository.save(income);
     }
 
+    @Override
+    public List<Income> readAll() {
+        log.info("Retrieving all Income entities corresponding to authenticated user");
+        User authenticatedUser = _userService.getCurrentAuthUser();
+        return _incomeRepository.findByUserUserId(authenticatedUser.getUserId());
+    }
+
     //TODO: finish impl and add comments
     @Override
     public Income readById(Long incomeId) {
@@ -54,6 +61,7 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
 
+    //TODO: consider removing and just using readAll() functionality above
     @Override
     public List<Income> readByUserId(Long userId) {
         log.info("Attempting to find Income[s] for User with ID {}", userId);
