@@ -68,10 +68,7 @@ export default (state, action) => {
                if (transaction.transactionId === action.payload) {
                   return {
                      ...transaction,
-                     category: {
-                        ...transaction.category,
-                        categoryId: null, // Set categoryId to null within the category object
-                     },
+                     category: null,
                   };
                }
                return transaction;

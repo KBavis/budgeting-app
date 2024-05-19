@@ -1,31 +1,23 @@
+// CategoryType.js
+
 import React, { useContext, useState, useEffect } from "react";
 import Category from "../Category";
 import transactionContext from "../../../context/transaction/transactionContext";
 import categoryContext from "../../../context/category/categoryContext";
 
-/**
- * Component used on Home Page to represent a CategoryType
- *
- * @param categoryType
- * - CategoryType to generate component for
- */
 const CategoryType = ({ categoryType }) => {
-   // Global State
    const { transactions } = useContext(transactionContext);
    const { categories } = useContext(categoryContext);
 
-   // Local State
    const [filteredCategories, setFilteredCategories] = useState([]);
    const [filteredTransactions, setFilteredTransactions] = useState([]);
    const [totalAmountSpent, setTotalAmountSpent] = useState(0);
    const [totalAmountAllocated, setTotalAmountAllocated] = useState(0);
 
-   // Set Allocated Amount of Budget for each CategoryType
    useEffect(() => {
       setTotalAmountAllocated(categoryType.budgetAmount);
    }, [categoryType]);
 
-   // Filter Categories that are specific to the current CategoryType
    useEffect(() => {
       const filtered = categories.filter(
          (category) =>
@@ -34,7 +26,6 @@ const CategoryType = ({ categoryType }) => {
       setFilteredCategories(filtered);
    }, [categories, categoryType.categoryTypeId]);
 
-   // Filter out transactions based on the corresponding Category
    useEffect(() => {
       if (transactions && filteredCategories.length > 0) {
          const filtered = transactions.filter((transaction) => {
@@ -52,7 +43,6 @@ const CategoryType = ({ categoryType }) => {
       }
    }, [transactions, filteredCategories]);
 
-   // Calculate total amount spent for each Transaction
    useEffect(() => {
       const totalSpent = filteredTransactions.reduce(
          (sum, transaction) => sum + transaction.amount,
@@ -82,7 +72,7 @@ const CategoryType = ({ categoryType }) => {
             <p className="text-black mb-4 text-center font-semibold">
                Spent: ${totalAmountSpent} / ${totalAmountAllocated}
             </p>
-            <div className="space-y-2">
+            <div className="flex flex-col items-center space-y-2">
                {filteredCategories.map((category) => (
                   <Category key={category.id} category={category} />
                ))}

@@ -38,7 +38,7 @@ const Transaction = ({ transaction }) => {
                className="w-8 h-8 rounded-full"
             />
          )}
-         <div className="text-white">
+         <div className="text-white text-left">
             <p className="text-sm font-bold">{transaction.name}</p>
             <p className="text-sm">${roundedAmount}</p>
          </div>
