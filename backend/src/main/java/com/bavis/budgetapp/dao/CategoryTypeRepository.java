@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.bavis.budgetapp.entity.CategoryType;
 
+import java.util.List;
+
 /**
  * @author Kellen Bavis
  *
@@ -20,4 +22,6 @@ public interface CategoryTypeRepository extends JpaRepository<CategoryType, Long
 	 * 			- CategoryType pertaining to specified name
 	 */
 	CategoryType findByName(String categoryTypeName);
+
+	List<CategoryType> findByUserUserId(Long id);
 }

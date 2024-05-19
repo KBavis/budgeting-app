@@ -75,6 +75,13 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 		return repository.saveAllAndFlush(categoryTypes);
 	}
 
+	@Override
+	public List<CategoryType> readAll() {
+		log.info("Attempting to read all CategoryTypes for the current authenticated user");
+		User currentAuthUser = userService.getCurrentAuthUser();
+		return repository.findByUserUserId(currentAuthUser.getUserId());
+	}
+
 	//TODO: Update this to use mapper
 	//todo: finish this logic and add logging
 	@Override

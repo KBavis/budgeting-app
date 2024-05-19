@@ -66,6 +66,12 @@ public class CategoryTypeController {
 		return _categoryTypeService.createMany(categoryTypes);
 	}
 
+	@GetMapping
+	public List<CategoryType> readMany() {
+		log.info("Received request to read all Category Types for the authenticated user");
+		return _categoryTypeService.readAll();
+	}
+
 
 	/**
 	 * Read a particular CategoryType pertaining to passed in CategoryID

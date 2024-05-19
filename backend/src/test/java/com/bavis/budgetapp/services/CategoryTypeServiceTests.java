@@ -140,6 +140,53 @@ public class CategoryTypeServiceTests {
     }
 
     @Test
+    void testReadAll_Successful() {
+        //Arrange
+        CategoryType categoryTypeOne = CategoryType.builder()
+                .categoryTypeId(10L)
+                .name("Needs")
+                .budgetAllocationPercentage(.5)
+                .categories(new ArrayList<>())
+                .build();
+
+        CategoryType categoryTypeTwo = CategoryType.builder()
+                .categoryTypeId(11L)
+                .name("Wants")
+                .budgetAllocationPercentage(.2)
+                .categories(new ArrayList<>())
+                .build();
+
+        CategoryType categoryTypeThree = CategoryType.builder()
+                .categoryTypeId(12L)
+                .name("Investments")
+                .budgetAllocationPercentage(.3)
+                .categories(new ArrayList<>())
+                .build();
+
+        List<CategoryType> expectedCategoryTypes = List.of(categoryTypeOne, categoryTypeTwo, categoryTypeThree);
+
+        User currentAuthUSer = User.builder()
+                .userId(10L)
+                .username("auth-user")
+                .build();
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(currentAuthUSer);
+        when(repository.findByUserUserId(user.getUserId())).thenReturn(expectedCategoryTypes);
+
+        //Act
+        List<CategoryType> actualCategoryTypes = categoryTypeService.readAll();
+
+        //Assert
+        assertNotNull(actualCategoryTypes);
+        assertEquals(actualCategoryTypes.size(), 3);
+        assertTrue(actualCategoryTypes.contains(categoryTypeOne));
+        assertTrue(actualCategoryTypes.contains(categoryTypeTwo));
+        assertTrue(actualCategoryTypes.contains(categoryTypeThree));
+    }
+
+    //TODO: implement me
+    @Test
     public void testCreateMany_Failure() {
 
     }

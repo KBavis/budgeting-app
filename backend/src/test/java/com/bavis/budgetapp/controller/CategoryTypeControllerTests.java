@@ -5,6 +5,7 @@ import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.impl.CategoryTypeServiceImpl;
+import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -38,9 +40,57 @@ public class CategoryTypeControllerTests {
     
     @MockBean
     private CategoryTypeServiceImpl categoryTypeService;
+
+    @MockBean
+    private UserServiceImpl userService;
     
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    void testReadAll_Successful() throws Exception{
+        //Arrange
+        CategoryType categoryTypeOne = CategoryType.builder()
+                .categoryTypeId(10L)
+                .name("Needs")
+                .budgetAllocationPercentage(.5)
+                .categories(new ArrayList<>())
+                .build();
+
+        CategoryType categoryTypeTwo = CategoryType.builder()
+                .categoryTypeId(11L)
+                .name("Wants")
+                .budgetAllocationPercentage(.2)
+                .categories(new ArrayList<>())
+                .build();
+
+        CategoryType categoryTypeThree = CategoryType.builder()
+                .categoryTypeId(12L)
+                .name("Investments")
+                .budgetAllocationPercentage(.3)
+                .categories(new ArrayList<>())
+                .build();
+
+        List<CategoryType> expectedCategoryTypes = List.of(categoryTypeOne, categoryTypeTwo, categoryTypeThree);
+
+        //Mock
+        when(categoryTypeService.readAll()).thenReturn(expectedCategoryTypes);
+
+        //Act & Assert
+        ResultActions resultActions = mockMvc.perform(get("/category/type"))
+                .andExpect(jsonPath("$[0].categoryTypeId").value(categoryTypeOne.getCategoryTypeId()))
+                .andExpect(jsonPath("$[0].name").value(categoryTypeOne.getName()))
+                .andExpect(jsonPath("$[0].budgetAllocationPercentage").value(categoryTypeOne.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[1].categoryTypeId").value(categoryTypeTwo.getCategoryTypeId()))
+                .andExpect(jsonPath("$[1].name").value(categoryTypeTwo.getName()))
+                .andExpect(jsonPath("$[1].budgetAllocationPercentage").value(categoryTypeTwo.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[2].categoryTypeId").value(categoryTypeThree.getCategoryTypeId()))
+                .andExpect(jsonPath("$[2].name").value(categoryTypeThree.getName()))
+                .andExpect(jsonPath("$[2].budgetAllocationPercentage").value(categoryTypeThree.getBudgetAllocationPercentage()));
+
+        //Verify
+        verify(categoryTypeService ,times(1)).readAll();
+    }
 
     @Test
     public void testBulkCreateCategoryType_ValidRequest_Successful() throws Exception {

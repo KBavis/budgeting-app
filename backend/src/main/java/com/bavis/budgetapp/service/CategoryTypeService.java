@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.CategoryTypeDto;
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 
 import java.util.List;
@@ -20,6 +21,14 @@ public interface CategoryTypeService {
 	 * 			- Saved Category Type
 	 */
 	CategoryType create(CategoryType categoryType);
+
+	/**
+	 * Functionality to read all Categories pertaining to the authenticated user
+	 *
+	 * @return
+	 * 		- all Category entities corresponding to authenticated user
+	 */
+	List<CategoryType> readAll();
 
 	/**
 	 * Function to create multiple Category Type entities in a singular request
