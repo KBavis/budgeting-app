@@ -25,8 +25,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -120,6 +119,8 @@ public class AccountControllerTests {
 
         //Act & Assert
         ResultActions resultActions = mockMvc.perform(get("/account"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].accountId").value(accountDtoOne.getAccountId()))
                 .andExpect(jsonPath("$[0].accountName").value(accountDtoOne.getAccountName()))
                 .andExpect(jsonPath("$[0].accountType").value(accountDtoOne.getAccountType().toString()))
@@ -133,6 +134,8 @@ public class AccountControllerTests {
                 .andExpect(jsonPath("$[2].accountType").value(accountDtoThree.getAccountType().toString()))
                 .andExpect(jsonPath("$[2].balance").value(accountDtoThree.getBalance()));
 
+        //Verify
+        verify(accountService, times(1)).readAll();
     }
 
 
