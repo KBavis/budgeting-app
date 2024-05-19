@@ -133,7 +133,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .collect(Collectors.toList());
         LocalDate currentDate = LocalDate.now();
 
-        log.debug("Reading transactions that are within the same year/date as {} and corresponding to following account IDs: [{}]", currentDate, accountIds);
+        log.debug("Reading transactions that are within the same year/date as {} and corresponding to following account IDs: {}", currentDate, accountIds);
         return _transactionRepository.findByAccountIdsAndCurrentMonth(accountIds, currentDate);
     }
 }
