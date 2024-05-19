@@ -48,7 +48,7 @@ const Login = () => {
    //Navigate User To Connect Accounts Or Home Page depending on if they've already connected accounts
    useEffect(() => {
       if (isAuthenticated) {
-         if (user && user.accounts) {
+         if (user) {
             navigate("/home");
          } else {
             navigate("/connect-accounts");

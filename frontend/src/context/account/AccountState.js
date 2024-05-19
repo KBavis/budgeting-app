@@ -69,15 +69,9 @@ const AccountState = (props) => {
          setAuthToken(localStorage.token);
       }
 
-      const config = {
-         headers: {
-            "Content-Type": "application/json",
-         },
-      };
-
       try {
          console.log("Attempting to fetch accounts for authenticated user");
-         const res = await axios.get(`${apiUrl}/account`, formData, config);
+         const res = await axios.get(`${apiUrl}/account`);
          dispatch({
             type: ACCOUNTS_FETCHED,
             payload: res.data,

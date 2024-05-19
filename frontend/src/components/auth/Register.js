@@ -54,11 +54,7 @@ const Register = () => {
    //Navigate User To Connect Accounts Or Home Page based on if they have account setup
    useEffect(() => {
       if (isAuthenticated) {
-         if (authUser && authUser.accounts) {
-            navigate("/");
-         } else {
-            navigate("/connect-accounts");
-         }
+         navigate("/connect-accounts");
       }
    }, [isAuthenticated]);
 

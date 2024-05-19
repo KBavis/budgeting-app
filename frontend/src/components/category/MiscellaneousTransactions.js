@@ -30,7 +30,7 @@ const MiscellaneousTransactions = () => {
       setMiscTransactions(miscellaneousTransactions);
    }, [transactions]);
 
-   return (
+   return transactions && transactions.length > 0 ? (
       <div
          ref={drop}
          className={`bg-white rounded-lg shadow-md p-4 w-full mt-4 text-center ${
@@ -52,6 +52,8 @@ const MiscellaneousTransactions = () => {
             ))}
          </div>
       </div>
+   ) : (
+      ""
    );
 };
 

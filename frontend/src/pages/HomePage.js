@@ -19,7 +19,7 @@ const HomePage = () => {
 
    //Global State
    const { syncTransactions, transactions } = useContext(transactionContext);
-   const { accounts } = useContext(accountContext);
+   const { accounts, fetchAccounts } = useContext(accountContext);
    const { categoryTypes } = useContext(categoryTypeContext);
    const { user } = useContext(authContext);
    const { categories } = useContext(categoryContext);
@@ -41,6 +41,7 @@ const HomePage = () => {
    useEffect(() => {
       if (!accounts) {
          //Fetch All User Accounts
+         fetchAccounts();
       }
 
       if (!categoryTypes) {
@@ -53,6 +54,7 @@ const HomePage = () => {
 
       if (!transactions) {
          //Fetch All Transactions
+         syncTransactions();
       }
 
       if (!incomes) {
