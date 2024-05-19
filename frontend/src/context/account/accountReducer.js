@@ -1,4 +1,6 @@
 import {
+   ACCOUNTS_FETCHED,
+   ACCOUNTS_FETCH_FAILED,
    ACCOUNT_CREATED,
    ACCOUNT_DELETED,
    ACCOUNT_FAILED_CREATED,
@@ -31,12 +33,18 @@ export default (state, action) => {
             loading: false,
             error: null,
          };
+      case ACCOUNTS_FETCHED:
+         return {
+            ...state,
+            accounts: action.payload,
+         };
       case ACCOUNT_FAILED_CREATED:
          return {
             ...state,
             loading: false,
             error: action.payload,
          };
+      case ACCOUNTS_FETCH_FAILED:
       case ACCOUNT_FAILED_DELETED:
          return {
             ...state,

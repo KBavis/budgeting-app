@@ -13,7 +13,7 @@ const Login = () => {
    /**
     * Global States
     */
-   const { login, error, isAuthenticated, clearErrors, authUser } =
+   const { login, error, isAuthenticated, clearErrors, user } =
       useContext(authContext);
 
    const { setAlert } = useContext(AlertContext);
@@ -48,13 +48,13 @@ const Login = () => {
    //Navigate User To Connect Accounts Or Home Page depending on if they've already connected accounts
    useEffect(() => {
       if (isAuthenticated) {
-         if (authUser && authUser.accounts) {
-            navigate("/");
+         if (user && user.accounts) {
+            navigate("/home");
          } else {
             navigate("/connect-accounts");
          }
       }
-   }, [isAuthenticated]);
+   }, [isAuthenticated, user]);
 
    //Utilize Alert Context To Notify User of Unsuccesfull/Succesful Authentication
    useEffect(() => {

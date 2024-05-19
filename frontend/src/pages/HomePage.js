@@ -6,6 +6,9 @@ import categoryTypeContext from "../context/category/types/categoryTypeContext";
 import CategoryType from "../components/category/types/CategoryType";
 import authContext from "../context/auth/authContext";
 import MiscellaneousTransactions from "../components/category/MiscellaneousTransactions";
+import categoryContext from "../context/category/categoryContext";
+import transaction from "../context/transaction/initialState";
+import IncomeContext from "../context/income/incomeContext";
 
 /**
  * Home Page of our Application that users will first see after Authenticating
@@ -15,10 +18,12 @@ const HomePage = () => {
    const [name, setName] = useState("");
 
    //Global State
-   const { syncTransactions } = useContext(transactionContext);
+   const { syncTransactions, transactions } = useContext(transactionContext);
    const { accounts } = useContext(accountContext);
    const { categoryTypes } = useContext(categoryTypeContext);
    const { user } = useContext(authContext);
+   const { categories } = useContext(categoryContext);
+   const { incomes } = useContext(IncomeContext);
 
    //Set Authenticated User's Name
    useEffect(() => {
@@ -31,6 +36,29 @@ const HomePage = () => {
       console.log(`Fetching Transactions for ${accountIds}`);
       await syncTransactions(accountIds);
    };
+
+   //Ensure Global State has access to all Accounts, Categories, CategoryTypes, and Transactions
+   useEffect(() => {
+      if (!accounts) {
+         //Fetch All User Accounts
+      }
+
+      if (!categoryTypes) {
+         //Fetch All Category Types
+      }
+
+      if (!categories) {
+         //Fetch All Categoories
+      }
+
+      if (!transactions) {
+         //Fetch All Transactions
+      }
+
+      if (!incomes) {
+         //Fetch All Incomes
+      }
+   }, []);
 
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">

@@ -8,6 +8,8 @@ import {
    ACCOUNT_DELETED,
    ACCOUNT_FAILED_CREATED,
    ACCOUNT_FAILED_DELETED,
+   ACCOUNTS_FETCHED,
+   ACCOUNTS_FETCH_FAILED,
    CLEAR_ERRORS,
 } from "./types";
 import setAuthToken from "../../utils/setAuthToken";
@@ -40,12 +42,7 @@ const AccountState = (props) => {
       };
 
       try {
-         console.log("Creating Account with the following Request Body: ");
-         console.log(formData);
          const res = await axios.post(`${apiUrl}/account`, formData, config);
-         //TODO: remove me
-         console.log("returned account(s)");
-         console.log(res.data);
          dispatch({
             type: ACCOUNT_CREATED,
             payload: res.data,
@@ -64,6 +61,36 @@ const AccountState = (props) => {
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
 
+   /**
+    * Functionality to fetch all accounts associated with authenticated user
+    */
+   const fetchAccounts = async () => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      const config = {
+         headers: {
+            "Content-Type": "application/json",
+         },
+      };
+
+      try {
+         console.log("Attempting to fetch accounts for authenticated user");
+         const res = await axios.get(`${apiUrl}/account`, formData, config);
+         dispatch({
+            type: ACCOUNTS_FETCHED,
+            payload: res.data,
+         });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: ACCOUNTS_FETCH_FAILED,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
    return (
       <AccountContext.Provider
          value={{
@@ -72,6 +99,7 @@ const AccountState = (props) => {
             error: state.error,
             createAccount,
             clearErrors,
+            fetchAccounts,
          }}
       >
          {props.children}
