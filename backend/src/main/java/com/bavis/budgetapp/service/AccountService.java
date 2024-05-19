@@ -5,6 +5,8 @@ import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 
+import java.util.List;
+
 /**
  * @author Kellen Bavis
  *
@@ -53,4 +55,12 @@ public interface AccountService {
 	 * 			- Fetched Account
 	 */
 	Account read(String accountId);
+
+	/**
+	 * Functionality to retrieve all accounts associated with authenticated user
+	 *
+	 * @return
+	 * 		- all accounts associated with authenticated user
+	 */
+	List<AccountDto> readAll();
 }

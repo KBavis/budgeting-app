@@ -27,6 +27,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -146,10 +148,11 @@ public class AccountServiceTests {
     /**
      * Validates our connect account method correctly handles invalid retrieval of balance
      */
+    @Test
     public void testConnectAccount_PlaidServiceException_RetrieveBalance_Failure(){
         //Arrange
         String plaidServiceExceptionMsg = "Invalid Response Code When Retrieving Balance Via PlaidClient: [404]";
-        String connectAccountExceptionMsg = "An error occurred when creating an account: [" + plaidServiceExceptionMsg + "]";
+        String connectAccountExceptionMsg = "An error occurred when creating an account: [PlaidServiceException: [" + plaidServiceExceptionMsg + "]]";
 
         //Mock
         when(plaidService.exchangeToken(connectAccountRequestDto.getPublicToken())).thenThrow(new PlaidServiceException(plaidServiceExceptionMsg));
@@ -161,4 +164,72 @@ public class AccountServiceTests {
         assertNotNull(runtimeException);
         assertEquals(connectAccountExceptionMsg, runtimeException.getMessage());
     }
+
+    @Test
+    void testReadAll_Successful() {
+        //Arrange
+        Account accountOne = Account.builder()
+                .accountId("123XYZ")
+                .build();
+
+
+        Account accountTwo= Account.builder()
+                .accountId("123XYZ")
+                .build();
+
+
+        Account accountThree = Account.builder()
+                .accountId("123XYZ")
+                .build();
+
+        List<Account> expectedAccounts = List.of(accountThree, accountOne, accountTwo);
+
+        User authUser = User.builder()
+                .userId(1L)
+                .username("auth-user")
+                .build();
+
+        //Mock
+        when(accountRepository.findByUserUserId(authUser.getUserId())).thenReturn(expectedAccounts);
+        when(userService.getCurrentAuthUser()).thenReturn(authUser);
+        when(accountMapper.toDTO(any(Account.class))).thenAnswer(invocationOnMock -> {
+            Account account = invocationOnMock.getArgument(0);
+            return AccountDto.builder()
+                    .accountId(account.getAccountId())
+                    .accountType(account.getAccountType())
+                    .accountName(account.getAccountName())
+                    .build();
+        });
+
+        //Act
+        List<AccountDto> actualAccounts = accountService.readAll();
+
+        //Assert
+        assertNotNull(actualAccounts);
+        assertEquals(3, actualAccounts.size());
+        assertTrue(actualAccounts.stream().anyMatch(accountDto -> accountDto.getAccountId().equals(accountOne.getAccountId())));
+        assertTrue(actualAccounts.stream().anyMatch(accountDto -> accountDto.getAccountId().equals(accountTwo.getAccountId())));
+        assertTrue(actualAccounts.stream().anyMatch(accountDto -> accountDto.getAccountId().equals(accountThree.getAccountId())));
+    }
+
+    @Test
+    void testReadAll_NoAccounts_Successful() {
+        //Arrrange
+        User user = User.builder()
+                .userId(1L)
+                .username("auth-user")
+                .build();
+       //Mock
+       when(userService.getCurrentAuthUser()).thenReturn(user);
+       when(accountRepository.findByUserUserId(user.getUserId())).thenReturn(new ArrayList<>());
+
+       //Act
+        List<AccountDto> actualAccounts = accountService.readAll();
+
+        //Assert
+        assertTrue(actualAccounts.isEmpty());
+    }
+
+
+
 }

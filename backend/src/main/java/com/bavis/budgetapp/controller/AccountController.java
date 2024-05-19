@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.service.AccountService;
 
+import java.util.List;
+
 /**
  * @author Kellen Bavis
  *
@@ -44,6 +46,18 @@ public class AccountController {
 	public ResponseEntity<Account> read(@PathVariable(value = "accountId") String accountId) {
 		log.info("Received request to read account with ID {}", accountId);
 		return ResponseEntity.ok(_accountService.read(accountId));
+	}
+
+	/**
+	 * Fetch all Accounts associated with authenticated user
+	 *
+	 * @return
+	 * 		- all accounts associated with auth user
+	 */
+	@GetMapping
+	public ResponseEntity<List<AccountDto>> readAll() {
+		log.info("Received request to read all account associated with current authenticated user");
+		return ResponseEntity.ok(_accountService.readAll());
 	}
 
 	/**

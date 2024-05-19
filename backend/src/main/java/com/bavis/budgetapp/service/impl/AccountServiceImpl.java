@@ -2,6 +2,7 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dto.AccountDto;
 import com.bavis.budgetapp.constants.ConnectionStatus;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
@@ -21,6 +22,8 @@ import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.service.AccountService;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Kellen Bavis
@@ -129,6 +132,15 @@ public class AccountServiceImpl implements AccountService{
 		log.info("Attempting to read a Account entity with the ID {}", accountId);
 		return  _accountRepository.findByAccountId(accountId)
 				.orElseThrow(() -> new RuntimeException("Unable to locate Account with ID " + accountId));
+	}
+
+	@Override
+	public List<AccountDto> readAll() {
+		log.info("Attempting to read all accounts associated with current authenticated user");
+		User currentAuthUser = _userService.getCurrentAuthUser();
+        return _accountRepository.findByUserUserId(currentAuthUser.getUserId()).stream()
+				.map(_accountMapper::toDTO)
+				.toList();
 	}
 
 }

@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.bavis.budgetapp.entity.Account;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,4 +22,14 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
      *            - Account Entity corresponding to Plaid API Account ID
      */
     Optional<Account> findByAccountId(String accountId);
+
+    /**
+     * Fetch All Accounts Associated with Given User
+     *
+     * @param userId
+     *             - user ID to fetch Accounts for
+     * @return
+     *              - all Account entities corresponding to given User
+     */
+    List<Account> findByUserUserId(Long userId);
 }

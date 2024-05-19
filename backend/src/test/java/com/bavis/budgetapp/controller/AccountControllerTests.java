@@ -2,6 +2,7 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AccountDto;
 import com.bavis.budgetapp.constants.AccountType;
+import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.AccountService;
@@ -19,10 +20,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import javax.xml.transform.Result;
+import java.util.List;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -82,6 +87,54 @@ public class AccountControllerTests {
                 .andExpect(jsonPath("$.balance").value(accountDTO.getBalance()))
                 .andExpect(jsonPath("$.accountType").value("CHECKING"));
     }
+
+    @Test
+    void testReadAll_Successful() throws Exception{
+        //Arrange
+        AccountDto accountDtoOne = AccountDto.builder()
+                .accountId("123XYZ")
+                .accountName("Account One")
+                .accountType(AccountType.CHECKING)
+                .balance(1000.0)
+                .build();
+
+        AccountDto accountDtoTwo = AccountDto.builder()
+                .accountId("123XYZ")
+                .accountName("Account One")
+                .accountType(AccountType.CHECKING)
+                .balance(1000.0)
+                .build();
+
+
+        AccountDto accountDtoThree = AccountDto.builder()
+                .accountId("123XYZ")
+                .accountName("Account One")
+                .accountType(AccountType.CHECKING)
+                .balance(1000.0)
+                .build();
+
+        List<AccountDto> accountDtos = List.of(accountDtoOne, accountDtoTwo, accountDtoThree);
+
+        //Mock
+        when(accountService.readAll()).thenReturn(accountDtos);
+
+        //Act & Assert
+        ResultActions resultActions = mockMvc.perform(get("/account"))
+                .andExpect(jsonPath("$[0].accountId").value(accountDtoOne.getAccountId()))
+                .andExpect(jsonPath("$[0].accountName").value(accountDtoOne.getAccountName()))
+                .andExpect(jsonPath("$[0].accountType").value(accountDtoOne.getAccountType().toString()))
+                .andExpect(jsonPath("$[0].balance").value(accountDtoOne.getBalance()))
+                .andExpect(jsonPath("$[1].accountId").value(accountDtoTwo.getAccountId()))
+                .andExpect(jsonPath("$[1].accountName").value(accountDtoTwo.getAccountName()))
+                .andExpect(jsonPath("$[1].accountType").value(accountDtoTwo.getAccountType().toString()))
+                .andExpect(jsonPath("$[1].balance").value(accountDtoTwo.getBalance()))
+                .andExpect(jsonPath("$[2].accountId").value(accountDtoThree.getAccountId()))
+                .andExpect(jsonPath("$[2].accountName").value(accountDtoThree.getAccountName()))
+                .andExpect(jsonPath("$[2].accountType").value(accountDtoThree.getAccountType().toString()))
+                .andExpect(jsonPath("$[2].balance").value(accountDtoThree.getBalance()));
+
+    }
+
 
     @Test
     public void testConnectAccount_InvalidRequest_EmptyPlaidAccountId_Failure() throws Exception {
