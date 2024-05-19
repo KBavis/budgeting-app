@@ -24,4 +24,12 @@ public interface TransactionService {
      */
     List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto);
 
+    /**
+     * Functionality to fetch all Transaction entities corresponding to authenticated User
+     *
+     * @return
+     *      - all Transactions corresponding to Auth User
+     */
+    List<Transaction> readAll();
+
 }

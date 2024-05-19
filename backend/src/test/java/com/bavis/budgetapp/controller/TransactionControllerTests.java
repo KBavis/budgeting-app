@@ -21,9 +21,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -162,6 +164,50 @@ public class TransactionControllerTests {
         verify(userService, times(2)).getCurrentAuthUser();
         verify(accountService, times(1)).read(accountOneId);
         verify(accountService, times(1)).read(accountTwoId);
+    }
+
+    @Test
+    void testReadAll_ValidAccounts_Successful() throws Exception {
+        //Arrange
+        Transaction transactionOne = validTransactions.get(0);
+        Transaction transactionTwo = validTransactions.get(1);
+        List<Transaction> expectedTransactions = List.of(transactionOne, transactionTwo);
+
+        //Mock
+        when(transactionService.readAll()).thenReturn(expectedTransactions);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(get("/transactions"));
+
+        //Assert
+        resultActions.andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].transactionId").value(transactionOne.getTransactionId()))
+                .andExpect(jsonPath("$[0].date").value(transactionOne.getDate().toString()))
+                .andExpect(jsonPath("$[0].amount").value(transactionOne.getAmount()))
+                .andExpect(jsonPath("$[0].name").value(transactionOne.getName()))
+                .andExpect(jsonPath("$[0].category").value(transactionOne.getCategory()))
+                .andExpect(jsonPath("$[0].logoUrl").value(transactionOne.getLogoUrl()))
+                .andExpect(jsonPath("$[1].transactionId").value(transactionTwo.getTransactionId()))
+                .andExpect(jsonPath("$[1].date").value(transactionTwo.getDate().toString()))
+                .andExpect(jsonPath("$[1].amount").value(transactionTwo.getAmount()))
+                .andExpect(jsonPath("$[1].category").value(transactionTwo.getCategory()))
+                .andExpect(jsonPath("$[1].logoUrl").value(transactionTwo.getLogoUrl()))
+                .andExpect(jsonPath("$[1].name").value(transactionTwo.getName()));
+    }
+
+    @Test
+    void testReadAll_InvalidAccounts_Successful() throws Exception {
+        //Mock
+        when(transactionService.readAll()).thenReturn(new ArrayList<>());
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(get("/transactions"));
+
+        //Assert
+        resultActions.andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string("[]"));
     }
 
     @Test

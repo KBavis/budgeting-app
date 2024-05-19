@@ -7,15 +7,14 @@ import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.entity.Transaction;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.TransactionMapper;
-import com.bavis.budgetapp.service.impl.AccountServiceImpl;
-import com.bavis.budgetapp.service.impl.ConnectionServiceImpl;
-import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
-import com.bavis.budgetapp.service.impl.TransactionServiceImpl;
+import com.bavis.budgetapp.service.impl.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -39,6 +38,9 @@ public class TransactionServiceTests {
 
     @Mock
     AccountServiceImpl accountService;
+
+    @Mock
+    UserServiceImpl userService;
 
     @Mock
     private ConnectionServiceImpl connectionService;
@@ -387,5 +389,79 @@ public class TransactionServiceTests {
         verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(1)).deleteAll(anyList());
         verify(transactionMapper, times(6)).toEntity(any(PlaidTransactionDto.class));
+    }
+
+    @Test
+    void testReadAll_Successful() {
+        //Arrange
+        LocalDate now = LocalDate.now();
+        Account account = Account.builder()
+                .accountId("account-1")
+                .accountName("First Account")
+                .build();
+
+        User user = User.builder()
+                .username("test-user")
+                .userId(10L)
+                .accounts(List.of(account))
+                .build();
+
+        Transaction transactionOne = Transaction.builder()
+                .transactionId("transaction-1")
+                .amount(1000.0)
+                .date(now)
+                .account(account)
+                .build();
+
+        Transaction transactionTwo = Transaction.builder()
+                .transactionId("transaction-1")
+                .amount(1000.0)
+                .date(now)
+                .account(account)
+                .build();
+
+        Transaction transactionThree = Transaction.builder()
+                .transactionId("transaction-1")
+                .amount(1000.0)
+                .date(now)
+                .account(account)
+                .build();
+
+        List<Transaction> expectedTransactions = List.of(transactionOne, transactionTwo, transactionThree);
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(transactionRepository.findByAccountIdsAndCurrentMonth(any(), any())).thenReturn(expectedTransactions);
+
+        //Act
+        List<Transaction> transactions = transactionService.readAll();
+
+        //Assert
+        assertNotNull(transactions);
+        assertEquals(expectedTransactions, transactions);
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
+        verify(transactionRepository, times(1)).findByAccountIdsAndCurrentMonth(any(), any());
+    }
+
+    @Test
+    void testReadAll_NullAccounts_Failure() {
+        //Arrange
+        User user = User.builder()
+                .accounts(null)
+                .build();
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+
+        //Act
+        List<Transaction> transactions = transactionService.readAll();
+
+        //Assert
+        assertTrue(transactions.isEmpty());
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
     }
 }

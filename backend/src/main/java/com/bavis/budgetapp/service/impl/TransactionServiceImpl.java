@@ -6,6 +6,7 @@ import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.entity.Transaction;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.TransactionService;
@@ -13,7 +14,9 @@ import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -32,20 +35,24 @@ public class TransactionServiceImpl implements TransactionService {
 
     private ConnectionServiceImpl _connectionService;
 
+    private UserServiceImpl _userService;
+
     private TransactionRepository _transactionRepository;
 
     private TransactionMapper _transactionMapper;
 
 
 
-    public TransactionServiceImpl(PlaidServiceImpl plaidService, AccountServiceImpl accountService, TransactionMapper transactionMapper, TransactionRepository transactionRepository, ConnectionServiceImpl connectionService) {
+    public TransactionServiceImpl(PlaidServiceImpl plaidService, AccountServiceImpl accountService, TransactionMapper transactionMapper, TransactionRepository transactionRepository, ConnectionServiceImpl connectionService, UserServiceImpl userService) {
         this._transactionRepository = transactionRepository;
         this._plaidService = plaidService;
+        this._userService = userService;
         this._accountService = accountService;
         this._transactionMapper = transactionMapper;
         this._connectionService = connectionService;
     }
 
+    //TODO: considering returning separate DTO w/ modified/added/removed lists so we can update frontend state with transactions that must be removed
     @Override
     public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto) throws PlaidServiceException{
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
@@ -107,5 +114,26 @@ public class TransactionServiceImpl implements TransactionService {
             }
         }
         return allModifiedOrAddedTransactions;
+    }
+
+    @Override
+    public List<Transaction> readAll(){
+        log.info("Attempting to read all Transaction entities corresponding to authenticated user's added Accounts and the current month");
+        User currentAuthUser = _userService.getCurrentAuthUser();
+        List<Account> accounts = currentAuthUser.getAccounts();
+
+        //Validate User Has Accounts To Fetch Transactions For
+        if(accounts == null) {
+            return new ArrayList<>();
+        }
+
+        //Fetch All Account IDs corresponding to authenticated user
+        List<String> accountIds = accounts.stream()
+                .map(Account::getAccountId)
+                .collect(Collectors.toList());
+        LocalDate currentDate = LocalDate.now();
+
+        log.debug("Reading transactions that are within the same year/date as {} and corresponding to following account IDs: [{}]", currentDate, accountIds);
+        return _transactionRepository.findByAccountIdsAndCurrentMonth(accountIds, currentDate);
     }
 }
