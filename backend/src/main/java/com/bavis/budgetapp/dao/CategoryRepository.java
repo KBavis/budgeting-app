@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.bavis.budgetapp.entity.Category;
 
+import java.util.List;
+
 /**
  * @author Kellen Bavis
  *
@@ -30,5 +32,16 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 	 * 			- Category pertaining to specified name
 	 */
 	Category findByName(String categoryName);
+
+	/**
+	 * Fetch All Categories corresponding to specific User ID
+	 *
+	 * @param userId
+	 * 			- user ID to fetch Categories for
+	 * @return
+	 * 			- all Categories corresponding to passed in User ID
+	 */
+	List<Category> findByUserUserId(Long userId);
+
 }
 

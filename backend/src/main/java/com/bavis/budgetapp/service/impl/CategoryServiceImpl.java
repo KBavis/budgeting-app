@@ -64,6 +64,13 @@ public class CategoryServiceImpl implements CategoryService{
 		return categoryRepository.saveAllAndFlush(categories);
 	}
 
+	@Override
+	public List<Category> readAll() {
+		log.info("Attempting to read all Categories corresponding to authenticated user");
+		User currentAuthUser = userService.getCurrentAuthUser();
+		return categoryRepository.findByUserUserId(currentAuthUser.getUserId());
+	}
+
 	//todo: finish this logic and add logging
 	@Override
 	public Category create(Category category, Long categoryTypeId) throws Exception{

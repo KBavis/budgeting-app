@@ -89,6 +89,12 @@ public class CategoryController {
 		}
 	}
 
+	@GetMapping
+	public List<Category> readAll() {
+		log.info("Received request to fetch all Categories for current authenticated user");
+		return _categoryService.readAll();
+	}
+
 	/**
 	 * Update a particular Category
 	 *

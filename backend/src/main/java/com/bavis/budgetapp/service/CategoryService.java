@@ -58,6 +58,14 @@ public interface CategoryService {
 	Category read(Long categoryId);
 
 	/**
+	 * Function to fetch all Categories pertaining to authenticated user
+	 *
+	 * @return
+	 * 		- all Categories corresponding to auth user
+	 */
+	List<Category> readAll();
+
+	/**
 	 * Function to delete a specific Category
 	 *
 	 * @param categoryId

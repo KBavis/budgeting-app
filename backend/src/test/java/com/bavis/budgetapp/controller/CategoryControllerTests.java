@@ -28,6 +28,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -320,5 +321,35 @@ public class CategoryControllerTests {
         //Assert
         resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("Category must have a valid association to a CategoryType"));
+    }
+
+    @Test
+    void testReadAll_Successful() throws Exception{
+        //Mock
+        when(categoryService.readAll()).thenReturn(expectedCategoryList);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(get("/category"));
+
+        //Assert
+
+        // Assert
+        resultActions.andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].categoryId").value(category1.getCategoryId()))
+                .andExpect(jsonPath("$[0].name").value(category1.getName()))
+                .andExpect(jsonPath("$[0].budgetAmount").value(category1.getBudgetAmount()))
+                .andExpect(jsonPath("$[0].budgetAllocationPercentage").value(category1.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[1].categoryId").value(category2.getCategoryId()))
+                .andExpect(jsonPath("$[1].name").value(category2.getName()))
+                .andExpect(jsonPath("$[1].budgetAmount").value(category2.getBudgetAmount()))
+                .andExpect(jsonPath("$[1].budgetAllocationPercentage").value(category2.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[2].categoryId").value(category3.getCategoryId()))
+                .andExpect(jsonPath("$[2].name").value(category3.getName()))
+                .andExpect(jsonPath("$[2].budgetAmount").value(category3.getBudgetAmount()))
+                .andExpect(jsonPath("$[2].budgetAllocationPercentage").value(category3.getBudgetAllocationPercentage()));
+
+        //Verify
+        verify(categoryService, times(1)).readAll();
     }
 }
