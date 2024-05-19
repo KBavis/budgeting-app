@@ -37,7 +37,6 @@ const Register = () => {
 
    const onSubmit = (e) => {
       e.preventDefault();
-      console.log(user);
       register({
          name,
          username,

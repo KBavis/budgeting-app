@@ -13,7 +13,6 @@ const Category = ({ category }) => {
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
-         console.log("Dropped item:", item);
          updateCategory(item.transaction.transactionId, category.categoryId);
       },
       collect: (monitor) => ({

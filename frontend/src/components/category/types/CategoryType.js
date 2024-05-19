@@ -59,20 +59,30 @@ const CategoryType = ({ categoryType }) => {
            )
          : 0;
 
+   const isBackgroundFilled = percentageUtilized >= 95;
+
    return (
       <div className="relative bg-white rounded-lg shadow-md p-4 w-1/3 mx-2">
          <div
-            className="absolute bottom-0 left-0 right-0 bg-indigo-600 transition-height duration-500 ease-in-out"
+            className="absolute bottom-0 left-0 right-0 bg-indigo-900 transition-height duration-500 ease-in-out"
             style={{ height: `${percentageUtilized}%` }}
          ></div>
          <div className="relative z-10">
-            <h3 className="text-2xl text-center text-black font-bold mb-2">
+            <h3
+               className={`text-2xl text-center font-bold mb-2 ${
+                  isBackgroundFilled ? "text-white" : "text-black"
+               }`}
+            >
                {categoryType.name}
             </h3>
-            <p className="text-black mb-4 text-center font-semibold">
+            <p
+               className={`mb-4 text-center font-semibold ${
+                  isBackgroundFilled ? "text-white" : "text-black"
+               }`}
+            >
                Spent: ${totalAmountSpent} / ${totalAmountAllocated}
             </p>
-            <div className="flex flex-col items-center space-y-2">
+            <div className="flex flex-col items-center space-y-6">
                {filteredCategories.map((category) => (
                   <Category key={category.categoryId} category={category} />
                ))}

@@ -5,6 +5,8 @@ import {
    CLEAR_ERRORS,
    REMOVE_TRANSACTION_CATEGORY,
    SET_LOADING,
+   FETCH_TRANSACTIONS_FAIL,
+   FETCH_TRANSACTIONS_SUCCESS,
 } from "./types";
 
 export default (state, action) => {
@@ -37,10 +39,6 @@ export default (state, action) => {
          };
       case UPDATE_TRANSACTION_CATEGORY:
          // Update Transactions Category ID
-         console.log(
-            `In transactionReducer for action type UPDATE_TRANSACTION_CATEGORY with following payload`
-         );
-         console.log(action.payload);
          const { transactionId, category } = action.payload;
          const updatedTransactions = state.transactions.map((transaction) => {
             if (transaction.transactionId === transactionId) {
@@ -58,9 +56,16 @@ export default (state, action) => {
             transactions: updatedTransactions,
          };
       case SYNC_TRANSACTIONS_FAIL:
+      case FETCH_TRANSACTIONS_FAIL:
          return {
             ...state,
             error: action.payload,
+            loading: false,
+         };
+      case FETCH_TRANSACTIONS_SUCCESS:
+         return {
+            ...state,
+            transactions: action.payload,
             loading: false,
          };
       case REMOVE_TRANSACTION_CATEGORY:

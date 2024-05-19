@@ -9,6 +9,8 @@ import {
    CLEAR_ERRORS,
    REMOVE_TRANSACTION_CATEGORY,
    SET_LOADING,
+   FETCH_TRANSACTIONS_FAIL,
+   FETCH_TRANSACTIONS_SUCCESS,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -24,6 +26,7 @@ const TransactionState = (props) => {
    const [state, dispatch] = useReducer(transactionReducer, initialState);
 
    /**
+    * Functionality to sync transactions with external financial institutions
     *
     * @param accounts
     *          - list of account IDs to sync transactions for
@@ -60,6 +63,26 @@ const TransactionState = (props) => {
    };
 
    /**
+    * Functionality to fetch all corresponding transactions persisted for authenticated user within current month
+    */
+   const fetchTransactions = async () => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      try {
+         const res = await axios.get(`${apiUrl}/transactions`);
+         dispatch({ type: FETCH_TRANSACTIONS_SUCCESS, payload: res.data });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: FETCH_TRANSACTIONS_FAIL,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
+   /**
     * Update a transaction's category on the frontend
     *
     * @param transactionId
@@ -68,12 +91,8 @@ const TransactionState = (props) => {
     *          - ID of the category to assign to the transaction
     */
    const updateCategory = (transactionId, categoryId) => {
-      console.log(
-         `In updateCategory() in TransactionState with following TransactionId & CategoryId: [${transactionId}, ${categoryId}]`
-      );
       const category = { categoryId };
       const payload = { transactionId, category };
-      console.log(`Sending the following payload over to reducer: ${payload}`);
       dispatch({
          type: UPDATE_TRANSACTION_CATEGORY,
          payload,
@@ -101,8 +120,6 @@ const TransactionState = (props) => {
     *          - ID of the category to assign to the transaction
     */
    const removeTransactionCategory = (transactionId) => {
-      console.log("in removeCategory in state");
-      console.log(transactionId);
       dispatch({
          type: REMOVE_TRANSACTION_CATEGORY,
          payload: transactionId,
@@ -140,6 +157,7 @@ const TransactionState = (props) => {
             syncTransactions,
             updateCategory,
             removeTransactionCategory,
+            fetchTransactions,
             clearErrors,
             setLoading,
          }}

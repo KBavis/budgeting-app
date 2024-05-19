@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
-import { quotes } from "../utils/quotes";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import transactionContext from "../context/transaction/transactionContext";
 import accountContext from "../context/account/accountContext";
 import categoryTypeContext from "../context/category/types/categoryTypeContext";
@@ -7,7 +6,6 @@ import CategoryType from "../components/category/types/CategoryType";
 import authContext from "../context/auth/authContext";
 import MiscellaneousTransactions from "../components/category/MiscellaneousTransactions";
 import categoryContext from "../context/category/categoryContext";
-import transaction from "../context/transaction/initialState";
 import IncomeContext from "../context/income/incomeContext";
 import Loading from "../components/util/Loading";
 
@@ -18,10 +16,13 @@ const HomePage = () => {
    //Local State
    const [name, setName] = useState("");
    const [loading, setLoading] = useState(false);
+   // const [initalFetch, setInitalFetch] = useState(false); //boolean for determining if we did our inital fetch / need to do initial fetch
+   const initalFetchRef = useRef(false);
 
-   //Global State
+   //Global States
    const {
       syncTransactions,
+      fetchTransactions,
       transactions,
       loading: transactionsLoading,
       setLoading: setTransactionLoading,
@@ -52,62 +53,91 @@ const HomePage = () => {
       loading: incomesLoading,
    } = useContext(IncomeContext);
 
-   //Set Authenticated User's Name
+   // Set Authenticated User's Name
    useEffect(() => {
       setName(user.name);
    }, [user]);
 
-   //Function to Fetch Transactions for Added Accounts
-   const fetchTransactions = async () => {
+   //Sync Transactions for Added Accounts
+   const fetchUpdatedTransactions = async () => {
       const accountIds = accounts.map((account) => account.accountId);
-      console.log(`Fetching Transactions for ${accountIds}`);
+      console.log(`Syncing Transactions for AccountIds`, accountIds);
       await syncTransactions(accountIds);
    };
 
-   //Ensure Global State has access to all Accounts, Categories, CategoryTypes, and Transactions
+   //Fetch All Accounts
+   const getAccounts = async () => {
+      if (!accounts || accounts.length === 0) {
+         //Fetch All User Accounts
+         console.log("Fetching accounts...");
+         setAccountsLoading();
+         await fetchAccounts();
+      }
+   };
+
+   //Fetch All Category Types
+   const getCategoryTypes = async () => {
+      if (!categoryTypes || categoryTypes.length === 0) {
+         //Fetch All Category Types
+         console.log("Fetching Category Types...");
+         setCategoryTypesLoading();
+         await fetchCategoryTypes();
+      }
+   };
+
+   //Fetch All Incomes
+   const getIncomes = async () => {
+      if (!incomes || incomes.length === 0) {
+         //Fetch All Incomes
+         console.log("Fetching Incomes...");
+         setIncomesLoading();
+         await fetchIncomes();
+      }
+   };
+
+   //Fetch All Categories
+   const getCategories = async () => {
+      if (!categories || categories.length === 0) {
+         //Fetch All Categories
+         console.log("Fetching Categories...");
+         setCategoriesLoading();
+         await fetchCategories();
+      }
+   };
+
+   //Fetch All Transactions
+   const getTransactions = async () => {
+      if (!transactions || transactions.length === 0) {
+         //Fetch All Transactions
+         console.log("Fetching Transactions...");
+         setTransactionLoading();
+         await fetchTransactions();
+      }
+   };
+
+   //Fetch All Entities from Backend initial Component Mounting
    useEffect(() => {
-      const fetchAllEntities = async () => {
-         if (!accounts || accounts.length === 0) {
-            //Fetch All User Accounts
-            console.log("Fetching accounts...");
-            setAccountsLoading();
-            await fetchAccounts();
-         }
-
-         if (!categoryTypes || categoryTypes.length === 0) {
-            //Fetch All Category Types
-            console.log("Fetching Category Types...");
-            setCategoryTypesLoading();
-            await fetchCategoryTypes();
-         }
-
-         if (!categories || categories.length === 0) {
-            //Fetch All Categories
-            console.log("Fetching Categories...");
-            setCategoriesLoading();
-            await fetchCategories();
-         }
-
-         if (!transactions || transactions.length === 0) {
-            //Fetch All Transactions
-            console.log("Fetching Transactions...");
-            setTransactionLoading();
-            await syncTransactions();
-         }
-
-         if (!incomes || incomes.length === 0) {
-            //Fetch All Incomes
-            console.log("Fetching Incomes...");
-            setIncomesLoading();
-            await fetchIncomes();
-         }
-      };
-      fetchAllEntities();
+      console.log(
+         `Component Mounted! Initial Fetch Value : ${initalFetchRef.current}`
+      );
+      //Only Fetch if Initial Fetch Is False
+      if (!initalFetchRef.current) {
+         getAccounts();
+         getIncomes();
+         getCategories();
+         getCategoryTypes();
+         initalFetchRef.current = true;
+      }
    }, []);
 
-   /**
-    * Determine if we are still loading in all our entities from REST API
-    */
+   //Trigger Fetching of Transactions When Accounts loaded into Context
+   useEffect(() => {
+      if (accounts && accounts.length > 0) {
+         getTransactions();
+      }
+   }, [accounts]);
+
+   // Determine if we are still loading in all our entities from REST API
    useEffect(() => {
       setLoading(
          transactionsLoading &&
@@ -136,7 +166,7 @@ const HomePage = () => {
                </h2>
                <button
                   className="bg-indigo-600 hover:bg-indigo-700 duration-150 text-white font-bold py-2 px-4 rounded mt-4"
-                  onClick={fetchTransactions}
+                  onClick={fetchUpdatedTransactions}
                >
                   Sync Transactions
                </button>
