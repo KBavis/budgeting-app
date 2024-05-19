@@ -2,6 +2,7 @@ package com.bavis.budgetapp.util;
 
 import com.bavis.budgetapp.constants.TimeType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -43,6 +44,24 @@ public class GeneralUtil {
      */
     public static Date localDateTimeToDate(LocalDateTime dateTime) {
         return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    /**
+     * Functionality to determine if a date is within the current month a year
+     *
+     * @param dateToCheck
+     *          - the date to validate
+     * @return
+     *      - validly of date
+     */
+    public static boolean isDateInCurrentMonth(LocalDate dateToCheck){
+        LocalDate currentDate = LocalDate.now();
+
+        //Current Month & Year
+        int currentYear = currentDate.getYear();
+        int currentMonth =  currentDate.getMonthValue();
+
+        return currentYear == dateToCheck.getYear() && currentMonth == dateToCheck.getMonthValue();
     }
 
 }

@@ -72,6 +72,8 @@ public class TransactionServiceTests {
 
     PlaidTransactionDto plaidTransactionDtoFive;
 
+    PlaidTransactionDto plaidTransactionDtoSix;
+
     PlaidTransactionSyncResponseDto syncResponseDto;
 
     List<PlaidTransactionDto> addedTransactions;
@@ -125,7 +127,11 @@ public class TransactionServiceTests {
                 .account_id(accountId)
                 .build();
 
-         plaidTransactionDtoFour = PlaidTransactionDto.builder()
+        /**
+         * Transactions that should be filtered out
+         */
+
+        plaidTransactionDtoFour = PlaidTransactionDto.builder()
                  .transaction_id("1956")
                  .counterparties(List.of(counterpartyDto))
                  .personal_finance_category(personalFinanceCategoryDto)
@@ -143,7 +149,16 @@ public class TransactionServiceTests {
                  .account_id(accountId)
                  .build();
 
-        addedTransactions = List.of(plaidTransactionDtoOne, plaidTransactionDtoFour); //include transaction with 0 amount
+         plaidTransactionDtoSix = PlaidTransactionDto.builder()
+                 .transaction_id("17545")
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
+                .amount(-500.0)
+                .datetime(LocalDate.of(2024,4,19))
+                .account_id(accountId)
+                .build();
+
+        addedTransactions = List.of(plaidTransactionDtoOne, plaidTransactionDtoFour, plaidTransactionDtoSix); //include transaction with 0 amount and date outside of current month
         removedTransactions = List.of(plaidTransactionDtoTwo, plaidTransactionDtoFive); //include transaction with negative amount
         modifiedTransactions = List.of(plaidTransactionDtoThree);
 
@@ -226,9 +241,10 @@ public class TransactionServiceTests {
         assertTrue(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoOne.getTransaction_id())));
         assertTrue(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoThree.getTransaction_id())));
 
-        //Ensure negative & 0 amounts are filtered out
+        //Ensure negative & 0 amounts, and dates outside the current month are filtered out
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFour.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFive.getTransaction_id())));
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoSix.getTransaction_id())));
 
        //Verify
         verify(accountService, times(1)).read(accountIdOne);
@@ -237,7 +253,7 @@ public class TransactionServiceTests {
         verify(connectionService, times(1)).update(accountConnectionTwo, accountConnectionTwo.getConnectionId());
         verify(transactionRepository, times(2)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(2)).deleteAll(anyList());
-        verify(transactionMapper, times(10)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionMapper, times(12)).toEntity(any(PlaidTransactionDto.class));
     }
 
     @Test
@@ -370,6 +386,6 @@ public class TransactionServiceTests {
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
         verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(1)).deleteAll(anyList());
-        verify(transactionMapper, times(5)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionMapper, times(6)).toEntity(any(PlaidTransactionDto.class));
     }
 }

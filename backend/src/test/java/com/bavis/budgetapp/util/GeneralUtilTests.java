@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -42,5 +43,29 @@ public class GeneralUtilTests {
 
         //Assert
         assertEquals(now.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(), actualDate.getTime());
+    }
+
+    @Test
+    public  void testIsDateInCurrentMonth_Successful() {
+        //Arrange
+        LocalDate dateToTest = LocalDate.now();
+
+        //Act
+        boolean validity = GeneralUtil.isDateInCurrentMonth(dateToTest);
+
+        //Assert
+        assertTrue(validity);
+    }
+
+    @Test
+    public void testIsDateInCurrentMonth_Failure() {
+       //Arrange
+       LocalDate dateToTest = LocalDate.of(2024, 4, 19);
+
+       //Act
+        boolean validity = GeneralUtil.isDateInCurrentMonth(dateToTest);
+
+        //Assert
+        assertFalse(validity);
     }
 }

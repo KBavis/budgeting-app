@@ -9,6 +9,7 @@ import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.TransactionService;
+import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
@@ -75,6 +76,7 @@ public class TransactionServiceImpl implements TransactionService {
                             transaction.setAccount(account);
                         })
                         .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
+                        .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate()))
                         .toList();
                 log.debug("Updating DB With The Following Added or Modified Transactions: [{}]", addedOrModifiedTransactions);
                 List<Transaction> persistedTransactions = _transactionRepository.saveAllAndFlush(addedOrModifiedTransactions);
