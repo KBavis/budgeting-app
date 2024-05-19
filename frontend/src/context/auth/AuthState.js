@@ -9,6 +9,7 @@ import {
    AUTH_SUCCESS,
    REGISTER_SUCCESS,
    CLEAR_ERRORS,
+   SET_LOADING,
 } from "./types";
 import initalState from "./initalState";
 import AuthContext from "./authContext";
@@ -78,6 +79,8 @@ const AuthState = (props) => {
     * Functionality to Clear Errors
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
+
+   const setLoading = () => dispatch({ type: SET_LOADING });
 
    return (
       <AuthContext.Provider

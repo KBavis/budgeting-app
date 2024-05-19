@@ -4,6 +4,7 @@ import {
    UPDATE_TRANSACTION_CATEGORY,
    CLEAR_ERRORS,
    REMOVE_TRANSACTION_CATEGORY,
+   SET_LOADING,
 } from "./types";
 
 export default (state, action) => {
@@ -82,6 +83,11 @@ export default (state, action) => {
          return {
             ...state,
             error: null,
+         };
+      case SET_LOADING:
+         return {
+            ...state,
+            loading: true,
          };
       default:
          return state;

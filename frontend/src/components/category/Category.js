@@ -31,10 +31,6 @@ const Category = ({ category }) => {
             );
          });
          const mostRecent = filtered ? filtered.slice(0, 3) : [];
-         console.log(
-            `Most Recent Transactions for Category '${category.name}'`
-         );
-         console.log(mostRecent);
          setRecentTransactions(mostRecent);
       } else {
          setRecentTransactions([]);

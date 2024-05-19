@@ -5,6 +5,7 @@ import {
    REGISTER_SUCCESS,
    LOGOUT,
    CLEAR_ERRORS,
+   SET_LOADING,
 } from "./types";
 
 /**
@@ -37,6 +38,11 @@ export default (state, action) => {
          return {
             ...state,
             error: null,
+         };
+      case SET_LOADING:
+         return {
+            ...state,
+            loading: true,
          };
       default:
          return state;

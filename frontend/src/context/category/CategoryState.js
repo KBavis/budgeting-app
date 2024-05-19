@@ -6,6 +6,9 @@ import {
    CREATE_CATEGORIES_SUCCESS,
    CREATE_CATEGORIES_FAIL,
    CLEAR_ERRORS,
+   SET_LOADING,
+   FETCH_CATEGORIES_SUCCESS,
+   FETCH_CATEGORIES_FAIL,
 } from "./types";
 import initialState from "./initialState";
 import CategoryContext from "./categoryContext";
@@ -55,6 +58,31 @@ const CategoryState = (props) => {
    };
 
    /**
+    *  Functionality to fetch all Categories corresponding to authenticated user
+    */
+   const fetchCategories = async () => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      try {
+         const res = await axios.get(`${apiUrl}/category`);
+         dispatch({ type: FETCH_CATEGORIES_SUCCESS, payload: res.data });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: FETCH_CATEGORIES_FAIL,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
+   /**
+    *  Functionality to set the loading to true
+    */
+   const setLoading = () => dispatch({ type: SET_LOADING });
+
+   /**
     * Functionality to handle clearing all existing errors
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
@@ -67,6 +95,8 @@ const CategoryState = (props) => {
             error: state.error,
             addCategories,
             clearErrors,
+            fetchCategories,
+            setLoading,
          }}
       >
          {props.children}

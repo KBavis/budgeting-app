@@ -6,6 +6,7 @@ import {
    ACCOUNT_FAILED_CREATED,
    ACCOUNT_FAILED_DELETED,
    CLEAR_ERRORS,
+   SET_LOADING,
 } from "./types";
 
 /**
@@ -55,6 +56,11 @@ export default (state, action) => {
          return {
             ...state,
             error: null,
+         };
+      case SET_LOADING:
+         return {
+            ...state,
+            loading: true,
          };
       default:
          return state;

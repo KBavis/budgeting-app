@@ -6,6 +6,9 @@ import {
    CREATE_INCOME_SUCCESS,
    CREATE_INCOME_FAIL,
    CLEAR_ERRORS,
+   SET_LOADING,
+   FETCH_INCOMES_SUCCESS,
+   FETCH_INCOMES_FAIL,
 } from "./types";
 import initialState from "./initialState";
 import IncomeContext from "./incomeContext";
@@ -51,9 +54,34 @@ const IncomeState = (props) => {
    };
 
    /**
+    *  Functionality to fetch all Income entities corresponding to Authenticated User
+    */
+   const fetchIncomes = async () => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      try {
+         const res = await axios.get(`${apiUrl}/income`);
+         dispatch({ type: FETCH_INCOMES_SUCCESS, payload: res.data });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: FETCH_INCOMES_FAIL,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
+   /**
     * Functionality to clear exisiting errors
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
+
+   /**
+    *  Functionality to set loading to true
+    */
+   const setLoading = () => dispatch({ type: SET_LOADING });
 
    // Return Income Global Provider
    return (
@@ -64,6 +92,8 @@ const IncomeState = (props) => {
             error: state.error,
             addIncome,
             clearErrors,
+            fetchIncomes,
+            setLoading,
          }}
       >
          {props.children}

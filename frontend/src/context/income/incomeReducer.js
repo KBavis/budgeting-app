@@ -2,6 +2,9 @@ import {
    CREATE_INCOME_SUCCESS,
    CREATE_INCOME_FAIL,
    CLEAR_ERRORS,
+   SET_LOADING,
+   FETCH_INCOMES_SUCCESS,
+   FETCH_INCOMES_FAIL,
 } from "./types";
 
 /**
@@ -10,6 +13,7 @@ import {
 export default (state, action) => {
    switch (action.type) {
       case CREATE_INCOME_SUCCESS:
+      case FETCH_INCOMES_SUCCESS:
          return {
             ...state,
             incomes: state.incomes
@@ -19,6 +23,7 @@ export default (state, action) => {
             error: null,
          };
       case CREATE_INCOME_FAIL:
+      case FETCH_INCOMES_FAIL:
          return {
             ...state,
             error: action.payload,
@@ -28,6 +33,11 @@ export default (state, action) => {
          return {
             ...state,
             error: null,
+         };
+      case SET_LOADING:
+         return {
+            ...state,
+            loading: true,
          };
       default:
          return state;

@@ -8,6 +8,7 @@ import {
    UPDATE_TRANSACTION_CATEGORY,
    CLEAR_ERRORS,
    REMOVE_TRANSACTION_CATEGORY,
+   SET_LOADING,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -120,7 +121,15 @@ const TransactionState = (props) => {
       // }
    };
 
+   /**
+    *  Functionality to clear errors
+    */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
+
+   /**
+    * Functionality to set loading
+    */
+   const setLoading = () => dispatch({ type: SET_LOADING });
 
    return (
       <TransactionContext.Provider
@@ -132,6 +141,7 @@ const TransactionState = (props) => {
             updateCategory,
             removeTransactionCategory,
             clearErrors,
+            setLoading,
          }}
       >
          {props.children}

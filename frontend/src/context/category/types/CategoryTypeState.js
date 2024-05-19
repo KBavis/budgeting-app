@@ -6,6 +6,9 @@ import {
    CREATE_CATEGORY_TYPES_SUCCESS,
    CREATE_CATEGORY_TYPES_FAIL,
    CLEAR_ERRORS,
+   FETCH_CATEGORY_TYPES_SUCCCESS,
+   FETCH_CATEGORY_TYPES_FAIL,
+   SET_LOADING,
 } from "./types";
 import initialState from "./initialState";
 import CategoryTypeContext from "./categoryTypeContext";
@@ -59,6 +62,31 @@ const CategoryTypeState = (props) => {
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
 
+   /**
+    * Functionality to set loading to true
+    */
+   const setLoading = () => dispatch({ type: SET_LOADING });
+
+   /**
+    * Functionality to fetch all Category Types
+    */
+   const fetchCategoryTypes = async () => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      try {
+         const res = await axios.get(`${apiUrl}/category/type`);
+         dispatch({ type: FETCH_CATEGORY_TYPES_SUCCCESS, payload: res.data });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: FETCH_CATEGORY_TYPES_FAIL,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
    return (
       <CategoryTypeContext.Provider
          value={{
@@ -67,6 +95,8 @@ const CategoryTypeState = (props) => {
             error: state.error,
             addCategoryTypes,
             clearErrors,
+            fetchCategoryTypes,
+            setLoading,
          }}
       >
          {props.children}

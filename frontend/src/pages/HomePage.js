@@ -9,6 +9,7 @@ import MiscellaneousTransactions from "../components/category/MiscellaneousTrans
 import categoryContext from "../context/category/categoryContext";
 import transaction from "../context/transaction/initialState";
 import IncomeContext from "../context/income/incomeContext";
+import Loading from "../components/util/Loading";
 
 /**
  * Home Page of our Application that users will first see after Authenticating
@@ -16,14 +17,40 @@ import IncomeContext from "../context/income/incomeContext";
 const HomePage = () => {
    //Local State
    const [name, setName] = useState("");
+   const [loading, setLoading] = useState(false);
 
    //Global State
-   const { syncTransactions, transactions } = useContext(transactionContext);
-   const { accounts, fetchAccounts } = useContext(accountContext);
-   const { categoryTypes } = useContext(categoryTypeContext);
+   const {
+      syncTransactions,
+      transactions,
+      loading: transactionsLoading,
+      setLoading: setTransactionLoading,
+   } = useContext(transactionContext);
+   const {
+      accounts,
+      fetchAccounts,
+      loading: accountsLoading,
+      setLoading: setAccountsLoading,
+   } = useContext(accountContext);
+   const {
+      categoryTypes,
+      fetchCategoryTypes,
+      setLoading: setCategoryTypesLoading,
+      loading: categoryTypesLoading,
+   } = useContext(categoryTypeContext);
    const { user } = useContext(authContext);
-   const { categories } = useContext(categoryContext);
-   const { incomes } = useContext(IncomeContext);
+   const {
+      categories,
+      fetchCategories,
+      setLoading: setCategoriesLoading,
+      loading: categoriesLoading,
+   } = useContext(categoryContext);
+   const {
+      incomes,
+      fetchIncomes,
+      setLoading: setIncomesLoading,
+      loading: incomesLoading,
+   } = useContext(IncomeContext);
 
    //Set Authenticated User's Name
    useEffect(() => {
@@ -39,28 +66,63 @@ const HomePage = () => {
 
    //Ensure Global State has access to all Accounts, Categories, CategoryTypes, and Transactions
    useEffect(() => {
-      if (!accounts) {
-         //Fetch All User Accounts
-         fetchAccounts();
-      }
+      const fetchAllEntities = async () => {
+         if (!accounts || accounts.length === 0) {
+            //Fetch All User Accounts
+            console.log("Fetching accounts...");
+            setAccountsLoading();
+            await fetchAccounts();
+         }
 
-      if (!categoryTypes) {
-         //Fetch All Category Types
-      }
+         if (!categoryTypes || categoryTypes.length === 0) {
+            //Fetch All Category Types
+            console.log("Fetching Category Types...");
+            setCategoryTypesLoading();
+            await fetchCategoryTypes();
+         }
 
-      if (!categories) {
-         //Fetch All Categoories
-      }
+         if (!categories || categories.length === 0) {
+            //Fetch All Categories
+            console.log("Fetching Categories...");
+            setCategoriesLoading();
+            await fetchCategories();
+         }
 
-      if (!transactions) {
-         //Fetch All Transactions
-         syncTransactions();
-      }
+         if (!transactions || transactions.length === 0) {
+            //Fetch All Transactions
+            console.log("Fetching Transactions...");
+            setTransactionLoading();
+            await syncTransactions();
+         }
 
-      if (!incomes) {
-         //Fetch All Incomes
-      }
+         if (!incomes || incomes.length === 0) {
+            //Fetch All Incomes
+            console.log("Fetching Incomes...");
+            setIncomesLoading();
+            await fetchIncomes();
+         }
+      };
+      fetchAllEntities();
    }, []);
+
+   /**
+    * Determine if we are still loading in all our entities from REST API
+    */
+   useEffect(() => {
+      setLoading(
+         transactionsLoading &&
+            incomesLoading &&
+            categoriesLoading &&
+            categoryTypesLoading &&
+            accountsLoading
+      );
+   }, [
+      transactionsLoading,
+      incomesLoading,
+      categoriesLoading,
+      categoryTypesLoading,
+      accountsLoading,
+   ]);
 
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
@@ -80,12 +142,16 @@ const HomePage = () => {
                </button>
             </div>
             <div className="flex justify-center space-x-4 w-full mb-5">
-               {categoryTypes.map((categoryType) => (
-                  <CategoryType
-                     key={categoryType.id}
-                     categoryType={categoryType}
-                  />
-               ))}
+               {!loading ? (
+                  categoryTypes.map((categoryType) => (
+                     <CategoryType
+                        key={categoryType.categoryTypeId}
+                        categoryType={categoryType}
+                     />
+                  ))
+               ) : (
+                  <Loading />
+               )}
             </div>
             <MiscellaneousTransactions />
          </div>

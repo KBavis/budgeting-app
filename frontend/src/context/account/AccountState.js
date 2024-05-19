@@ -11,6 +11,7 @@ import {
    ACCOUNTS_FETCHED,
    ACCOUNTS_FETCH_FAILED,
    CLEAR_ERRORS,
+   SET_LOADING,
 } from "./types";
 import setAuthToken from "../../utils/setAuthToken";
 import AccountContext from "./accountContext";
@@ -61,6 +62,8 @@ const AccountState = (props) => {
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
 
+   const setLoading = () => dispatch({ type: SET_LOADING });
+
    /**
     * Functionality to fetch all accounts associated with authenticated user
     */
@@ -70,7 +73,6 @@ const AccountState = (props) => {
       }
 
       try {
-         console.log("Attempting to fetch accounts for authenticated user");
          const res = await axios.get(`${apiUrl}/account`);
          dispatch({
             type: ACCOUNTS_FETCHED,
@@ -94,6 +96,7 @@ const AccountState = (props) => {
             createAccount,
             clearErrors,
             fetchAccounts,
+            setLoading,
          }}
       >
          {props.children}

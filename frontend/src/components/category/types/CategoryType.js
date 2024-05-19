@@ -74,7 +74,7 @@ const CategoryType = ({ categoryType }) => {
             </p>
             <div className="flex flex-col items-center space-y-2">
                {filteredCategories.map((category) => (
-                  <Category key={category.id} category={category} />
+                  <Category key={category.categoryId} category={category} />
                ))}
             </div>
          </div>
