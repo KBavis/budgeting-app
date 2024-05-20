@@ -61,13 +61,13 @@ public class AssignCategoryRequestValidatorTests {
                 .build();
 
         AssignCategoryRequestDto assignCategoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(category.getCategoryId())
+                .categoryId(String.valueOf(category.getCategoryId()))
                 .transactionId(transaction.getTransactionId())
                 .build();
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(categoryService.read(assignCategoryRequestDto.getCategoryId())).thenReturn(category);
+        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
         when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
 
         //Act
@@ -108,12 +108,12 @@ public class AssignCategoryRequestValidatorTests {
                 .build();
 
         AssignCategoryRequestDto assignCategoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(category.getCategoryId())
+                .categoryId(String.valueOf(category.getCategoryId()))
                 .transactionId(transaction.getTransactionId())
                 .build();
 
         //Mock
-        when(categoryService.read(assignCategoryRequestDto.getCategoryId())).thenReturn(null);
+        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(null);
         when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
 
         //Act
@@ -123,7 +123,7 @@ public class AssignCategoryRequestValidatorTests {
         assertFalse(valid);
 
         //Verify
-        verify(categoryService, times(1)).read(assignCategoryRequestDto.getCategoryId());
+        verify(categoryService, times(1)).read(Long.valueOf(assignCategoryRequestDto.getCategoryId()));
         verify(transactionService, times(1)).readById(transaction.getTransactionId());
     }
 
@@ -153,12 +153,12 @@ public class AssignCategoryRequestValidatorTests {
                 .build();
 
         AssignCategoryRequestDto assignCategoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(category.getCategoryId())
+                .categoryId(String.valueOf(category.getCategoryId()))
                 .transactionId(transaction.getTransactionId())
                 .build();
 
         //Mock
-        when(categoryService.read(assignCategoryRequestDto.getCategoryId())).thenReturn(category);
+        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
         when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenThrow(new RuntimeException("Invalid Transaction ID"));
 
         //Act
@@ -168,7 +168,7 @@ public class AssignCategoryRequestValidatorTests {
         assertFalse(valid);
 
         //Verify
-        verify(categoryService, times(1)).read(assignCategoryRequestDto.getCategoryId());
+        verify(categoryService, times(1)).read(Long.valueOf(assignCategoryRequestDto.getCategoryId()));
         verify(transactionService, times(1)).readById(transaction.getTransactionId());
     }
 
@@ -203,12 +203,12 @@ public class AssignCategoryRequestValidatorTests {
                 .build();
 
         AssignCategoryRequestDto assignCategoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(category.getCategoryId())
+                .categoryId(String.valueOf(category.getCategoryId()))
                 .transactionId(transaction.getTransactionId())
                 .build();
 
         //Mock
-        when(categoryService.read(assignCategoryRequestDto.getCategoryId())).thenReturn(category);
+        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
         when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
@@ -219,7 +219,7 @@ public class AssignCategoryRequestValidatorTests {
         assertFalse(valid);
 
         //Verify
-        verify(categoryService, times(1)).read(assignCategoryRequestDto.getCategoryId());
+        verify(categoryService, times(1)).read(Long.valueOf(assignCategoryRequestDto.getCategoryId()));
         verify(transactionService, times(1)).readById(transaction.getTransactionId());
         verify(userService, times(1)).getCurrentAuthUser();
     }
@@ -255,12 +255,12 @@ public class AssignCategoryRequestValidatorTests {
                 .build();
 
         AssignCategoryRequestDto assignCategoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(category.getCategoryId())
+                .categoryId(String.valueOf(category.getCategoryId()))
                 .transactionId(transaction.getTransactionId())
                 .build();
 
         //Mock
-        when(categoryService.read(assignCategoryRequestDto.getCategoryId())).thenReturn(category);
+        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
         when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
@@ -271,7 +271,7 @@ public class AssignCategoryRequestValidatorTests {
         assertFalse(valid);
 
         //Verify
-        verify(categoryService, times(1)).read(assignCategoryRequestDto.getCategoryId());
+        verify(categoryService, times(1)).read(Long.valueOf(assignCategoryRequestDto.getCategoryId()));
         verify(transactionService, times(1)).readById(transaction.getTransactionId());
         verify(userService, times(1)).getCurrentAuthUser();
     }

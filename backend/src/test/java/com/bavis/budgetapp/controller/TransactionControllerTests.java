@@ -288,14 +288,14 @@ public class TransactionControllerTests {
         Transaction transactionOne = validTransactions.get(0);
         transactionOne.setCategory(category);
         AssignCategoryRequestDto assignCategoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(10L)
+                .categoryId("10")
                 .transactionId(transactionOne.getTransactionId())
                 .build();
 
         //Mock
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(categoryService.read(assignCategoryRequestDto.getCategoryId())).thenReturn(category);
+        when(categoryService.read(Long.parseLong(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
         when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act
@@ -347,14 +347,14 @@ public class TransactionControllerTests {
         Transaction transactionOne = validTransactions.get(0);
         transactionOne.setCategory(category);
         AssignCategoryRequestDto assignCategoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(10L)
+                .categoryId("10")
                 .transactionId(transactionOne.getTransactionId())
                 .build();
 
         //Mock
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(categoryService.read(assignCategoryRequestDto.getCategoryId())).thenReturn(category);
+        when(categoryService.read(Long.parseLong(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
         when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act

@@ -41,7 +41,7 @@ public class AssignCategoryRequestUserValidator implements ConstraintValidator<A
 
     @Override
     public boolean isValid(AssignCategoryRequestDto assignCategoryRequestDto, ConstraintValidatorContext constraintValidatorContext) {
-        Long categoryId = assignCategoryRequestDto.getCategoryId();
+        Long categoryId = Long.parseLong(assignCategoryRequestDto.getCategoryId());
         String transactionId = assignCategoryRequestDto.getTransactionId();
         log.info("Determining if the following transaction ID [{}] and category ID [{}] correspond to same user", transactionId, categoryId);
 

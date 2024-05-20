@@ -152,14 +152,14 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("Attempting to assign the Category corresponding to ID {} to the Transaction corresponding to the ID {}", assignCategoryRequestDto.getCategoryId(), assignCategoryRequestDto.getTransactionId());
 
         //Fetch Category
-        Category category = categoryService.read(assignCategoryRequestDto.getCategoryId());
+        Category category = categoryService.read(Long.parseLong(assignCategoryRequestDto.getCategoryId()));
 
         //Fetch Transaction
         Transaction transaction = readById(assignCategoryRequestDto.getTransactionId());
 
         //Update & Persist Transaction (Updates Cascade to Category)
         transaction.setCategory(category);
-        log.debug("Updating the following Transaction with new Category: [{}]", transaction);
+        log.debug("Updating Transaction with ID {} to be assigned to Category [{}]", transaction.getTransactionId(), category);
         return _transactionRepository.save(transaction);
     }
 }

@@ -14,5 +14,5 @@ import lombok.NoArgsConstructor;
 @AssignCategoryRequestValidUser
 public class AssignCategoryRequestDto {
     private String transactionId;
-    private Long categoryId;
+    private String categoryId;
 }

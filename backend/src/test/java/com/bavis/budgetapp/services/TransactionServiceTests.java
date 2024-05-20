@@ -519,7 +519,7 @@ public class TransactionServiceTests {
                 .build();
 
         AssignCategoryRequestDto categoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(category.getCategoryId())
+                .categoryId(String.valueOf(category.getCategoryId()))
                 .transactionId(transaction.getTransactionId())
                 .build();
 
@@ -529,7 +529,7 @@ public class TransactionServiceTests {
                 .build();
 
         //Mock
-        when(categoryService.read(categoryRequestDto.getCategoryId())).thenReturn(category);
+        when(categoryService.read(Long.parseLong(categoryRequestDto.getCategoryId()))).thenReturn(category);
         when(transactionRepository.findById(categoryRequestDto.getTransactionId())).thenReturn(Optional.of(transaction));
         when(transactionRepository.save(transaction)).thenReturn(updatedTransaction);
 
@@ -542,7 +542,7 @@ public class TransactionServiceTests {
         assertEquals(updatedTransaction.getCategory(), actualTransaction.getCategory());;
 
         //Verify
-        verify(categoryService, times(1)).read(categoryRequestDto.getCategoryId());
+        verify(categoryService, times(1)).read(Long.parseLong(categoryRequestDto.getCategoryId()));
         verify(transactionRepository, times(1)).findById(categoryRequestDto.getTransactionId());
         verify(transactionRepository, times(1)).save(transaction);
     }
@@ -555,11 +555,11 @@ public class TransactionServiceTests {
                 .build();
 
         AssignCategoryRequestDto categoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(10L)
+                .categoryId("10")
                 .transactionId("invalid-id")
                 .build();
         //Mock
-        when(categoryService.read(categoryRequestDto.getCategoryId())).thenReturn(category);
+        when(categoryService.read(Long.parseLong(categoryRequestDto.getCategoryId()))).thenReturn(category);
         when(transactionRepository.findById(categoryRequestDto.getTransactionId())).thenReturn(Optional.empty());
 
         //Act & Assert
@@ -574,11 +574,11 @@ public class TransactionServiceTests {
     void testAssignCategory_InvalidCategoryId_Failure() {
         //Arrange
         AssignCategoryRequestDto categoryRequestDto = AssignCategoryRequestDto.builder()
-                .categoryId(10L)
+                .categoryId("10")
                 .transactionId("valid-id")
                 .build();
         //Mock
-        when(categoryService.read(categoryRequestDto.getCategoryId())).thenThrow(new RuntimeException("Invalid Category ID: " + categoryRequestDto.getCategoryId()));
+        when(categoryService.read(Long.parseLong(categoryRequestDto.getCategoryId()))).thenThrow(new RuntimeException("Invalid Category ID: " + categoryRequestDto.getCategoryId()));
 
         //Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
