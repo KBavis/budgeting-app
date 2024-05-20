@@ -4,10 +4,7 @@ import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
-import com.bavis.budgetapp.entity.Account;
-import com.bavis.budgetapp.entity.Connection;
-import com.bavis.budgetapp.entity.Transaction;
-import com.bavis.budgetapp.entity.User;
+import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.TransactionService;
@@ -42,15 +39,18 @@ public class TransactionServiceImpl implements TransactionService {
 
     private TransactionMapper _transactionMapper;
 
+    private CategoryServiceImpl categoryService;
 
 
-    public TransactionServiceImpl(PlaidServiceImpl plaidService, AccountServiceImpl accountService, TransactionMapper transactionMapper, TransactionRepository transactionRepository, ConnectionServiceImpl connectionService, UserServiceImpl userService) {
+
+    public TransactionServiceImpl(PlaidServiceImpl plaidService, AccountServiceImpl accountService, TransactionMapper transactionMapper, TransactionRepository transactionRepository, ConnectionServiceImpl connectionService, UserServiceImpl userService, CategoryServiceImpl categoryService) {
         this._transactionRepository = transactionRepository;
         this._plaidService = plaidService;
         this._userService = userService;
         this._accountService = accountService;
         this._transactionMapper = transactionMapper;
         this._connectionService = connectionService;
+        this.categoryService = categoryService;
     }
 
     //TODO: considering returning separate DTO w/ modified/added/removed lists so we can update frontend state with transactions that must be removed
@@ -148,7 +148,18 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public Transaction assignCategory(AssignCategoryRequestDto assignCategoryRequestDto) {
-        return null;
+    public Transaction assignCategory(AssignCategoryRequestDto assignCategoryRequestDto) throws RuntimeException{
+        log.info("Attempting to assign the Category corresponding to ID {} to the Transaction corresponding to the ID {}", assignCategoryRequestDto.getCategoryId(), assignCategoryRequestDto.getTransactionId());
+
+        //Fetch Category
+        Category category = categoryService.read(assignCategoryRequestDto.getCategoryId());
+
+        //Fetch Transaction
+        Transaction transaction = readById(assignCategoryRequestDto.getTransactionId());
+
+        //Update & Persist Transaction (Updates Cascade to Category)
+        transaction.setCategory(category);
+        log.debug("Updating the following Transaction with new Category: [{}]", transaction);
+        return _transactionRepository.save(transaction);
     }
 }

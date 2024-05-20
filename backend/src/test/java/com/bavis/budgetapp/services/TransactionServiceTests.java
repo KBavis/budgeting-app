@@ -1,13 +1,11 @@
 package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.dao.TransactionRepository;
+import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.PlaidTransactionDto;
 import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
-import com.bavis.budgetapp.entity.Account;
-import com.bavis.budgetapp.entity.Connection;
-import com.bavis.budgetapp.entity.Transaction;
-import com.bavis.budgetapp.entity.User;
+import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.impl.*;
@@ -51,6 +49,9 @@ public class TransactionServiceTests {
 
     @Mock
     private TransactionMapper transactionMapper;
+
+    @Mock
+    private CategoryServiceImpl categoryService;
 
     @InjectMocks
     private TransactionServiceImpl transactionService;
@@ -505,4 +506,86 @@ public class TransactionServiceTests {
         assertNotNull(exception);
         assertEquals(exceptionMessage, exception.getMessage());
     }
+
+    @Test
+    void testAssignCategory_Successful() {
+        //Arrange
+        Category category = Category.builder()
+                .categoryId(10L)
+                .build();
+
+        Transaction transaction = Transaction.builder()
+                .transactionId("transaction-id")
+                .build();
+
+        AssignCategoryRequestDto categoryRequestDto = AssignCategoryRequestDto.builder()
+                .categoryId(category.getCategoryId())
+                .transactionId(transaction.getTransactionId())
+                .build();
+
+        Transaction updatedTransaction = Transaction.builder()
+                .category(category)
+                .transactionId("transaction-id")
+                .build();
+
+        //Mock
+        when(categoryService.read(categoryRequestDto.getCategoryId())).thenReturn(category);
+        when(transactionRepository.findById(categoryRequestDto.getTransactionId())).thenReturn(Optional.of(transaction));
+        when(transactionRepository.save(transaction)).thenReturn(updatedTransaction);
+
+        //Act
+        Transaction actualTransaction = transactionService.assignCategory(categoryRequestDto);
+
+        //Assert
+        assertNotNull(actualTransaction);
+        assertEquals(updatedTransaction.getTransactionId(), actualTransaction.getTransactionId());
+        assertEquals(updatedTransaction.getCategory(), actualTransaction.getCategory());;
+
+        //Verify
+        verify(categoryService, times(1)).read(categoryRequestDto.getCategoryId());
+        verify(transactionRepository, times(1)).findById(categoryRequestDto.getTransactionId());
+        verify(transactionRepository, times(1)).save(transaction);
+    }
+
+    @Test
+    void testAssignCategory_InvalidTransactionId_Failure() {
+        //Arrange
+        Category category = Category.builder()
+                .categoryId(10L)
+                .build();
+
+        AssignCategoryRequestDto categoryRequestDto = AssignCategoryRequestDto.builder()
+                .categoryId(10L)
+                .transactionId("invalid-id")
+                .build();
+        //Mock
+        when(categoryService.read(categoryRequestDto.getCategoryId())).thenReturn(category);
+        when(transactionRepository.findById(categoryRequestDto.getTransactionId())).thenReturn(Optional.empty());
+
+        //Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            transactionService.assignCategory(categoryRequestDto);
+        });
+        assertNotNull(exception);
+        assertEquals("Transaction with the following ID not found: " + categoryRequestDto.getTransactionId(), exception.getMessage());
+    }
+
+    @Test
+    void testAssignCategory_InvalidCategoryId_Failure() {
+        //Arrange
+        AssignCategoryRequestDto categoryRequestDto = AssignCategoryRequestDto.builder()
+                .categoryId(10L)
+                .transactionId("valid-id")
+                .build();
+        //Mock
+        when(categoryService.read(categoryRequestDto.getCategoryId())).thenThrow(new RuntimeException("Invalid Category ID: " + categoryRequestDto.getCategoryId()));
+
+        //Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            transactionService.assignCategory(categoryRequestDto);
+        });
+        assertNotNull(exception);
+        assertEquals("Invalid Category ID: " + categoryRequestDto.getCategoryId(), exception.getMessage());
+    }
+
 }
