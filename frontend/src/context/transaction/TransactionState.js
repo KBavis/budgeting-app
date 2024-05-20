@@ -11,6 +11,7 @@ import {
    SET_LOADING,
    FETCH_TRANSACTIONS_FAIL,
    FETCH_TRANSACTIONS_SUCCESS,
+   UPDATE_TRANSACTION_CATEGORY_FAILED,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -90,13 +91,42 @@ const TransactionState = (props) => {
     * @param categoryId
     *          - ID of the category to assign to the transaction
     */
-   const updateCategory = (transactionId, categoryId) => {
-      const category = { categoryId };
-      const payload = { transactionId, category };
-      dispatch({
-         type: UPDATE_TRANSACTION_CATEGORY,
-         payload,
-      });
+   const updateCategory = async (transactionId, categoryId) => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      const config = {
+         headers: {
+            "Content-Type": "application/json",
+         },
+      };
+
+      console.log("Payload: ", transactionId, categoryId);
+      try {
+         const res = await axios.put(
+            `${apiUrl}/transactions/category`,
+            {
+               transactionId,
+               categoryId,
+            },
+            config
+         );
+         const data = res.data;
+         const { category } = data;
+         console.log("Category ", category);
+         const payload = { transactionId, category };
+         dispatch({
+            type: UPDATE_TRANSACTION_CATEGORY,
+            payload,
+         });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: UPDATE_TRANSACTION_CATEGORY_FAILED,
+            payload: err.response.data.error,
+         });
+      }
 
       // TODO: Implement the backend API call to update the transaction's category
       // You can use the following code as a starting point:
