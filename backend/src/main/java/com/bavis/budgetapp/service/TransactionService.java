@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.service;
 
+import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +32,25 @@ public interface TransactionService {
      *      - all Transactions corresponding to Auth User
      */
     List<Transaction> readAll();
+
+    /**
+     * Functionality to assign a Transaction a Category
+     *
+     * @param assignCategoryRequestDto
+     *          - DTO containing Category ID and Transaction ID
+     * @return
+     *          - updated Transaction
+     */
+    Transaction assignCategory(AssignCategoryRequestDto assignCategoryRequestDto);
+
+    /**
+     * Functionality to read a Transaction by its ID
+     *
+     * @param transactionId
+     *          - ID of Transaction to fetch
+     * @return
+     *          - Transaction corresponding to ID
+     */
+    Transaction readById(String transactionId);
 
 }

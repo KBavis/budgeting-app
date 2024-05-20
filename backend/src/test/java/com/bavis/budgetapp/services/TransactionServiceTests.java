@@ -23,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -463,5 +464,45 @@ public class TransactionServiceTests {
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
+    }
+
+    @Test
+    void testReadById_ValidId_Success() {
+        //Arrange
+        Transaction expectedTransaction = Transaction.builder()
+                .transactionId("ty124")
+                .amount(1000.0)
+                .name("Transaction")
+                .build();
+
+        //Mock
+        when(transactionRepository.findById(expectedTransaction.getTransactionId())).thenReturn(Optional.of(expectedTransaction));
+
+        //Act
+        Transaction transaction = transactionService.readById(expectedTransaction.getTransactionId());
+
+        //Assert
+        assertNotNull(transaction);
+        assertEquals(expectedTransaction, transaction);
+
+        //Verify
+        verify(transactionRepository, times(1)).findById(transaction.getTransactionId());
+    }
+
+    @Test
+    void testReadById_InvalidId_Fail() {
+        //Arrange
+        String invalidTransactionId = "invalid-id";
+        String exceptionMessage = "Transaction with the following ID not found: " + invalidTransactionId;
+
+        //Mock
+        when(transactionRepository.findById(invalidTransactionId)).thenReturn(Optional.empty());
+
+        //Act & Assert
+        RuntimeException exception  = assertThrows(RuntimeException.class, () -> {
+            transactionService.readById(invalidTransactionId);
+        });
+        assertNotNull(exception);
+        assertEquals(exceptionMessage, exception.getMessage());
     }
 }

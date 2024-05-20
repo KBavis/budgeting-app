@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dao.TransactionRepository;
+import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Account;
@@ -135,5 +136,19 @@ public class TransactionServiceImpl implements TransactionService {
 
         log.debug("Reading transactions that are within the same year/date as {} and corresponding to following account IDs: {}", currentDate, accountIds);
         return _transactionRepository.findByAccountIdsAndCurrentMonth(accountIds, currentDate);
+    }
+
+    @Override
+    public Transaction readById(String transactionId) throws RuntimeException{
+        log.info("Attempting to read Transaction by the following ID: [{}]", transactionId);
+        return _transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Transaction with the following ID not found: " + transactionId));
+    }
+
+
+
+    @Override
+    public Transaction assignCategory(AssignCategoryRequestDto assignCategoryRequestDto) {
+        return null;
     }
 }
