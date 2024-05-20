@@ -1,10 +1,10 @@
 package com.bavis.budgetapp.controller;
 
+import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
-import com.bavis.budgetapp.entity.Account;
-import com.bavis.budgetapp.entity.Transaction;
-import com.bavis.budgetapp.entity.User;
+import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
+import com.bavis.budgetapp.service.impl.CategoryServiceImpl;
 import com.bavis.budgetapp.service.impl.TransactionServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,8 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -48,6 +47,9 @@ public class TransactionControllerTests {
 
     @MockBean
     private AccountServiceImpl accountService;
+
+    @MockBean
+    private CategoryServiceImpl categoryService;
 
 
     @Autowired
@@ -262,5 +264,107 @@ public class TransactionControllerTests {
         //Verify
         verify(accountService, times(1)).read(invalidAccountIdOne);
         verify(userService, times(1)).getCurrentAuthUser();
+    }
+
+    @Test
+    void testAssignCategory_ValidRequest_Success() throws Exception {
+        //Arrange
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(10L)
+                .categories(new ArrayList<>())
+                .budgetAmount(1000.0)
+                .budgetAllocationPercentage(.5)
+                .build();
+
+        Category category = Category.builder()
+                .categoryType(categoryType)
+                .user(authUser)
+                .name("Category")
+                .budgetAllocationPercentage(.5)
+                .budgetAmount(1000.0)
+                .categoryId(10L)
+                .build();
+
+        Transaction transactionOne = validTransactions.get(0);
+        transactionOne.setCategory(category);
+        AssignCategoryRequestDto assignCategoryRequestDto = AssignCategoryRequestDto.builder()
+                .categoryId(10L)
+                .transactionId(transactionOne.getTransactionId())
+                .build();
+
+        //Mock
+        when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
+        when(userService.getCurrentAuthUser()).thenReturn(authUser);
+        when(categoryService.read(assignCategoryRequestDto.getCategoryId())).thenReturn(category);
+        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/transactions/category")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(assignCategoryRequestDto)));
+
+        // Assert
+        resultActions.andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.transactionId").value(transactionOne.getTransactionId()))
+                .andExpect(jsonPath("$.date").value(transactionOne.getDate().toString()))
+                .andExpect(jsonPath("$.amount").value(transactionOne.getAmount()))
+                .andExpect(jsonPath("$.name").value(transactionOne.getName()))
+                .andExpect(jsonPath("$.logoUrl").value(transactionOne.getLogoUrl()))
+                .andExpect(jsonPath("$.category.name").value(category.getName()))
+                .andExpect(jsonPath("$.category.budgetAllocationPercentage").value(category.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$.category.budgetAmount").value(category.getBudgetAmount()))
+                .andExpect(jsonPath("$.category.categoryType.name").value(categoryType.getName()))
+                .andExpect(jsonPath("$.category.categoryType.budgetAllocationPercentage").value(categoryType.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$.category.categoryType.budgetAmount").value(categoryType.getBudgetAmount()))
+                .andExpect(jsonPath("$.category.categoryType.categoryTypeId").value(categoryType.getCategoryTypeId()));
+    }
+
+    @Test
+    void testAssignCategory_InvalidRequest_Failure() throws Exception {
+        //Arrange
+        User unAuthUser = User.builder()
+                .userId(10L)
+                .username("username")
+                .build();
+
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(10L)
+                .categories(new ArrayList<>())
+                .budgetAmount(1000.0)
+                .budgetAllocationPercentage(.5)
+                .build();
+
+        Category category = Category.builder()
+                .categoryType(categoryType)
+                .user(unAuthUser)
+                .name("Category")
+                .budgetAllocationPercentage(.5)
+                .budgetAmount(1000.0)
+                .categoryId(10L)
+                .build();
+
+        Transaction transactionOne = validTransactions.get(0);
+        transactionOne.setCategory(category);
+        AssignCategoryRequestDto assignCategoryRequestDto = AssignCategoryRequestDto.builder()
+                .categoryId(10L)
+                .transactionId(transactionOne.getTransactionId())
+                .build();
+
+        //Mock
+        when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
+        when(userService.getCurrentAuthUser()).thenReturn(authUser);
+        when(categoryService.read(assignCategoryRequestDto.getCategoryId())).thenReturn(category);
+        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/transactions/category")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(assignCategoryRequestDto)));
+
+        // Assert
+        resultActions
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The provided Category ID and Transaction ID do not correspond to Authenticated User."));
     }
 }
