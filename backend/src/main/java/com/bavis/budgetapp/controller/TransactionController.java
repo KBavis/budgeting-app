@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.controller;
 
+import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.service.TransactionService;
@@ -49,5 +50,19 @@ public class TransactionController {
     public ResponseEntity<List<Transaction>> readAll() {
         log.info("Received request to read all Transactions for current month for authenticated user");
         return ResponseEntity.ok(_transactionService.readAll());
+    }
+
+    /**
+     * Assign a Transaction to a Category
+     *
+     * @param assignCategoryRequestDto
+     *          - DTO containing Category ID and Transaction ID
+     * @return
+     *          - Updated Transaction
+     */
+    @PutMapping("/category")
+    public ResponseEntity<Transaction> assignCategory(@Valid @RequestBody AssignCategoryRequestDto assignCategoryRequestDto) {
+        log.info("Assigning Transaction to a Category via following request: [{}]", assignCategoryRequestDto);
+        return ResponseEntity.ok(_transactionService.assignCategory(assignCategoryRequestDto));
     }
 }
