@@ -367,4 +367,36 @@ public class TransactionControllerTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("The provided Category ID and Transaction ID do not correspond to Authenticated User."));
     }
+
+    @Test
+    void testRemoveAssignedCategory_ValidTransactionId_Successful() throws Exception{
+        //Arrange
+        String transactionId = "valid-transaction-id";
+
+        //Mock
+        doNothing().when(transactionService).removeAssignedCategory(transactionId);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(delete("/transactions/{transactionId}/category/remove", transactionId));
+
+        //Assert
+        resultActions.andExpect(status().isOk())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    void testRemoveAssignedCategory_InvalidTransactionId_Failure() throws Exception {
+        //Arrange
+        String transactionId = "invalid-transaction-id";
+
+        //Mock
+        doThrow(new RuntimeException("Transaction with the following ID not found: " + transactionId)).when(transactionService).removeAssignedCategory(transactionId);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(delete("/transactions/{transactionId}/category/remove", transactionId));
+
+        //Assert
+        resultActions.andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Transaction with the following ID not found: " + transactionId));
+    }
 }

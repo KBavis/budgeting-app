@@ -65,4 +65,16 @@ public class TransactionController {
         log.info("Assigning Transaction to a Category via following request: [{}]", assignCategoryRequestDto);
         return ResponseEntity.ok(_transactionService.assignCategory(assignCategoryRequestDto));
     }
+
+    /**
+     * Remove assigned Category from a Transaction
+     *
+     * @param transactionId
+                - transaction ID to remove assigned Category for
+     */
+    @DeleteMapping ("/{transactionId}/category/remove")
+    public void removeCategory(@PathVariable("transactionId") String transactionId){
+         log.info("Received request to remove assigned category for the following Transaction with the ID {}", transactionId);
+         _transactionService.removeAssignedCategory(transactionId);
+    }
 }

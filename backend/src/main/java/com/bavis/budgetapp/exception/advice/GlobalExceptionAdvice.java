@@ -55,6 +55,13 @@ public class GlobalExceptionAdvice {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String,String>> handleRuntimeException(RuntimeException e){
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         log.debug(ex.getMessage());
