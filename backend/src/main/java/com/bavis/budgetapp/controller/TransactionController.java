@@ -72,7 +72,7 @@ public class TransactionController {
      * @param transactionId
                 - transaction ID to remove assigned Category for
      */
-    @DeleteMapping ("/{transactionId}/category/remove")
+    @DeleteMapping ("/{transactionId}/category")
     public void removeCategory(@PathVariable("transactionId") String transactionId){
          log.info("Received request to remove assigned category for the following Transaction with the ID {}", transactionId);
          _transactionService.removeAssignedCategory(transactionId);

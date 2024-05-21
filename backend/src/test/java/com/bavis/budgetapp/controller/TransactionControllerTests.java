@@ -377,7 +377,7 @@ public class TransactionControllerTests {
         doNothing().when(transactionService).removeAssignedCategory(transactionId);
 
         //Act
-        ResultActions resultActions = mockMvc.perform(delete("/transactions/{transactionId}/category/remove", transactionId));
+        ResultActions resultActions = mockMvc.perform(delete("/transactions/{transactionId}/category", transactionId));
 
         //Assert
         resultActions.andExpect(status().isOk())
@@ -393,7 +393,7 @@ public class TransactionControllerTests {
         doThrow(new RuntimeException("Transaction with the following ID not found: " + transactionId)).when(transactionService).removeAssignedCategory(transactionId);
 
         //Act
-        ResultActions resultActions = mockMvc.perform(delete("/transactions/{transactionId}/category/remove", transactionId));
+        ResultActions resultActions = mockMvc.perform(delete("/transactions/{transactionId}/category", transactionId));
 
         //Assert
         resultActions.andExpect(status().isInternalServerError())
