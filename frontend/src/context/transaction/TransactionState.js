@@ -12,6 +12,7 @@ import {
    FETCH_TRANSACTIONS_FAIL,
    FETCH_TRANSACTIONS_SUCCESS,
    UPDATE_TRANSACTION_CATEGORY_FAILED,
+   REMOVE_TRANSACTION_CATEGORY_FAILED,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -102,7 +103,6 @@ const TransactionState = (props) => {
          },
       };
 
-      console.log("Payload: ", transactionId, categoryId);
       try {
          const res = await axios.put(
             `${apiUrl}/transactions/category`,
@@ -114,7 +114,6 @@ const TransactionState = (props) => {
          );
          const data = res.data;
          const { category } = data;
-         console.log("Category ", category);
          const payload = { transactionId, category };
          dispatch({
             type: UPDATE_TRANSACTION_CATEGORY,
@@ -127,18 +126,6 @@ const TransactionState = (props) => {
             payload: err.response.data.error,
          });
       }
-
-      // TODO: Implement the backend API call to update the transaction's category
-      // You can use the following code as a starting point:
-      // try {
-      //   const response = await axios.put(
-      //     `${apiUrl}/transactions/${transactionId}/category`,
-      //     { categoryId }
-      //   );
-      //   console.log("Transaction category updated successfully:", response.data);
-      // } catch (error) {
-      //   console.error("Error updating transaction category:", error);
-      // }
    };
 
    /**
@@ -149,23 +136,24 @@ const TransactionState = (props) => {
     * @param categoryId
     *          - ID of the category to assign to the transaction
     */
-   const removeTransactionCategory = (transactionId) => {
-      dispatch({
-         type: REMOVE_TRANSACTION_CATEGORY,
-         payload: transactionId,
-      });
+   const removeTransactionCategory = async (transactionId) => {
+      try {
+         if (localStorage.token) {
+            setAuthToken(localStorage.token);
+         }
 
-      // TODO: Implement the backend API call to remove the transaction's category
-      // You can use the following code as a starting point:
-      // try {
-      //   const response = await axios.put(
-      //     `${apiUrl}/transactions/${transactionId}/category`,
-      //     { categoryId }
-      //   );
-      //   console.log("Transaction category updated successfully:", response.data);
-      // } catch (error) {
-      //   console.error("Error updating transaction category:", error);
-      // }
+         await axios.delete(`${apiUrl}/transactions/${transactionId}/category`);
+         dispatch({
+            type: REMOVE_TRANSACTION_CATEGORY,
+            payload: transactionId,
+         });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            REMOVE_TRANSACTION_CATEGORY_FAILED,
+            payload: err.response.data.error,
+         });
+      }
    };
 
    /**
