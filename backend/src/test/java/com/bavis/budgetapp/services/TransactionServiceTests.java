@@ -588,4 +588,52 @@ public class TransactionServiceTests {
         assertEquals("Invalid Category ID: " + categoryRequestDto.getCategoryId(), exception.getMessage());
     }
 
+    @Test
+    void testRemoveCategory_ValidTransactionId_Successful(){
+       //Arrange
+       String transactionId = "valid-transaction-id";
+       Category category = Category.builder()
+               .categoryId(10L)
+               .budgetAmount(1000.0)
+               .build();
+       Transaction transaction = Transaction.builder()
+               .transactionId(transactionId)
+               .category(category)
+               .build();
+
+       //Mock
+       when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(transaction));
+       when(transactionRepository.save(transaction)).thenAnswer(invocationOnMock -> {
+           return invocationOnMock.getArgument(0);
+       });
+
+       //Act
+       transactionService.removeAssignedCategory(transactionId);
+
+       //Nothing to Assert
+
+       //Verify
+        verify(transactionRepository, times(1)).save(transaction);
+        verify(transactionRepository, times(1)).findById(transactionId);
+    }
+
+    @Test
+    void testRemoveCategory_InvalidTransactionId_Failure() {
+        //Arrange
+        String transactionId = "invalid-transaction-id";
+
+        //Mock
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.empty());
+
+        //Act
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            transactionService.removeAssignedCategory(transactionId);
+        });
+        assertNotNull(exception);
+        assertEquals("Transaction with the following ID not found: " + transactionId, exception.getMessage());
+
+        //Verify
+        verify(transactionRepository, times(1)).findById(transactionId);
+    }
+
 }

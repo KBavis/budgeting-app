@@ -53,4 +53,12 @@ public interface TransactionService {
      */
     Transaction readById(String transactionId);
 
+    /**
+     * Functionality to remove an assigned Category from a Transaction
+     *
+     * @param transactionId
+     *          - transaction ID corresponding to Transaction entity to update
+     */
+    void removeAssignedCategory(String transactionId);
+
 }

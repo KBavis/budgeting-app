@@ -162,4 +162,16 @@ public class TransactionServiceImpl implements TransactionService {
         log.debug("Updating Transaction with ID {} to be assigned to Category [{}]", transaction.getTransactionId(), category);
         return _transactionRepository.save(transaction);
     }
+
+
+    @Override
+    public void removeAssignedCategory(String transactionId) throws RuntimeException{
+        //Fetch
+        Transaction transaction = readById(transactionId);
+
+        //Update & Persist
+        log.info("Removing Category associated with the following Transaction: [{}]", transaction);
+        transaction.setCategory(null);
+        _transactionRepository.save(transaction);
+    }
 }
