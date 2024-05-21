@@ -1,10 +1,12 @@
 package com.bavis.budgetapp.exception.advice;
 
+import com.bavis.budgetapp.exception.UserServiceException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
@@ -58,14 +60,16 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String,String>> handleRuntimeException(RuntimeException e){
         Map<String, String> errors = new HashMap<>();
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         errors.put("error", e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
+        if(e instanceof UserServiceException){
+            status = HttpStatus.NOT_FOUND; //404 In Case of User Exception
+        }
+        return ResponseEntity.status(status).body(errors);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        log.debug(ex.getMessage());
-        log.debug("In MethodArgumentNotValidException.class");
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             errors.put("error", error.getDefaultMessage());
