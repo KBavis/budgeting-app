@@ -13,6 +13,13 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+/**
+ * Test Helper functionality for all Unit Tests
+ *
+ * TODO: Make a separate Test Helper for each Package and extract logic from existing test cases into each TestHelper class
+ *
+ * @author Kellen Bavis
+ */
 @Component
 public class TestHelper {
     private static final Logger LOG = LoggerFactory.getLogger(TestHelper.class);
