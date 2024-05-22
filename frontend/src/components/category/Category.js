@@ -3,12 +3,24 @@ import { useDrop } from "react-dnd";
 import Transaction from "../transaction/Transaction";
 import transactionContext from "../../context/transaction/transactionContext";
 
+/**
+ * Component to store all relevant information for Category entitiy on Home Page
+ *
+ * @param category
+ *       - Category entitiy to generate component for
+ * @returns
+ */
 const Category = ({ category }) => {
+   //Global State
    const { transactions, updateCategory } = useContext(transactionContext);
+
+   //Local State
    const [recentTransactions, setRecentTransactions] = useState([]);
    const [totalAmountSpent, setTotalAmountSpent] = useState(0);
    const [budgetUsage, setBudgetUsage] = useState(0);
    const [budgetAllocation, setBudgetAllocation] = useState(0);
+
+   //Functionality to allow a Transaction to be assigned to a Category
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
@@ -22,18 +34,22 @@ const Category = ({ category }) => {
 
    useEffect(() => {
       if (transactions) {
+         //Filter Transactions corresponding to current Category
          const filtered = transactions.filter(
             (transaction) =>
                transaction.category &&
                transaction.category.categoryId === category.categoryId
          );
+         //Set three most recent Transactions for Cateogry
          const mostRecent = filtered ? filtered.slice(0, 3) : [];
          setRecentTransactions(mostRecent);
 
+         //Sum total amount of Transactions corresponding to entitiy
          const sum = filtered.reduce((acc, transaction) => {
             return acc + transaction.amount;
          }, 0);
 
+         //Set Total Amount & Budget Usage Percentage
          setTotalAmountSpent(sum.toFixed(0));
          setBudgetUsage((sum / category.budgetAmount) * 100);
       } else {
@@ -41,10 +57,12 @@ const Category = ({ category }) => {
       }
    }, [transactions, category.categoryId]);
 
+   //Set Budget Allocation when Category component initally loaded
    useEffect(() => {
       setBudgetAllocation(category.budgetAmount.toFixed(0));
    }, [category.categoryId]);
 
+   //Function to determine progress bar for our Category entitiy
    const getProgressBarColor = () => {
       const percentage = budgetUsage;
       if (percentage <= 50) {

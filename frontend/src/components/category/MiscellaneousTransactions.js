@@ -5,14 +5,24 @@ import { useDrop } from "react-dnd";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
+/**
+ *  Component that stores all Transactions with unassigned Categories
+ */
 const MiscellaneousTransactions = () => {
+   //Constants
+   const ITEMS_PER_PAGE = 8;
+   const TOTAL_PAGES = Math.ceil(miscTransactions.length / ITEMS_PER_PAGE);
+
+   //Local State
    const [miscTransactions, setMiscTransactions] = useState([]);
    const [currentPage, setCurrentPage] = useState(0);
    const [animateDirection, setAnimateDirection] = useState(null);
 
+   //Global State
    const { transactions, removeTransactionCategory } =
       useContext(transactionContext);
 
+   //Functionality for a user to drag/drop a Transaction on Miscallenous Component (removing assigned category)
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
@@ -24,9 +34,7 @@ const MiscellaneousTransactions = () => {
       }),
    }));
 
-   const itemsPerPage = 8;
-   const totalPages = Math.ceil(miscTransactions.length / itemsPerPage);
-
+   //Filter Transactions That Should Be Displayed In Miscallenous Transactions Component (All Transactions with Null Category)
    useEffect(() => {
       const miscellaneousTransactions = transactions.filter(
          (transaction) => transaction.category === null
@@ -34,9 +42,10 @@ const MiscellaneousTransactions = () => {
       setMiscTransactions(miscellaneousTransactions);
    }, [transactions]);
 
+   //Functionality to handle changing of page of Transactions via our pagination
    const handlePageChange = (delta) => {
       const newPage = currentPage + delta;
-      if (newPage >= 0 && newPage < totalPages) {
+      if (newPage >= 0 && newPage < TOTAL_PAGES) {
          setAnimateDirection(delta > 0 ? "nextPage" : "prevPage");
          setTimeout(() => {
             setCurrentPage(newPage);
@@ -44,9 +53,10 @@ const MiscellaneousTransactions = () => {
       }
    };
 
+   //Functionality to fetch Transactions to be displayed
    const displayedTransactions = miscTransactions.slice(
-      currentPage * itemsPerPage,
-      (currentPage + 1) * itemsPerPage
+      currentPage * ITEMS_PER_PAGE,
+      (currentPage + 1) * ITEMS_PER_PAGE
    );
 
    return transactions && transactions.length > 0 ? (
@@ -82,7 +92,7 @@ const MiscellaneousTransactions = () => {
             </TransitionGroup>
          </div>
          {/* Pagination */}
-         {totalPages > 1 && (
+         {TOTAL_PAGES > 1 && (
             <div className="flex justify-center mt-4">
                {currentPage > 0 && (
                   <button
@@ -93,9 +103,9 @@ const MiscellaneousTransactions = () => {
                   </button>
                )}
                <p className="mx-4 text-gray-700">
-                  Page {currentPage + 1} of {totalPages}
+                  Page {currentPage + 1} of {TOTAL_PAGES}
                </p>
-               {currentPage < totalPages - 1 && (
+               {currentPage < TOTAL_PAGES - 1 && (
                   <button
                      className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                      onClick={() => handlePageChange(1)}
