@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,7 +26,12 @@ public class PlaidTransactionDto {
 
     private double amount;
 
+    //Ensure we fetch a date corresponding to transaction
     private LocalDate datetime;
+
+    private Date authorized_date;
+
+    private Date date;
 
     private List<CounterpartyDto> counterparties;
 

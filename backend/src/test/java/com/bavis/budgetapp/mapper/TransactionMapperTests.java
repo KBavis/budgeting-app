@@ -9,6 +9,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,6 +57,8 @@ public class TransactionMapperTests {
                 .personal_finance_category(personalFinanceCategoryDto)
                 .amount(amount)
                 .datetime(date)
+                .date(null)
+                .authorized_date(null)
                 .account_id(accountId)
                 .build();
 
@@ -67,6 +71,62 @@ public class TransactionMapperTests {
         assertEquals(counterpartyDto.getName(), target.getName());
         assertEquals(amount, target.getAmount());
         assertEquals(date, target.getDate());
+        assertEquals(logoUrl, target.getLogoUrl());
+    }
+
+    /**
+     * Test Case to validate that even if 'dateTime' attribute is null, we can fetch a date
+     */
+    @Test
+    void testToEntity_NullDatetime_Successful(){
+        //Arrange
+        String accountId = "account-id";
+        String transactionName = "Bookstore";
+        String logoUrl = "logo-url";
+        String confidenceLevel = "HIGH";
+        String primary = "PRIMARY";
+        String detailed = "DETAILED";
+        String transactionId = "123XYZ";
+        Double amount = 1000.0;
+
+        PlaidTransactionDto.CounterpartyDto counterpartyDto = PlaidTransactionDto.CounterpartyDto.builder()
+                .name(transactionName)
+                .logo_url(logoUrl)
+                .build();
+
+        List<PlaidTransactionDto.CounterpartyDto> counterpartyDtoList = List.of(counterpartyDto);
+
+        PlaidTransactionDto.PersonalFinanceCategoryDto personalFinanceCategoryDto = PlaidTransactionDto.PersonalFinanceCategoryDto.builder()
+                .confidence_level(confidenceLevel)
+                .primary(primary)
+                .detailed(detailed)
+                .build();
+
+        LocalDate localDate = null;
+        Date authorizedDate = null;
+        Date date = new Date();
+        LocalDate expectedLocalDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); //validate converted properly
+
+        PlaidTransactionDto plaidTransactionDto = PlaidTransactionDto.builder()
+                .transaction_id(transactionId)
+                .counterparties(counterpartyDtoList)
+                .personal_finance_category(personalFinanceCategoryDto)
+                .amount(amount)
+                .datetime(localDate)
+                .authorized_date(authorizedDate)
+                .date(date)
+                .account_id(accountId)
+                .build();
+
+        //Act
+        Transaction target = transactionMapper.toEntity(plaidTransactionDto);
+
+        //Assert
+        assertNotNull(target);
+        assertEquals(transactionId, target.getTransactionId());
+        assertEquals(counterpartyDto.getName(), target.getName());
+        assertEquals(amount, target.getAmount());
+        assertEquals(expectedLocalDate, target.getDate());
         assertEquals(logoUrl, target.getLogoUrl());
     }
 

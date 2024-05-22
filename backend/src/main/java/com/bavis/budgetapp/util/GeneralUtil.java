@@ -55,6 +55,10 @@ public class GeneralUtil {
      *      - validly of date
      */
     public static boolean isDateInCurrentMonth(LocalDate dateToCheck){
+        if(dateToCheck == null) {
+            return false;
+        }
+
         LocalDate currentDate = LocalDate.now();
 
         //Current Month & Year
