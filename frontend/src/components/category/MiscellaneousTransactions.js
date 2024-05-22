@@ -33,7 +33,7 @@ const MiscellaneousTransactions = () => {
    return transactions && transactions.length > 0 ? (
       <div
          ref={drop}
-         className={`bg-white rounded-lg shadow-md p-4 w-full mt-4 text-center ${
+         className={`bg-white rounded-lg shadow-md p-4 w-1/2 mt-4 text-center ${
             isOver ? "bg-green-200" : canDrop ? "bg-green-100" : ""
          }`}
       >
@@ -44,9 +44,12 @@ const MiscellaneousTransactions = () => {
                respective Category.
             </p>
          )}
-         <div className="grid grid-cols-10 gap-4">
+         <div className="grid grid-cols-4 gap-4">
             {miscTransactions.map((transaction) => (
-               <div key={transaction.transactionId} className="w-full">
+               <div
+                  key={transaction.transactionId}
+                  className="w-full hover:scale-105 hover:duration-100"
+               >
                   <Transaction transaction={transaction} />
                </div>
             ))}

@@ -1,5 +1,3 @@
-// Category.js
-
 import React, { useContext, useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 import Transaction from "../transaction/Transaction";
@@ -7,9 +5,10 @@ import transactionContext from "../../context/transaction/transactionContext";
 
 const Category = ({ category }) => {
    const { transactions, updateCategory } = useContext(transactionContext);
-
    const [recentTransactions, setRecentTransactions] = useState([]);
-
+   const [totalAmountSpent, setTotalAmountSpent] = useState(0);
+   const [budgetUsage, setBudgetUsage] = useState(0);
+   const [budgetAllocation, setBudgetAllocation] = useState(0);
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
@@ -23,28 +22,63 @@ const Category = ({ category }) => {
 
    useEffect(() => {
       if (transactions) {
-         const filtered = transactions.filter((transaction) => {
-            return (
+         const filtered = transactions.filter(
+            (transaction) =>
                transaction.category &&
                transaction.category.categoryId === category.categoryId
-            );
-         });
+         );
          const mostRecent = filtered ? filtered.slice(0, 3) : [];
          setRecentTransactions(mostRecent);
+
+         const sum = filtered.reduce((acc, transaction) => {
+            return acc + transaction.amount;
+         }, 0);
+
+         setTotalAmountSpent(sum.toFixed(0));
+         setBudgetUsage((sum / category.budgetAmount) * 100);
       } else {
          setRecentTransactions([]);
       }
    }, [transactions, category.categoryId]);
 
+   useEffect(() => {
+      setBudgetAllocation(category.budgetAmount.toFixed(0));
+   }, [category.categoryId]);
+
+   const getProgressBarColor = () => {
+      const percentage = budgetUsage;
+      if (percentage <= 50) {
+         return "bg-green-500";
+      } else if (percentage <= 70) {
+         return "bg-yellow-500";
+      } else if (percentage <= 90) {
+         return "bg-orange-500";
+      } else {
+         return "bg-red-500";
+      }
+   };
+
    return (
       <div
          ref={drop}
-         className={`bg-gray-200 rounded-lg shadow-md p-4${
+         className={`bg-gray-200 rounded-lg shadow-md p-4 ${
             isOver ? " bg-indigo-200" : canDrop ? " bg-indigo-100" : ""
          }`}
          style={{ width: "90%" }}
       >
-         <h4 className="text-lg font-bold mb-2">{category.name}</h4>
+         <h4 className="text-xl font-bold mb-2 text-gray-800">
+            {category.name}
+         </h4>
+         <div className="mb-2 text-sm font-semibold text-gray-600">
+            <p>Allocated Budget: ${budgetAllocation}</p>
+            <p>Total Spent: ${totalAmountSpent}</p>
+         </div>
+         <div className="w-full bg-gray-300 rounded-full h-4 mb-4">
+            <div
+               className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()}`}
+               style={{ width: `${budgetUsage > 100 ? 100 : budgetUsage}%` }}
+            ></div>
+         </div>
          <div className="space-y-2">
             {recentTransactions?.map((transaction) => (
                <Transaction

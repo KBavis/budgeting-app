@@ -62,14 +62,14 @@ const CategoryType = ({ categoryType }) => {
    const isBackgroundFilled = percentageUtilized >= 95;
 
    return (
-      <div className="relative bg-white rounded-lg shadow-md p-4 w-1/3 mx-2">
+      <div className="relative bg-white rounded-lg shadow-md p-4 w-1/3 mx-2 hover:cursor-pointer hover:scale-105 hover:duration-100">
          <div
             className="absolute bottom-0 left-0 right-0 bg-indigo-900 transition-height duration-500 ease-in-out"
             style={{ height: `${percentageUtilized}%` }}
          ></div>
          <div className="relative z-10">
             <h3
-               className={`text-2xl text-center font-bold mb-2 ${
+               className={`text-3xl text-center font-bold mb-2 ${
                   isBackgroundFilled ? "text-white" : "text-black"
                }`}
             >
