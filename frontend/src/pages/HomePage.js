@@ -157,11 +157,11 @@ const HomePage = () => {
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
-            <div className="max-w-md text-center mb-8">
+            <div className="max-w-md text-center mb-8 mt-8">
                <h1 className="text-2xl md:text-3xl font-bold mb-4 text-white">
                   Welcome <span className="text-indigo-500">{name}</span>
                </h1>
-               <h2 className="text-4xl md:text-5xl font-bold text-white">
+               <h2 className="text-4xl mb-3 md:text-5xl font-bold text-white">
                   Let's Start Budgeting
                </h2>
                <button

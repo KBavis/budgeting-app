@@ -5,7 +5,9 @@ import authContext from "../context/auth/authContext";
 import accountContext from "../context/account/accountContext";
 import AlertContext from "../context/alert/alertContext";
 
-/** */
+/**
+ * Component to connect to external financial institutions via Plaid API
+ */
 const ConnectAccounts = () => {
    //Global State
    const navigate = useNavigate();

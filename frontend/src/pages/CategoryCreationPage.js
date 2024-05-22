@@ -2,6 +2,7 @@ import React from "react";
 import CategoryCreationContent from "../components/category/CategoryCreationContent";
 
 /**
+ * Page to allow user to add corresponding sub-categories to a CategoryType
  *
  * @param categoryType
  *          - Category Type we are creating Categories for (Wants, Needs, Investments )

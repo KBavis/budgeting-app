@@ -8,6 +8,7 @@ import { useDrag } from "react-dnd";
  * - Transaction to generate Component for
  */
 const Transaction = ({ transaction }) => {
+   //Allow Transaction component to be dragged/dropped (assigned)
    const [{ isDragging }, drag] = useDrag(() => ({
       type: "transaction",
       item: { transaction },
@@ -16,6 +17,7 @@ const Transaction = ({ transaction }) => {
       }),
    }));
 
+   //Determine rounded amount for Transaction
    const roundedAmount = Math.round(transaction.amount);
 
    return (

@@ -17,6 +17,7 @@ import CategoryTypeState from "./context/category/types/CategoryTypeState";
 import CategoryState from "./context/category/CategoryState";
 import CategoryCreationPage from "./pages/CategoryCreationPage";
 import TransactionState from "./context/transaction/TransactionState";
+import CategoryTypePage from "./pages/CategoryTypePage";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
@@ -85,6 +86,24 @@ function App() {
                                        path="/category/investments"
                                        element={
                                           <CategoryCreationPage categoryType="Investments" />
+                                       }
+                                    />
+                                    <Route
+                                       path="/category/type/needs"
+                                       element={
+                                          <CategoryTypePage categoryType="Needs" />
+                                       }
+                                    />
+                                    <Route
+                                       path="/category/type/wants"
+                                       element={
+                                          <CategoryTypePage categoryType="Wants" />
+                                       }
+                                    />
+                                    <Route
+                                       path="/category/type/investments"
+                                       element={
+                                          <CategoryTypePage categoryType="Investments" />
                                        }
                                     />
                                  </Routes>
