@@ -93,6 +93,7 @@ const AuthState = (props) => {
             register,
             login,
             clearErrors,
+            setLoading,
          }}
       >
          {props.children}

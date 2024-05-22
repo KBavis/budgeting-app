@@ -100,7 +100,7 @@ const IncomeInputPage = () => {
                      id="income"
                      value={income}
                      onChange={(e) => setIncome(e.target.value)}
-                     className="w-full pl-7 pr-4 py-3 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 border-2 border-indigo-600 appearance-none"
+                     className="w-full pl-7 pr-4 py-3 rounded-lg border-[1px] border-white bg-gray-800 text-white focus:outline-none focus:bg-gray-800"
                      placeholder="Amount"
                   />
                </div>
@@ -109,7 +109,7 @@ const IncomeInputPage = () => {
                      id="description"
                      value={description}
                      onChange={(e) => setDescription(e.target.value)}
-                     className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 appearance-none"
+                     className="w-full px-4 py-3 rounded-lg bg-gray-800 border-[1px] border-white text-white focus:outline-none focus:bg-gray-800"
                      placeholder="Description"
                   />
                </div>
@@ -119,7 +119,7 @@ const IncomeInputPage = () => {
                         id="incomeSource"
                         value={incomeSource}
                         onChange={(e) => setIncomeSource(e.target.value)}
-                        className="w-full px-4 py-3 pr-8 rounded-lg bg-gray-800 text-gray-400 text-left focus:outline-none focus:ring-2 focus:ring-gray-600 appearance-none"
+                        className="w-full px-4 py-3 pr-8 rounded-lg bg-gray-800 border-[1px] border-white text-gray-400 text-left focus:outline-none focus:bg-gray-800 appearance-none"
                      >
                         <option value="" disabled hidden>
                            Select Income Source
@@ -154,7 +154,7 @@ const IncomeInputPage = () => {
                         id="incomeType"
                         value={incomeType}
                         onChange={(e) => setIncomeType(e.target.value)}
-                        className="w-full px-4 py-3 pr-8 rounded-lg bg-gray-800 text-gray-400 text-left focus:outline-none focus:ring-2 focus:ring-gray-600 appearance-none"
+                        className="w-full px-4 py-3 pr-8 rounded-lg bg-gray-800 text-gray-400 border-[1px] border-white text-left focus:outline-none focus:bg-gray-800 appearance-none"
                      >
                         <option value="" disabled hidden>
                            Select Income Type

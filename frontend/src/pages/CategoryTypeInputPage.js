@@ -24,16 +24,6 @@ const CategoryTypeInputPage = () => {
 
    const navigate = useNavigate();
 
-   //Alert user of failure or success and navigate accordingly
-   useEffect(() => {
-      if (categoryTypes && categoryTypes.length > 0) {
-         setAlert("Category types added successfully", "success");
-         navigate("/category/needs");
-      } else {
-         setAlert("Category types failed to be adjusted", "danger");
-      }
-   }, [categoryTypes]);
-
    //Alert user of failure
    useEffect(() => {
       if (error) {
@@ -61,6 +51,8 @@ const CategoryTypeInputPage = () => {
       //Ensures user has utilized 100% of potential budget
       if (totalPercentage === 1) {
          addCategoryTypes(categoryTypesInput);
+         setAlert("Category types added successfully", "success");
+         navigate("/category/needs");
       } else {
          setAlert("Total percentage must equal 100%", "danger");
       }
