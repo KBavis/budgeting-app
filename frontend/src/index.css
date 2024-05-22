@@ -26,3 +26,53 @@
    -ms-overflow-style: none;
    scrollbar-width: none;
 }
+
+/* Define slow slide transitions */
+.slow-slide-enter {
+   opacity: 0;
+   transform: translateX(100%);
+}
+.slow-slide-enter-active {
+   opacity: 1;
+   transform: translateX(0);
+   transition: opacity 1000ms, transform 1000ms;
+}
+.slow-slide-exit {
+   opacity: 1;
+   transform: translateX(0);
+}
+.slow-slide-exit-active {
+   opacity: 0;
+   transform: translateX(-100%);
+   transition: opacity 1000ms, transform 1000ms;
+}
+
+@keyframes nextPage {
+   0% {
+      opacity: 0;
+      transform: translate(10em, 0);
+   }
+   100% {
+      opacity: 1;
+      transform: translate(0, 0);
+   }
+}
+
+@keyframes prevPage {
+   0% {
+      opacity: 0;
+      transform: translate(-10em, 0);
+   }
+   100% {
+      opacity: 1;
+      transform: translate(0, 0);
+   }
+}
+
+.animate-nextPage {
+   animation: nextPage 0.3s ease-in-out;
+}
+
+.animate-prevPage {
+   animation: prevPage 0.3s ease-in-out;
+}

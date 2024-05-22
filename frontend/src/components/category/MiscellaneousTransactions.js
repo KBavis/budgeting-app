@@ -3,11 +3,16 @@ import transactionContext from "../../context/transaction/transactionContext";
 import Transaction from "../transaction/Transaction";
 import { useDrop } from "react-dnd";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 const MiscellaneousTransactions = () => {
    const [miscTransactions, setMiscTransactions] = useState([]);
+   const [currentPage, setCurrentPage] = useState(0);
+   const [animateDirection, setAnimateDirection] = useState(null);
+
    const { transactions, removeTransactionCategory } =
       useContext(transactionContext);
+
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
@@ -19,7 +24,6 @@ const MiscellaneousTransactions = () => {
       }),
    }));
 
-   const [currentPage, setCurrentPage] = useState(0);
    const itemsPerPage = 8;
    const totalPages = Math.ceil(miscTransactions.length / itemsPerPage);
 
@@ -33,7 +37,10 @@ const MiscellaneousTransactions = () => {
    const handlePageChange = (delta) => {
       const newPage = currentPage + delta;
       if (newPage >= 0 && newPage < totalPages) {
-         setCurrentPage(newPage);
+         setAnimateDirection(delta > 0 ? "nextPage" : "prevPage");
+         setTimeout(() => {
+            setCurrentPage(newPage);
+         }, 300); // Match the timeout with the animation duration
       }
    };
 
@@ -56,16 +63,25 @@ const MiscellaneousTransactions = () => {
                respective Category.
             </p>
          )}
-         <div className="grid grid-cols-4 gap-4 transition-all duration-500 ease-in-out delay-300">
-            {displayedTransactions.map((transaction) => (
-               <div
-                  key={transaction.transactionId}
-                  className="w-full hover:scale-105 hover:duration-100"
-               >
-                  <Transaction transaction={transaction} />
-               </div>
-            ))}
+         <div className="grid grid-cols-4 gap-4 overflow-hidden">
+            {/* Transition for scrolling through Transactions */}
+            <TransitionGroup component={null}>
+               {displayedTransactions.map((transaction) => (
+                  <CSSTransition
+                     key={transaction.transactionId}
+                     classNames="slow-slide"
+                     timeout={1000}
+                  >
+                     <div
+                        className={`w-full hover:scale-105 hover:duration-100 ${animateDirection}`}
+                     >
+                        <Transaction transaction={transaction} />
+                     </div>
+                  </CSSTransition>
+               ))}
+            </TransitionGroup>
          </div>
+         {/* Pagination */}
          {totalPages > 1 && (
             <div className="flex justify-center mt-4">
                {currentPage > 0 && (
