@@ -33,7 +33,7 @@ public class CategoryDtoPercentBudgetValidator implements ConstraintValidator<Ca
      */
     @Override
     public boolean isValid(CategoryDto categoryDto, ConstraintValidatorContext constraintValidatorContext) {
-        boolean valid = categoryDto != null && categoryDto.getBudgetAllocationPercentage() > 0 && categoryDto.getBudgetAllocationPercentage() < 1.0;
+        boolean valid = categoryDto != null && categoryDto.getBudgetAllocationPercentage() > 0 && categoryDto.getBudgetAllocationPercentage() <= 1.0;
         log.debug("Validity of passed in budget percent allocation for CategoryDto: [{}]", categoryDto);
         return  valid;
     }

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles(profiles = "test")
@@ -36,7 +37,7 @@ public class CategoryDtoPercentBudgetValidatorTests {
 
     @Test
     void testIsValid_ValidRequest_Successful() {
-
+        assertTrue(validator.isValid(validDto, context));
     }
 
     @Test
@@ -52,14 +53,20 @@ public class CategoryDtoPercentBudgetValidatorTests {
     }
 
     @Test
-    void testIsValid_OverHundredPercent_Failure() {
+    void testIsValid_HundredPercent_Successful(){
         invalidDto.setBudgetAllocationPercentage(1.0);
-        assertFalse(validator.isValid(invalidDto, context));
+        assertTrue(validator.isValid(invalidDto, context));
     }
 
     @Test
     void testIsValid_ZeroPercent_Failure() {
         invalidDto.setBudgetAllocationPercentage(0);
+        assertFalse(validator.isValid(invalidDto, context));
+    }
+
+    @Test
+    void testIsValid_OverHundredPercent_Failure() {
+        invalidDto.setBudgetAllocationPercentage(1.01);
         assertFalse(validator.isValid(invalidDto, context));
     }
 
