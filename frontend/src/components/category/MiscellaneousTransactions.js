@@ -9,14 +9,14 @@ import { CSSTransition, TransitionGroup } from "react-transition-group";
  *  Component that stores all Transactions with unassigned Categories
  */
 const MiscellaneousTransactions = () => {
-   //Constants
-   const ITEMS_PER_PAGE = 8;
-   const TOTAL_PAGES = Math.ceil(miscTransactions.length / ITEMS_PER_PAGE);
-
    //Local State
    const [miscTransactions, setMiscTransactions] = useState([]);
    const [currentPage, setCurrentPage] = useState(0);
    const [animateDirection, setAnimateDirection] = useState(null);
+
+   //Constants
+   const ITEMS_PER_PAGE = 8;
+   const TOTAL_PAGES = Math.ceil(miscTransactions.length / ITEMS_PER_PAGE);
 
    //Global State
    const { transactions, removeTransactionCategory } =

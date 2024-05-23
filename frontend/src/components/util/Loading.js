@@ -5,8 +5,8 @@ import React from "react";
  */
 const Loading = () => {
    return (
-      <div className="flex items-center justify-center min-h-screen">
-         <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-green-500"></div>
+      <div className="flex justify-center h-screen items-center">
+         <div className="border-t-4 border-white rounded-full animate-spin w-16 h-16 text-white"></div>
       </div>
    );
 };
