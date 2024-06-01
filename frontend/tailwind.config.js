@@ -11,8 +11,9 @@ module.exports = {
             1025: "1.025",
          },
          screens: {
-            xl: "1790px", // Custom breakpoint at 1790px
-            "md-xl": "1100px", // Custom breakpoint at 1100px
+            xl: "1790px",
+            "md-xl": "1100px",
+            xxl: "2300px",
          },
       },
    },

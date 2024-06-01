@@ -92,7 +92,7 @@ const CategoryType = ({ categoryType }) => {
    return (
       <div
          onClick={handleClick}
-         className="relative bg-white rounded-lg shadow-md px-4 pb-4 w-full h-[400px] overflow-y-auto hover:cursor-pointer hover:scale-1025 hover:duration-100"
+         className="relative bg-white rounded-lg shadow-md px-4 pb-4 w-full h-[400px] overflow-y-auto hover:cursor-pointer hover:scale-1025 hover:duration-100 xxl:h-[650px]"
       >
          <div className="sticky top-0 z-20 bg-white pb-2">
             <h3 className="text-3xl text-center font-bold mb-2 mt-2">
