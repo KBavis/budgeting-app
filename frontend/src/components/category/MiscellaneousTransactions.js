@@ -68,7 +68,7 @@ const MiscellaneousTransactions = () => {
       >
          <h3 className="text-xl font-bold mb-1">Miscellaneous Transactions</h3>
          {miscTransactions.length > 0 && (
-            <p className="mb-10">
+            <p className="mb-5">
                Please drag and drop the following Transactions to their
                respective Category.
             </p>

@@ -35,7 +35,7 @@
 .slow-slide-enter-active {
    opacity: 1;
    transform: translateX(0);
-   transition: opacity 1000ms, transform 1000ms;
+   transition: opacity 750ms, transform 750ms;
 }
 .slow-slide-exit {
    opacity: 1;
@@ -44,7 +44,7 @@
 .slow-slide-exit-active {
    opacity: 0;
    transform: translateX(-100%);
-   transition: opacity 1000ms, transform 1000ms;
+   transition: opacity 750ms, transform 750ms;
 }
 
 @keyframes nextPage {
@@ -70,9 +70,9 @@
 }
 
 .animate-nextPage {
-   animation: nextPage 0.3s ease-in-out;
+   animation: nextPage 0.2s ease-in-out;
 }
 
 .animate-prevPage {
-   animation: prevPage 0.3s ease-in-out;
+   animation: prevPage 0\2s ease-in-out;
 }
