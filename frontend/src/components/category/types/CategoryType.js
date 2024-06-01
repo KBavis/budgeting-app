@@ -20,7 +20,7 @@ const CategoryType = ({ categoryType }) => {
    const [totalAmountAllocated, setTotalAmountAllocated] = useState(0);
 
    useEffect(() => {
-      setTotalAmountAllocated(categoryType.budgetAmount);
+      setTotalAmountAllocated(Math.round(categoryType.budgetAmount));
    }, [categoryType]);
 
    useEffect(() => {

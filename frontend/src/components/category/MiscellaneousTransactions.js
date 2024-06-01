@@ -107,7 +107,7 @@ const MiscellaneousTransactions = () => {
                </p>
                {currentPage < TOTAL_PAGES - 1 && (
                   <button
-                     className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                     className="bg-indigo-500 hover:bg-indigo-700 duration-100 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                      onClick={() => handlePageChange(1)}
                   >
                      <FaChevronRight />
