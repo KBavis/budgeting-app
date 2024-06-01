@@ -6,23 +6,23 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 /**
- *  Component that stores all Transactions with unassigned Categories
+ * Component that stores all Transactions with unassigned Categories
  */
 const MiscellaneousTransactions = () => {
-   //Local State
+   // Local State
    const [miscTransactions, setMiscTransactions] = useState([]);
    const [currentPage, setCurrentPage] = useState(0);
    const [animateDirection, setAnimateDirection] = useState(null);
 
-   //Constants
+   // Constants
    const ITEMS_PER_PAGE = 8;
    const TOTAL_PAGES = Math.ceil(miscTransactions.length / ITEMS_PER_PAGE);
 
-   //Global State
+   // Global State
    const { transactions, removeTransactionCategory } =
       useContext(transactionContext);
 
-   //Functionality for a user to drag/drop a Transaction on Miscallenous Component (removing assigned category)
+   // Functionality for a user to drag/drop a Transaction on Miscellaneous Component (removing assigned category)
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
@@ -34,7 +34,7 @@ const MiscellaneousTransactions = () => {
       }),
    }));
 
-   //Filter Transactions That Should Be Displayed In Miscallenous Transactions Component (All Transactions with Null Category)
+   // Filter Transactions That Should Be Displayed In Miscellaneous Transactions Component (All Transactions with Null Category)
    useEffect(() => {
       const miscellaneousTransactions = transactions.filter(
          (transaction) => transaction.category === null
@@ -42,7 +42,7 @@ const MiscellaneousTransactions = () => {
       setMiscTransactions(miscellaneousTransactions);
    }, [transactions]);
 
-   //Functionality to handle changing of page of Transactions via our pagination
+   // Functionality to handle changing of page of Transactions via our pagination
    const handlePageChange = (delta) => {
       const newPage = currentPage + delta;
       if (newPage >= 0 && newPage < TOTAL_PAGES) {
@@ -53,7 +53,7 @@ const MiscellaneousTransactions = () => {
       }
    };
 
-   //Functionality to fetch Transactions to be displayed
+   // Functionality to fetch Transactions to be displayed
    const displayedTransactions = miscTransactions.slice(
       currentPage * ITEMS_PER_PAGE,
       (currentPage + 1) * ITEMS_PER_PAGE
@@ -62,7 +62,7 @@ const MiscellaneousTransactions = () => {
    return transactions && transactions.length > 0 ? (
       <div
          ref={drop}
-         className={`bg-white rounded-lg shadow-md p-4 w-1/2 mt-4 text-center ${
+         className={`bg-white rounded-lg shadow-md p-4 w-full xl:w-1/2 mt-4 text-center ${
             isOver ? "bg-green-200" : canDrop ? "bg-green-100" : ""
          }`}
       >
@@ -73,7 +73,7 @@ const MiscellaneousTransactions = () => {
                respective Category.
             </p>
          )}
-         <div className="grid grid-cols-4 gap-4 overflow-hidden">
+         <div className="grid grid-cols-1 md-xl:grid-cols-2 xl:grid-cols-4 gap-4 overflow-hidden">
             {/* Transition for scrolling through Transactions */}
             <TransitionGroup component={null}>
                {displayedTransactions.map((transaction) => (
