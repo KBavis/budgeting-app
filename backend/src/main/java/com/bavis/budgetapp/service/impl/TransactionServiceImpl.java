@@ -1,9 +1,7 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dao.TransactionRepository;
-import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
-import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
-import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
+import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.TransactionMapper;
@@ -14,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -161,6 +160,43 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setCategory(category);
         log.debug("Updating Transaction with ID {} to be assigned to Category [{}]", transaction.getTransactionId(), category);
         return _transactionRepository.save(transaction);
+    }
+
+    @Override
+    public List<Transaction> splitTransaction(String transactionId, SplitTransactionDto splitTransactionDto) throws RuntimeException{
+        log.info("Attempting to split out Transaction with the ID {}", transactionId);
+
+        //Fetch Original Transaction by ID
+        Transaction originalTransaction = readById(transactionId);
+
+        //Update TransactionDto's with original Transaction properties
+        List<TransactionDto> updatedTransactionDtos = Optional.ofNullable(splitTransactionDto.getSplitTransactions())
+                .stream()
+                .flatMap(List::stream)
+                .peek(dto -> {
+                    dto.setCategory(originalTransaction.getCategory());
+                    dto.setDate(originalTransaction.getDate());
+                    dto.setLogoUrl(originalTransaction.getLogoUrl());
+                    dto.setAccount(originalTransaction.getAccount());
+                }).toList();
+
+        //Atomic Integer for Incremental Suffixes
+        AtomicInteger counter = new AtomicInteger(1);
+
+        //Map TransactionDto's to Transaction entities
+        List<Transaction> splitTransactions = updatedTransactionDtos.stream()
+                .map(_transactionMapper::toEntity)
+                .peek(transaction -> transaction.setTransactionId(transactionId + "_" + counter.getAndIncrement()))
+                .toList();
+
+        //Delete Original Transaction
+        _transactionRepository.deleteById(transactionId);
+
+        //Save All New Split out Transactions
+        _transactionRepository.saveAllAndFlush(splitTransactions);
+
+        //Return New Transactions
+        return splitTransactions;
     }
 
 

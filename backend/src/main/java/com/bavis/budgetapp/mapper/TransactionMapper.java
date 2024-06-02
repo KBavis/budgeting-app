@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.mapper;
 
 import com.bavis.budgetapp.dto.PlaidTransactionDto;
+import com.bavis.budgetapp.dto.TransactionDto;
 import com.bavis.budgetapp.entity.Transaction;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,6 +20,14 @@ import java.util.List;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface TransactionMapper {
 
+    /**
+     * Function to map a PlaidTransactionDto to a Transaction entity
+     *
+     * @param dto
+     *          - PlaidTransactionDto to convert to Transaction entity
+     * @return
+     *          - Transaction entity with PlaidTransactionDto properties
+     */
     @Mapping(target = "name", expression=  "java(getFirstCounterpartyName(dto.getCounterparties()))")
     @Mapping(target = "logoUrl", expression = "java(getFirstCounterpartyLogoUrl(dto.getCounterparties()))")
     @Mapping(target = "transactionId", source = "transaction_id")
@@ -27,6 +36,25 @@ public interface TransactionMapper {
     @Mapping(target = "account", ignore = true)
     @Mapping(target = "category", ignore = true)
     Transaction toEntity(PlaidTransactionDto dto);
+
+
+    /**
+     * Function to map a TransactionDto to a Transaction entity
+     *
+     *
+     * @param transactionDto
+     *          - TransactionDto to map to Transaction entity
+     * @return
+     *          - New Transaction entity
+     */
+    @Mapping(target = "name", source = "updatedName")
+    @Mapping(target = "amount", source = "updatedAmount")
+    @Mapping(target = "logoUrl", source = "logoUrl")
+    @Mapping(target = "date", expression = "date")
+    @Mapping(target = "account", ignore = true)
+    @Mapping(target = "category", ignore = true)
+    Transaction toEntity(TransactionDto transactionDto);
+
 
     /**
      * Function to fetch the Counterparty object 'name' attribute

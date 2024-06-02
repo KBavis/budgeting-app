@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.SplitTransactionDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,18 @@ public interface TransactionService {
      *      - all Transactions corresponding to Auth User
      */
     List<Transaction> readAll();
+
+    /**
+     * Functionality to split a Transaction into multiple Transaction entities
+     *
+     * @param transactionId
+     *          - Transaction ID of original Transaction entity to split out
+     * @param splitTransactionDto
+     *          - List of new split out Transactions
+     * @return
+     *          - new Transaction entities split out from original
+     */
+    List<Transaction> splitTransaction(String transactionId, SplitTransactionDto splitTransactionDto);
 
     /**
      * Functionality to assign a Transaction a Category

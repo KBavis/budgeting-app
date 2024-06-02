@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.SplitTransactionDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.service.TransactionService;
@@ -64,6 +65,22 @@ public class TransactionController {
     public ResponseEntity<Transaction> assignCategory(@Valid @RequestBody AssignCategoryRequestDto assignCategoryRequestDto) {
         log.info("Assigning Transaction to a Category via following request: [{}]", assignCategoryRequestDto);
         return ResponseEntity.ok(_transactionService.assignCategory(assignCategoryRequestDto));
+    }
+
+    /**
+     * Split a Transaction into multiple Transaction entities
+     *
+     * @param transactionId
+     *          - ID pertaining to original Transaction to split out
+     * @param splitTransactionDto
+     *          - List of split out Transactions
+     * @return
+     *          - List of new Transaction entities
+     */
+    @PutMapping("/{transactionId}/split")
+    public ResponseEntity<List<Transaction>> splitTransactions(@PathVariable("transactionId") String transactionId, @RequestBody SplitTransactionDto splitTransactionDto) {
+        log.info("Received request to split out Transaction with ID {} into following Transactions: [{}]", transactionId, splitTransactionDto);
+        return ResponseEntity.ok(_transactionService.splitTransaction(transactionId, splitTransactionDto));
     }
 
     /**
