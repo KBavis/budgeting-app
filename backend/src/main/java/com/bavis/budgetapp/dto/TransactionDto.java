@@ -1,5 +1,7 @@
 package com.bavis.budgetapp.dto;
 
+import com.bavis.budgetapp.annotation.TransactionDtoValidAmount;
+import com.bavis.budgetapp.annotation.TransactionDtoValidName;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Category;
 import lombok.AllArgsConstructor;
@@ -18,6 +20,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@TransactionDtoValidName
+@TransactionDtoValidAmount
 public class TransactionDto {
     //Updated Properties
     private String updatedName;

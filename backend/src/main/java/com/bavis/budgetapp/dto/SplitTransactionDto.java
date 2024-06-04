@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.dto;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +18,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SplitTransactionDto {
+    @Valid
     private List<TransactionDto> splitTransactions;
 }
