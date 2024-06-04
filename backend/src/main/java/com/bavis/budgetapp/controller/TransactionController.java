@@ -5,11 +5,12 @@ import com.bavis.budgetapp.dto.SplitTransactionDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.service.TransactionService;
+import com.bavis.budgetapp.validator.group.TransactionDtoValidationGroup;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -78,7 +79,7 @@ public class TransactionController {
      *          - List of new Transaction entities
      */
     @PutMapping("/{transactionId}/split")
-    public ResponseEntity<List<Transaction>> splitTransactions(@PathVariable("transactionId") String transactionId, @RequestBody SplitTransactionDto splitTransactionDto) {
+    public ResponseEntity<List<Transaction>> splitTransactions(@PathVariable("transactionId") String transactionId, @Validated(TransactionDtoValidationGroup.class) @RequestBody SplitTransactionDto splitTransactionDto) {
         log.info("Received request to split out Transaction with ID {} into following Transactions: [{}]", transactionId, splitTransactionDto);
         return ResponseEntity.ok(_transactionService.splitTransaction(transactionId, splitTransactionDto));
     }

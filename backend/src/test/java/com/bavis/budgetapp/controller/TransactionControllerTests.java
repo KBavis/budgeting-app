@@ -1,6 +1,8 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.SplitTransactionDto;
+import com.bavis.budgetapp.dto.TransactionDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
@@ -398,5 +400,159 @@ public class TransactionControllerTests {
         //Assert
         resultActions.andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("Transaction with the following ID not found: " + transactionId));
+    }
+
+    @Test
+    void testSplitTransaction_ValidRequest_Successful() throws Exception {
+        //Arrange
+        String validTransactionId = "validTransactionId";
+        String logoUrl = "logo-url";
+        LocalDate localDate = LocalDate.now();
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedAmount(1000.0)
+                .updatedName("Transaction One")
+                .build();
+        TransactionDto transactionDto2 = TransactionDto.builder()
+                .updatedAmount(2000.0)
+                .updatedName("Transaction Two")
+                .build();
+        TransactionDto transactionDto3 = TransactionDto.builder()
+                .updatedAmount(3000.0)
+                .updatedName("Transaction Three")
+                .build();
+
+        SplitTransactionDto splitTransactionDto = SplitTransactionDto.builder()
+                .splitTransactions(List.of(transactionDto, transactionDto2, transactionDto3))
+                .build();
+
+        Transaction transaction1 = Transaction.builder()
+                .transactionId(validTransactionId + "_" + 1)
+                .name(transactionDto.getUpdatedName())
+                .amount(transactionDto.getUpdatedAmount())
+                .category(null)
+                .date(localDate)
+                .logoUrl(logoUrl)
+                .build();
+
+
+        Transaction transaction2 = Transaction.builder()
+                .transactionId(validTransactionId + "_" + 2)
+                .name(transactionDto2.getUpdatedName())
+                .amount(transactionDto2.getUpdatedAmount())
+                .category(null)
+                .date(localDate)
+                .logoUrl(logoUrl)
+                .build();
+
+        Transaction transaction3 = Transaction.builder()
+                .transactionId(validTransactionId + "_" + 3)
+                .name(transactionDto3.getUpdatedName())
+                .amount(transactionDto3.getUpdatedAmount())
+                .category(null)
+                .date(localDate)
+                .logoUrl(logoUrl)
+                .build();
+
+        List<Transaction> transactions = List.of(transaction1, transaction2, transaction3);
+
+        //Mock
+        when(transactionService.splitTransaction(validTransactionId, splitTransactionDto)).thenReturn(transactions);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/transactions/" + validTransactionId + "/split")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(splitTransactionDto)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].transactionId").value(transaction1.getTransactionId()))
+                .andExpect(jsonPath("$[0].date").value(transaction1.getDate().toString()))
+                .andExpect(jsonPath("$[0].amount").value(transaction1.getAmount()))
+                .andExpect(jsonPath("$[0].name").value(transaction1.getName()))
+                .andExpect(jsonPath("$[0].category").value(transaction1.getCategory()))
+                .andExpect(jsonPath("$[0].logoUrl").value(transaction1.getLogoUrl()))
+                .andExpect(jsonPath("$[1].transactionId").value(transaction2.getTransactionId()))
+                .andExpect(jsonPath("$[1].date").value(transaction2.getDate().toString()))
+                .andExpect(jsonPath("$[1].amount").value(transaction2.getAmount()))
+                .andExpect(jsonPath("$[1].category").value(transaction2.getCategory()))
+                .andExpect(jsonPath("$[1].logoUrl").value(transaction2.getLogoUrl()))
+                .andExpect(jsonPath("$[1].name").value(transaction2.getName()))
+                .andExpect(jsonPath("$[2].transactionId").value(transaction3.getTransactionId()))
+                .andExpect(jsonPath("$[2].date").value(transaction3.getDate().toString()))
+                .andExpect(jsonPath("$[2].amount").value(transaction3.getAmount()))
+                .andExpect(jsonPath("$[2].category").value(transaction3.getCategory()))
+                .andExpect(jsonPath("$[2].logoUrl").value(transaction3.getLogoUrl()))
+                .andExpect(jsonPath("$[2].name").value(transaction3.getName()));
+    }
+
+    @Test
+    void testSplitTransaction_InvalidTransactionId_Failure() throws Exception {
+        //Arrange
+        String invalidTransactionId = "invalid-transaction-id";
+        SplitTransactionDto splitTransactionDto = new SplitTransactionDto();
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedName("Valid Name")
+                .updatedAmount(1000.0)
+                .build();
+        splitTransactionDto.setSplitTransactions(List.of(transactionDto));
+
+        //Mock
+        doThrow(new RuntimeException("Transaction with the following ID not found: " + invalidTransactionId)).when(transactionService).splitTransaction(invalidTransactionId, splitTransactionDto);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/transactions/" + invalidTransactionId + "/split")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(splitTransactionDto)));
+
+        //Assert
+        resultActions.andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Transaction with the following ID not found: " + invalidTransactionId));
+    }
+
+    @Test
+    void testSplitTransaction_InvalidAmount_Failure() throws Exception {
+        //Arrange
+        String validTransactionId = "transaction-id";
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedName("Valid Name")
+                .updatedAmount(-1.0)
+                .build();
+        SplitTransactionDto splitTransactionDto = SplitTransactionDto.builder()
+                .splitTransactions(List.of(transactionDto))
+                .build();
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/transactions/" + validTransactionId + "/split")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(splitTransactionDto)));
+
+        //Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The provided transaction amount is not valid"));
+    }
+
+    @Test
+    void testSplitTransaction_InvalidName_Failure() throws Exception {
+        //Arrange
+        String validTransactionId = "transaction-id";
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedName("InvalidddddddddddddddNameeeeeeeeeeeeeeeeeeTooooooLonnnnnngg")
+                .updatedAmount(1000.0)
+                .build();
+        SplitTransactionDto splitTransactionDto = SplitTransactionDto.builder()
+                .splitTransactions(List.of(transactionDto))
+                .build();
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/transactions/" + validTransactionId + "/split")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(splitTransactionDto)));
+
+        //Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The provided transaction name is not valid"));
+
     }
 }

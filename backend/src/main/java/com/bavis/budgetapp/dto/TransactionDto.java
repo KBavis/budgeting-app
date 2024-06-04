@@ -4,6 +4,7 @@ import com.bavis.budgetapp.annotation.TransactionDtoValidAmount;
 import com.bavis.budgetapp.annotation.TransactionDtoValidName;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Category;
+import com.bavis.budgetapp.validator.group.TransactionDtoValidationGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,8 +21,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TransactionDtoValidName
-@TransactionDtoValidAmount
+@TransactionDtoValidName(groups = TransactionDtoValidationGroup.class)
+@TransactionDtoValidAmount(groups = TransactionDtoValidationGroup.class)
 public class TransactionDto {
     //Updated Properties
     private String updatedName;
