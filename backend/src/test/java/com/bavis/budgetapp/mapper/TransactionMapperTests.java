@@ -1,6 +1,9 @@
 package com.bavis.budgetapp.mapper;
 
 import com.bavis.budgetapp.dto.PlaidTransactionDto;
+import com.bavis.budgetapp.dto.TransactionDto;
+import com.bavis.budgetapp.entity.Account;
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.Transaction;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +16,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ContextConfiguration(classes = {TransactionMapperImpl.class})
 @ActiveProfiles(profiles = "test")
@@ -128,6 +130,41 @@ public class TransactionMapperTests {
         assertEquals(amount, target.getAmount());
         assertEquals(expectedLocalDate, target.getDate());
         assertEquals(logoUrl, target.getLogoUrl());
+    }
+
+    @Test
+    void testToEntity_TransactionDto_Successful() {
+        //Arrange
+        String transactionName = "Transaction";
+        double updatedAmount = 1000.0;
+        String logoUrl = "logo-url";
+        String transactionId = "transactionId";
+        LocalDate localDate = LocalDate.now();
+        Account account = Account.builder()
+                .accountId("account-id")
+                .build();
+        Category category = Category.builder()
+                .categoryId(10L)
+                .build();
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedName(transactionName)
+                .updatedAmount(updatedAmount)
+                .account(account)
+                .category(category)
+                .date(localDate)
+                .build();
+
+        //Act
+        Transaction newTransaction = transactionMapper.toEntity(transactionDto);
+
+        //Assert
+        assertNotNull(newTransaction);
+        assertEquals(transactionName, newTransaction.getName());
+        assertEquals(updatedAmount, newTransaction.getAmount());
+        assertEquals(localDate, newTransaction.getDate());
+        assertNull(newTransaction.getTransactionId());
+        assertNull(newTransaction.getCategory());
+        assertNull(newTransaction.getAccount());
     }
 
 }
