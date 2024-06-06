@@ -17,7 +17,7 @@ import lombok.extern.log4j.Log4j2;
 public class AuthRequestUsernameFormatValidator implements ConstraintValidator<AuthRequestValidUsername, AuthRequestDto> {
 
     //Validates all characters are a letter ,digit, underscore, or hyphen AND is between 6 and 20 characters
-    private static final String usernameRegex = "^[a-zA-Z0-9_-]{6,20}$";
+    private static final String usernameRegex = "^[a-zA-Z0-9._-]{6,20}$";
 
     @Override
     public void initialize(AuthRequestValidUsername constraintAnnotation) {
