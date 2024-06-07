@@ -227,6 +227,7 @@ public class TransactionServiceTests {
         when(transactionRepository.saveAllAndFlush(anyList())).thenAnswer(invocationOnMock ->{
             return invocationOnMock.<List<Transaction>>getArgument(0);
         });
+        when(transactionRepository.existsById(any())).thenReturn(true);
         doNothing().when(transactionRepository).deleteAll(anyList());
         when(connectionService.update(any(Connection.class), any(Long.class))).thenAnswer(invocationOnMock -> {
             Connection connectionToUpdate = invocationOnMock.getArgument(0);
@@ -255,7 +256,7 @@ public class TransactionServiceTests {
         verify(accountService, times(1)).read(accountIdTwo);
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
         verify(connectionService, times(1)).update(accountConnectionTwo, accountConnectionTwo.getConnectionId());
-        verify(transactionRepository, times(2)).saveAllAndFlush(anyList());
+        verify(transactionRepository, times(4)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(2)).deleteAll(anyList());
         verify(transactionMapper, times(12)).toEntity(any(PlaidTransactionDto.class));
     }
@@ -388,7 +389,7 @@ public class TransactionServiceTests {
         //Verify
         verify(accountService, times(1)).read(accountIdOne);
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
-        verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
+        verify(transactionRepository, times(2)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(1)).deleteAll(anyList());
         verify(transactionMapper, times(6)).toEntity(any(PlaidTransactionDto.class));
     }
