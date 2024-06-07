@@ -71,11 +71,8 @@ public class TransactionServiceImpl implements TransactionService {
                 PlaidTransactionSyncResponseDto syncResponseDto = _plaidService.syncTransactions(accessToken, previousCursor);
                 log.info("PlaidTransactionSyncResponseDto for Account ID {} : [{}]", accountId, syncResponseDto);
 
-                //Combine Added & Modified List Together, Map to Transaction Entities, Set Account/Category
-                List<Transaction> addedOrModifiedTransactions = Stream.concat(
-                                Optional.ofNullable(syncResponseDto.getAdded()).stream().flatMap(List::stream),
-                                Optional.ofNullable(syncResponseDto.getModified()).stream().flatMap(List::stream)
-                        )
+                //For each Added Transaction --> Map to Transaction Entities & Set Account/Category
+                List<Transaction> addedTransactions = Optional.ofNullable(syncResponseDto.getAdded()).stream().flatMap(List::stream)
                         .map(_transactionMapper::toEntity)
                         .peek(transaction -> {
                             //TODO: Intelligently assign CategoryType & Category in future
@@ -85,11 +82,29 @@ public class TransactionServiceImpl implements TransactionService {
                         .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
                         .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate()))
                         .toList();
-                log.debug("Updating DB With The Following Added or Modified Transactions: [{}]", addedOrModifiedTransactions);
-                List<Transaction> persistedTransactions = _transactionRepository.saveAllAndFlush(addedOrModifiedTransactions);
+                log.debug("Updating DB With The Following Added Transactions: [{}]", addedTransactions);
+                List<Transaction> persistedAddedTransactions = _transactionRepository.saveAllAndFlush(addedTransactions);
 
                 //Add Persisted Transactions to List of Transactions to Return
-                allModifiedOrAddedTransactions.addAll(persistedTransactions);
+                allModifiedOrAddedTransactions.addAll(persistedAddedTransactions);
+
+                //For each Modified Transaction --> Map to Transaction Entities, Set Account/Category, Filter Out Transaction with Non-Existent IDs
+                List<Transaction> modifiedTransactions = Optional.ofNullable(syncResponseDto.getModified()).stream().flatMap(List::stream)
+                        .map(_transactionMapper::toEntity)
+                        .filter(transaction -> _transactionRepository.existsById(transaction.getTransactionId())) //Ensure Transaction Exists within DB (filter out all updates pertaining to user updated Transactions)
+                        .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
+                        .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate())) //filter out transactions not within current month
+                        .peek(transaction -> {
+                            //TODO: Intelligently assign CategoryType & Category in future
+                            transaction.setCategory(null);
+                            transaction.setAccount(account);
+                        })
+                        .toList();
+                log.debug("Updating DB With The Following Modified Transactions: [{}]", modifiedTransactions);
+                List<Transaction> persistedModifiedTransactions = _transactionRepository.saveAllAndFlush(modifiedTransactions);
+
+                //Add All Persisted Modified Transactions to List of Transactions to Return
+                allModifiedOrAddedTransactions.addAll(persistedModifiedTransactions);
 
 
                 //Remove Transaction Associated with 'Removed' List from Plaid API
