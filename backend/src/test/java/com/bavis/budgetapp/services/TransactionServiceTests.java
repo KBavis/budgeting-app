@@ -1,10 +1,7 @@
 package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.dao.TransactionRepository;
-import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
-import com.bavis.budgetapp.dto.PlaidTransactionDto;
-import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
-import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
+import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.TransactionMapper;
@@ -12,7 +9,6 @@ import com.bavis.budgetapp.service.impl.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -466,6 +462,103 @@ public class TransactionServiceTests {
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
+    }
+
+    @Test
+    void testSplitTransactions_ValidTransactionId_Success() {
+        //Arrange
+        String transactionId = "transaction-id";
+        String transactionName = "transaction-name";
+        String transactionName2 = "transaction-name-2";
+        String logoUrl = "logo-url";
+        double amount = 100.0;
+        double amount2 = 200.0;
+        LocalDate localDate = LocalDate.now();
+        Category category = Category.builder()
+                .categoryId(10L)
+                .build();
+        Account account = Account.builder()
+                .accountId("account-id")
+                .build();
+        Transaction originalTransaction = Transaction.builder()
+                .transactionId(transactionId)
+                .category(category)
+                .account(account)
+                .date(localDate)
+                .logoUrl(logoUrl)
+                .build();
+
+        TransactionDto transactionDto1 = TransactionDto.builder()
+                .updatedName(transactionName)
+                .updatedAmount(amount)
+                .build();
+        TransactionDto transactionDto2 = TransactionDto.builder()
+                .updatedAmount(amount2)
+                .updatedName(transactionName2)
+                .build();
+
+        SplitTransactionDto splitTransactionDto = SplitTransactionDto.builder()
+                .splitTransactions(List.of(transactionDto1, transactionDto2))
+                .build();
+
+        //Mock
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(originalTransaction));
+        when(transactionMapper.toEntity(any(TransactionDto.class))).thenAnswer(invocationOnMock -> {
+           TransactionDto transactionDto = invocationOnMock.getArgument(0) ;
+           Transaction transaction = new Transaction();
+           transaction.setName(transactionDto.getUpdatedName());
+           transaction.setAmount(transactionDto.getUpdatedAmount());
+           transaction.setLogoUrl(transactionDto.getLogoUrl());
+           transaction.setDate(transactionDto.getDate());
+           transaction.setAccount(account);
+           transaction.setCategory(category);
+           return  transaction;
+        });
+        doNothing().when(transactionRepository).deleteById(transactionId);
+        when(transactionRepository.saveAllAndFlush(anyList())).thenReturn(null);
+
+        //Act
+        List<Transaction> transactions = transactionService.splitTransaction(transactionId, splitTransactionDto);
+
+        //Assert
+        assertNotNull(transactions);
+        assertEquals(2, transactions.size());
+
+        Transaction transaction1 = transactions.get(0);
+        Transaction transaction2 = transactions.get(1);
+        assertEquals(transactionId + "_" + 1, transaction1.getTransactionId());
+        assertEquals(account.getAccountId(), transaction1.getAccount().getAccountId());
+        assertEquals(category.getCategoryId(), transaction1.getCategory().getCategoryId());
+        assertEquals(localDate, transaction1.getDate());
+        assertEquals(logoUrl, transaction1.getLogoUrl());
+        assertEquals(amount, transaction1.getAmount());
+        assertEquals(transactionName, transaction1.getName());
+
+
+        assertEquals(transactionId + "_" + 2, transaction2.getTransactionId());
+        assertEquals(category.getCategoryId(), transaction2.getCategory().getCategoryId());
+        assertEquals(account.getAccountId(), transaction1.getAccount().getAccountId());
+        assertEquals(localDate, transaction2.getDate());
+        assertEquals(logoUrl, transaction2.getLogoUrl());
+        assertEquals(amount2, transaction2.getAmount());
+        assertEquals(transactionName2, transaction2.getName());
+    }
+
+    @Test
+    void testSplitTransactions_InvalidTransactionId_Failure() {
+        //Arrange
+        String badTransactionId = "badTransactionId";
+
+        //Mock
+        when(transactionRepository.findById(badTransactionId)).thenReturn(Optional.empty());
+
+        //Act & Assert
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+            transactionService.splitTransaction(badTransactionId, null);
+        });
+        assertNotNull(runtimeException);
+        assertEquals(runtimeException.getMessage(), "Transaction with the following ID not found: " + badTransactionId);
+
     }
 
     @Test
