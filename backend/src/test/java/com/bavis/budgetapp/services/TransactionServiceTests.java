@@ -730,4 +730,44 @@ public class TransactionServiceTests {
         verify(transactionRepository, times(1)).findById(transactionId);
     }
 
+    @Test
+    void testAddTransaction_Successful() {
+        //Arrange
+        double amount = 1000.0;
+        String transactionName = "transaction-name";
+        LocalDate localDate = LocalDate.now();
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedAmount(amount)
+                .updatedName(transactionName)
+                .date(localDate)
+                .build();
+
+        //Mock
+        when(transactionMapper.toEntity(any(TransactionDto.class))).thenAnswer(invocationOnMock -> {
+            TransactionDto dto = invocationOnMock.getArgument(0) ;
+            Transaction transaction = new Transaction();
+            transaction.setName(dto.getUpdatedName());
+            transaction.setAmount(dto.getUpdatedAmount());
+            transaction.setLogoUrl(dto.getLogoUrl());
+            transaction.setDate(dto.getDate());
+            transaction.setAccount(null);
+            transaction.setCategory(null);
+            return  transaction;
+        });
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+
+        //Act
+        Transaction transaction = transactionService.addTransaction(transactionDto);
+
+        //Assert
+        assertNotNull(transaction);
+        assertEquals(amount, transaction.getAmount());
+        assertEquals(transactionName, transaction.getName());
+        assertEquals(localDate, transaction.getDate());
+        assertNotNull(transaction.getTransactionId());
+        assertNull(transaction.getAccount());
+        assertNull(transaction.getCategory());
+        assertNull(transaction.getLogoUrl());
+    }
+
 }

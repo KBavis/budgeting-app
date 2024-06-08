@@ -179,7 +179,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Transaction addTransaction(TransactionDto transactionDto){
+    public Transaction addTransaction(TransactionDto transactionDto) throws RuntimeException{
         log.info("Attempting to map the TransactionDto [{}] to a Transaction entity and persist the record.", transactionDto);
 
         //Update TransactionDTO to not be assigned to any Account/Category
