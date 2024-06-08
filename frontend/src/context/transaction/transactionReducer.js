@@ -7,6 +7,8 @@ import {
    SET_LOADING,
    FETCH_TRANSACTIONS_FAIL,
    FETCH_TRANSACTIONS_SUCCESS,
+   SPLIT_TRANSACTIONS_FAILURE,
+   SPLIT_TRANSACTIONS_SUCCESS,
 } from "./types";
 
 export default (state, action) => {
@@ -55,6 +57,28 @@ export default (state, action) => {
             ...state,
             transactions: updatedTransactions,
          };
+      case SPLIT_TRANSACTIONS_SUCCESS:
+         const splitTransactionId = action.payload.originalTransactionId;
+         const newSplitTransactions = action.payload.newTransactions;
+
+         // Filter out the original transaction by ID
+         const filteredTransactions = state.transactions.filter(
+            (transaction) => transaction.transactionId !== splitTransactionId
+         );
+
+         // Add the new split transactions to the existing list
+         const mergedTransactions = [
+            ...filteredTransactions,
+            ...newSplitTransactions,
+         ];
+
+         return {
+            ...state,
+            transactions: mergedTransactions,
+            loading: false,
+            error: null,
+         };
+      case SPLIT_TRANSACTIONS_FAILURE:
       case SYNC_TRANSACTIONS_FAIL:
       case FETCH_TRANSACTIONS_FAIL:
          return {

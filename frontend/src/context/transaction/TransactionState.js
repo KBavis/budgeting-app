@@ -13,6 +13,8 @@ import {
    FETCH_TRANSACTIONS_SUCCESS,
    UPDATE_TRANSACTION_CATEGORY_FAILED,
    REMOVE_TRANSACTION_CATEGORY_FAILED,
+   SPLIT_TRANSACTIONS_FAILURE,
+   SPLIT_TRANSACTIONS_SUCCESS,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -156,6 +158,41 @@ const TransactionState = (props) => {
       }
    };
 
+   const splitTransaction = async (transactionId, splitTransactions) => {
+      try {
+         if (localStorage.token) {
+            setAuthToken(localStorage.token);
+         }
+
+         const config = {
+            headers: {
+               "Content-Type": "application/json",
+            },
+         };
+
+         const res = await axios.put(
+            `${apiUrl}/${transactionId}/split`,
+            config,
+            splitTransactions
+         );
+
+         console.log(res.data);
+         dispatch({
+            type: SPLIT_TRANSACTIONS_SUCCESS,
+            payload: {
+               originalTransactionId: transactionId,
+               newTransactions: res.data,
+            },
+         });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            SPLIT_TRANSACTIONS_FAILURE,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
    /**
     *  Functionality to clear errors
     */
@@ -178,6 +215,7 @@ const TransactionState = (props) => {
             fetchTransactions,
             clearErrors,
             setLoading,
+            splitTransaction,
          }}
       >
          {props.children}
