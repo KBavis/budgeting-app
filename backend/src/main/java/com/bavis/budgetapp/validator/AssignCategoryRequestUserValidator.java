@@ -45,15 +45,11 @@ public class AssignCategoryRequestUserValidator implements ConstraintValidator<A
         String transactionId = assignCategoryRequestDto.getTransactionId();
         log.info("Determining if the following transaction ID [{}] and category ID [{}] correspond to same user", transactionId, categoryId);
 
-        if(categoryId == null || transactionId == null || transactionId.isEmpty()){
-            log.debug("Invalid AssignCategoryRequestDto! Users do not correspond to Auth User");
-            return  false;
-        }
 
         try {
             Category category = categoryService.read(categoryId);
             Transaction transaction = transactionService.readById(transactionId);
-            if(category == null || transaction == null || transaction.getAccount() == null || category.getUser() == null) {
+            if(category == null || transaction == null || category.getUser() == null) {
                 log.debug("Invalid AssignCategoryRequestDto! Users do not correspond to Auth User");
                 return false;
             }
@@ -62,6 +58,12 @@ public class AssignCategoryRequestUserValidator implements ConstraintValidator<A
 
             //Fetch User Corresponding to Transaction & Category
             Account transactionAccount = transaction.getAccount();
+
+            if(transactionAccount == null) {
+                log.info("Account corresponding to Transaction is NULL. User created Transaction, valid AssignCategoryDtoRequest!");
+                return true;
+            }
+
             User transactionUser = transactionAccount.getUser();
             User categoryUser = category.getUser();
 
