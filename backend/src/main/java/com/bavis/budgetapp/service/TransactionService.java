@@ -2,6 +2,7 @@ package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.SplitTransactionDto;
+import com.bavis.budgetapp.dto.TransactionDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,18 @@ public interface TransactionService {
      *      - all Transactions corresponding to Auth User
      */
     List<Transaction> readAll();
+
+    /**
+     * Functionality to create a Transaction entity independent of any Account entity.
+     * This is utilized to allow users to create mock Transactions for accounts they are unable to add via Plaid API.
+     *
+     * @param transactionDto
+     *          - TransactionDTO to map into a Transaction entity
+     * @return
+     *          - persisted Transaction entity
+     */
+    Transaction addTransaction(TransactionDto transactionDto);
+
 
     /**
      * Functionality to split a Transaction into multiple Transaction entities

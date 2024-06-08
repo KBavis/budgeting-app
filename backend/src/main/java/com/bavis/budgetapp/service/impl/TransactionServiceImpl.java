@@ -179,6 +179,23 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    public Transaction addTransaction(TransactionDto transactionDto){
+        log.info("Attempting to map the TransactionDto [{}] to a Transaction entity and persist the record.", transactionDto);
+
+        //Update TransactionDTO to not be assigned to any Account/Category
+        transactionDto.setAccount(null);
+        transactionDto.setCategory(null);
+
+        //Map to Transaction
+        Transaction transaction = _transactionMapper.toEntity(transactionDto);
+        transaction.setTransactionId(UUID.randomUUID().toString()); //set Transaction ID to random, unique ID
+        log.info("Mapped Transaction entity: [{}]", transaction);
+
+        //Persist & Return
+        return _transactionRepository.save(transaction);
+    }
+
+    @Override
     @Transactional
     public List<Transaction> splitTransaction(String transactionId, SplitTransactionDto splitTransactionDto) throws RuntimeException{
         log.info("Attempting to split out Transaction with the ID {}", transactionId);
@@ -197,6 +214,7 @@ public class TransactionServiceImpl implements TransactionService {
                     dto.setLogoUrl(originalTransaction.getLogoUrl());
                     dto.setAccount(originalTransaction.getAccount());
                 }).toList();
+        log.info("Updated Transaction Dtos to be mapped to Transaction Entities: [{}]", updatedTransactionDtos);
 
         //Atomic Integer for Incremental Suffixes
         AtomicInteger counter = new AtomicInteger(1);
