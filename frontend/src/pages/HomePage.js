@@ -8,15 +8,15 @@ import MiscellaneousTransactions from "../components/category/MiscellaneousTrans
 import categoryContext from "../context/category/categoryContext";
 import IncomeContext from "../context/income/incomeContext";
 import Loading from "../components/util/Loading";
+import SplitTransactionModal from "../components/transaction/SplitTransaction";
 
-/**
- * Home Page of our Application that users will first see after Authenticating
- */
 const HomePage = () => {
    //Local State
    const [name, setName] = useState("");
    const [loading, setLoading] = useState(false);
-   // const [initalFetch, setInitalFetch] = useState(false); //boolean for determining if we did our inital fetch / need to do initial fetch
+   const [showModal, setShowModal] = useState(false);
+   const [transaction, setTransaction] = useState(null);
+
    const initalFetchRef = useRef(false);
 
    //Global States
@@ -57,6 +57,17 @@ const HomePage = () => {
    useEffect(() => {
       setName(user.name);
    }, [user]);
+
+   // Function to open modal
+   const handleShowModal = (splitTransaction) => {
+      setTransaction(splitTransaction);
+      setShowModal(true);
+   };
+
+   //Function to close modal
+   const handleCloseModal = () => {
+      setShowModal(false);
+   };
 
    //Sync Transactions for Added Accounts
    const fetchUpdatedTransactions = async () => {
@@ -177,6 +188,7 @@ const HomePage = () => {
                      <CategoryType
                         key={categoryType.categoryTypeId}
                         categoryType={categoryType}
+                        handleShowModal={handleShowModal}
                      />
                   ))
                ) : (
@@ -185,6 +197,14 @@ const HomePage = () => {
             </div>
             <MiscellaneousTransactions />
          </div>
+         {showModal && ( // Render modal if showModal is true and selectedCategoryType is not null
+            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+               <SplitTransactionModal
+                  onClose={handleCloseModal}
+                  transaction={transaction}
+               />
+            </div>
+         )}
       </div>
    );
 };

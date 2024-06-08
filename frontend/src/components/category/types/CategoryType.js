@@ -3,14 +3,10 @@ import Category from "../Category";
 import transactionContext from "../../../context/transaction/transactionContext";
 import categoryContext from "../../../context/category/categoryContext";
 import { useNavigate } from "react-router-dom";
+import { FaExternalLinkAlt } from "react-icons/fa"; // Importing icon
+import SplitTransactionModal from "../../transaction/SplitTransaction";
 
-/**
- * Component to store all DetailedCategory components and display relevant informations on budget for given CategoryType
- *
- * @param categoryType
- *    - the CategoryType to generate the component for
- */
-const CategoryType = ({ categoryType }) => {
+const CategoryType = ({ categoryType, handleShowModal }) => {
    const { transactions } = useContext(transactionContext);
    const { categories } = useContext(categoryContext);
 
@@ -56,12 +52,8 @@ const CategoryType = ({ categoryType }) => {
       setTotalAmountSpent(Math.round(totalSpent));
    }, [filteredTransactions]);
 
-   /**
-    * Local Functions
-    */
    const navigate = useNavigate();
 
-   // Determine the percent of CategoryType budget utilized
    const percentageUtilized =
       totalAmountAllocated > 0
          ? Math.min(
@@ -70,7 +62,6 @@ const CategoryType = ({ categoryType }) => {
            )
          : 0;
 
-   // Get the background color based on the percentage utilized
    const getProgressBarColor = () => {
       const percentage = percentageUtilized;
       if (percentage <= 50) {
@@ -84,20 +75,26 @@ const CategoryType = ({ categoryType }) => {
       }
    };
 
-   // Navigate User to the corresponding Category Type page upon clicking component
+   //Function to navigate to CategoryType page
    const handleClick = () => {
       navigate(`/category/type/${categoryType.name.toLowerCase()}`);
    };
 
    return (
-      <div
-         onClick={handleClick}
-         className="relative bg-white rounded-lg shadow-md px-4 pb-4 w-full h-[400px] overflow-y-auto hover:cursor-pointer hover:scale-1025 hover:duration-100 xxl:h-[650px]"
-      >
+      <div className="relative bg-white rounded-lg shadow-md px-4 pb-4 w-full h-[400px] overflow-y-auto hover:duration-100 xxl:h-[650px]">
          <div className="sticky top-0 z-20 bg-white pb-2">
-            <h3 className="text-3xl text-center font-bold mb-2 mt-2">
-               {categoryType.name}
-            </h3>
+            <div className="flex justify-between items-center">
+               <div></div> {/* Placeholder to balance the flex alignment */}
+               <h3 className="text-3xl text-center font-bold mb-2 mt-2 flex-grow">
+                  {categoryType.name}
+               </h3>
+               <button
+                  onClick={handleClick}
+                  className="text-black font-bold duration-100 hover:scale-1025 hover:cursor-pointer hover:text-indigo-600"
+               >
+                  <FaExternalLinkAlt size={20} />
+               </button>
+            </div>
             <p className="mb-4 text-center font-semibold">
                Spent: ${totalAmountSpent} / ${totalAmountAllocated}
             </p>
@@ -115,7 +112,11 @@ const CategoryType = ({ categoryType }) => {
          <div className="relative z-10">
             <div className="flex flex-col items-center space-y-6">
                {filteredCategories.map((category) => (
-                  <Category key={category.categoryId} category={category} />
+                  <Category
+                     key={category.categoryId}
+                     category={category}
+                     handleShowModal={handleShowModal}
+                  />
                ))}
             </div>
          </div>

@@ -10,7 +10,7 @@ import transactionContext from "../../context/transaction/transactionContext";
  *       - Category entitiy to generate component for
  * @returns
  */
-const Category = ({ category }) => {
+const Category = ({ category, handleShowModal }) => {
    //Global State
    const { transactions, updateCategory } = useContext(transactionContext);
 
@@ -102,6 +102,7 @@ const Category = ({ category }) => {
                <Transaction
                   key={transaction.transactionId}
                   transaction={transaction}
+                  handleShowModal={handleShowModal}
                />
             ))}
          </div>
