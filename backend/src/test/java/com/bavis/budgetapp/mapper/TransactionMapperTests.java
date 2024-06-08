@@ -162,9 +162,9 @@ public class TransactionMapperTests {
         assertEquals(transactionName, newTransaction.getName());
         assertEquals(updatedAmount, newTransaction.getAmount());
         assertEquals(localDate, newTransaction.getDate());
+        assertEquals(category, newTransaction.getCategory());
+        assertEquals(account, newTransaction.getAccount());
         assertNull(newTransaction.getTransactionId());
-        assertNull(newTransaction.getCategory());
-        assertNull(newTransaction.getAccount());
     }
 
 }

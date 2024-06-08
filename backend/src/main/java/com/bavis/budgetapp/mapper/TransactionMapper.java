@@ -51,9 +51,9 @@ public interface TransactionMapper {
     @Mapping(target = "amount", source = "updatedAmount")
     @Mapping(target = "logoUrl", source = "logoUrl")
     @Mapping(target = "date", source = "date")
+    @Mapping(target = "account", source = "account")
+    @Mapping(target = "category", source = "category")
     @Mapping(target = "transactionId", ignore = true)
-    @Mapping(target = "account", ignore = true)
-    @Mapping(target = "category", ignore = true)
     Transaction toEntity(TransactionDto transactionDto);
 
 
