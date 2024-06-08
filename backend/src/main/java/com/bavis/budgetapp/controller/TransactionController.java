@@ -2,10 +2,12 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.SplitTransactionDto;
+import com.bavis.budgetapp.dto.TransactionDto;
 import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.service.TransactionService;
-import com.bavis.budgetapp.validator.group.TransactionDtoValidationGroup;
+import com.bavis.budgetapp.validator.group.TransactionDtoAddValidationGroup;
+import com.bavis.budgetapp.validator.group.TransactionDtoSplitValidationGroup;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,12 @@ public class TransactionController {
     public ResponseEntity<List<Transaction>> syncTransactions(@Valid @RequestBody TransactionSyncRequestDto transactionSyncRequestDto){
         log.info("Received request to SyncTransactions for following TransactionSyncRequest: [{}]", transactionSyncRequestDto);
         return ResponseEntity.ok(_transactionService.syncTransactions(transactionSyncRequestDto));
+    }
+
+    @PostMapping
+    public ResponseEntity<Transaction> addTransaction(@RequestBody @Validated(TransactionDtoAddValidationGroup.class) TransactionDto transactionDto) {
+        log.info("Received request to create new Transaction entity for following TransactionDto: [{}]", transactionDto);
+        return ResponseEntity.ok(_transactionService.addTransaction(transactionDto));
     }
 
     /**
@@ -79,7 +87,7 @@ public class TransactionController {
      *          - List of new Transaction entities
      */
     @PutMapping("/{transactionId}/split")
-    public ResponseEntity<List<Transaction>> splitTransactions(@PathVariable("transactionId") String transactionId, @Validated(TransactionDtoValidationGroup.class) @RequestBody SplitTransactionDto splitTransactionDto) {
+    public ResponseEntity<List<Transaction>> splitTransactions(@PathVariable("transactionId") String transactionId, @Validated(TransactionDtoSplitValidationGroup.class) @RequestBody SplitTransactionDto splitTransactionDto) {
         log.info("Received request to split out Transaction with ID {} into following Transactions: [{}]", transactionId, splitTransactionDto);
         return ResponseEntity.ok(_transactionService.splitTransaction(transactionId, splitTransactionDto));
     }

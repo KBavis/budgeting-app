@@ -10,6 +10,8 @@ import com.bavis.budgetapp.service.impl.CategoryServiceImpl;
 import com.bavis.budgetapp.service.impl.TransactionServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +78,7 @@ public class TransactionControllerTests {
     @BeforeEach
     void setup() {
         objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
 
         validAccountIds = List.of("12345", "6789");
         invalidAccountIds = List.of("ABCDE");
@@ -128,7 +131,7 @@ public class TransactionControllerTests {
     }
 
     @Test
-    void testSyncTransactions_ValidRequest_Successful() throws Exception{
+    void testSyncTransactions_ValidRequest_Successful() throws Exception {
         //Arrange
         Transaction transactionOne = validTransactions.get(0);
         Transaction transactionTwo = validTransactions.get(1);
@@ -215,7 +218,7 @@ public class TransactionControllerTests {
     }
 
     @Test
-    void testSyncTransaction_InvalidAccount_Failure() throws Exception{
+    void testSyncTransaction_InvalidAccount_Failure() throws Exception {
         //Arrange
         String invalidAccountIdOne = invalidAccountIds.get(0);
 
@@ -238,7 +241,7 @@ public class TransactionControllerTests {
     }
 
     @Test
-    void testSyncTransactions_InvalidAuthorization_Failure() throws Exception{
+    void testSyncTransactions_InvalidAuthorization_Failure() throws Exception {
         //Arrange
         User nonAuthUser = User.builder()
                 .userId(12L)
@@ -371,7 +374,7 @@ public class TransactionControllerTests {
     }
 
     @Test
-    void testRemoveAssignedCategory_ValidTransactionId_Successful() throws Exception{
+    void testRemoveAssignedCategory_ValidTransactionId_Successful() throws Exception {
         //Arrange
         String transactionId = "valid-transaction-id";
 
@@ -554,5 +557,112 @@ public class TransactionControllerTests {
         resultActions.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("The provided transaction name is not valid"));
 
+    }
+
+    @Test
+    void testAddTransaction_ValidDto_Success() throws Exception {
+        //Arrange
+        LocalDate validDate = LocalDate.now();
+        String validName = "valid-name";
+        double validAmount = 100.0;
+        String transactionId = "transaction-id";
+        TransactionDto transactionDto = TransactionDto.builder()
+                .date(validDate)
+                .updatedName(validName)
+                .updatedAmount(validAmount)
+                .build();
+        Transaction expectedTransaction = Transaction.builder()
+                .transactionId(transactionId)
+                .account(null)
+                .category(null)
+                .amount(validAmount)
+                .name(validName)
+                .date(validDate)
+                .logoUrl(null)
+                .build();
+
+        //Mock
+        when(transactionService.addTransaction(transactionDto)).thenReturn(expectedTransaction);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(transactionDto)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.transactionId").value(transactionId))
+                .andExpect(jsonPath("$.category").value(Matchers.nullValue()))
+                .andExpect(jsonPath("$.logoUrl").value(Matchers.nullValue()))
+                .andExpect(jsonPath("$.amount").value(validAmount))
+                .andExpect(jsonPath("$.date").value(validDate.toString()))
+                .andExpect(jsonPath("$.name").value(validName));
+
+        //Verify
+        verify(transactionService, times(1)).addTransaction(transactionDto);
+    }
+
+    @Test
+    void testAddTransaction_InvalidName_Failure() throws Exception {
+        //Arrange
+        String invalidName =  "InvalidddddddddddddddNameeeeeeeeeeeeeeeeeeTooooooLonnnnnngg";
+        double validAmount = 1000.0;
+        LocalDate validDate = LocalDate.now();
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedName(invalidName)
+                .updatedAmount(validAmount)
+                .date(validDate)
+                .build();
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(transactionDto)));
+
+        //Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The provided transaction name is not valid"));
+    }
+
+    @Test
+    void testAddTransaction_InvalidAmount_Failure() throws Exception {
+        //Arrange
+        String validName =  "valid-name";
+        double invalidAmount = -1000.0;
+        LocalDate validDate = LocalDate.now();
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedName(validName)
+                .updatedAmount(invalidAmount)
+                .date(validDate)
+                .build();
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(transactionDto)));
+
+        //Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The provided transaction amount is not valid"));
+    }
+
+    @Test
+    void testAddTransaction_InvalidDate_Failure() throws Exception {
+        //Arrange
+        String validName =  "valid-name";
+        double validAmount = 1000.0;
+        LocalDate invalidDate = null;
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedName(validName)
+                .updatedAmount(validAmount)
+                .date(invalidDate)
+                .build();
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(transactionDto)));
+
+        //Assert
+        resultActions.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The provided transaction date is not valid"));
     }
 }
