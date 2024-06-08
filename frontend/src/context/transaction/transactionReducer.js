@@ -9,6 +9,8 @@ import {
    FETCH_TRANSACTIONS_SUCCESS,
    SPLIT_TRANSACTIONS_FAILURE,
    SPLIT_TRANSACTIONS_SUCCESS,
+   ADD_TRANSACTION_SUCCESS,
+   ADD_TRANSACTION_FAILURE,
 } from "./types";
 
 export default (state, action) => {
@@ -38,6 +40,14 @@ export default (state, action) => {
             transactions: newTransactions,
             loading: false,
             error: null,
+         };
+      case ADD_TRANSACTION_SUCCESS:
+         // Ensure state.transactions is not null
+         const transactions = state.transactions || [];
+
+         return {
+            ...state,
+            transactions: [...transactions, action.payload],
          };
       case UPDATE_TRANSACTION_CATEGORY:
          // Update Transactions Category ID
@@ -81,6 +91,7 @@ export default (state, action) => {
       case SPLIT_TRANSACTIONS_FAILURE:
       case SYNC_TRANSACTIONS_FAIL:
       case FETCH_TRANSACTIONS_FAIL:
+      case ADD_TRANSACTION_FAILURE:
          return {
             ...state,
             error: action.payload,

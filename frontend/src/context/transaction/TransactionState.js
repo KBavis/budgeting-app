@@ -15,6 +15,8 @@ import {
    REMOVE_TRANSACTION_CATEGORY_FAILED,
    SPLIT_TRANSACTIONS_FAILURE,
    SPLIT_TRANSACTIONS_SUCCESS,
+   ADD_TRANSACTION_SUCCESS,
+   ADD_TRANSACTION_FAILURE,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -158,6 +160,13 @@ const TransactionState = (props) => {
       }
    };
 
+   /**
+    *
+    * @param transactionId
+    *          - ID of original Transaction entitiy being split out
+    * @param splitTransactions
+    *          - List of TransactionDto to split original Transaction into
+    */
    const splitTransaction = async (transactionId, splitTransactions) => {
       try {
          if (localStorage.token) {
@@ -196,6 +205,44 @@ const TransactionState = (props) => {
    };
 
    /**
+    * Functionality to create a Transaction independent from any Account
+    *
+    * @param transaction
+    *          - Transaction to create
+    */
+   const addTransaction = async (transaction) => {
+      try {
+         if (localStorage.token) {
+            setAuthToken(localStorage.token);
+         }
+
+         const config = {
+            headers: {
+               "Content-Type": "application/json",
+            },
+         };
+
+         const res = await axios.post(
+            `${apiUrl}/transactions`,
+            transaction,
+            config
+         );
+
+         console.log(res.data);
+         dispatch({
+            type: ADD_TRANSACTION_SUCCESS,
+            payload: res.data,
+         });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            ADD_TRANSACTION_FAILURE,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
+   /**
     *  Functionality to clear errors
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
@@ -218,6 +265,7 @@ const TransactionState = (props) => {
             clearErrors,
             setLoading,
             splitTransaction,
+            addTransaction,
          }}
       >
          {props.children}
