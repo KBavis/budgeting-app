@@ -60,10 +60,6 @@ public class TransactionDtoNameValidatorTests {
         assertFalse(validator.isValid(invalidTransactionDto1, context));
     }
     @Test
-    void testIsValid_NumbersInName_Failure() {
-        assertFalse(validator.isValid(invalidTransactionDto2, context));
-    }
-    @Test
     void testIsValid_TooLongName_Failure() {
         assertFalse(validator.isValid(invalidTransactionDto3, context));
     }
