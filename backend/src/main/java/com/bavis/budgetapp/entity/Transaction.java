@@ -68,10 +68,4 @@ public class Transaction {
 				&& Objects.equals(category, other.category) && Objects.equals(date, other.date)
 				&& Objects.equals(name, other.name);
 	}
-	@Override
-	public String toString() {
-		return "Transaction [name=" + name + ", amount=" + amount + ", category=" + category + ", date=" + date
-				+ ", accountSource=" + account + "]";
-	}
-	
 }
