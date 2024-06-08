@@ -42,6 +42,7 @@ dependencies {
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'com.auth0:java-jwt:4.4.0'
 	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.1.0'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310' //used to serialize LocalDate
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
