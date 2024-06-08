@@ -9,13 +9,19 @@ import categoryContext from "../context/category/categoryContext";
 import IncomeContext from "../context/income/incomeContext";
 import Loading from "../components/util/Loading";
 import SplitTransactionModal from "../components/transaction/SplitTransaction";
+import { FiPlus, FiDollarSign, FiList, FiUser } from "react-icons/fi";
+import AddTransaction from "../components/transaction/AddTransaction";
 
 const HomePage = () => {
    //Local State
    const [name, setName] = useState("");
    const [loading, setLoading] = useState(false);
-   const [showModal, setShowModal] = useState(false);
+   const [showSplitTransactionModal, setShowSplitTransactionModal] =
+      useState(false);
+   const [showAddTransactionModal, setShowAddTransactionModal] =
+      useState(false);
    const [transaction, setTransaction] = useState(null);
+   const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown visibility
 
    const initalFetchRef = useRef(false);
 
@@ -58,15 +64,26 @@ const HomePage = () => {
       setName(user.name);
    }, [user]);
 
-   // Function to open modal
-   const handleShowModal = (splitTransaction) => {
+   // Function to open SplitTransaction modal
+   const handleShowSplitTransactionModal = (splitTransaction) => {
       setTransaction(splitTransaction);
-      setShowModal(true);
+      setShowSplitTransactionModal(true);
+   };
+
+   //Function to close SplitTransaction modal
+   const handleCloseSplitTransactionModal = () => {
+      setShowSplitTransactionModal(false);
+   };
+
+   // Function to open AddTransaction modal
+   const handleShowAddTransactionModal = () => {
+      setDropdownVisible(false);
+      setShowAddTransactionModal(true);
    };
 
    //Function to close modal
-   const handleCloseModal = () => {
-      setShowModal(false);
+   const handleCloseAddTransactionModal = () => {
+      setShowAddTransactionModal(false);
    };
 
    //Sync Transactions for Added Accounts
@@ -165,8 +182,43 @@ const HomePage = () => {
       accountsLoading,
    ]);
 
+   // Inside your return statement
    return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 relative">
+         {/* Dropdown for Add Transaction, Add Category, Add Account */}
+         {dropdownVisible && (
+            <div className="absolute font-bold mt-16 left-5 bg-white shadow-md rounded p-2 z-10">
+               <button
+                  className="dropdown-item hover:bg-gray-100 flex items-center mb-2"
+                  onClick={handleShowAddTransactionModal}
+               >
+                  <FiDollarSign className="mr-2" />
+                  Add Transaction
+               </button>
+               <button
+                  className="dropdown-item hover:bg-gray-100 flex items-center mb-2"
+                  onClick={() => console.log("Add Category clicked")}
+               >
+                  <FiList className="mr-2" />
+                  Add Category
+               </button>
+               <button
+                  className="dropdown-item hover:bg-gray-100 flex items-center"
+                  onClick={() => console.log("Add Account clicked")}
+               >
+                  <FiUser className="mr-2" />
+                  Add Account
+               </button>
+            </div>
+         )}
+         {/* Button to toggle dropdown */}
+         <button
+            className="absolute top-0 left-0 mt-4 ml-4 bg-indigo-600 hover:bg-indigo-700 duration-150 text-white font-bold py-2 px-4 rounded z-20"
+            onClick={() => setDropdownVisible(!dropdownVisible)}
+         >
+            <FiPlus size={30} />
+         </button>
+         {/* Main Content */}
          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
             <div className="max-w-md text-center mb-8 mt-8 xxl:mt-4">
                <h1 className="text-2xl md:text-3xl font-bold mb-4 text-white">
@@ -188,7 +240,7 @@ const HomePage = () => {
                      <CategoryType
                         key={categoryType.categoryTypeId}
                         categoryType={categoryType}
-                        handleShowModal={handleShowModal}
+                        handleShowModal={handleShowSplitTransactionModal}
                      />
                   ))
                ) : (
@@ -197,12 +249,17 @@ const HomePage = () => {
             </div>
             <MiscellaneousTransactions />
          </div>
-         {showModal && ( // Render modal if showModal is true and selectedCategoryType is not null
+         {showSplitTransactionModal && ( // Render modal if showModal is true and selectedCategoryType is not null
             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
                <SplitTransactionModal
-                  onClose={handleCloseModal}
+                  onClose={handleCloseSplitTransactionModal}
                   transaction={transaction}
                />
+            </div>
+         )}
+         {showAddTransactionModal && ( // Render modal if showModal is true and selectedCategoryType is not null
+            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+               <AddTransaction onClose={handleCloseAddTransactionModal} />
             </div>
          )}
       </div>

@@ -1,6 +1,6 @@
-import AuthState from "./context/auth/AuthState";
-import React, { Fragment, useEffect, useContext } from "react";
+import React, { Fragment } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import AuthState from "./context/auth/AuthState";
 import LoginRegisterPage from "./pages/LoginRegisterPage";
 import HomePage from "./pages/HomePage";
 import Login from "./components/auth/Login";
@@ -20,6 +20,7 @@ import TransactionState from "./context/transaction/TransactionState";
 import CategoryTypePage from "./pages/CategoryTypePage";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import Navbar from "./components/layout/Navbar";
 
 /**
  *  Main Application File
@@ -35,6 +36,7 @@ function App() {
                         <TransactionState>
                            <Router>
                               <Fragment>
+                                 <Navbar />
                                  <Alerts />
                                  <Routes>
                                     <Route

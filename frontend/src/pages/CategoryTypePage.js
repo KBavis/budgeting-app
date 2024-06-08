@@ -44,7 +44,7 @@ const CategoryTypePage = ({ categoryType }) => {
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
          <FaArrowLeft
-            className="text-3xl text-white ml-5 mt-5 hover:scale-105 hover:text-gray-200 cursor-pointer"
+            className="text-3xl text-white ml-5 mt-5 hover:scale-105 hover:text-gray-200 cursor-pointer z-[500]"
             onClick={handleBackClick}
          />
          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
