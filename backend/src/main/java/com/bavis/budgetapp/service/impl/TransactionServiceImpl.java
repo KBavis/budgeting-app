@@ -9,6 +9,7 @@ import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -178,11 +179,13 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional
     public List<Transaction> splitTransaction(String transactionId, SplitTransactionDto splitTransactionDto) throws RuntimeException{
         log.info("Attempting to split out Transaction with the ID {}", transactionId);
 
         //Fetch Original Transaction by ID
         Transaction originalTransaction = readById(transactionId);
+        log.info("Original Transaction being split: [{}]", originalTransaction);
 
         //Update TransactionDto's with original Transaction properties
         List<TransactionDto> updatedTransactionDtos = Optional.ofNullable(splitTransactionDto.getSplitTransactions())
@@ -203,6 +206,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .map(_transactionMapper::toEntity)
                 .peek(transaction -> transaction.setTransactionId(transactionId + "_" + counter.getAndIncrement()))
                 .toList();
+        log.info("Transaction entities to be persisted: [{}]", splitTransactions);
 
         //Delete Original Transaction
         _transactionRepository.deleteById(transactionId);
