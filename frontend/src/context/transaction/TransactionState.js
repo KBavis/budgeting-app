@@ -170,10 +170,12 @@ const TransactionState = (props) => {
             },
          };
 
+         console.log(splitTransactions);
+
          const res = await axios.put(
-            `${apiUrl}/${transactionId}/split`,
-            config,
-            splitTransactions
+            `${apiUrl}/transactions/${transactionId}/split`,
+            splitTransactions,
+            config
          );
 
          console.log(res.data);

@@ -1,11 +1,20 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { FaPlus, FaTimes } from "react-icons/fa"; // Importing icons
+import AlertContext from "../../context/alert/alertContext";
+import transactionContext from "../../context/transaction/transactionContext";
 
-const SplitTransactionModal = ({ onClose, onConfirm, transaction }) => {
+const SplitTransactionModal = ({ onClose, transaction }) => {
+   //Global State
+   const { setAlert } = useContext(AlertContext);
+   const { splitTransaction } = useContext(transactionContext);
+
+   // Local State for Initial Split
    const [splitTransactions, setSplitTransactions] = useState([
       { name: "", amount: "", removable: false },
       { name: "", amount: "", removable: false },
    ]);
 
+   // Functionality to Add Initial Transaction
    const handleAddSplitTransaction = () => {
       setSplitTransactions([
          ...splitTransactions,
@@ -13,6 +22,7 @@ const SplitTransactionModal = ({ onClose, onConfirm, transaction }) => {
       ]);
    };
 
+   // Functionality to Remove a Split Transaction
    const handleRemoveSplitTransaction = (index) => {
       if (splitTransactions[index].removable) {
          const updatedTransactions = [...splitTransactions];
@@ -21,6 +31,7 @@ const SplitTransactionModal = ({ onClose, onConfirm, transaction }) => {
       }
    };
 
+   // Functionality to adjust Transaction Name/Amount
    const handleInputChange = (index, event) => {
       const { name, value } = event.target;
       const list = [...splitTransactions];
@@ -28,9 +39,50 @@ const SplitTransactionModal = ({ onClose, onConfirm, transaction }) => {
       setSplitTransactions(list);
    };
 
+   // Functionality to confirm a split Transaction
+   const onConfirm = () => {
+      // Ensure Minimum of Two Transactions Filled Out
+      const filledTransactions = splitTransactions.filter(
+         (split) => split.name && split.amount
+      );
+      if (filledTransactions.length < 2) {
+         setAlert(
+            "Please ensure at least two transactions are split out.",
+            "danger"
+         );
+         return;
+      }
+
+      //Ensure Amount of Transactions is Not More Than Original
+      const totalAmount = filledTransactions.reduce(
+         (total, split) => total + parseFloat(split.amount),
+         0
+      );
+
+      if (totalAmount > parseFloat(transaction.amount)) {
+         setAlert(
+            "The total amount of split-out transactions cannot exceed the original transaction amount.",
+            "danger"
+         );
+         return;
+      }
+
+      // Parse Transactions into TransactionDto Format and then into SplitTransactionDto
+      const transactionDtos = filledTransactions.map((split) => ({
+         updatedName: split.name,
+         updatedAmount: parseFloat(split.amount),
+      }));
+      const updatedTransactions = {
+         splitTransactions: transactionDtos,
+      };
+
+      splitTransaction(transaction.transactionId, updatedTransactions);
+      onClose();
+   };
+
    return (
-      <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm overflow-y-auto">
-         <div className="bg-white p-8 rounded shadow-lg w-1/4 h-1/2 flex flex-col justify-between">
+      <div className="fixed inset-0 flex items-center justify-center z-40 backdrop-blur-sm overflow-y-auto">
+         <div className="bg-white p-8 rounded shadow-lg w-1/4 h-[65%] flex flex-col justify-between">
             <div>
                <div className="flex justify-between items-center mb-4">
                   <div>
@@ -60,45 +112,61 @@ const SplitTransactionModal = ({ onClose, onConfirm, transaction }) => {
                   </div>
                </div>
             </div>
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto flex-1">
                {splitTransactions.map((split, index) => (
                   <div
                      key={index}
-                     className="mb-4 bg-gray-200 border-[1px] border-black relative"
+                     className="mb-4 bg-indigo-800 border-[1px] border-indigo-200 rounded-lg p-3 flex items-center relative"
                   >
                      {split.removable && (
-                        <span
-                           className="absolute top-0 right-0 cursor-pointer text-black text-2xl font-extrabold px-2"
+                        <button
+                           className="absolute top-2 right-2 bg-white border-[1px] border-gray-500 rounded-full p-1 shadow cursor-pointer hover:scale-1025"
                            onClick={() => handleRemoveSplitTransaction(index)}
                         >
-                           &times;
-                        </span>
+                           <FaTimes className="text-red-500" />
+                        </button>
                      )}
-                     <div className="flex flex-col gap-2 items-center p-3">
+                     <img
+                        src={
+                           transaction.logoUrl ||
+                           "https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
+                        }
+                        alt="Transaction Logo"
+                        className="w-8 h-8 rounded-full mr-3 "
+                     />
+                     <div className="flex flex-col gap-2 w-full">
                         <input
                            type="text"
                            name="name"
                            value={split.name}
                            onChange={(e) => handleInputChange(index, e)}
                            placeholder="Transaction Name"
-                           className="w-full border px-2 py-1 border-gray-300 rounded-full focus:outline-none focus:border-indigo-500"
+                           className="w-full border pl-6 px-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
                         />
-                        <input
-                           name="amount"
-                           value={split.amount}
-                           onChange={(e) => handleInputChange(index, e)}
-                           placeholder="Transaction Amount"
-                           className="w-full border px-2 py-1 border-gray-300 rounded-full focus:outline-none focus:border-indigo-500"
-                        />
+                        <div className="relative flex items-center">
+                           {split.amount && (
+                              <span className="absolute left-2 text-gray-500">
+                                 $
+                              </span>
+                           )}
+                           <input
+                              type="text"
+                              name="amount"
+                              value={split.amount}
+                              onChange={(e) => handleInputChange(index, e)}
+                              placeholder="Transaction Amount"
+                              className="w-full border px-2 py-1 border-gray-300 rounded-md pl-6 focus:outline-none focus:border-indigo-500"
+                           />
+                        </div>
                      </div>
                   </div>
                ))}
             </div>
             <button
                onClick={handleAddSplitTransaction}
-               className="w-1/2 mx-auto font-bold mb-4 bg-indigo-600 border-2 border-indigo-600 text-white py-2 rounded duration-500 hover:text-indigo-600 hover:bg-transparent "
+               className="w-10 h-10 mx-auto font-bold mb-4 bg-indigo-600 border-2 border-indigo-600 text-white rounded-full flex items-center justify-center duration-500 hover:text-indigo-600 hover:bg-transparent"
             >
-               Add Another Transaction
+               <FaPlus />
             </button>
             <div className="flex justify-between mt-4">
                <button

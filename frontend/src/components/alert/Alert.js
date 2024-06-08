@@ -13,7 +13,7 @@ const Alerts = () => {
             alerts.map((alert) => (
                <div
                   key={alert.id}
-                  className={`fixed top-4 right-4 rounded-lg shadow-lg py-4 px-6 text-lg font-semibold flex items-center ${
+                  className={`fixed top-4 z-[100] right-4 rounded-lg shadow-lg py-4 px-6 text-lg font-semibold flex items-center ${
                      alert.type === "danger"
                         ? "bg-red-500 text-white"
                         : "bg-green-500 text-white"

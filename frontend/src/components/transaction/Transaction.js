@@ -50,7 +50,7 @@ const Transaction = ({ transaction, handleShowModal }) => {
             <p className="text-xs xl:text-sm">${roundedAmount}</p>
          </div>
          {transaction.category && ( // Only display the dropdown if category is not null
-            <div className="relative">
+            <div className="relative ">
                <button
                   onClick={toggleDropdown}
                   className="text-white focus:outline-none"
@@ -58,7 +58,7 @@ const Transaction = ({ transaction, handleShowModal }) => {
                   <FaEllipsisV />
                </button>
                {dropdownVisible && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-[200]">
                      <button
                         onClick={handleSplitTransaction}
                         className="font-bold border-[1px] border-black block w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
