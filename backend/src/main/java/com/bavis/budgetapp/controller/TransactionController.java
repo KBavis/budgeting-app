@@ -58,6 +58,12 @@ public class TransactionController {
         return ResponseEntity.ok(_transactionService.addTransaction(transactionDto));
     }
 
+    @PutMapping("/{transactionId}")
+    public ResponseEntity<Transaction> reduceTransactionAmount(@PathVariable("transactionId") String transactionId, @RequestBody TransactionDto transactionDto) {
+        log.info("Received request to reduce Transaction amount via following TransactionDto: [{}]", transactionDto);
+        return ResponseEntity.ok(_transactionService.reduceTransactionAmount(transactionId, transactionDto));
+    }
+
 
     /**
      * Retrieve all Transaction entities within the current month corresponding to Authenticated User's added Accounts

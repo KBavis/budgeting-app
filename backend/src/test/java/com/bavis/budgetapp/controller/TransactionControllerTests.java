@@ -665,4 +665,75 @@ public class TransactionControllerTests {
         resultActions.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("The provided transaction date is not valid"));
     }
+
+    @Test
+    void testReduceTransactionAmount_ValidAmount_ValidTransactionId_Success() throws  Exception {
+        //Arrange
+        String transactionId = "transaction-id";
+        Transaction expectedTransaction = Transaction.builder()
+                .amount(1000.0)
+                .name("Transaction One")
+                .transactionId(transactionId)
+                .date(LocalDate.now())
+                .build();
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedAmount(2000.0)
+                .build();
+
+        //Mock
+        when(transactionService.reduceTransactionAmount(transactionId, transactionDto)).thenReturn(expectedTransaction);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/transactions/" + transactionId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(transactionDto)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.transactionId").value(transactionId))
+                .andExpect(jsonPath("$.amount").value(expectedTransaction.getAmount()))
+                .andExpect(jsonPath("$.date").value(expectedTransaction.getDate().toString()));
+
+        //Verify
+        verify(transactionService, times(1)).reduceTransactionAmount(transactionId, transactionDto);
+    }
+    @Test
+    void testReduceTransactionAmount_InvalidAmount_Failure() throws  Exception {
+        //Arrange
+        String transactionId = "transaction-id";
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedAmount(1000.0)
+                .build();
+
+        //Mock
+        when(transactionService.reduceTransactionAmount(transactionId, transactionDto)).thenThrow(new RuntimeException("Invalid Transaction amount; The provided amount must be less than the original Transaction amount."));
+
+        //Act & Assert
+        ResultActions resultActions = mockMvc.perform(put("/transactions/" + transactionId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(transactionDto)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Invalid Transaction amount; The provided amount must be less than the original Transaction amount."));
+    }
+    @Test
+    void testReduceTransactionAmount_InvalidTransactionId_Failure() throws  Exception {
+        //Arrange
+        String transactionId = "transaction-id";
+        String errorMsg = "Transaction with the following ID not found: " + transactionId;
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedAmount(1000.0)
+                .build();
+
+        //Mock
+        when(transactionService.reduceTransactionAmount(transactionId, transactionDto)).thenThrow(new RuntimeException(errorMsg));
+
+        //Act & Assert
+        ResultActions resultActions = mockMvc.perform(put("/transactions/" + transactionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(transactionDto)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value(errorMsg));
+    }
 }
