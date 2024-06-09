@@ -181,6 +181,23 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new RuntimeException("Transaction with the following ID not found: " + transactionId));
     }
 
+    @Override
+    public Transaction reduceTransactionAmount(String transactionId, TransactionDto transactionDto) throws  RuntimeException {
+        log.info("Attempting to reduce the Transaction amount to {} for the following Transaction ID: {}", transactionDto.getUpdatedAmount(), transactionId);
+
+        //Fetch Transaction
+        Transaction transaction = readById(transactionId);
+
+        //Ensure updated amount is less than original amount
+        if(transaction.getAmount() <= transactionDto.getUpdatedAmount()){
+            throw new RuntimeException("Invalid Transaction amount; The provided amount must be less than the original Transaction amount.");
+        }
+
+        //Update Amount & Persist
+        transaction.setAmount(transactionDto.getUpdatedAmount());
+        return _transactionRepository.save(transaction);
+    }
+
 
 
     @Override

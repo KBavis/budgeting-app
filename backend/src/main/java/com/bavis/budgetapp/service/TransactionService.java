@@ -48,6 +48,19 @@ public interface TransactionService {
 
 
     /**
+     * Functionality to reduce the amount associated with a particular Transaction entity
+     *
+     * @param transactionId
+     *          - ID of Transaction entity to update
+     * @param transactionDto
+     *          - TransactionDto containing updates to Transaction amount
+     * @return
+     *          - updated Transaction entity
+     */
+    Transaction reduceTransactionAmount(String transactionId, TransactionDto transactionDto);
+
+
+    /**
      * Functionality to split a Transaction into multiple Transaction entities
      *
      * @param transactionId

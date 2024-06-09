@@ -873,4 +873,80 @@ public class TransactionServiceTests {
         assertNull(transaction.getLogoUrl());
     }
 
+    @Test
+    void testReduceTransactionAmount_ValidTransactionId_ValidTransactionDto_Success() {
+        //Arrange
+        double amount = 1000.0;
+        LocalDate date = LocalDate.now();
+        String transactioName = "transaction-name";
+        String transactionId = "transaction-id";
+
+        Transaction transaction = Transaction.builder()
+                .amount(amount)
+                .transactionId(transactionId)
+                .name(transactioName)
+                .date(date)
+                .build();
+
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedAmount(3000.0)
+                .build();
+
+        //Mock
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.save(transaction)).thenReturn(transaction);
+
+        //Act
+        Transaction actualTransaction = transactionService.reduceTransactionAmount(transactionId, transactionDto);
+
+        //Assert
+        assertNotNull(actualTransaction);
+        assertEquals(transactionDto.getUpdatedAmount(), actualTransaction.getAmount());
+        assertEquals(date, actualTransaction.getDate());
+        assertEquals(transactioName, actualTransaction.getName());
+        assertEquals(transactionId, actualTransaction.getTransactionId());
+    }
+
+    @Test
+    void testReduceTransactionAmount_InvalidTransactionId_Failure() {
+        //Arrange
+        String transactionId = "transaction-id";
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedAmount(3000.0)
+                .build();
+
+        //Mock
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.empty());
+
+        //Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            transactionService.reduceTransactionAmount(transactionId, transactionDto);
+        });
+        assertNotNull(exception);
+        assertEquals("Transaction with the following ID not found: " + transactionId, exception.getMessage());
+    }
+
+    @Test
+    void testReduceTransactionAmount_InvalidAmount_Failure () {
+        //Arrange
+        String transactionId = "transaction-id";
+        Transaction transaction = Transaction.builder()
+                .amount(2000.0)
+                .build();
+
+        TransactionDto transactionDto = TransactionDto.builder()
+                .updatedAmount(3000.0) //higher amount than original transaction
+                .build();
+
+        //Mock
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(transaction));
+
+        //Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            transactionService.reduceTransactionAmount(transactionId, transactionDto);
+        });
+        assertNotNull(exception);
+        assertEquals("Invalid Transaction amount; The provided amount must be less than the original Transaction amount.", exception.getMessage());
+    }
+
 }
