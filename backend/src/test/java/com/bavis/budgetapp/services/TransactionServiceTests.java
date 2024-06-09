@@ -399,56 +399,79 @@ public class TransactionServiceTests {
                 .accountName("First Account")
                 .build();
 
+        Category category = Category.builder()
+                .categoryId(10L)
+                .build();
+
         User user = User.builder()
                 .username("test-user")
                 .userId(10L)
                 .accounts(List.of(account))
+                .categories(List.of(category))
                 .build();
 
         Transaction transactionOne = Transaction.builder()
-                .transactionId("transaction-1")
+                .transactionId("transaction-3")
                 .amount(1000.0)
                 .date(now)
                 .account(account)
                 .build();
 
         Transaction transactionTwo = Transaction.builder()
-                .transactionId("transaction-1")
+                .transactionId("transaction-4")
                 .amount(1000.0)
                 .date(now)
                 .account(account)
                 .build();
 
         Transaction transactionThree = Transaction.builder()
-                .transactionId("transaction-1")
+                .transactionId("transaction-5")
                 .amount(1000.0)
                 .date(now)
                 .account(account)
                 .build();
 
-        List<Transaction> expectedTransactions = List.of(transactionOne, transactionTwo, transactionThree);
+        Transaction transactionFour = Transaction.builder()
+                .transactionId("transaction-6")
+                .category(category)
+                .account(null)
+                .build();
+
+
+        List<Transaction> expectedAccountTransactions = List.of(transactionOne, transactionTwo, transactionThree);
+        List<Transaction> expectedUserCreatedTransactions = List.of(transactionFour);
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(transactionRepository.findByAccountIdsAndCurrentMonth(any(), any())).thenReturn(expectedTransactions);
+        when(transactionRepository.findByAccountIdsAndCurrentMonth(any(), any())).thenReturn(expectedAccountTransactions);
+        when(transactionRepository.findByCategoryIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserCreatedTransactions);
 
         //Act
         List<Transaction> transactions = transactionService.readAll();
 
         //Assert
         assertNotNull(transactions);
-        assertEquals(expectedTransactions, transactions);
+        assertEquals(expectedAccountTransactions.size() + expectedUserCreatedTransactions.size(), transactions.size());
+        assertTrue(transactions.containsAll(expectedAccountTransactions));
+        assertTrue(transactions.containsAll(expectedUserCreatedTransactions));
+        assertEquals(transactionOne, transactions.get(0));
+        assertEquals(transactionTwo, transactions.get(1));
+        assertEquals(transactionThree, transactions.get(2));
+        assertEquals(transactionFour, transactions.get(3));
+
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
         verify(transactionRepository, times(1)).findByAccountIdsAndCurrentMonth(any(), any());
+        verify(transactionRepository, times(1)).findByCategoryIdsAndCurrentMonth(any(), any());
     }
 
     @Test
-    void testReadAll_NullAccounts_Failure() {
+    void testReadAll_NullAccounts_NullCategories_Failure() {
         //Arrange
         User user = User.builder()
                 .accounts(null)
+                .categories(null)
                 .build();
 
         //Mock
@@ -462,6 +485,86 @@ public class TransactionServiceTests {
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
+    }
+
+    @Test
+    void testReadAll_NullAccounts_ValidCategories_Success() {
+        //Arrange
+        Category category = Category.builder()
+                .categoryId(10L)
+                .build();
+
+        Transaction transaction = Transaction.builder()
+                .category(category)
+                .transactionId("transaction-id")
+                .account(null)
+                .amount(1000.0)
+                .date(LocalDate.now())
+                .build();
+
+        List<Transaction> expectedUserCreatedTransactions = List.of(transaction);
+
+        User user = User.builder()
+                .accounts(null)
+                .categories(List.of(category))
+                .build();
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(transactionRepository.findByCategoryIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserCreatedTransactions);
+
+        //Act
+        List<Transaction> actualTransactions = transactionService.readAll();
+
+        //Assert
+        assertNotNull(actualTransactions);
+        assertTrue(actualTransactions.containsAll(expectedUserCreatedTransactions));
+        assertEquals(expectedUserCreatedTransactions.size(), actualTransactions.size());
+        assertEquals(transaction, actualTransactions.get(0));
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
+        verify(transactionRepository, times(1)).findByCategoryIdsAndCurrentMonth(any(), any());
+    }
+
+    @Test
+    void testReadAll_NullCategories_ValidAccounts_Success() {
+        //Arrange
+        Account account = Account.builder()
+                .accountId("account-id")
+                .build();
+
+        Transaction transaction = Transaction.builder()
+                .category(null)
+                .transactionId("transaction-id")
+                .account(account)
+                .amount(1000.0)
+                .date(LocalDate.now())
+                .build();
+
+        List<Transaction> expectedUserAccountTransactions = List.of(transaction);
+
+        User user = User.builder()
+                .accounts(List.of(account))
+                .categories(null)
+                .build();
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(transactionRepository.findByAccountIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserAccountTransactions);
+
+        //Act
+        List<Transaction> actualTransactions = transactionService.readAll();
+
+        //Assert
+        assertNotNull(actualTransactions);
+        assertTrue(actualTransactions.containsAll(expectedUserAccountTransactions));
+        assertEquals(expectedUserAccountTransactions.size(), actualTransactions.size());
+        assertEquals(transaction, actualTransactions.get(0));
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
+        verify(transactionRepository, times(1)).findByAccountIdsAndCurrentMonth(any(), any());
     }
 
     @Test

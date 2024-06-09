@@ -136,21 +136,42 @@ public class TransactionServiceImpl implements TransactionService {
     public List<Transaction> readAll(){
         log.info("Attempting to read all Transaction entities corresponding to authenticated user's added Accounts and the current month");
         User currentAuthUser = _userService.getCurrentAuthUser();
+        LocalDate currentDate = LocalDate.now();
         List<Account> accounts = currentAuthUser.getAccounts();
+        List<Category> categories = currentAuthUser.getCategories();
+        List<Transaction> allUserTransactions = new ArrayList<>(); //transactions to return
 
         //Validate User Has Accounts To Fetch Transactions For
-        if(accounts == null) {
+        if(accounts == null && categories == null) {
             return new ArrayList<>();
         }
 
-        //Fetch All Account IDs corresponding to authenticated user
-        List<String> accountIds = accounts.stream()
-                .map(Account::getAccountId)
-                .collect(Collectors.toList());
-        LocalDate currentDate = LocalDate.now();
 
-        log.debug("Reading transactions that are within the same year/date as {} and corresponding to following account IDs: {}", currentDate, accountIds);
-        return _transactionRepository.findByAccountIdsAndCurrentMonth(accountIds, currentDate);
+        //Fetch All Transactions associated with User Accounts if user has added Accounts
+        if(accounts != null) {
+            List<String> accountIds = accounts.stream()
+                    .map(Account::getAccountId)
+                    .collect(Collectors.toList());
+
+            log.debug("Reading transactions that are within the same year/date as {} and corresponding to following account IDs: {}", currentDate, accountIds);
+            List<Transaction> accountTransactions = new ArrayList<>(_transactionRepository.findByAccountIdsAndCurrentMonth(accountIds, currentDate));
+            allUserTransactions.addAll(accountTransactions);
+        }
+
+        //Fetch All Transactions associated with User Categories if user has added Categories
+        if(categories != null){
+            List<Long> userCategoryIds = categories.stream()
+                    .map(Category::getCategoryId)
+                    .toList();
+
+            //Fetch All Transactions Corresponding to these Category IDs Where Account is set to Null
+            log.debug("Reading transactions that within the same year/date as {} and corresponding to the following Category IDs: {}", currentDate, userCategoryIds);
+            List<Transaction> userCreatedTransactions = _transactionRepository.findByCategoryIdsAndCurrentMonth(userCategoryIds, currentDate);
+            allUserTransactions.addAll(userCreatedTransactions);
+        }
+
+        log.info("All Transactions corresponding to UserID {} : [{}]", currentAuthUser.getUserId(), allUserTransactions);
+        return  allUserTransactions;
     }
 
     @Override
