@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import transactionContext from "../../context/transaction/transactionContext";
+import AlertContext from "../../context/alert/alertContext";
 
 /**
  * Modal used to Add a Transaction indepdent from any Account
@@ -15,6 +16,7 @@ const AddTransaction = ({ onClose }) => {
 
    //Global State
    const { addTransaction } = useContext(transactionContext);
+   const { setAlert } = useContext(AlertContext);
 
    // Functionality to close the modal
    const handleClose = () => {
@@ -23,7 +25,6 @@ const AddTransaction = ({ onClose }) => {
 
    // Function to handle form submission
    const handleSubmit = (e) => {
-      e.preventDefault();
       handleClose();
       const transactionDto = {
          updatedName: transactionName,
@@ -42,9 +43,12 @@ const AddTransaction = ({ onClose }) => {
                      Add Transaction
                   </h2>
                   <p className="text-center">
-                     To add a Transaction not associated with any added
-                     financial institution, simply fill out the following
-                     information and submit!
+                     Please fill out the following information to create a
+                     Transaction indepdent of any financial institution.
+                  </p>
+                  <p className="font-bold text-sm text-center mx-10">
+                     Note: You must assign this added Transaction to an
+                     associated Category prior to logging out!
                   </p>
                </div>
             </div>

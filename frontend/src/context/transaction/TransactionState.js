@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useContext, useReducer } from "react";
 import transactionReducer from "./transactionReducer";
 import axios from "axios";
 import apiUrl from "../../utils/url";
@@ -21,6 +21,7 @@ import {
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
 import setAuthToken from "../../utils/setAuthToken";
+import AlertContext from "../alert/alertContext";
 
 /**
  * Transaction State to manage functionality with Transaction entities
@@ -30,6 +31,7 @@ import setAuthToken from "../../utils/setAuthToken";
  */
 const TransactionState = (props) => {
    const [state, dispatch] = useReducer(transactionReducer, initialState);
+   const { setAlert } = useContext(AlertContext);
 
    /**
     * Functionality to sync transactions with external financial institutions
@@ -233,12 +235,14 @@ const TransactionState = (props) => {
             type: ADD_TRANSACTION_SUCCESS,
             payload: res.data,
          });
+         setAlert("Transaction successfully added", "success");
       } catch (err) {
          console.error(err);
          dispatch({
             ADD_TRANSACTION_FAILURE,
             payload: err.response.data.error,
          });
+         setAlert(err.response.data.error, "danger");
       }
    };
 

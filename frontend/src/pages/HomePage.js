@@ -61,7 +61,9 @@ const HomePage = () => {
 
    // Set Authenticated User's Name
    useEffect(() => {
-      setName(user.name);
+      if (user) {
+         setName(user.name);
+      }
    }, [user]);
 
    // Function to open SplitTransaction modal
@@ -91,6 +93,11 @@ const HomePage = () => {
       const accountIds = accounts.map((account) => account.accountId);
       console.log(`Syncing Transactions for AccountIds`, accountIds);
       await syncTransactions(accountIds);
+   };
+
+   //TODO: Fetch Auth User When Application Refreshed
+   const getAuthUser = async () => {
+      console.log("Fetching current authenticated user...");
    };
 
    //Fetch All Accounts
