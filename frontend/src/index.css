@@ -9,6 +9,10 @@
    transition: background-color 0.5s ease !important;
 }
 
+.dropdown-toggle::after {
+   display: none !important;
+}
+
 .plaid-link-wrapper:hover {
    background-color: #4338ca !important;
 }
