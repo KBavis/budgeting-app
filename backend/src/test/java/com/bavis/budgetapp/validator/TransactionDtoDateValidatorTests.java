@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.validator;
 
+import com.bavis.budgetapp.constants.TimeType;
 import com.bavis.budgetapp.dto.TransactionDto;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,12 +47,24 @@ public class TransactionDtoDateValidatorTests {
 
 
     @Test
-    void testIsValid_ValidDate_Successful() {
+    void testIsValid_ValidDate_SameDate_Successful() {
+        assertTrue(validator.isValid(validTransactionDto, context));
+    }
+
+    @Test
+    void testIsValid_ValidDate_BeforeCurrentDate_Successful() {
+        validTransactionDto.setDate(LocalDate.now().minusDays(1)); //set date to be yesterday
         assertTrue(validator.isValid(validTransactionDto, context));
     }
 
     @Test
     void testIsValid_NullDate_Failure() {
+        assertFalse(validator.isValid(invalidTransactionDto, context));
+    }
+
+    @Test
+    void testIsValid_AfterCurrentDate_Failure() {
+        invalidTransactionDto.setDate(LocalDate.now().plusDays(1)); //set date to be tomorrow
         assertFalse(validator.isValid(invalidTransactionDto, context));
     }
 

@@ -35,7 +35,14 @@ public class TransactionDtoDateValidator implements ConstraintValidator<Transact
     @Override
     public boolean isValid(TransactionDto transactionDto, ConstraintValidatorContext constraintValidatorContext) {
         LocalDate localDate = transactionDto.getDate();
+        LocalDate currentDate = LocalDate.now();
 
-        return localDate != null;
+        if(localDate != null) {
+            boolean dateValidity = !localDate.isAfter(currentDate);
+            log.info("The provided TransactionDto date validity: {}", dateValidity);
+            return dateValidity;
+        }
+        log.info("TransactionDto provided date is null, and thus invalid");
+        return false;
     }
 }
