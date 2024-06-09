@@ -4,18 +4,8 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 /**
  * 
@@ -26,8 +16,7 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "transaction")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -38,7 +27,11 @@ public class Transaction {
 	private double amount;
 	private LocalDate date;
 	private String logoUrl;
-	
+
+	@Column(name = "updated_by_user", columnDefinition = "boolean default false")
+	private boolean updatedByUser;
+
+
 	/**
 	 * Many Transactions To One Account
 	 */
