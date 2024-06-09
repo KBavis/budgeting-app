@@ -44,11 +44,20 @@ public class TransactionController {
         return ResponseEntity.ok(_transactionService.syncTransactions(transactionSyncRequestDto));
     }
 
+    /**
+     * Add a Transaction entity that is independent of any financial institution
+     *
+     * @param transactionDto
+     *          - TransactionDto utilized to create Transaction entity
+     * @return
+     *          - Newly created Transaction entity
+     */
     @PostMapping
     public ResponseEntity<Transaction> addTransaction(@RequestBody @Validated(TransactionDtoAddValidationGroup.class) TransactionDto transactionDto) {
         log.info("Received request to create new Transaction entity for following TransactionDto: [{}]", transactionDto);
         return ResponseEntity.ok(_transactionService.addTransaction(transactionDto));
     }
+
 
     /**
      * Retrieve all Transaction entities within the current month corresponding to Authenticated User's added Accounts
