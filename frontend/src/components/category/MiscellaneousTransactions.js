@@ -59,7 +59,7 @@ const MiscellaneousTransactions = () => {
       (currentPage + 1) * ITEMS_PER_PAGE
    );
 
-   return transactions && transactions.length > 0 ? (
+   return miscTransactions && miscTransactions.length > 0 ? (
       <div
          ref={drop}
          className={`bg-white rounded-lg shadow-md p-4 w-full xl:w-1/2 mt-4 text-center ${
