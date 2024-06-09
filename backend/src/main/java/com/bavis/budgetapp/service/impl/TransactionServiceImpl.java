@@ -193,8 +193,9 @@ public class TransactionServiceImpl implements TransactionService {
             throw new RuntimeException("Invalid Transaction amount; The provided amount must be less than the original Transaction amount.");
         }
 
-        //Update Amount & Persist
+        //Update Amount & Flag to indicate Transaction was updated, and persist
         transaction.setAmount(transactionDto.getUpdatedAmount());
+        transaction.setUpdatedByUser(true);
         return _transactionRepository.save(transaction);
     }
 

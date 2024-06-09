@@ -889,7 +889,7 @@ public class TransactionServiceTests {
                 .build();
 
         TransactionDto transactionDto = TransactionDto.builder()
-                .updatedAmount(3000.0)
+                .updatedAmount(999.0)
                 .build();
 
         //Mock
@@ -905,6 +905,7 @@ public class TransactionServiceTests {
         assertEquals(date, actualTransaction.getDate());
         assertEquals(transactioName, actualTransaction.getName());
         assertEquals(transactionId, actualTransaction.getTransactionId());
+        assertTrue(actualTransaction.isUpdatedByUser());
     }
 
     @Test
