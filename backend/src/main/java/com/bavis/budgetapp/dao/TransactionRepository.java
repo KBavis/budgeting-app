@@ -29,6 +29,15 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     @Query("SELECT t FROM Transaction t WHERE t.account.accountId IN :accountIds AND (t.date IS NOT NULL AND EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date)))")
     List<Transaction> findByAccountIdsAndCurrentMonth(@Param("accountIds") List<String> accountIds, @Param("currentDate") LocalDate currentDate);
 
+    /**
+     * Determine whether a Transaction exists by a specified Transaction ID AND was updated by the user
+     *
+     * @param transactionId
+     *          - Transaction ID to search for
+     * @return
+     *          - boolean determining if user updated Transaction and it exists within our DB
+     */
+    boolean existsByTransactionIdAndUpdatedByUserIsTrue(String transactionId);
 
     /**
      * Retrieve all Transactions for a given list of Category IDs, null Account, and within the current month/year

@@ -90,9 +90,11 @@ public class TransactionServiceImpl implements TransactionService {
                 allModifiedOrAddedTransactions.addAll(persistedAddedTransactions);
 
                 //For each Modified Transaction --> Map to Transaction Entities, Set Account/Category, Filter Out Transaction with Non-Existent IDs
+                //TODO: Make these filters into single Filter class
                 List<Transaction> modifiedTransactions = Optional.ofNullable(syncResponseDto.getModified()).stream().flatMap(List::stream)
                         .map(_transactionMapper::toEntity)
                         .filter(transaction -> _transactionRepository.existsById(transaction.getTransactionId())) //Ensure Transaction Exists within DB (filter out all updates pertaining to user updated Transactions)
+                        .filter(transaction -> !_transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(transaction.getTransactionId())) //Ensure Transaction WAS NOT Updated by User
                         .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
                         .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate())) //filter out transactions not within current month
                         .peek(transaction -> {

@@ -224,6 +224,7 @@ public class TransactionServiceTests {
             return invocationOnMock.<List<Transaction>>getArgument(0);
         });
         when(transactionRepository.existsById(any())).thenReturn(true);
+        when(transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(any())).thenReturn(false);
         doNothing().when(transactionRepository).deleteAll(anyList());
         when(connectionService.update(any(Connection.class), any(Long.class))).thenAnswer(invocationOnMock -> {
             Connection connectionToUpdate = invocationOnMock.getArgument(0);
@@ -255,6 +256,8 @@ public class TransactionServiceTests {
         verify(transactionRepository, times(4)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(2)).deleteAll(anyList());
         verify(transactionMapper, times(12)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionRepository, times(2)).existsByTransactionIdAndUpdatedByUserIsTrue(any());
+        verify(transactionRepository, times(2)).existsById(any());
     }
 
     @Test
