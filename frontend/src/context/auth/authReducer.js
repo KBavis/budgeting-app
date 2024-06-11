@@ -6,6 +6,8 @@ import {
    LOGOUT,
    CLEAR_ERRORS,
    SET_LOADING,
+   FETCH_AUTH_USER_FAIL,
+   FETCH_AUTH_USER_SUCCESS,
 } from "./types";
 
 /**
@@ -25,6 +27,7 @@ export default (state, action) => {
       case REGISTER_FAIL:
       case AUTH_FAIL:
       case LOGOUT:
+      case FETCH_AUTH_USER_FAIL:
          localStorage.removeItem("token");
          return {
             ...state,
@@ -33,6 +36,14 @@ export default (state, action) => {
             loading: false,
             user: null,
             error: action.payload,
+         };
+      case FETCH_AUTH_USER_SUCCESS:
+         return {
+            ...state,
+            user: action.payload,
+            isAuthenticated: true,
+            loading: false,
+            token: localStorage.token,
          };
       case CLEAR_ERRORS:
          return {

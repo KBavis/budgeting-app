@@ -10,9 +10,12 @@ import {
    REGISTER_SUCCESS,
    CLEAR_ERRORS,
    SET_LOADING,
+   FETCH_AUTH_USER_FAIL,
+   FETCH_AUTH_USER_SUCCESS,
 } from "./types";
 import initalState from "./initalState";
 import AuthContext from "./authContext";
+import setAuthToken from "../../utils/setAuthToken";
 
 /**
  * Global Authentication State
@@ -76,10 +79,33 @@ const AuthState = (props) => {
    };
 
    /**
+    * Function to fetch the currently authenticated user
+    */
+   const fetchAuthenticatedUser = async () => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      try {
+         const res = await axios.get(`${apiUrl}/auth`);
+         dispatch({ type: FETCH_AUTH_USER_SUCCESS, payload: res.data });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: FETCH_AUTH_USER_FAIL,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
+   /**
     * Functionality to Clear Errors
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
 
+   /**
+    *  Functionality to Set Loading
+    */
    const setLoading = () => dispatch({ type: SET_LOADING });
 
    return (
@@ -94,6 +120,7 @@ const AuthState = (props) => {
             login,
             clearErrors,
             setLoading,
+            fetchAuthenticatedUser,
          }}
       >
          {props.children}

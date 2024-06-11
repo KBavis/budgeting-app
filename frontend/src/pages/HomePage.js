@@ -48,7 +48,7 @@ const HomePage = () => {
       setLoading: setCategoryTypesLoading,
       loading: categoryTypesLoading,
    } = useContext(categoryTypeContext);
-   const { user } = useContext(authContext);
+   const { user, fetchAuthenticatedUser } = useContext(authContext);
    const {
       categories,
       fetchCategories,
@@ -109,9 +109,13 @@ const HomePage = () => {
       await syncTransactions(accountIds);
    };
 
-   //TODO: Fetch Auth User When Application Refreshed
+   //Fetch Current Authenticated User
    const getAuthUser = async () => {
-      console.log("Fetching current authenticated user...");
+      //Only fetch authenticated user if not present in local state
+      if (!user && localStorage.token) {
+         console.log("Fetching current authenticated user...");
+         await fetchAuthenticatedUser();
+      }
    };
 
    //Fetch All Accounts
@@ -177,6 +181,9 @@ const HomePage = () => {
          getCategoryTypes();
          initalFetchRef.current = true;
       }
+
+      //Logic To Fetch Authenticated User Present in Fetch Function
+      getAuthUser();
    }, []);
 
    //Trigger Fetching of Transactions When Accounts loaded into Context

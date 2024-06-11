@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import AlertContext from "../context/alert/alertContext";
 import categoryTypeContext from "../context/category/types/categoryTypeContext";
 import CategoryTypeSlider from "../components/category/types/CategoryTypeSlider";
+import authContext from "../context/auth/authContext";
+import IncomeContext from "../context/income/incomeContext";
+import accountContext from "../context/account/accountContext";
 
 /**
  *  Page for adjusting our allocated budget for CategoryType
@@ -19,6 +22,9 @@ const CategoryTypeInputPage = () => {
    const { setAlert } = useContext(AlertContext);
    const { error, addCategoryTypes, clearErrors, categoryTypes } =
       useContext(categoryTypeContext);
+   const { user, fetchAuthenticatedUser } = useContext(authContext);
+   const { incomes, fetchIncomes } = useContext(IncomeContext);
+   const { accounts, fetchAccounts } = useContext(accountContext);
 
    //React Hooks
 
@@ -31,6 +37,24 @@ const CategoryTypeInputPage = () => {
          clearErrors();
       }
    }, [error]);
+
+   //Fetch Needed Information on Refresh
+   useEffect(() => {
+      //Fetch Authenticated User
+      if (!user && localStorage.token) {
+         fetchAuthenticatedUser();
+      }
+
+      //Fetch Added Accounts
+      if (!accounts || accounts.length == 0) {
+         fetchAccounts();
+      }
+
+      //Fetch Incomes
+      if (!incomes || incomes.length == 0) {
+         fetchIncomes();
+      }
+   }, []);
 
    //Function to handle user updating their bduget allocation
    const handleSliderChange = (name, value) => {

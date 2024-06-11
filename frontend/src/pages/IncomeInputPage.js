@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AlertContext from "../context/alert/alertContext";
 import IncomeContext from "../context/income/incomeContext";
+import authContext from "../context/auth/authContext";
+import accountContext from "../context/account/accountContext";
 
 /**
  *  Page for users to enter their monthly income
@@ -17,6 +19,8 @@ const IncomeInputPage = () => {
    //Global States
    const { setAlert } = useContext(AlertContext);
    const { error, addIncome, clearErrors, incomes } = useContext(IncomeContext);
+   const { user, fetchAuthenticatedUser } = useContext(authContext);
+   const { accounts, fetchAccounts } = useContext(accountContext);
 
    //List of potential income sources
    const incomeSources = [
@@ -56,7 +60,7 @@ const IncomeInputPage = () => {
 
    //Alert use and navigate in the successful case
    useEffect(() => {
-      if (incomes && incomes.length > 0) {
+      if (incomes) {
          setAlert("Income added successfully", "SUCCESS");
          navigate("/category-types");
       }
@@ -84,6 +88,17 @@ const IncomeInputPage = () => {
       };
       addIncome(formData);
    };
+
+   //Fetch Needed Information on Refresh
+   useEffect(() => {
+      if (!user && localStorage.token) {
+         fetchAuthenticatedUser();
+      }
+
+      if (!accounts) {
+         fetchAccounts();
+      }
+   }, []);
 
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center">

@@ -4,7 +4,6 @@ import transactionContext from "../../../context/transaction/transactionContext"
 import categoryContext from "../../../context/category/categoryContext";
 import { useNavigate } from "react-router-dom";
 import { FaExternalLinkAlt } from "react-icons/fa"; // Importing icon
-import SplitTransactionModal from "../../transaction/SplitTransaction";
 
 const CategoryType = ({
    categoryType,

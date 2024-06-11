@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PlaidLink } from "react-plaid-link";
 import authContext from "../context/auth/authContext";
@@ -11,7 +11,7 @@ import AlertContext from "../context/alert/alertContext";
 const ConnectAccounts = () => {
    //Global State
    const navigate = useNavigate();
-   const { user } = useContext(authContext);
+   const { user, fetchAuthenticatedUser } = useContext(authContext);
    const { createAccount } = useContext(accountContext);
    const { setAlert } = useContext(AlertContext);
    const [accountAdded, setAccountAdded] = useState(false);
@@ -67,6 +67,13 @@ const ConnectAccounts = () => {
       navigate("/login");
    }
 
+   //Fetch Authenticated User if Needed on Refresh
+   useEffect(() => {
+      if (!user && localStorage.token) {
+         fetchAuthenticatedUser();
+      }
+   }, []);
+
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center">
          <div className="max-w-md text-center">
@@ -80,7 +87,7 @@ const ConnectAccounts = () => {
                </p>
             )}
             <PlaidLink
-               token={user.linkToken}
+               token={user?.linkToken}
                onSuccess={handleOnSuccess}
                onExit={handleOnExit}
                className="plaid-link-wrapper"

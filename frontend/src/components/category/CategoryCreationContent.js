@@ -7,6 +7,8 @@ import IncomeContext from "../../context/income/incomeContext";
 import categoryTypeContext from "../../context/category/types/categoryTypeContext";
 import AlertContext from "../../context/alert/alertContext";
 import { useNavigate } from "react-router-dom";
+import authContext from "../../context/auth/authContext";
+import accountContext from "../../context/account/accountContext";
 
 /**
  * Main compnent for storing our CategoryCreation Content, allowing this component to be utilized for each CategoryType page
@@ -21,20 +23,50 @@ const CategoryCreationContent = ({ categoryType }) => {
 
    //Global State functionality
    const { addCategories, categories } = useContext(categoryContext);
-   const { categoryTypes } = useContext(categoryTypeContext);
+   const { categoryTypes, fetchCategoryTypes } =
+      useContext(categoryTypeContext);
    const { setAlert } = useContext(AlertContext);
-   const { incomes } = useContext(IncomeContext);
+   const { incomes, fetchIncomes } = useContext(IncomeContext);
+   const { user, fetchAuthenticatedUser } = useContext(authContext);
+   const { accounts, fetchAccounts } = useContext(accountContext);
 
    const navigate = useNavigate();
 
    //Use Effect for updating the remaining budget
    useEffect(() => {
-      const totalIncome = getTotalIncome();
-      const budgetAllocationPercentage =
-         getBudgetAllocationPercentage(categoryType);
-      const initialRemainingBudget = totalIncome * budgetAllocationPercentage;
-      setRemainingBudget(initialRemainingBudget);
+      if (incomes && categoryType && categoryTypes) {
+         const totalIncome = getTotalIncome();
+         const budgetAllocationPercentage =
+            getBudgetAllocationPercentage(categoryType);
+         const initialRemainingBudget =
+            totalIncome * budgetAllocationPercentage;
+         setRemainingBudget(initialRemainingBudget);
+      }
    }, [incomes, categoryTypes, categoryType]);
+
+   //Use Effect for Inital Load
+   //Fetch Needed Information on Page Refresh
+   useEffect(() => {
+      //Fetch Authenticated User
+      if (!user && localStorage.token) {
+         fetchAuthenticatedUser();
+      }
+
+      //Fetch Added Accounts
+      if (!accounts || accounts.length == 0) {
+         fetchAccounts();
+      }
+
+      //Fetch Incomes
+      if (!incomes || incomes.length == 0) {
+         fetchIncomes();
+      }
+
+      //Fetch Category Types
+      if (!categoryTypes || categoryTypes.length == 0) {
+         fetchCategoryTypes();
+      }
+   }, []);
 
    //Function to handle selecting a specific category
    const handleOptionSelect = (category) => {
@@ -161,6 +193,7 @@ const CategoryCreationContent = ({ categoryType }) => {
    //Function to fetch the total income of all incomes in state
    //TODO: Move this to Global State?
    const getTotalIncome = () => {
+      if (!incomes || incomes.length === 0) return 0;
       return incomes.reduce((total, income) => total + income.amount, 0);
    };
 

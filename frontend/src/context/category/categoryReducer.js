@@ -16,9 +16,7 @@ export default (state, action) => {
       case FETCH_CATEGORIES_SUCCESS:
          return {
             ...state,
-            categories: state.categories
-               ? [...state.categories, ...action.payload]
-               : action.payload,
+            categories: action.payload,
             loading: false,
             error: null,
          };

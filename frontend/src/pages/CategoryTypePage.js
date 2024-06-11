@@ -4,6 +4,8 @@ import categoryTypeContext from "../context/category/types/categoryTypeContext";
 import categoryContext from "../context/category/categoryContext";
 import DetailedCategory from "../components/category/DetailedCategory";
 import { FaArrowLeft } from "react-icons/fa";
+import authContext from "../context/auth/authContext";
+import transactionContext from "../context/transaction/transactionContext";
 
 /**
  * Page for each of our create Category Types
@@ -13,8 +15,11 @@ import { FaArrowLeft } from "react-icons/fa";
  */
 const CategoryTypePage = ({ categoryType }) => {
    //Global State
-   const { categoryTypes } = useContext(categoryTypeContext);
-   const { categories } = useContext(categoryContext);
+   const { categoryTypes, fetchCategoryTypes } =
+      useContext(categoryTypeContext);
+   const { categories, fetchCategories } = useContext(categoryContext);
+   const { user, fetchAuthenticatedUser } = useContext(authContext);
+   const { transactions, fetchTransactions } = useContext(transactionContext);
    // Local State
    const [filteredCategories, setFilteredCategories] = useState([]);
    const navigate = useNavigate();
@@ -35,6 +40,25 @@ const CategoryTypePage = ({ categoryType }) => {
          setFilteredCategories(filtered);
       }
    }, [categoryTypes, categories, categoryType]);
+
+   //Fetch Authenticated User if Needed on Refresh
+   useEffect(() => {
+      if (!user && localStorage.token) {
+         fetchAuthenticatedUser();
+      }
+
+      if (!categoryTypes || categoryTypes.length == 0) {
+         fetchCategoryTypes();
+      }
+
+      if (!categories || categories.length == 0) {
+         fetchCategories();
+      }
+
+      if (!transactions || transactions.length == 0) {
+         fetchTransactions();
+      }
+   }, []);
 
    //Navigate User back to the home page
    const handleBackClick = () => {

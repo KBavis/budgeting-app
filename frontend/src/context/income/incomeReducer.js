@@ -16,9 +16,7 @@ export default (state, action) => {
       case FETCH_INCOMES_SUCCESS:
          return {
             ...state,
-            incomes: state.incomes
-               ? [...state.incomes, action.payload]
-               : [action.payload],
+            incomes: action.payload,
             loading: false,
             error: null,
          };
