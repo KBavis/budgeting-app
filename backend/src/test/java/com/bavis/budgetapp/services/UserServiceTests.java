@@ -99,7 +99,7 @@ public class UserServiceTests {
             userService.readById(user.getUserId());
         });
         assertNotNull(ex);
-        assertEquals("UserServiceException: [Could not find user with the ID " + user.getUserId() + "]", ex.getMessage());
+        assertEquals("Could not find user with the ID " + user.getUserId(), ex.getMessage());
 
         verify(userRepository, times(1)).findById(10L);
     }
@@ -133,7 +133,7 @@ public class UserServiceTests {
             userService.readByUsername(user.getUsername());
         });
         assertNotNull(ex);
-        assertEquals("UserServiceException: [Could not find user with the username " + user.getUsername() + "]", ex.getMessage());
+        assertEquals("Could not find user with the username " + user.getUsername(), ex.getMessage());
 
         //Verify
         verify(userRepository, times(1)).findByUsername(user.getUsername());
@@ -186,7 +186,7 @@ public class UserServiceTests {
            userService.update(10L, null);
         });
         assertNotNull(ex);
-        assertEquals("UserServiceException: [Could not find user with the ID " + user.getUserId() + "]", ex.getMessage());
+        assertEquals("Could not find user with the ID " + user.getUserId(), ex.getMessage());
 
        //Verify
        verify(userRepository, times(1)).findById(10L);
@@ -234,7 +234,7 @@ public class UserServiceTests {
             userService.getCurrentAuthUser();
         });
         assertNotNull(ex);
-        assertEquals("UserServiceException: [Could not find user with the username " + user.getUsername() + "]", ex.getMessage());
+        assertEquals("Could not find user with the username " + user.getUsername(), ex.getMessage());
 
         //Verify
         verify(userRepository, times(1)).findByUsername(user.getUsername());
@@ -242,10 +242,12 @@ public class UserServiceTests {
 
     @Test
     public void testGetCurrentAuthUser_AuthenticationNull_Failure() {
-        //Act
-        User user = userService.getCurrentAuthUser();
-
-        //Assert
-        assertNull(user);
+        String expectedErrorMsg = "Unable to find any Authenticated user";
+        //Act & Assert
+        UserServiceException userServiceException = assertThrows(UserServiceException.class, () -> {
+            userService.getCurrentAuthUser();
+        });
+        assertNotNull(userServiceException);
+        assertEquals(expectedErrorMsg, userServiceException.getMessage());
     }
 }

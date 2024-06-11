@@ -7,6 +7,6 @@ package com.bavis.budgetapp.exception;
  */
 public class UserServiceException extends RuntimeException{
     public UserServiceException(String msg) {
-        super("UserServiceException: [" + msg + "]");
+        super(msg);
     }
 }

@@ -331,7 +331,7 @@ public class AuthControllerTests {
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("UserServiceException: [Could not find user with the username " + registerAuthRequestDto.getUsername() + "]"));
+                .andExpect(jsonPath("$.error").value("Could not find user with the username " + registerAuthRequestDto.getUsername()));
     }
 
     @Test
@@ -347,7 +347,7 @@ public class AuthControllerTests {
         //Assert
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("UserServiceException: [Could not find user with the username authentication-user]"));
+                .andExpect(jsonPath("$.error").value("Could not find user with the username authentication-user"));
     }
 
     @Test
@@ -364,6 +364,21 @@ public class AuthControllerTests {
         resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("JwtServiceException: [Failed to Generate Jwt Token: invalid usages]"));
+    }
+
+    @Test
+    public void testGetAuthenticatedUser_Success() throws Exception {
+
+    }
+
+    @Test
+    public void testGetAuthenticatedUser_NoAuthUserFound_Failure() throws Exception {
+
+    }
+
+    @Test
+    public void testGetAuthenticatedUser_UsernameNotFound_Failure() throws Exception {
+
     }
 
 }
