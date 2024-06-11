@@ -2,7 +2,10 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AuthRequestDto;
 import com.bavis.budgetapp.dto.AuthResponseDto;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.AuthService;
+import com.bavis.budgetapp.service.impl.AuthServiceImpl;
+import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.bavis.budgetapp.validator.group.AuthRequestAuthenticationValidationGroup;
 import com.bavis.budgetapp.validator.group.AuthRequestRegistrationValidationGroup;
 import lombok.extern.log4j.Log4j2;
@@ -10,10 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Kellen Bavis
@@ -27,10 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthController.class);
-    private final AuthService _authService;
+    private final AuthServiceImpl authService;
+    private final UserServiceImpl userService;
 
-    public AuthController(AuthService _authService){
-        this._authService = _authService;
+    public AuthController(AuthServiceImpl _authService, UserServiceImpl _userService){
+        this.authService = _authService;
+        this.userService = _userService;
     }
 
     /**
@@ -43,8 +45,21 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDto> register(@Validated(AuthRequestRegistrationValidationGroup.class) @RequestBody AuthRequestDto authRequestDto) {
-        log.info("Recieved request to register a new User: [{}}", authRequestDto);
-        return ResponseEntity.ok(_authService.register(authRequestDto));
+        log.info("Received request to register a new User: [{}}", authRequestDto);
+        return ResponseEntity.ok(authService.register(authRequestDto));
+    }
+
+
+    /**
+     * Fetch current Authenticated user
+     *
+     * @return
+     *      - Authenticated user
+     */
+    @GetMapping
+    public ResponseEntity<User> getAuthenticatedUser() {
+        log.info("Received request to fetch current authenticated User");
+        return ResponseEntity.ok(userService.getCurrentAuthUser());
     }
 
     /**
@@ -57,8 +72,8 @@ public class AuthController {
      */
     @PostMapping("/authenticate")
     public ResponseEntity<AuthResponseDto> authenticate(@Validated(AuthRequestAuthenticationValidationGroup.class) @RequestBody AuthRequestDto authRequestDto) {
-        log.info("Recieved request to authenticate an User: [{}]", authRequestDto);
-        return ResponseEntity.ok(_authService.authenticate(authRequestDto));
+        log.info("Received request to authenticate an User: [{}]", authRequestDto);
+        return ResponseEntity.ok(authService.authenticate(authRequestDto));
     }
 
     /**

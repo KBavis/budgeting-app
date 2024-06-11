@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -368,17 +369,44 @@ public class AuthControllerTests {
 
     @Test
     public void testGetAuthenticatedUser_Success() throws Exception {
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(testUser);
 
+        //Act & Assert
+        ResultActions resultActions = mockMvc.perform(get("/auth"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userName").value(testUser.getUsername()))
+                .andExpect(jsonPath("$.linkToken").value(testUser.getLinkToken()))
+                .andExpect(jsonPath("$.name").value(testUser.getName()));
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
     }
 
     @Test
     public void testGetAuthenticatedUser_NoAuthUserFound_Failure() throws Exception {
+        //Mock
+        when(userService.getCurrentAuthUser()).thenThrow(new UserServiceException("Unable to find any Authenticated user"));
 
+        //Act & Assert
+        ResultActions resultActions = mockMvc.perform(get("/auth"))
+                .andExpect(jsonPath("$.error").value("Unable to find any Authenticated user"));
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
     }
 
     @Test
     public void testGetAuthenticatedUser_UsernameNotFound_Failure() throws Exception {
+        //Mock
+        when(userService.getCurrentAuthUser()).thenThrow(new UserServiceException("Could not find user with the username " + testUser.getUsername()));
 
+        //Act & Assert
+        ResultActions resultActions = mockMvc.perform(get("/auth"))
+                .andExpect(jsonPath("$.error").value("Could not find user with the username " + testUser.getUsername()));
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
     }
 
 }
