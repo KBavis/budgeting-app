@@ -71,10 +71,10 @@ public class UserServiceImpl implements UserService{
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if(authentication == null) {
 			log.error("No Authenticated User was found!");
-			return null; //no auth user
+			throw new UserServiceException("Unable to find any Authenticated user");
 		}
+
 		String username = authentication.getName().trim();
-		User user = readByUsername(username);
-		return  user;
+        return readByUsername(username);
 	}
 }
