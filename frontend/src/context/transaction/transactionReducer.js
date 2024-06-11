@@ -11,6 +11,8 @@ import {
    SPLIT_TRANSACTIONS_SUCCESS,
    ADD_TRANSACTION_SUCCESS,
    ADD_TRANSACTION_FAILURE,
+   REDUCE_TRANSACTION_FAILURE,
+   REDUCE_TRANSACTION_SUCCESS,
 } from "./types";
 
 export default (state, action) => {
@@ -88,10 +90,27 @@ export default (state, action) => {
             loading: false,
             error: null,
          };
+      case REDUCE_TRANSACTION_SUCCESS:
+         const { originalTransactionId, newTransaction } = action.payload;
+
+         const reducedTransactions = state.transactions.map((transaction) => {
+            if (transaction.transactionId === originalTransactionId) {
+               return newTransaction;
+            }
+            return transaction;
+         });
+
+         return {
+            ...state,
+            transactions: reducedTransactions,
+            loading: false,
+            error: null,
+         };
       case SPLIT_TRANSACTIONS_FAILURE:
       case SYNC_TRANSACTIONS_FAIL:
       case FETCH_TRANSACTIONS_FAIL:
       case ADD_TRANSACTION_FAILURE:
+      case REDUCE_TRANSACTION_FAILURE:
          return {
             ...state,
             error: action.payload,

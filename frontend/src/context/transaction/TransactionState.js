@@ -17,6 +17,8 @@ import {
    SPLIT_TRANSACTIONS_SUCCESS,
    ADD_TRANSACTION_SUCCESS,
    ADD_TRANSACTION_FAILURE,
+   REDUCE_TRANSACTION_FAILURE,
+   REDUCE_TRANSACTION_SUCCESS,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -163,6 +165,53 @@ const TransactionState = (props) => {
    };
 
    /**
+    * Function to reduce a Transaction amount
+    *
+    * @param transactionId
+    *          - Transaction ID of Entitiy to be updated
+    * @param amount
+    *          - Reduced Transaction amount
+    */
+   const reduceTransactionAmount = async (transactionId, amount) => {
+      try {
+         if (localStorage.token) {
+            setAuthToken(localStorage.token);
+         }
+
+         const config = {
+            headers: {
+               "Content-Type": "application/json",
+            },
+         };
+
+         const transactionDto = {
+            updatedAmount: amount,
+         };
+
+         const res = await axios.put(
+            `${apiUrl}/transactions/${transactionId}`,
+            transactionDto,
+            config
+         );
+
+         console.log(res.data);
+         dispatch({
+            type: REDUCE_TRANSACTION_SUCCESS,
+            payload: {
+               originalTransactionId: transactionId,
+               newTransaction: res.data,
+            },
+         });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            REDUCE_TRANSACTION_FAILURE,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
+   /**
     *
     * @param transactionId
     *          - ID of original Transaction entitiy being split out
@@ -270,6 +319,7 @@ const TransactionState = (props) => {
             setLoading,
             splitTransaction,
             addTransaction,
+            reduceTransactionAmount,
          }}
       >
          {props.children}

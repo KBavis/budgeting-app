@@ -1,9 +1,27 @@
 import React, { useState } from "react";
 import { useDrag } from "react-dnd";
 import { FaEllipsisV } from "react-icons/fa"; // Importing icon
-import SplitTransactionModal from "../transaction/SplitTransaction";
+import transaction from "../../context/transaction/initialState";
 
-const Transaction = ({ transaction, handleShowModal }) => {
+/**
+ *
+ * @param transaction
+ *          - Transaction to generate component for
+ * @param handleShowSplitTransactionModal
+ *          - Function passed down through props to handle the showing of Split Transaction modal
+ * @param handleShowReduceTransactionModal
+ *          - Function passed down through props to handle the showing of the Reduce Transaction modal
+ * @returns
+ */
+const Transaction = ({
+   transaction,
+   handleShowSplitTransactionModal,
+   handleShowReduceTransactionModal,
+}) => {
+   //Local State
+   const [dropdownVisible, setDropdownVisible] = useState(false);
+
+   //Function to allow the Transaction component to be assigned to corresponding Cateogires
    const [{ isDragging }, drag] = useDrag(() => ({
       type: "transaction",
       item: { transaction },
@@ -12,18 +30,24 @@ const Transaction = ({ transaction, handleShowModal }) => {
       }),
    }));
 
-   const [dropdownVisible, setDropdownVisible] = useState(false);
-   const [showModal, setShowModal] = useState(false);
-
+   //Function to Handle
    const toggleDropdown = () => {
       setDropdownVisible(!dropdownVisible);
    };
 
+   //Function to handle drop down option 'Split Transaction'
    const handleSplitTransaction = () => {
       toggleDropdown();
-      handleShowModal(transaction);
+      handleShowSplitTransactionModal(transaction);
    };
 
+   //Function to handle drop down option 'Reduce Amount'
+   const handleReduceTransaction = () => {
+      toggleDropdown();
+      handleShowReduceTransactionModal(transaction);
+   };
+
+   //Round The Transaction Amount
    const roundedAmount = Math.round(transaction.amount);
 
    return (
@@ -57,6 +81,7 @@ const Transaction = ({ transaction, handleShowModal }) => {
                >
                   <FaEllipsisV />
                </button>
+               {/* Drop Down options to edit Transaction. TODO: Update this to be Dropdown component */}
                {dropdownVisible && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-[200]">
                      <button
@@ -66,7 +91,7 @@ const Transaction = ({ transaction, handleShowModal }) => {
                         Split Transaction
                      </button>
                      <button
-                        onClick={handleSplitTransaction}
+                        onClick={handleReduceTransaction}
                         className="font-bold block border-[1px] border-black w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
                      >
                         Reduce Amount
@@ -74,12 +99,6 @@ const Transaction = ({ transaction, handleShowModal }) => {
                   </div>
                )}
             </div>
-         )}
-         {showModal && (
-            <SplitTransactionModal
-               onClose={() => setShowModal(false)}
-               onConfirm={() => setShowModal(false)}
-            />
          )}
       </div>
    );

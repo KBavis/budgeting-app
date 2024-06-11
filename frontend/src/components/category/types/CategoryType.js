@@ -6,7 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { FaExternalLinkAlt } from "react-icons/fa"; // Importing icon
 import SplitTransactionModal from "../../transaction/SplitTransaction";
 
-const CategoryType = ({ categoryType, handleShowModal }) => {
+const CategoryType = ({
+   categoryType,
+   handleShowSplitTransactionModal,
+   handleShowReduceTransactionModal,
+}) => {
    const { transactions } = useContext(transactionContext);
    const { categories } = useContext(categoryContext);
 
@@ -115,7 +119,12 @@ const CategoryType = ({ categoryType, handleShowModal }) => {
                   <Category
                      key={category.categoryId}
                      category={category}
-                     handleShowModal={handleShowModal}
+                     handleShowSplitTransactionModal={
+                        handleShowSplitTransactionModal
+                     }
+                     handleShowReduceTransactionModal={
+                        handleShowReduceTransactionModal
+                     }
                   />
                ))}
             </div>
