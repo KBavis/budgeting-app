@@ -3,6 +3,7 @@ package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.dao.CategoryTypeRepository;
 import com.bavis.budgetapp.dto.CategoryTypeDto;
+import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryTypeMapper;
@@ -21,10 +22,12 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyByte;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(MockitoJUnitRunner.class)
@@ -189,5 +192,58 @@ public class CategoryTypeServiceTests {
     @Test
     public void testCreateMany_Failure() {
 
+    }
+
+    @Test
+    public void testUpdateCategoryType_InvalidId_Failure() {
+        //Arrange
+        Long invalidCategoryTypeId = 10L;
+
+        //Mock
+        when(repository.findById(invalidCategoryTypeId)).thenReturn(Optional.empty());
+
+        //Act & Assert
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+            categoryTypeService.update(null, invalidCategoryTypeId);
+        });
+        assertNotNull(runtimeException);
+        assertEquals("Invalid category type id: " + invalidCategoryTypeId, runtimeException.getMessage());
+    }
+
+    @Test
+    public void testUpdateCategoryType_ValidId_Success() {
+        //Arrange
+        Long categoryTypeId = 10L;
+        double budgetAllocationPerecentage = .5;
+        double budgetAmount = 500;
+        double savedAmount = 0;
+
+        UpdateCategoryTypeDto updateCategoryTypeDto = UpdateCategoryTypeDto.builder()
+                .savedAmount(savedAmount)
+                .amountAllocated(budgetAmount)
+                .savedAmount(savedAmount)
+                .build();
+
+        CategoryType expectedCategoryType = CategoryType.builder()
+                .categoryTypeId(categoryTypeId)
+                .categories(null)
+                .budgetAmount(budgetAmount)
+                .budgetAllocationPercentage(budgetAllocationPerecentage)
+                .savedAmount(savedAmount)
+                .build();
+
+        //Mock
+        when(repository.findById(categoryTypeId)).thenReturn(Optional.of(expectedCategoryType));
+        when(repository.save(expectedCategoryType)).thenReturn(expectedCategoryType);
+
+        //Act
+        CategoryType actualCategoryType = categoryTypeService.update(updateCategoryTypeDto, categoryTypeId);
+
+        //Assert
+        assertEquals(expectedCategoryType, actualCategoryType);
+
+        //Verify
+        verify(repository, times(1)).findById(categoryTypeId);
+        verify(repository, times(1)).save(expectedCategoryType);
     }
 }
