@@ -1,8 +1,11 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.CategoryTypeDto;
+import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.validator.group.UpdateCategoryTypeDtoValidationGroup;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -93,20 +96,21 @@ public class CategoryTypeController {
 	}
 
 
+
 	/**
 	 * Update a particular CategoryType
 	 *
 	 * @param categoryTypeId
 	 * 			- CategoryId pertaining to CategoryType needing udpates
-	 * @param categoryType
-	 * 			- CategoryType with updates
+	 * @param  updateCategoryTypeDto
+	 * 			- Updates to apply to CategoryType
 	 * @return
 	 * 			- updated CategoryType
 	 */
 	@PutMapping("/{categoryTypeId}")
-	public CategoryType update(@PathVariable(value = "categoryTypeId") Long categoryTypeId, @RequestBody CategoryType categoryType) {
-		log.info("Recieved CategoryType update request for id [{}] and category [{}]", categoryTypeId, categoryType);
-		return _categoryTypeService.update(categoryType, categoryTypeId);
+	public CategoryType update(@PathVariable(value = "categoryTypeId") Long categoryTypeId, @RequestBody @Validated(UpdateCategoryTypeDtoValidationGroup.class) UpdateCategoryTypeDto updateCategoryTypeDto) {
+		log.info("Recieved CategoryType update request for id [{}] and updates [{}]", categoryTypeId, updateCategoryTypeDto);
+		return _categoryTypeService.update(updateCategoryTypeDto, categoryTypeId);
 	}
 
 	/**
