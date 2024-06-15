@@ -19,6 +19,8 @@ import {
    ADD_TRANSACTION_FAILURE,
    REDUCE_TRANSACTION_FAILURE,
    REDUCE_TRANSACTION_SUCCESS,
+   DELETE_TRANSACTION_FAILURE,
+   DELETE_TRANSACTION_SUCCESS,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -296,6 +298,34 @@ const TransactionState = (props) => {
    };
 
    /**
+    * Functionality to delete a Transaction
+    *
+    * @param transaction
+    *          - Transaction to create
+    */
+   const deleteTransaction = async (transactionId) => {
+      try {
+         if (localStorage.token) {
+            setAuthToken(localStorage.token);
+         }
+
+         await axios.delete(`${apiUrl}/transactions/${transactionId}`);
+         dispatch({
+            type: DELETE_TRANSACTION_SUCCESS,
+            payload: transactionId,
+         });
+         setAlert("Transaction successfully deleted", "success");
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            DELETE_TRANSACTION_FAILURE,
+            payload: err.response.data.error,
+         });
+         setAlert(err.response.data.error, "danger");
+      }
+   };
+
+   /**
     *  Functionality to clear errors
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
@@ -320,6 +350,7 @@ const TransactionState = (props) => {
             splitTransaction,
             addTransaction,
             reduceTransactionAmount,
+            deleteTransaction,
          }}
       >
          {props.children}

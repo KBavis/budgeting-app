@@ -13,6 +13,8 @@ import {
    ADD_TRANSACTION_FAILURE,
    REDUCE_TRANSACTION_FAILURE,
    REDUCE_TRANSACTION_SUCCESS,
+   DELETE_TRANSACTION_SUCCESS,
+   DELETE_TRANSACTION_FAILURE,
 } from "./types";
 
 export default (state, action) => {
@@ -50,6 +52,19 @@ export default (state, action) => {
          return {
             ...state,
             transactions: [...transactions, action.payload],
+         };
+      case DELETE_TRANSACTION_SUCCESS:
+         // Ensure state.transactions is not null
+         const stateTransactions = state.transactions || [];
+
+         //Filter Transactions
+         const filtered = stateTransactions.filter(
+            (transaction) => transaction.transactionId != action.payload
+         );
+
+         return {
+            ...state,
+            transactions: filtered,
          };
       case UPDATE_TRANSACTION_CATEGORY:
          // Update Transactions Category ID
@@ -111,6 +126,7 @@ export default (state, action) => {
       case FETCH_TRANSACTIONS_FAIL:
       case ADD_TRANSACTION_FAILURE:
       case REDUCE_TRANSACTION_FAILURE:
+      case DELETE_TRANSACTION_FAILURE:
          return {
             ...state,
             error: action.payload,
