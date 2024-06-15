@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useDrag } from "react-dnd";
 import { FaEllipsisV } from "react-icons/fa"; // Importing icon
-import transaction from "../../context/transaction/initialState";
+import transactionContext from "../../context/transaction/transactionContext";
 
 /**
  *
@@ -20,6 +20,9 @@ const Transaction = ({
 }) => {
    //Local State
    const [dropdownVisible, setDropdownVisible] = useState(false);
+
+   //Global State
+   const { deleteTransaction } = useContext(transactionContext);
 
    //Function to allow the Transaction component to be assigned to corresponding Cateogires
    const [{ isDragging }, drag] = useDrag(() => ({
@@ -45,6 +48,12 @@ const Transaction = ({
    const handleReduceTransaction = () => {
       toggleDropdown();
       handleShowReduceTransactionModal(transaction);
+   };
+
+   //Function to delete drop down 'Delete Transaction'
+   const handleDeleteTransaction = () => {
+      toggleDropdown();
+      deleteTransaction(transaction.transactionId);
    };
 
    //Round The Transaction Amount
@@ -95,6 +104,12 @@ const Transaction = ({
                         className="font-bold block border-[1px] border-black w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
                      >
                         Reduce Amount
+                     </button>
+                     <button
+                        onClick={handleDeleteTransaction}
+                        className="font-bold block border-[1px] border-black w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                     >
+                        Delete Transaction
                      </button>
                   </div>
                )}
