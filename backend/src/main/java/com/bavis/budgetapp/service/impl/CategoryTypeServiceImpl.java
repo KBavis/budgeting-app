@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dto.CategoryTypeDto;
+import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.entity.Income;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryTypeMapper;
@@ -82,16 +83,19 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 		return repository.findByUserUserId(currentAuthUser.getUserId());
 	}
 
-	//TODO: Update this to use mapper
-	//todo: finish this logic and add logging
 	@Override
-	public CategoryType update(CategoryType categoryType, Long id) {
-		log.info("Updating CategoryType [{}]", id);
-		CategoryType updatedCategory = repository.findById(id).orElse(categoryType);
-		updatedCategory.setBudgetAllocationPercentage(categoryType.getBudgetAllocationPercentage());
-		updatedCategory.setCategories(categoryType.getCategories());
-		updatedCategory.setName(categoryType.getName());
-		return repository.save(updatedCategory);
+	public CategoryType update(UpdateCategoryTypeDto updateCategoryTypeDto, Long id) {
+		//Fetch CategoryType or throw NotFoundException
+		CategoryType categoryType = read(id);
+		log.info("CategoryType [{}] updates via the following UpdateCategoryTypeDto [{}]", categoryType, updateCategoryTypeDto);
+
+		//Update CategoryType
+		categoryType.setSavedAmount(updateCategoryTypeDto.getSavedAmount());
+		categoryType.setBudgetAllocationPercentage(updateCategoryTypeDto.getBudgetAllocationPercentage());
+		categoryType.setBudgetAmount(updateCategoryTypeDto.getAmountAllocated());
+
+		//Persist Updates
+		return repository.save(categoryType);
 	}
 
 	//todo: finish this logic and add logging

@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.CategoryTypeDto;
+import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 
@@ -43,14 +44,14 @@ public interface CategoryTypeService {
 	/**
 	 * Function to update a CategoryType with updated properties
 	 *
-	 * @param category
-	 * 			- CategoryType containing updated properties
+	 * @param updateCategoryTypeDto
+	 * 			- DTO containing relevant CategoryType updates
 	 * @param id
 	 * 			- ID corresponding to CategoryType to be updated
 	 * @return
 	 * 			- Updated & saved CategoryType entity
 	 */
-	CategoryType update(CategoryType category, Long id);
+	CategoryType update(UpdateCategoryTypeDto updateCategoryTypeDto, Long id);
 
 	/**
 	 * Function to fetch a particular CategoryType from our database
