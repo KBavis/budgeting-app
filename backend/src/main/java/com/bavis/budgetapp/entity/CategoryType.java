@@ -36,6 +36,8 @@ public class CategoryType {
 
 	private double budgetAmount;
 
+	private double savedAmount;
+
 	@ManyToOne
 	@JoinColumn(name = "userId")
 	@JsonIgnore
