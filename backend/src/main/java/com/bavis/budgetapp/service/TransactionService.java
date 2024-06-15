@@ -100,4 +100,12 @@ public interface TransactionService {
      */
     void removeAssignedCategory(String transactionId);
 
+    /**
+     * Functionality to delete a Transaction
+     *
+     * @param transactionId
+     *          - transaction ID corresponding to Transaction to delete
+     */
+    void deleteTransaction(String transactionId);
+
 }

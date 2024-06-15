@@ -288,4 +288,13 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setCategory(null);
         _transactionRepository.save(transaction);
     }
+
+    @Override
+    public void deleteTransaction(String transactionId) throws RuntimeException {
+        //Fetch Transaction, or Throw Exception if Not Found
+        Transaction transaction = readById(transactionId);
+
+        //Delete
+        _transactionRepository.delete(transaction);
+    }
 }

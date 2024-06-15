@@ -953,4 +953,44 @@ public class TransactionServiceTests {
         assertEquals("Invalid Transaction amount; The provided amount must be less than the original Transaction amount.", exception.getMessage());
     }
 
+    @Test
+    void testDeleteTransaction_ValidTransactionId_Success() {
+        //Arrange
+        String transactionId = "transaction-id";
+        Transaction transaction = Transaction.builder()
+                .amount(2000.0)
+                .build();
+
+        //Mock
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(transaction));
+        doNothing().when(transactionRepository).delete(transaction);
+
+        //Act
+        transactionService.deleteTransaction(transactionId);
+
+        //Verify
+        verify(transactionRepository, times(1)).findById(transactionId);
+        verify(transactionRepository, times(1)).delete(transaction);
+    }
+
+    @Test
+    void testDeleteTransaction_InvalidTransactionId_Failure() {
+        //Arrange
+        String transactionId = "transaction-id";
+        String errorMsg = "Transaction with the ID " + transactionId + " not found";
+        RuntimeException expectedRuntimeException = new RuntimeException(errorMsg);
+
+        //Mock
+        when(transactionRepository.findById(transactionId)).thenThrow(expectedRuntimeException);
+
+        //Act
+        RuntimeException actualRuntimException = assertThrows(RuntimeException.class, () -> {
+            transactionService.deleteTransaction(transactionId);
+        });
+        assertEquals(expectedRuntimeException, actualRuntimException);
+
+        //Verify
+        verify(transactionRepository, times(1)).findById(transactionId);
+    }
+
 }
