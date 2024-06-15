@@ -118,4 +118,11 @@ public class TransactionController {
          log.info("Received request to remove assigned category for the following Transaction with the ID {}", transactionId);
          _transactionService.removeAssignedCategory(transactionId);
     }
+
+
+    @DeleteMapping("/{transactionId}")
+    public void removeTransaction(@PathVariable("transactionId") String transactionId) {
+        log.info("Received request to remove Transaction with the ID: {}", transactionId);
+        _transactionService.deleteTransaction(transactionId);
+    }
 }

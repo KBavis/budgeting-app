@@ -606,7 +606,7 @@ public class TransactionControllerTests {
     @Test
     void testAddTransaction_InvalidName_Failure() throws Exception {
         //Arrange
-        String invalidName =  "InvalidddddddddddddddNameeeeeeeeeeeeeeeeeeTooooooLonnnnnngg";
+        String invalidName = "InvalidddddddddddddddNameeeeeeeeeeeeeeeeeeTooooooLonnnnnngg";
         double validAmount = 1000.0;
         LocalDate validDate = LocalDate.now();
         TransactionDto transactionDto = TransactionDto.builder()
@@ -627,7 +627,7 @@ public class TransactionControllerTests {
     @Test
     void testAddTransaction_InvalidAmount_Failure() throws Exception {
         //Arrange
-        String validName =  "valid-name";
+        String validName = "valid-name";
         double invalidAmount = -1000.0;
         LocalDate validDate = LocalDate.now();
         TransactionDto transactionDto = TransactionDto.builder()
@@ -648,7 +648,7 @@ public class TransactionControllerTests {
     @Test
     void testAddTransaction_InvalidDate_Failure() throws Exception {
         //Arrange
-        String validName =  "valid-name";
+        String validName = "valid-name";
         double validAmount = 1000.0;
         LocalDate invalidDate = null;
         TransactionDto transactionDto = TransactionDto.builder()
@@ -667,7 +667,7 @@ public class TransactionControllerTests {
     }
 
     @Test
-    void testReduceTransactionAmount_ValidAmount_ValidTransactionId_Success() throws  Exception {
+    void testReduceTransactionAmount_ValidAmount_ValidTransactionId_Success() throws Exception {
         //Arrange
         String transactionId = "transaction-id";
         Transaction expectedTransaction = Transaction.builder()
@@ -699,8 +699,9 @@ public class TransactionControllerTests {
         //Verify
         verify(transactionService, times(1)).reduceTransactionAmount(transactionId, transactionDto);
     }
+
     @Test
-    void testReduceTransactionAmount_InvalidAmount_Failure() throws  Exception {
+    void testReduceTransactionAmount_InvalidAmount_Failure() throws Exception {
         //Arrange
         String transactionId = "transaction-id";
         TransactionDto transactionDto = TransactionDto.builder()
@@ -712,13 +713,14 @@ public class TransactionControllerTests {
 
         //Act & Assert
         ResultActions resultActions = mockMvc.perform(put("/transactions/" + transactionId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionDto)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(transactionDto)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("Invalid Transaction amount; The provided amount must be less than the original Transaction amount."));
     }
+
     @Test
-    void testReduceTransactionAmount_InvalidTransactionId_Failure() throws  Exception {
+    void testReduceTransactionAmount_InvalidTransactionId_Failure() throws Exception {
         //Arrange
         String transactionId = "transaction-id";
         String errorMsg = "Transaction with the following ID not found: " + transactionId;
@@ -735,5 +737,43 @@ public class TransactionControllerTests {
                         .content(objectMapper.writeValueAsString(transactionDto)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value(errorMsg));
+    }
+
+    @Test
+    void testDeleteTransaction_ValidTransactionId_Success() throws Exception {
+        //Arrange
+        String transactionId = "transaction-id";
+
+        //Mock
+        doNothing().when(transactionService).deleteTransaction(transactionId);
+
+        //Act & Assert
+        mockMvc.perform(delete("/transactions/" + transactionId))
+                .andExpect(status().isOk());
+
+        //Verify
+        verify(transactionService, times(1)).deleteTransaction(transactionId);
+    }
+
+    @Test
+    void testDeleteTransaction_InvalidTransactionId_Failure() throws Exception {
+        //Arrange
+        String transactionId = "transaction-id";
+
+        //Mock
+        doThrow(new RuntimeException("Transaction with following ID not found: " + transactionId))
+                .when(transactionService).deleteTransaction(transactionId);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(delete("/transactions/" + transactionId));
+
+        //Assert
+        resultActions
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("Transaction with following ID not found: " + transactionId));
+
+        //Verify
+        verify(transactionService, times(1)).deleteTransaction(transactionId);
     }
 }
