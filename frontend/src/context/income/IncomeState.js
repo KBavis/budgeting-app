@@ -90,6 +90,7 @@ const IncomeState = (props) => {
             incomes: state.incomes,
             loading: state.loading,
             error: state.error,
+            totalIncome: state.totalIncome,
             addIncome,
             clearErrors,
             fetchIncomes,

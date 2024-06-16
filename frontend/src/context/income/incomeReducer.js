@@ -14,11 +14,17 @@ export default (state, action) => {
    switch (action.type) {
       case CREATE_INCOME_SUCCESS:
       case FETCH_INCOMES_SUCCESS:
+         let existingIncomes = state.incomes || [];
+         let newIncomes = [...existingIncomes, action.payload];
          return {
             ...state,
-            incomes: action.payload,
+            incomes: newIncomes,
             loading: false,
             error: null,
+            totalIncome: newIncomes.reduce(
+               (total, income) => total + income.amount,
+               0
+            ),
          };
       case CREATE_INCOME_FAIL:
       case FETCH_INCOMES_FAIL:
