@@ -48,4 +48,7 @@ public class Connection {
 
 	@Column(nullable = true)
 	private String previousCursor; //stores Plaid API's cursor value for Transaction Sync
+
+	@Column(nullable = true)
+	private String originalCursor;
 }
