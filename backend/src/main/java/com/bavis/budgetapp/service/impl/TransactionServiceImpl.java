@@ -8,6 +8,7 @@ import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +55,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     //TODO: considering returning separate DTO w/ modified/added/removed lists so we can update frontend state with transactions that must be removed
+    //TODO: Split this functionality into multiple private functions
     @Override
     public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto) throws PlaidServiceException{
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
@@ -67,59 +69,79 @@ public class TransactionServiceImpl implements TransactionService {
                 log.debug("Syncing Transactions for Following Account: [{}]", account);
                 String previousCursor = accountConnection.getPreviousCursor();
                 String accessToken = accountConnection.getAccessToken();
+                String originalCursor = accountConnection.getOriginalCursor();
+                boolean hasMore = true;
+                boolean updateOriginalCursor = StringUtils.isBlank(originalCursor); //flag to determine if we need to persist originalCursor or not
 
-                //Fetch Added, Modified, and Removed Transactions
-                PlaidTransactionSyncResponseDto syncResponseDto = _plaidService.syncTransactions(accessToken, previousCursor);
-                log.info("PlaidTransactionSyncResponseDto for Account ID {} : [{}]", accountId, syncResponseDto);
+                while(hasMore){
+                    //Fetch Added, Modified, and Removed Transactions
+                    PlaidTransactionSyncResponseDto syncResponseDto = _plaidService.syncTransactions(accessToken, previousCursor);
+                    log.info("PlaidTransactionSyncResponseDto for Account ID {} : [{}]", accountId, syncResponseDto);
 
-                //For each Added Transaction --> Map to Transaction Entities & Set Account/Category
-                List<Transaction> addedTransactions = Optional.ofNullable(syncResponseDto.getAdded()).stream().flatMap(List::stream)
-                        .map(_transactionMapper::toEntity)
-                        .peek(transaction -> {
-                            //TODO: Intelligently assign CategoryType & Category in future
-                            transaction.setCategory(null);
-                            transaction.setAccount(account);
-                        })
-                        .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
-                        .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate()))
-                        .toList();
-                log.debug("Updating DB With The Following Added Transactions: [{}]", addedTransactions);
-                List<Transaction> persistedAddedTransactions = _transactionRepository.saveAllAndFlush(addedTransactions);
+                    //For each Added Transaction --> Map to Transaction Entities & Set Account/Category
+                    List<Transaction> addedTransactions = Optional.ofNullable(syncResponseDto.getAdded()).stream().flatMap(List::stream)
+                            .map(_transactionMapper::toEntity)
+                            .peek(transaction -> {
+                                //TODO: Intelligently assign CategoryType & Category in future
+                                transaction.setCategory(null);
+                                transaction.setAccount(account);
+                            })
+                            .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
+                            .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate()))
+                            .toList();
+                    log.debug("Updating DB With The Following Added Transactions: [{}]", addedTransactions);
+                    List<Transaction> persistedAddedTransactions = _transactionRepository.saveAllAndFlush(addedTransactions);
 
-                //Add Persisted Transactions to List of Transactions to Return
-                allModifiedOrAddedTransactions.addAll(persistedAddedTransactions);
+                    //Add Persisted Transactions to List of Transactions to Return
+                    allModifiedOrAddedTransactions.addAll(persistedAddedTransactions);
 
-                //For each Modified Transaction --> Map to Transaction Entities, Set Account/Category, Filter Out Transaction with Non-Existent IDs
-                //TODO: Make these filters into single Filter class
-                List<Transaction> modifiedTransactions = Optional.ofNullable(syncResponseDto.getModified()).stream().flatMap(List::stream)
-                        .map(_transactionMapper::toEntity)
-                        .filter(transaction -> _transactionRepository.existsById(transaction.getTransactionId())) //Ensure Transaction Exists within DB (filter out all updates pertaining to user updated Transactions)
-                        .filter(transaction -> !_transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(transaction.getTransactionId())) //Ensure Transaction WAS NOT Updated by User
-                        .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
-                        .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate())) //filter out transactions not within current month
-                        .peek(transaction -> {
-                            //TODO: Intelligently assign CategoryType & Category in future
-                            transaction.setCategory(null);
-                            transaction.setAccount(account);
-                        })
-                        .toList();
-                log.debug("Updating DB With The Following Modified Transactions: [{}]", modifiedTransactions);
-                List<Transaction> persistedModifiedTransactions = _transactionRepository.saveAllAndFlush(modifiedTransactions);
+                    //For each Modified Transaction --> Map to Transaction Entities, Set Account/Category, Filter Out Transaction with Non-Existent IDs
+                    //TODO: Make these filters into single Filter class
+                    List<Transaction> modifiedTransactions = Optional.ofNullable(syncResponseDto.getModified()).stream().flatMap(List::stream)
+                            .map(_transactionMapper::toEntity)
+                            .filter(transaction -> _transactionRepository.existsById(transaction.getTransactionId())) //Ensure Transaction Exists within DB (filter out all updates pertaining to user updated Transactions)
+                            .filter(transaction -> !_transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(transaction.getTransactionId())) //Ensure Transaction WAS NOT Updated by User
+                            .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
+                            .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate())) //filter out transactions not within current month
+                            .peek(transaction -> {
+                                //TODO: Intelligently assign CategoryType & Category in future
+                                transaction.setCategory(null);
+                                transaction.setAccount(account);
+                            })
+                            .toList();
+                    log.debug("Updating DB With The Following Modified Transactions: [{}]", modifiedTransactions);
+                    List<Transaction> persistedModifiedTransactions = _transactionRepository.saveAllAndFlush(modifiedTransactions);
 
-                //Add All Persisted Modified Transactions to List of Transactions to Return
-                allModifiedOrAddedTransactions.addAll(persistedModifiedTransactions);
+                    //Add All Persisted Modified Transactions to List of Transactions to Return
+                    allModifiedOrAddedTransactions.addAll(persistedModifiedTransactions);
 
 
-                //Remove Transaction Associated with 'Removed' List from Plaid API
-                List<Transaction> removedTransactions = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
-                                .map(_transactionMapper::toEntity)
-                                .toList();
-                log.debug("Removing following Transaction due to Plaid API marking them as 'removed': [{}]", removedTransactions);
-                _transactionRepository.deleteAll(removedTransactions);
+                    //Remove Transaction Associated with 'Removed' List from Plaid API
+                    List<Transaction> removedTransactions = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
+                            .map(_transactionMapper::toEntity)
+                            .toList();
+                    log.debug("Removing following Transaction due to Plaid API marking them as 'removed': [{}]", removedTransactions);
+                    _transactionRepository.deleteAll(removedTransactions);
+
+                    //Update Previous Cursor For Subsequent Request
+                    previousCursor = syncResponseDto.getNext_cursor();
+
+                    //Update Original Cursor Value If This Is The First Paginated Response
+                    if(StringUtils.isBlank(originalCursor)){
+                        originalCursor = previousCursor;
+
+                    }
+
+                    //Update HasMore Flag
+                    hasMore = syncResponseDto.isHas_more();
+                }
 
 
                 //Update Cursor for Connection & Persist
-                accountConnection.setPreviousCursor(syncResponseDto.getNext_cursor());
+                accountConnection.setPreviousCursor(previousCursor);
+                if(updateOriginalCursor){
+                    accountConnection.setOriginalCursor(originalCursor);
+                }
                 _connectionService.update(accountConnection, accountConnection.getConnectionId());
 
             } catch (PlaidServiceException plaidServiceException){
