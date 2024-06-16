@@ -167,12 +167,13 @@ public class TransactionServiceTests {
                 .modified(modifiedTransactions)
                 .removed(removedTransactions)
                 .next_cursor(nextCursor)
+                .has_more(false)
                 .build();
     }
 
 
     @Test
-    void testSyncTransactions_Successful() {
+    void testSyncTransactions_SinglePage_Successful() {
         //Arrange
         String accountIdOne = "12345XYZ";
         String accountIdTwo = "6789ABCD";
@@ -258,6 +259,107 @@ public class TransactionServiceTests {
         verify(transactionMapper, times(12)).toEntity(any(PlaidTransactionDto.class));
         verify(transactionRepository, times(2)).existsByTransactionIdAndUpdatedByUserIsTrue(any());
         verify(transactionRepository, times(2)).existsById(any());
+        verify(plaidService, times(2)).syncTransactions(accessToken, previousCursor);
+    }
+
+    @Test
+    void testSyncTransactions_MultiplePages_Successful() {
+        //Arrange
+        PlaidTransactionSyncResponseDto syncResponseDto2 = PlaidTransactionSyncResponseDto.builder() //additional sync response to indicate multiple pages
+                .added(addedTransactions)
+                .modified(modifiedTransactions)
+                .removed(removedTransactions)
+                .next_cursor(nextCursor)
+                .has_more(true)
+                .build();
+
+        String accountIdOne = "12345XYZ";
+        String accountIdTwo = "6789ABCD";
+
+        Connection accountConnectionOne = Connection.builder()
+                .connectionId(5L)
+                .accessToken(accessToken)
+                .previousCursor(previousCursor)
+                .build();
+
+        Connection accountConnectionTwo = Connection.builder()
+                .connectionId(10L)
+                .accessToken(accessToken)
+                .previousCursor(previousCursor)
+                .build();
+
+        Account accountOne = Account.builder()
+                .accountId(accountIdOne)
+                .connection(accountConnectionOne)
+                .build();
+
+        Account accountTwo = Account.builder()
+                .accountId(accountIdTwo)
+                .connection(accountConnectionTwo)
+                .build();
+        ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne, accountIdTwo));
+        TransactionSyncRequestDto transactionSyncRequestDto = TransactionSyncRequestDto.builder()
+                .accounts(accountIds)
+                .build();
+
+        //Mock
+        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.read(accountIdTwo)).thenReturn(accountTwo);
+        when(plaidService.syncTransactions(accessToken, previousCursor)).thenReturn(syncResponseDto2);
+        when(plaidService.syncTransactions(accessToken, nextCursor)).thenReturn(syncResponseDto);
+        when(transactionMapper.toEntity(any(PlaidTransactionDto.class))).thenAnswer(invocationOnMock -> {
+            PlaidTransactionDto dto = invocationOnMock.getArgument(0);
+            return Transaction.builder()
+                    .transactionId(dto.getTransaction_id())
+                    .name(dto.getCounterparties().get(0).getName())
+                    .amount(dto.getAmount())
+                    .date(dto.getDatetime())
+                    .logoUrl(dto.getCounterparties().get(0).getLogo_url())
+                    .account(null)  //mapper shouldn't map Account or Category entities
+                    .category(null)
+                    .build();
+        });
+        when(transactionRepository.saveAllAndFlush(anyList())).thenAnswer(invocationOnMock ->{
+            return invocationOnMock.<List<Transaction>>getArgument(0);
+        });
+        when(transactionRepository.existsById(any())).thenReturn(true);
+        when(transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(any())).thenReturn(false);
+        doNothing().when(transactionRepository).deleteAll(anyList());
+        when(connectionService.update(any(Connection.class), any(Long.class))).thenAnswer(invocationOnMock -> {
+            Connection connectionToUpdate = invocationOnMock.getArgument(0);
+            connectionToUpdate.setPreviousCursor(nextCursor);
+            connectionToUpdate.setOriginalCursor(previousCursor);
+            return connectionToUpdate;
+        });
+
+        //Act
+        List<Transaction> actualTransactions = transactionService.syncTransactions(transactionSyncRequestDto);
+
+        //Assert
+        assertNotNull(actualTransactions);
+        assertEquals(8, actualTransactions.size()); //2 modified, 2 added
+
+        //Ensure Each Modified/Added account is present
+        assertTrue(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoOne.getTransaction_id())));
+        assertTrue(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoThree.getTransaction_id())));
+
+        //Ensure negative & 0 amounts, and dates outside the current month are filtered out
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFour.getTransaction_id())));
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFive.getTransaction_id())));
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoSix.getTransaction_id())));
+
+        //Verify
+        verify(accountService, times(1)).read(accountIdOne);
+        verify(accountService, times(1)).read(accountIdTwo);
+        verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
+        verify(connectionService, times(1)).update(accountConnectionTwo, accountConnectionTwo.getConnectionId());
+        verify(transactionRepository, times(8)).saveAllAndFlush(anyList());
+        verify(transactionRepository, times(4)).deleteAll(anyList());
+        verify(transactionMapper, times(24)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionRepository, times(4)).existsByTransactionIdAndUpdatedByUserIsTrue(any());
+        verify(transactionRepository, times(4)).existsById(any());
+        verify(plaidService, times(2)).syncTransactions(accessToken, previousCursor);
+        verify(plaidService, times(2)).syncTransactions(accessToken, nextCursor);
     }
 
     @Test
