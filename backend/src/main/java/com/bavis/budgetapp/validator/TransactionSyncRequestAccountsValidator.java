@@ -22,7 +22,6 @@ import java.util.Objects;
  * Validation class to validate list of Account IDs corresponding to TransactionSyncRequestDto
  */
 @Component
-@Log4j2
 public class TransactionSyncRequestAccountsValidator implements ConstraintValidator<TransactionSyncRequestValidAccounts, TransactionSyncRequestDto> {
 
     @Autowired
@@ -38,10 +37,8 @@ public class TransactionSyncRequestAccountsValidator implements ConstraintValida
 
     @Override
     public boolean isValid(TransactionSyncRequestDto transactionSyncRequestDto, ConstraintValidatorContext constraintValidatorContext) {
-        log.info("Validating the list of Account ID's for the following TransactionSyncRequestDto: [{}]", transactionSyncRequestDto);
         List<String> accountIds = transactionSyncRequestDto.getAccounts();
         if(accountIds == null) {
-            log.debug("Account IDs for the TransactionSyncRequestDto are null. Invalid TransactionSyncRequestDto.");
             return false;
         }
 
@@ -52,7 +49,6 @@ public class TransactionSyncRequestAccountsValidator implements ConstraintValida
             try{
                 account = accountService.read(accountId);
             } catch (RuntimeException e){
-                log.error("The following exception occurred when reading Account with ID {}: [{}]", accountId, e.getMessage());
                 return false;
             }
 
@@ -66,11 +62,9 @@ public class TransactionSyncRequestAccountsValidator implements ConstraintValida
                     return false;
                 }
             } else {
-                log.debug("Account ID corresponds to null/non-existing account. Invalid TransactionSyncRequestDto.");
                 return false;
             }
         }
-        log.debug("The list of accounts corresponding to TransactionSyncRequest validitiy: [{}]", valid);
         return valid;
     }
 }
