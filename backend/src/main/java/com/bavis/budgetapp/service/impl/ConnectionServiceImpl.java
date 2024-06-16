@@ -2,6 +2,7 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.exception.ConnectionCreationException;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.ConnectionRepository;
@@ -40,7 +41,10 @@ public class ConnectionServiceImpl implements ConnectionService{
 		Connection connectionToUpdate = _repository.findById(connectionId)
 				.orElseThrow(() -> new RuntimeException("Unable to find Connection with ID " + connectionId + " to update."));
 
-		connectionToUpdate.setPreviousCursor(connection.getPreviousCursor()); //only modifiable attribute
+		connectionToUpdate.setPreviousCursor(connection.getPreviousCursor());
+		if(!StringUtils.isBlank(connection.getOriginalCursor())){
+			connectionToUpdate.setOriginalCursor(connection.getOriginalCursor()); //persist original cursor if passed
+		}
 
 		//Return persisted Connection
 		return _repository.save(connectionToUpdate);
