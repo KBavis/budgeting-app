@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
  *          - Username isn't already registered to corresponding user
  */
 @Component
-@Log4j2
 public class AuthRequestDuplicateUsernameValidator implements ConstraintValidator<AuthRequestDuplicateUsername, AuthRequestDto> {
 
     @Autowired
@@ -47,8 +46,6 @@ public class AuthRequestDuplicateUsernameValidator implements ConstraintValidato
         }
 
         boolean userExists = userService.existsByUsername(username);
-        log.debug("Validity of the uniqueness for our username in our AuthRequestDto: [{}]", userExists);
-
         //note: existsByUsername returns false if user DNE, meaning it's valid
         return !userExists;
     }

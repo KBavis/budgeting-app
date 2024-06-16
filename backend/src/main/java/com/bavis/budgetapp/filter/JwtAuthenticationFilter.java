@@ -10,6 +10,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,8 +29,8 @@ import java.io.IOException;
  * Filter to verify valid authentication of incoming HTTP request
  */
 @Component("jwtAuthFilter")
+@Log4j2
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private static Logger LOG = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private final JwtService _jwtService;
     private final UserDetailsService _userDetailsService;
 
@@ -73,13 +74,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         //Ensure request contains proper JWT Token prior to continuing
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            LOG.debug("HTTP Request Does Not Contain Proper Authorization Header!");
             filterChain.doFilter(request, response);
             return;
         }
 
         jwt = authHeader.substring(7);
-        LOG.debug("JWT Extracted From Authorization Header: {}", jwt);
         DecodedJWT decodedJWT;
         try{
             //Verify the validity of the passed JWT Token
@@ -88,7 +87,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
            //Extract Username & Validate Presence
             //TODO: Consider Using Subject As A Separate Field, And Then Just Generate Our Own Unique Claim Called userId
             String jwtUsername = decodedJWT.getSubject();
-            LOG.debug("Extracted Jwt Username: '{}'", jwtUsername);
 
             //Skip Authentication If User Has Already Been Authenticated
             //TODO: Ensure That When A User Logs Out That The SecurityContextHolder Authentication Is Set To Null
@@ -106,11 +104,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    LOG.info("JWT Token Successfully Validated, SecurityContextHolder Authentication Updated!");
                 }
             }
         } catch(JWTVerificationException e){
-            LOG.warn("HTTP Request does did not contain proper JWT Authentication: [{}]", e.getMessage());
+            log.warn("HTTP Request does did not contain proper JWT Authentication: [{}]", e.getMessage());
         } finally {
             filterChain.doFilter(request, response);
         }

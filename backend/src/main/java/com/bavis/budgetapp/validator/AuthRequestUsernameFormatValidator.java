@@ -13,7 +13,6 @@ import lombok.extern.log4j.Log4j2;
  *      - Contains only lowercase/uppercase letters, digits, underscores, or hyphens
  *      - Minimum of 6 characters long and at most 20 characters long
  */
-@Log4j2
 public class AuthRequestUsernameFormatValidator implements ConstraintValidator<AuthRequestValidUsername, AuthRequestDto> {
 
     //Validates all characters are a letter ,digit, underscore, or hyphen AND is between 6 and 20 characters
@@ -42,8 +41,6 @@ public class AuthRequestUsernameFormatValidator implements ConstraintValidator<A
             return false;
         }
 
-        boolean validUsername = username.matches(usernameRegex);
-        log.debug("Validity of the username passed in via AuthRequestDto: [{}]", validUsername);
-        return validUsername;
+        return username.matches(usernameRegex);
     }
 }

@@ -13,7 +13,6 @@ import lombok.extern.log4j.Log4j2;
  * Validation class for ensuring BulkCategoryDto contains valid list of categories
  *          - Ensures that provided list of CategoryDto at least contains one entry
  */
-@Log4j2
 public class BulkCategoryDtoListValidator implements ConstraintValidator<BulkCategoryDtoValidList, BulkCategoryDto> {
 
     @Override
@@ -34,8 +33,6 @@ public class BulkCategoryDtoListValidator implements ConstraintValidator<BulkCat
      */
     @Override
     public boolean isValid(BulkCategoryDto categories, ConstraintValidatorContext constraintValidatorContext) {
-        boolean valid = categories != null && categories.getCategories() != null && !categories.getCategories().isEmpty();
-        log.debug("Validity of the List of CategoryDto's passed in as attribute for BulkCategoryDto: [{}]", valid);
-        return  valid;
+        return categories != null && categories.getCategories() != null && !categories.getCategories().isEmpty();
     }
 }

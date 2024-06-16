@@ -12,7 +12,6 @@ import lombok.extern.log4j.Log4j2;
  * Validation class for ensuring CategoryDto contains valid 'budgetamount' attribute
  *          - Ensures the allocated amount is greater than 0
  */
-@Log4j2
 public class CategoryDtoBudgetAmountValidator implements ConstraintValidator<CategoryDtoValidBudgetAmount, CategoryDto> {
 
     @Override
@@ -32,8 +31,6 @@ public class CategoryDtoBudgetAmountValidator implements ConstraintValidator<Cat
      */
     @Override
     public boolean isValid(CategoryDto categoryDto, ConstraintValidatorContext constraintValidatorContext) {
-        boolean valid = categoryDto.getBudgetAmount() > 0;
-        log.debug("Validity of the budget amount passed in for our CategoryDto: [{}]", valid);
-        return valid;
+        return categoryDto.getBudgetAmount() > 0;
     }
 }

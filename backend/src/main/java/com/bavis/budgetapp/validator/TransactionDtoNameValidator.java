@@ -11,7 +11,6 @@ import lombok.extern.log4j.Log4j2;
  *
  * @author Kellen Bavis
  */
-@Log4j2
 public class TransactionDtoNameValidator implements ConstraintValidator<TransactionDtoValidName, TransactionDto> {
 
     private final String REGEX = "^[\\p{L}\\p{N}\\p{P}\\p{S}\\s]{1,29}$";
@@ -29,8 +28,6 @@ public class TransactionDtoNameValidator implements ConstraintValidator<Transact
             return false;
         }
 
-        boolean validName = name.matches(REGEX);
-        log.debug("Name passed in via TransactionDto [{}] validity: {}",transactionDto, validName);
-        return validName;
+        return name.matches(REGEX);
     }
 }

@@ -14,7 +14,6 @@ import lombok.extern.log4j.Log4j2;
  *          - Ensures that the length of the 'name' attribute is between 1 and 49 characters
  *          - Ensures only contains letter that are either uppercase or lowercase
  */
-@Log4j2
 public class CategoryDtoNameValidator implements ConstraintValidator<CategoryDtoValidName, CategoryDto>{
 
     @Override
@@ -35,9 +34,7 @@ public class CategoryDtoNameValidator implements ConstraintValidator<CategoryDto
     @Override
     public boolean isValid(CategoryDto categoryDto, ConstraintValidatorContext constraintValidatorContext) {
         String REGEX = "^[a-zA-Z\\s]{1,49}$";
-        boolean valid = categoryDto != null && categoryDto.getName() != null && !categoryDto.getName().isEmpty()
+        return categoryDto != null && categoryDto.getName() != null && !categoryDto.getName().isEmpty()
                 && categoryDto.getName().matches(REGEX);
-        log.debug("Validity of the name passed in for corresponding CategoryDto: [{}]", categoryDto);
-        return valid;
     }
 }

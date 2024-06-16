@@ -13,7 +13,6 @@ import lombok.extern.log4j.Log4j2;
  *          - not null
  *          - not a negative value
  */
-@Log4j2
 public class IncomeDtoAmountValidator implements ConstraintValidator<IncomeDtoValidAmount, IncomeDto> {
 
     @Override
@@ -33,8 +32,6 @@ public class IncomeDtoAmountValidator implements ConstraintValidator<IncomeDtoVa
      */
     @Override
     public boolean isValid(IncomeDto incomeDto, ConstraintValidatorContext constraintValidatorContext) {
-        boolean validity = incomeDto != null && incomeDto.getAmount() > 0;
-        log.debug("Validity of the income amount passed in for IncomeDto: [{}]", validity);
-        return validity;
+        return incomeDto != null && incomeDto.getAmount() > 0;
     }
 }

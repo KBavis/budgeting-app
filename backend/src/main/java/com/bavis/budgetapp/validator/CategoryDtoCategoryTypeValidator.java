@@ -21,7 +21,6 @@ import java.util.Objects;
  *          - CategoryType ID references valid CategoryType attribute associated with authenticated user making request
  */
 @Component
-@Log4j2
 public class CategoryDtoCategoryTypeValidator implements ConstraintValidator<CategoryDtoValidCategoryType, CategoryDto> {
 
     @Autowired
@@ -54,14 +53,12 @@ public class CategoryDtoCategoryTypeValidator implements ConstraintValidator<Cat
             categoryType = categoryTypeService.read(categoryDto.getCategoryTypeId());
         } catch(Exception e){
             if(e.getMessage().contains("Invalid category type id:")){
-                log.debug("CategoryType does not exist. CategoryType corresponding to CategoryDto is invalid!");
                 return false;
             }
         }
 
         if(categoryType != null) {
            valid = Objects.equals(categoryType.getUser().getUserId(), userService.getCurrentAuthUser().getUserId());
-           log.debug("Validity of our CategoryType passed in : [{}]", valid);
            return valid;
         }
         return valid;

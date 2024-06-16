@@ -14,7 +14,6 @@ import lombok.extern.log4j.Log4j2;
  *      - Consists of one or more parts (seperated by single space)
  *      - Can contain any combination of lowercase/uppercase letters and apostrophes
  */
-@Log4j2
 public class AuthRequestNameValidator implements ConstraintValidator<AuthRequestValidName, AuthRequestDto> {
 
     //Validates proper name format
@@ -42,8 +41,6 @@ public class AuthRequestNameValidator implements ConstraintValidator<AuthRequest
             return false;
         }
 
-        boolean validName = name.matches(nameRegex);
-        log.debug("Validity of the passed in name: [{}]", validName);
-        return validName;
+        return name.matches(nameRegex);
     }
 }

@@ -16,7 +16,6 @@ import lombok.extern.log4j.Log4j2;
  *      - No white space characters
  *      - Minimum length of 10 characters
  */
-@Log4j2
 public class AuthRequestPasswordValidator implements ConstraintValidator<AuthRequestValidPassword, AuthRequestDto> {
 
     private static final String passwordRegex = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{10,}$";
@@ -43,8 +42,6 @@ public class AuthRequestPasswordValidator implements ConstraintValidator<AuthReq
             return false;
         }
 
-        boolean passwordValid = password.matches(passwordRegex);
-        log.debug("Validity of the passed in password: [{}]", passwordValid);
-        return passwordValid;
+        return password.matches(passwordRegex);
     }
 }

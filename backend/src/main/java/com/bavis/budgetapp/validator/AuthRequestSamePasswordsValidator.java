@@ -13,7 +13,6 @@ import lombok.extern.log4j.Log4j2;
  * Validation class for ensuring AuthRequest correctly confirm their password
  *      - Each password specified in AuthRequest are the same
  */
-@Log4j2
 public class AuthRequestSamePasswordsValidator implements ConstraintValidator<AuthRequestSamePasswords, AuthRequestDto> {
 
     @Override
@@ -41,8 +40,6 @@ public class AuthRequestSamePasswordsValidator implements ConstraintValidator<Au
             return false;
         }
 
-        boolean passwordsMatch = passwordTwo.equals(passwordOne);
-        log.debug("Validity of the confirmation of user's registered password: [{}]", passwordsMatch);
-        return passwordsMatch;
+        return passwordTwo.equals(passwordOne);
     }
 }
