@@ -9,7 +9,6 @@ import com.bavis.budgetapp.util.JsonUtil;
 import feign.FeignException.FeignClientException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -177,12 +176,9 @@ public class PlaidServiceImpl implements PlaidService{
                 .secret(_plaidConfig.getSecretKey())
                 .access_token(accessToken)
                 .count(75)
+                .cursor(previousCursor)
                 .build();
 
-        //Append Cursor If Non-Null
-        if(previousCursor != null) {
-            syncRequestDto.setCursor(previousCursor);
-        }
 
         //Sync Transactions via Plaid API
         ResponseEntity<PlaidTransactionSyncResponseDto> responseEntity;
