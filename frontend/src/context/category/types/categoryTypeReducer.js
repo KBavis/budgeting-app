@@ -5,6 +5,8 @@ import {
    FETCH_CATEGORY_TYPES_SUCCCESS,
    FETCH_CATEGORY_TYPES_FAIL,
    SET_LOADING,
+   UPDATE_CATEGORY_TYPE_FAIL,
+   UPDATE_CATEGORY_TYPE_SUCCESS,
 } from "./types";
 
 /**
@@ -22,9 +24,22 @@ export default (state, action) => {
          };
       case CREATE_CATEGORY_TYPES_FAIL:
       case FETCH_CATEGORY_TYPES_FAIL:
+      case UPDATE_CATEGORY_TYPE_FAIL:
          return {
             ...state,
             error: action.payload,
+            loading: false,
+         };
+      case UPDATE_CATEGORY_TYPE_SUCCESS:
+         //Filter Out CategoryTypes Other Than Once To Upate
+         const filteredCategoryTypes = state.categoryTypes.filter(
+            (categoryType) =>
+               categoryType.categoryTypeId !== action.payload.categoryTypeId
+         );
+
+         return {
+            ...state,
+            categoryTypes: [...filteredCategoryTypes, action.payload],
             loading: false,
          };
       case CLEAR_ERRORS:
