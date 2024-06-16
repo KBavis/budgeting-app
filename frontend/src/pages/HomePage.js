@@ -12,6 +12,7 @@ import SplitTransactionModal from "../components/transaction/SplitTransaction";
 import ReduceTransaction from "../components/transaction/ReduceTransaction";
 import AddTransaction from "../components/transaction/AddTransaction";
 import DropdownMenu from "../components/layout/Dropdown";
+import Savings from "../components/category/types/Savings";
 
 const HomePage = () => {
    //Local State
@@ -236,6 +237,7 @@ const HomePage = () => {
                   Sync Transactions
                </button>
             </div>
+            <Savings />
             <div className="flex justify-center space-x-4 w-full mb-5">
                {!loading ? (
                   categoryTypes.map((categoryType) => (

@@ -63,15 +63,21 @@ const AdjustBudget = ({
 
    return (
       <div className="mb-8 p-6 bg-white border-[3px] border-indigo-600 rounded-lg shadow-md relative">
-         <h2 className="text-2xl font-bold mb-2 text-indigo-700">
+         <h2 className="text-3xl font-bold mb-4 text-indigo-800">
             Adjust Budget
          </h2>
-         <p className="mb-6 text-base text-gray-600">
-            Total Amount Available to Allocate:{" "}
-            <span className={`font-bold ${getAmountColor()}`}>
-               ${remainingBudget.toFixed(2)}
-            </span>
-         </p>
+         <div className="p-4 bg-gray-100 rounded-md shadow-md mb-6">
+            <p className="text-lg font-semibold text-gray-700">
+               Total Amount Available:{" "}
+               <span className={`font-bold ${getAmountColor()} text-xl`}>
+                  ${remainingBudget.toFixed(2)}
+               </span>
+            </p>
+            <p className="mt-4 ">
+               In case you use less than your allocated budget, the remaining
+               amount will be applied to your savings.
+            </p>
+         </div>
          <div
             ref={containerRef}
             className="max-h-[300px] overflow-y-auto scrollbar-hide"
