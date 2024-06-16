@@ -21,4 +21,5 @@ public class PlaidTransactionSyncResponseDto {
     private List<PlaidTransactionDto> modified;
     private List<PlaidTransactionDto> removed;
     private String next_cursor;
+    private boolean has_more;
 }
