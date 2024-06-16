@@ -6,13 +6,13 @@ import com.bavis.budgetapp.dto.CategoryDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Kellen Bavis
  *
  * Validates that the CategoryDto name attribute paassed in is valid
  *          - Ensures that the length of the 'name' attribute is between 1 and 49 characters
- *          - Ensures only contains letter that are either uppercase or lowercase
  */
 public class CategoryDtoNameValidator implements ConstraintValidator<CategoryDtoValidName, CategoryDto>{
 
@@ -33,8 +33,12 @@ public class CategoryDtoNameValidator implements ConstraintValidator<CategoryDto
      */
     @Override
     public boolean isValid(CategoryDto categoryDto, ConstraintValidatorContext constraintValidatorContext) {
-        String REGEX = "^[a-zA-Z\\s]{1,49}$";
-        return categoryDto != null && categoryDto.getName() != null && !categoryDto.getName().isEmpty()
-                && categoryDto.getName().matches(REGEX);
+        if(categoryDto != null){
+           String categoryName = categoryDto.getName();
+           if(!StringUtils.isBlank(categoryName)){
+               return categoryName.length() < 49; //49 is max length
+           }
+        }
+        return false;
     }
 }
