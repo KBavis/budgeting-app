@@ -88,7 +88,7 @@ public class TransactionServiceTests {
         accountId = "account-id";
         accessToken = "access-token";
 
-         counterpartyDto = PlaidTransactionDto.CounterpartyDto.builder()
+        counterpartyDto = PlaidTransactionDto.CounterpartyDto.builder()
                 .logo_url("logo_url")
                 .name("Chase")
                 .build();
@@ -99,7 +99,7 @@ public class TransactionServiceTests {
                 .confidence_level("HIGH")
                 .build();
 
-         plaidTransactionDtoOne = PlaidTransactionDto.builder()
+        plaidTransactionDtoOne = PlaidTransactionDto.builder()
                 .transaction_id("12345")
                 .counterparties(List.of(counterpartyDto))
                 .personal_finance_category(personalFinanceCategoryDto)
@@ -118,7 +118,7 @@ public class TransactionServiceTests {
                 .build();
 
 
-         plaidTransactionDtoThree = PlaidTransactionDto.builder()
+        plaidTransactionDtoThree = PlaidTransactionDto.builder()
                 .transaction_id("6789")
                 .counterparties(List.of(counterpartyDto))
                 .personal_finance_category(personalFinanceCategoryDto)
@@ -132,29 +132,29 @@ public class TransactionServiceTests {
          */
 
         plaidTransactionDtoFour = PlaidTransactionDto.builder()
-                 .transaction_id("1956")
-                 .counterparties(List.of(counterpartyDto))
-                 .personal_finance_category(personalFinanceCategoryDto)
-                 .amount(0)
-                 .datetime(date)
-                 .account_id(accountId)
-                 .build();
+                .transaction_id("1956")
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
+                .amount(0)
+                .datetime(date)
+                .account_id(accountId)
+                .build();
 
-         plaidTransactionDtoFive = PlaidTransactionDto.builder()
-                 .transaction_id("1735")
-                 .counterparties(List.of(counterpartyDto))
-                 .personal_finance_category(personalFinanceCategoryDto)
-                 .amount(-500.0)
-                 .datetime(date)
-                 .account_id(accountId)
-                 .build();
-
-         plaidTransactionDtoSix = PlaidTransactionDto.builder()
-                 .transaction_id("17545")
+        plaidTransactionDtoFive = PlaidTransactionDto.builder()
+                .transaction_id("1735")
                 .counterparties(List.of(counterpartyDto))
                 .personal_finance_category(personalFinanceCategoryDto)
                 .amount(-500.0)
-                .datetime(LocalDate.of(2024,4,19))
+                .datetime(date)
+                .account_id(accountId)
+                .build();
+
+        plaidTransactionDtoSix = PlaidTransactionDto.builder()
+                .transaction_id("17545")
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
+                .amount(-500.0)
+                .datetime(LocalDate.of(2024, 4, 19))
                 .account_id(accountId)
                 .build();
 
@@ -221,7 +221,7 @@ public class TransactionServiceTests {
                     .category(null)
                     .build();
         });
-        when(transactionRepository.saveAllAndFlush(anyList())).thenAnswer(invocationOnMock ->{
+        when(transactionRepository.saveAllAndFlush(anyList())).thenAnswer(invocationOnMock -> {
             return invocationOnMock.<List<Transaction>>getArgument(0);
         });
         when(transactionRepository.existsById(any())).thenReturn(true);
@@ -236,7 +236,7 @@ public class TransactionServiceTests {
         //Act
         List<Transaction> actualTransactions = transactionService.syncTransactions(transactionSyncRequestDto);
 
-       //Assert
+        //Assert
         assertNotNull(actualTransactions);
         assertEquals(4, actualTransactions.size()); //2 modified, 2 added
 
@@ -249,7 +249,7 @@ public class TransactionServiceTests {
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFive.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoSix.getTransaction_id())));
 
-       //Verify
+        //Verify
         verify(accountService, times(1)).read(accountIdOne);
         verify(accountService, times(1)).read(accountIdTwo);
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
@@ -319,7 +319,7 @@ public class TransactionServiceTests {
                     .category(null)
                     .build();
         });
-        when(transactionRepository.saveAllAndFlush(anyList())).thenAnswer(invocationOnMock ->{
+        when(transactionRepository.saveAllAndFlush(anyList())).thenAnswer(invocationOnMock -> {
             return invocationOnMock.<List<Transaction>>getArgument(0);
         });
         when(transactionRepository.existsById(any())).thenReturn(true);
@@ -386,6 +386,7 @@ public class TransactionServiceTests {
         //Verify
         verify(accountService, times(1)).read(accountIdOne);
     }
+
     @Test
     void testSyncTransactions_PlaidServiceException_Failure() {
         //Arrange
@@ -712,15 +713,15 @@ public class TransactionServiceTests {
         //Mock
         when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(originalTransaction));
         when(transactionMapper.toEntity(any(TransactionDto.class))).thenAnswer(invocationOnMock -> {
-           TransactionDto transactionDto = invocationOnMock.getArgument(0) ;
-           Transaction transaction = new Transaction();
-           transaction.setName(transactionDto.getUpdatedName());
-           transaction.setAmount(transactionDto.getUpdatedAmount());
-           transaction.setLogoUrl(transactionDto.getLogoUrl());
-           transaction.setDate(transactionDto.getDate());
-           transaction.setAccount(account);
-           transaction.setCategory(category);
-           return  transaction;
+            TransactionDto transactionDto = invocationOnMock.getArgument(0);
+            Transaction transaction = new Transaction();
+            transaction.setName(transactionDto.getUpdatedName());
+            transaction.setAmount(transactionDto.getUpdatedAmount());
+            transaction.setLogoUrl(transactionDto.getLogoUrl());
+            transaction.setDate(transactionDto.getDate());
+            transaction.setAccount(account);
+            transaction.setCategory(category);
+            return transaction;
         });
         doNothing().when(transactionRepository).deleteById(transactionId);
         when(transactionRepository.saveAllAndFlush(anyList())).thenReturn(null);
@@ -802,7 +803,7 @@ public class TransactionServiceTests {
         when(transactionRepository.findById(invalidTransactionId)).thenReturn(Optional.empty());
 
         //Act & Assert
-        RuntimeException exception  = assertThrows(RuntimeException.class, () -> {
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             transactionService.readById(invalidTransactionId);
         });
         assertNotNull(exception);
@@ -841,7 +842,8 @@ public class TransactionServiceTests {
         //Assert
         assertNotNull(actualTransaction);
         assertEquals(updatedTransaction.getTransactionId(), actualTransaction.getTransactionId());
-        assertEquals(updatedTransaction.getCategory(), actualTransaction.getCategory());;
+        assertEquals(updatedTransaction.getCategory(), actualTransaction.getCategory());
+        ;
 
         //Verify
         verify(categoryService, times(1)).read(Long.parseLong(categoryRequestDto.getCategoryId()));
@@ -891,30 +893,30 @@ public class TransactionServiceTests {
     }
 
     @Test
-    void testRemoveCategory_ValidTransactionId_Successful(){
-       //Arrange
-       String transactionId = "valid-transaction-id";
-       Category category = Category.builder()
-               .categoryId(10L)
-               .budgetAmount(1000.0)
-               .build();
-       Transaction transaction = Transaction.builder()
-               .transactionId(transactionId)
-               .category(category)
-               .build();
+    void testRemoveCategory_ValidTransactionId_Successful() {
+        //Arrange
+        String transactionId = "valid-transaction-id";
+        Category category = Category.builder()
+                .categoryId(10L)
+                .budgetAmount(1000.0)
+                .build();
+        Transaction transaction = Transaction.builder()
+                .transactionId(transactionId)
+                .category(category)
+                .build();
 
-       //Mock
-       when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(transaction));
-       when(transactionRepository.save(transaction)).thenAnswer(invocationOnMock -> {
-           return invocationOnMock.getArgument(0);
-       });
+        //Mock
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.save(transaction)).thenAnswer(invocationOnMock -> {
+            return invocationOnMock.getArgument(0);
+        });
 
-       //Act
-       transactionService.removeAssignedCategory(transactionId);
+        //Act
+        transactionService.removeAssignedCategory(transactionId);
 
-       //Nothing to Assert
+        //Nothing to Assert
 
-       //Verify
+        //Verify
         verify(transactionRepository, times(1)).save(transaction);
         verify(transactionRepository, times(1)).findById(transactionId);
     }
@@ -952,7 +954,7 @@ public class TransactionServiceTests {
 
         //Mock
         when(transactionMapper.toEntity(any(TransactionDto.class))).thenAnswer(invocationOnMock -> {
-            TransactionDto dto = invocationOnMock.getArgument(0) ;
+            TransactionDto dto = invocationOnMock.getArgument(0);
             Transaction transaction = new Transaction();
             transaction.setName(dto.getUpdatedName());
             transaction.setAmount(dto.getUpdatedAmount());
@@ -960,7 +962,7 @@ public class TransactionServiceTests {
             transaction.setDate(dto.getDate());
             transaction.setAccount(null);
             transaction.setCategory(null);
-            return  transaction;
+            return transaction;
         });
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
@@ -1033,7 +1035,7 @@ public class TransactionServiceTests {
     }
 
     @Test
-    void testReduceTransactionAmount_InvalidAmount_Failure () {
+    void testReduceTransactionAmount_InvalidAmount_Failure() {
         //Arrange
         String transactionId = "transaction-id";
         Transaction transaction = Transaction.builder()
@@ -1093,6 +1095,51 @@ public class TransactionServiceTests {
 
         //Verify
         verify(transactionRepository, times(1)).findById(transactionId);
+    }
+
+    @Test
+    void testUpdateTransactionName_InvalidTransactionId_Failure() {
+        //Arrange
+        String invalidTransactionId = "invalid-id";
+        String originalName = "original-name";
+        String errorMsg = "Transaction with the following ID not found: " + invalidTransactionId;
+
+        //Mock
+        when(transactionRepository.findById(invalidTransactionId)).thenReturn(Optional.empty());
+
+        //Act & Assert
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+            transactionService.updateTransactionName(invalidTransactionId, originalName);
+        });
+        assertNotNull(runtimeException);
+        assertEquals(errorMsg, runtimeException.getMessage());
+    }
+
+    @Test
+    void testUpdateTransactionName_ValidTransactionId_Success() {
+        //Arrange
+        String transactionId = "valid-id";
+        String originalName = "original-name";
+        String updatedName = "updated-name";
+        Transaction originalTransaction = Transaction.builder()
+                .transactionId(transactionId)
+                .name(originalName)
+                .build();
+        Transaction updatedTransaction = Transaction.builder()
+                .transactionId(transactionId)
+                .name(updatedName)
+                .build();
+
+        //Mock
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(originalTransaction));
+        when(transactionRepository.save(originalTransaction)).thenReturn(updatedTransaction);
+
+        //Act & Assert
+        Transaction actualTransaction = transactionService.updateTransactionName(transactionId, updatedName);
+
+        assertNotNull(actualTransaction);
+        assertEquals(updatedName, actualTransaction.getName());
+        assertEquals(transactionId, actualTransaction.getTransactionId());
     }
 
 }
