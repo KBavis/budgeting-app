@@ -13,6 +13,7 @@ import ReduceTransaction from "../components/transaction/ReduceTransaction";
 import AddTransaction from "../components/transaction/AddTransaction";
 import DropdownMenu from "../components/layout/Dropdown";
 import Savings from "../components/category/types/Savings";
+import RenameTransaction from "../components/transaction/RenameTransaction";
 
 const HomePage = () => {
    //Local State
@@ -23,6 +24,8 @@ const HomePage = () => {
    const [showReduceTransactionModal, setShowReduceTransactionModal] =
       useState(false);
    const [showAddTransactionModal, setShowAddTransactionModal] =
+      useState(false);
+   const [showRenameTransactionModal, setShowRenameTransactionModal] =
       useState(false);
    const [transaction, setTransaction] = useState(null);
    const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown visibility
@@ -79,6 +82,17 @@ const HomePage = () => {
    //Function to close SplitTransaction modal
    const handleCloseSplitTransactionModal = () => {
       setShowSplitTransactionModal(false);
+   };
+
+   //Function to open RenameTransaction modal
+   const handleShowRenameTransactionModal = (renameTransaction) => {
+      setTransaction(renameTransaction);
+      setShowRenameTransactionModal(true);
+   };
+
+   //Function to close RenameTransaction modal
+   const handleCloseRenameTransactionModal = () => {
+      setShowRenameTransactionModal(false);
    };
 
    //Fucntion to open ReduceTransaction modal
@@ -250,6 +264,9 @@ const HomePage = () => {
                         handleShowReduceTransactionModal={
                            handleShowReduceTransactionModal
                         }
+                        handleShowRenameTransactionModal={
+                           handleShowRenameTransactionModal
+                        }
                      />
                   ))
                ) : (
@@ -278,6 +295,14 @@ const HomePage = () => {
          {showAddTransactionModal && ( // Render modal if showModal is true and selectedCategoryType is not null
             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
                <AddTransaction onClose={handleCloseAddTransactionModal} />
+            </div>
+         )}
+         {showRenameTransactionModal && (
+            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+               <RenameTransaction
+                  onClose={handleCloseRenameTransactionModal}
+                  transaction={transaction}
+               />
             </div>
          )}
       </div>

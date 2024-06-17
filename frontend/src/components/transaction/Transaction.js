@@ -17,6 +17,7 @@ const Transaction = ({
    transaction,
    handleShowSplitTransactionModal,
    handleShowReduceTransactionModal,
+   handleShowRenameTransactionModal,
 }) => {
    //Local State
    const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -54,6 +55,12 @@ const Transaction = ({
    const handleDeleteTransaction = () => {
       toggleDropdown();
       deleteTransaction(transaction.transactionId);
+   };
+
+   //Function to handle drop down option 'Rename Transaction'
+   const handleRenameTransaction = () => {
+      toggleDropdown();
+      handleShowRenameTransactionModal(transaction);
    };
 
    //Round The Transaction Amount
@@ -110,6 +117,12 @@ const Transaction = ({
                         className="font-bold block border-[1px] border-black w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
                      >
                         Delete Transaction
+                     </button>
+                     <button
+                        onClick={handleRenameTransaction}
+                        className="font-bold block border-[1px] border-black w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                     >
+                        Rename Transaction
                      </button>
                   </div>
                )}
