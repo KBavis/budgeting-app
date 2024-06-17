@@ -15,6 +15,8 @@ import {
    REDUCE_TRANSACTION_SUCCESS,
    DELETE_TRANSACTION_SUCCESS,
    DELETE_TRANSACTION_FAILURE,
+   RENAME_TRANSACTION_FAILURE,
+   RENAME_TRANSACTION_SUCCESS,
 } from "./types";
 
 export default (state, action) => {
@@ -127,6 +129,7 @@ export default (state, action) => {
       case ADD_TRANSACTION_FAILURE:
       case REDUCE_TRANSACTION_FAILURE:
       case DELETE_TRANSACTION_FAILURE:
+      case RENAME_TRANSACTION_FAILURE:
          return {
             ...state,
             error: action.payload,
@@ -153,6 +156,20 @@ export default (state, action) => {
          return {
             ...state,
             transactions: updatedTransactionsRemove,
+         };
+      case RENAME_TRANSACTION_SUCCESS:
+         const renamedTransactions = state.transactions.map((transaction) => {
+            if (transaction.transactionId === action.payload.transactionId) {
+               return { ...transaction, name: action.payload.updatedName };
+            }
+            return transaction;
+         });
+
+         return {
+            ...state,
+            transactions: renamedTransactions,
+            loading: false,
+            error: null,
          };
       case CLEAR_ERRORS:
          return {

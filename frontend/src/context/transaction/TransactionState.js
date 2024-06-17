@@ -21,6 +21,8 @@ import {
    REDUCE_TRANSACTION_SUCCESS,
    DELETE_TRANSACTION_FAILURE,
    DELETE_TRANSACTION_SUCCESS,
+   RENAME_TRANSACTION_SUCCESS,
+   RENAME_TRANSACTION_FAILURE,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -325,6 +327,27 @@ const TransactionState = (props) => {
       }
    };
 
+   const renameTransaction = async (transactionId, updatedName) => {
+      try {
+         if (localStorage.token) {
+            setAuthToken(localStorage.token);
+         }
+
+         const payload = { transactionId, updatedName };
+
+         const res = await axios.put(
+            `${apiUrl}/transactions/${transactionId}/${updatedName}`
+         );
+         dispatch({ type: RENAME_TRANSACTION_SUCCESS, payload });
+      } catch (err) {
+         dispatch({
+            RENAME_TRANSACTION_FAILURE,
+            payload: err.response.data.error,
+         });
+         setAlert(err.response.data.error, "danger");
+      }
+   };
+
    /**
     *  Functionality to clear errors
     */
@@ -351,6 +374,7 @@ const TransactionState = (props) => {
             addTransaction,
             reduceTransactionAmount,
             deleteTransaction,
+            renameTransaction,
          }}
       >
          {props.children}
