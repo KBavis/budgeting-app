@@ -776,4 +776,53 @@ public class TransactionControllerTests {
         //Verify
         verify(transactionService, times(1)).deleteTransaction(transactionId);
     }
+    @Test
+    void testUpdateTransactionName_ValidName_ValidId_Success() throws Exception {
+        //Arrange
+        String originalTransactionName = "original-transaction-name";
+        String transactionId = "transaction-id";
+        String updatedTransactionName = "updated-transaction-name";
+        Transaction expectedTransaction = Transaction.builder()
+                .transactionId(transactionId)
+                .name(updatedTransactionName)
+                .build();
+
+        //Mock
+        when(transactionService.updateTransactionName(transactionId, updatedTransactionName)).thenReturn(expectedTransaction);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/transactions/" + transactionId + "/" + updatedTransactionName));
+
+        //Assert
+        resultActions
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value(updatedTransactionName))
+                .andExpect(jsonPath("$.transactionId").value(transactionId));
+
+        //Verify
+        verify(transactionService, times(1)).updateTransactionName(transactionId, updatedTransactionName);
+    }
+    @Test
+    void testUpdateTransactionName_InvalidTransactionId_Failure() throws Exception {
+        //Arrange
+        String updatedTransactionName = "updated-transaction-name";
+        String transactionId = "transaction-id";
+        String errorMsg = "Transaction with the following ID not found: " + transactionId;
+
+        //Mock
+        when(transactionService.updateTransactionName(transactionId, updatedTransactionName)).thenThrow(new RuntimeException(errorMsg));
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/transactions/" + transactionId + "/" + updatedTransactionName));
+
+        //Assert
+        resultActions
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value(errorMsg));
+
+        //Verify
+        verify(transactionService, times(1)).updateTransactionName(transactionId, updatedTransactionName);
+    }
 }
