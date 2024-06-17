@@ -223,6 +223,19 @@ public class TransactionServiceImpl implements TransactionService {
         return _transactionRepository.save(transaction);
     }
 
+    @Override
+    public Transaction updateTransactionName(String transactionId, String transactionName) throws RuntimeException{
+        log.info("Updating Transaction with ID {} to have the following transactionName: {}", transactionId, transactionName);
+
+        //Fetch Transaction
+        Transaction transaction = readById(transactionId);
+
+        //Update Name/Flag & Persist
+        transaction.setName(transactionName);
+        transaction.setUpdatedByUser(true);
+        return _transactionRepository.save(transaction);
+    }
+
 
 
     @Override

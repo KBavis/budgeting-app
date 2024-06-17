@@ -83,6 +83,18 @@ public interface TransactionService {
     Transaction assignCategory(AssignCategoryRequestDto assignCategoryRequestDto);
 
     /**
+     * Functionality to rename a Transaction to a more relevant name
+     *
+     * @param transactionId
+     *          - ID of Transaction to be updated
+     * @param updatedName
+     *          - Updated Transaction name
+     * @return
+     *          - updated Transaction entity
+     */
+    Transaction updateTransactionName(String transactionId, String updatedName);
+
+    /**
      * Functionality to read a Transaction by its ID
      *
      * @param transactionId
