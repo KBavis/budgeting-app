@@ -37,7 +37,9 @@ public class JwtServiceImpl implements JwtService {
         log.info("Validating JWT Token for User with username '{}'", userDetails.getUsername());
         Date expirationDate = decodedJWT.getExpiresAt();
         final String username = decodedJWT.getSubject();
-        return (username.equals(userDetails.getUsername()) && expirationDate.after(new Date()));
+        boolean validity = (username.equals(userDetails.getUsername()) && expirationDate.after(new Date()));
+        log.info("JWT Token Validity for user {} : {}", username, validity);
+        return validity;
     }
 
     @Override
