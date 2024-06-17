@@ -64,6 +64,12 @@ public class TransactionController {
         return ResponseEntity.ok(_transactionService.reduceTransactionAmount(transactionId, transactionDto));
     }
 
+    @PutMapping("/{transactionId}/{updatedName}")
+    public ResponseEntity<Transaction> updateTransactionName(@PathVariable("transactionId") String transactionId, @PathVariable("updatedName") String updatedName){
+        log.info("Received request to update Transaction name to {} for Transaction with ID {}", updatedName, transactionId);
+        return ResponseEntity.ok(_transactionService.updateTransactionName(transactionId, updatedName));
+    }
+
 
     /**
      * Retrieve all Transaction entities within the current month corresponding to Authenticated User's added Accounts
