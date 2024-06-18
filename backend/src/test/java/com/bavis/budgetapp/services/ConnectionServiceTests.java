@@ -103,18 +103,23 @@ public class ConnectionServiceTests {
         String accessToken = "access-token";
         String institutionName = "J.P Morgan";
         String previousCursor = "previous-cursor";
+        String originalCursor = "original-cursor";
+        LocalDateTime localDateTime = LocalDateTime.now();
 
         Connection connectionWithUpdates = Connection.builder()
                 .previousCursor(previousCursor)
+                .originalCursor(originalCursor)
+                .lastSyncTime(localDateTime)
                 .build();
 
         Connection connectionToUpdate = Connection.builder()
                 .connectionId(connectionId)
                 .connectionStatus(ConnectionStatus.CONNECTED)
-                .lastSyncTime(lastSyncTime)
                 .accessToken(accessToken)
                 .institutionName(institutionName)
                 .previousCursor(null)
+                .originalCursor(null)
+                .lastSyncTime(LocalDateTime.now().minusDays(1))
                 .build();
 
         Connection expectedUpdatedConnection = Connection.builder()
@@ -124,6 +129,8 @@ public class ConnectionServiceTests {
                 .accessToken(accessToken)
                 .institutionName(institutionName)
                 .previousCursor(previousCursor)
+                .originalCursor(originalCursor)
+                .lastSyncTime(lastSyncTime)
                 .build();
 
         // Mock
@@ -140,6 +147,8 @@ public class ConnectionServiceTests {
         assertEquals(expectedUpdatedConnection.getLastSyncTime(), actualConnection.getLastSyncTime());
         assertEquals(expectedUpdatedConnection.getInstitutionName(), actualConnection.getInstitutionName());
         assertEquals(expectedUpdatedConnection.getPreviousCursor(), actualConnection.getPreviousCursor());
+        assertEquals(expectedUpdatedConnection.getOriginalCursor(), actualConnection.getOriginalCursor());
+        assertEquals(expectedUpdatedConnection.getLastSyncTime(), actualConnection.getLastSyncTime());
 
         // Verify
         verify(connectionRepository, times(1)).findById(10L);
