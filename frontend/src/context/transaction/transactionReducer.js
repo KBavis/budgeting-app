@@ -69,22 +69,24 @@ export default (state, action) => {
             transactions: filtered,
          };
       case UPDATE_TRANSACTION_CATEGORY:
-         // Update Transactions Category ID
          const { transactionId, category } = action.payload;
-         const updatedTransactions = state.transactions.map((transaction) => {
-            if (transaction.transactionId === transactionId) {
-               return {
-                  ...transaction,
-                  category: {
-                     ...category,
-                  },
-               };
+         let transactionToUpdate = null;
+         const remainingTransactions = state.transactions.filter(
+            (transaction) => {
+               if (transaction.transactionId === transactionId) {
+                  transactionToUpdate = {
+                     ...transaction,
+                     category: { ...category },
+                  };
+                  return false;
+               }
+               return true;
             }
-            return transaction;
-         });
+         );
+
          return {
             ...state,
-            transactions: updatedTransactions,
+            transactions: [transactionToUpdate, ...remainingTransactions],
          };
       case SPLIT_TRANSACTIONS_SUCCESS:
          const splitTransactionId = action.payload.originalTransactionId;
@@ -97,8 +99,8 @@ export default (state, action) => {
 
          // Add the new split transactions to the existing list
          const mergedTransactions = [
-            ...filteredTransactions,
             ...newSplitTransactions,
+            ...filteredTransactions,
          ];
 
          return {

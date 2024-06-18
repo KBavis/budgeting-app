@@ -39,22 +39,23 @@ const Category = ({
 
    useEffect(() => {
       if (transactions) {
-         //Filter Transactions corresponding to current Category
+         // Filter Transactions corresponding to current Category
          const filtered = transactions.filter(
             (transaction) =>
                transaction.category &&
                transaction.category.categoryId === category.categoryId
          );
-         //Set three most recent Transactions for Cateogry
-         const mostRecent = filtered ? filtered.slice(0, 3) : [];
+
+         // Set three most recent Transactions for Category
+         const mostRecent = filtered.slice(0, 3);
          setRecentTransactions(mostRecent);
 
-         //Sum total amount of Transactions corresponding to entitiy
+         // Sum total amount of Transactions corresponding to entity
          const sum = filtered.reduce((acc, transaction) => {
             return acc + transaction.amount;
          }, 0);
 
-         //Set Total Amount & Budget Usage Percentage
+         // Set Total Amount & Budget Usage Percentage
          setTotalAmountSpent(sum.toFixed(0));
          setBudgetUsage((sum / category.budgetAmount) * 100);
       } else {
