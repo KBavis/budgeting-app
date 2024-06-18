@@ -9,8 +9,6 @@ import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
