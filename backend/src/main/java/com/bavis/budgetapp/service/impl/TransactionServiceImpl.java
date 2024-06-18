@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -137,8 +137,9 @@ public class TransactionServiceImpl implements TransactionService {
                 }
 
 
-                //Update Cursor for Connection & Persist
+                //Update Cursor & Sync Time for Connection & Persist
                 accountConnection.setPreviousCursor(previousCursor);
+                accountConnection.setLastSyncTime(LocalDateTime.now());
                 if(updateOriginalCursor){
                     accountConnection.setOriginalCursor(originalCursor);
                 }
