@@ -10,6 +10,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -30,20 +32,11 @@ import java.io.IOException;
  */
 @Component("jwtAuthFilter")
 @Log4j2
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService _jwtService;
     private final UserDetailsService _userDetailsService;
-
     private final Algorithm _algorithm;
-
-
-    public JwtAuthenticationFilter (JwtService _jwtService,
-                                    UserDetailsService _userDetailsService,
-                                    Algorithm _algorithm){
-        this._jwtService = _jwtService;
-        this._userDetailsService = _userDetailsService;
-        this._algorithm = _algorithm;
-    }
 
 
 
