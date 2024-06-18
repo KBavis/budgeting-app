@@ -42,6 +42,7 @@ public class ConnectionServiceImpl implements ConnectionService{
 				.orElseThrow(() -> new RuntimeException("Unable to find Connection with ID " + connectionId + " to update."));
 
 		connectionToUpdate.setPreviousCursor(connection.getPreviousCursor());
+		connectionToUpdate.setLastSyncTime(connection.getLastSyncTime());
 		if(!StringUtils.isBlank(connection.getOriginalCursor())){
 			connectionToUpdate.setOriginalCursor(connection.getOriginalCursor()); //persist original cursor if passed
 		}
