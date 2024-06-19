@@ -12,12 +12,12 @@ import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.UserService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +30,7 @@ import java.util.ArrayList;
  */
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
 
@@ -41,14 +42,6 @@ public class AuthServiceImpl implements AuthService {
     private final PlaidService _plaidService;
 
     private final AuthenticationManager _authenticationManager;
-
-    public AuthServiceImpl(JwtService _jwtService, UserService _userService, PasswordEncoder _passwordEncoder, AuthenticationManager _authenticationManager, PlaidService _plaidService){
-        this._jwtService = _jwtService;
-        this._userService = _userService;
-        this._authenticationManager = _authenticationManager;
-        this._passwordEncoder = _passwordEncoder;
-        this._plaidService = _plaidService;
-    }
 
 
 
@@ -121,8 +114,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponseDto logout() {
-        return null;
+    public void logout() {
+        //Remove AuthenticationToken from SecurityContext
+        SecurityContextHolder.getContext().setAuthentication(null);
+
+        //TODO: Invalidate JWT Token (BA-495)
     }
 
 }
