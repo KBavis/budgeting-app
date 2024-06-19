@@ -94,6 +94,7 @@ public class AuthController {
      */
     @DeleteMapping("/logout")
     public void logout() {
+        log.info("Received request to logout current authenticated user");
         authService.logout();
     }
 
