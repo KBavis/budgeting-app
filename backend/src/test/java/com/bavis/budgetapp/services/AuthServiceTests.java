@@ -21,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -63,7 +65,7 @@ public class AuthServiceTests {
     public void setup() {
 
         //init authService and auth request
-        authService = new AuthServiceImpl(jwtService, userService, passwordEncoder, authenticationManager, plaidService);
+        authService = new AuthServiceImpl(jwtService, userService, passwordEncoder, plaidService, authenticationManager);
         registerAuthRequestDto = AuthRequestDto.builder()
                 .name("Test User")
                 .passwordOne("password")
@@ -265,6 +267,23 @@ public class AuthServiceTests {
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userService, times(0)).readByUsername("username");
         verify(jwtService, times(0)).generateToken(any(User.class));
+    }
+
+    @Test
+    void testLogout_Success() {
+        //Arrange
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                null,
+                null,
+                null
+        );
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        //Act
+        authService.logout();
+
+        //Assert
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 
 }
