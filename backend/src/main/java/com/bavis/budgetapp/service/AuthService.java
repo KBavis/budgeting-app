@@ -46,6 +46,8 @@ public interface AuthService {
     //TODO: Implement javadocs once implemented
     AuthResponseDto refresh(AuthRequestDto authRequestDto);
 
-    //TODO: Implement this logic once implemented
-    AuthResponseDto logout();
+    /**
+     * Functionality to log a user out of their account
+     */
+    void logout();
 }
