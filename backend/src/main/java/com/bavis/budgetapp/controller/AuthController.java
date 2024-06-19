@@ -3,7 +3,6 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.AuthRequestDto;
 import com.bavis.budgetapp.dto.AuthResponseDto;
 import com.bavis.budgetapp.entity.User;
-import com.bavis.budgetapp.service.AuthService;
 import com.bavis.budgetapp.service.impl.AuthServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.bavis.budgetapp.validator.group.AuthRequestAuthenticationValidationGroup;
@@ -93,7 +92,7 @@ public class AuthController {
      * Logs a User out of their currently logged in Account
      *
      */
-    @PostMapping("/logout")
+    @DeleteMapping("/logout")
     public void logout() {
         authService.logout();
     }
