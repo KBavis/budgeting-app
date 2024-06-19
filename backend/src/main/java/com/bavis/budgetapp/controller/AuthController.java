@@ -90,12 +90,12 @@ public class AuthController {
     }
 
     /**
-     * TODO: Implement this logic
-     * @return
+     * Logs a User out of their currently logged in Account
+     *
      */
     @PostMapping("/logout")
-    public ResponseEntity<AuthResponseDto> logout() {
-        return null;
+    public void logout() {
+        authService.logout();
     }
 
 
