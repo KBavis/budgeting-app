@@ -22,9 +22,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,8 +40,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 public class User implements UserDetails{
 	@Serial
 	private static final long serialVersionUID = 1L;
@@ -158,20 +156,4 @@ public class User implements UserDetails{
 		return true;
 	}
 
-	@Override
-	public String toString() {
-		return "User{" +
-				"userId=" + userId +
-				", name='" + name + '\'' +
-				", username='" + username + '\'' +
-				", password='" + password + '\'' +
-				", profileImage='" + profileImage + '\'' +
-				", linkToken='" + linkToken + '\'' +
-				", failedLoginAttempts=" + failedLoginAttempts +
-				", lockoutEndTime=" + lockoutEndTime +
-				", role=" + role +
-				", categories=" + categories +
-				", accounts=" + accounts +
-				'}';
-	}
 }
