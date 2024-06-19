@@ -6,8 +6,6 @@ import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.dto.AuthRequestDto;
 import com.bavis.budgetapp.dto.AuthResponseDto;
-import com.bavis.budgetapp.service.AuthService;
-import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.service.impl.AuthServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,13 +21,12 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -94,7 +91,7 @@ public class AuthControllerTests {
 
         // Assert
         resultActions.andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.token").value(expectedAuthResponseDto.getToken()))
                 .andExpect(jsonPath("$.user.name").value(testUser.getName()))
                 .andExpect(jsonPath("$.user.userName").value(testUser.getUsername()))
@@ -115,7 +112,7 @@ public class AuthControllerTests {
 
         //Assert
         resultActions.andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.token").value(expectedAuthResponseDto.getToken()))
                 .andExpect(jsonPath("$.user.name").value(testUser.getName()))
                 .andExpect(jsonPath("$.user.userName").value(testUser.getUsername()))
@@ -136,7 +133,7 @@ public class AuthControllerTests {
 
         //Assert
         resultActions.andExpect(status().isForbidden())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("Bad credentials"));
 
         verify(authService, times(1)).authenticate(any(AuthRequestDto.class));
@@ -156,7 +153,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("The provided username is not in the proper format."));
 
     }
@@ -175,7 +172,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("The provided password is not valid."));
 
     }
@@ -196,7 +193,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("The provided username is not in the proper format."));
 
     }
@@ -220,7 +217,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("The provided username already exists."));
 
         //Verify
@@ -243,7 +240,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("The provided name is not valid."));
     }
 
@@ -263,7 +260,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("The provided password is not valid."));
     }
 
@@ -283,7 +280,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(invalidAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("The passwords do not match."));
     }
 
@@ -298,7 +295,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("PlaidServiceException: [Link Token Returned From Client Is Null]"));
     }
@@ -314,7 +311,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("JwtServiceException: [Failed to Generate Jwt Token: invalid usages]"));
     }
@@ -330,7 +327,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Could not find user with the username " + registerAuthRequestDto.getUsername()));
     }
@@ -346,7 +343,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Could not find user with the username authentication-user"));
     }
@@ -362,7 +359,7 @@ public class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(registerAuthRequestDto)));
 
         //Assert
-        resultActions.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+        resultActions.andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("JwtServiceException: [Failed to Generate Jwt Token: invalid usages]"));
     }
@@ -373,7 +370,7 @@ public class AuthControllerTests {
         when(userService.getCurrentAuthUser()).thenReturn(testUser);
 
         //Act & Assert
-        ResultActions resultActions = mockMvc.perform(get("/auth"))
+        mockMvc.perform(get("/auth"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userName").value(testUser.getUsername()))
                 .andExpect(jsonPath("$.linkToken").value(testUser.getLinkToken()))
@@ -389,7 +386,7 @@ public class AuthControllerTests {
         when(userService.getCurrentAuthUser()).thenThrow(new UserServiceException("Unable to find any Authenticated user"));
 
         //Act & Assert
-        ResultActions resultActions = mockMvc.perform(get("/auth"))
+        mockMvc.perform(get("/auth"))
                 .andExpect(jsonPath("$.error").value("Unable to find any Authenticated user"));
 
         //Verify
@@ -402,11 +399,28 @@ public class AuthControllerTests {
         when(userService.getCurrentAuthUser()).thenThrow(new UserServiceException("Could not find user with the username " + testUser.getUsername()));
 
         //Act & Assert
-        ResultActions resultActions = mockMvc.perform(get("/auth"))
+        mockMvc.perform(get("/auth"))
                 .andExpect(jsonPath("$.error").value("Could not find user with the username " + testUser.getUsername()));
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
+    }
+
+    @Test
+    public void testLogout_Successful() throws Exception {
+        //Mock
+        doNothing().when(authService).logout();
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(delete("/auth/logout"));
+
+        //Assert
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
+
+        //Verify
+        verify(authService, times(1)).logout();
     }
 
 }
