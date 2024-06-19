@@ -115,6 +115,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout() {
+        log.info("Attempting to logout the currently authenticated user via AuthService");
         //Remove AuthenticationToken from SecurityContext
         SecurityContextHolder.getContext().setAuthentication(null);
 
