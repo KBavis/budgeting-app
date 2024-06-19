@@ -12,6 +12,8 @@ import {
    SET_LOADING,
    FETCH_AUTH_USER_FAIL,
    FETCH_AUTH_USER_SUCCESS,
+   LOGOUT_SUCCESS,
+   LOGOUT_FAIL,
 } from "./types";
 import initalState from "./initalState";
 import AuthContext from "./authContext";
@@ -98,6 +100,19 @@ const AuthState = (props) => {
       }
    };
 
+   const logout = async () => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      try {
+         await axios.delete(`${apiUrl}/auth/logout`);
+         dispatch({ type: LOGOUT_SUCCESS, payload: null });
+      } catch (err) {
+         console.error(err);
+      }
+   };
+
    /**
     * Functionality to Clear Errors
     */
@@ -121,6 +136,7 @@ const AuthState = (props) => {
             clearErrors,
             setLoading,
             fetchAuthenticatedUser,
+            logout,
          }}
       >
          {props.children}

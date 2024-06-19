@@ -3,11 +3,11 @@ import {
    AUTH_SUCCESS,
    REGISTER_FAIL,
    REGISTER_SUCCESS,
-   LOGOUT,
    CLEAR_ERRORS,
    SET_LOADING,
    FETCH_AUTH_USER_FAIL,
    FETCH_AUTH_USER_SUCCESS,
+   LOGOUT_SUCCESS,
 } from "./types";
 
 /**
@@ -26,7 +26,6 @@ export default (state, action) => {
          };
       case REGISTER_FAIL:
       case AUTH_FAIL:
-      case LOGOUT:
       case FETCH_AUTH_USER_FAIL:
          localStorage.removeItem("token");
          return {
@@ -44,6 +43,15 @@ export default (state, action) => {
             isAuthenticated: true,
             loading: false,
             token: localStorage.token,
+         };
+      case LOGOUT_SUCCESS:
+         localStorage.removeItem("token");
+         return {
+            ...state,
+            user: null,
+            isAuthenticated: false,
+            loading: false,
+            token: null,
          };
       case CLEAR_ERRORS:
          return {
