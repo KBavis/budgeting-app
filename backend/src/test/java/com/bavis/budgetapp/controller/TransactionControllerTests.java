@@ -234,7 +234,7 @@ public class TransactionControllerTests {
         //Assert
         resultActions
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("The provided list of Account ID's to sync transactions for contains at least one invalid entry"));
+                .andExpect(jsonPath("$.error").value("The provided list of Account ID's contains at least one invalid entry"));
 
         //Verify
         verify(accountService, times(1)).read(invalidAccountIdOne);
@@ -264,7 +264,7 @@ public class TransactionControllerTests {
         //Assert
         resultActions
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("The provided list of Account ID's to sync transactions for contains at least one invalid entry"));
+                .andExpect(jsonPath("$.error").value("The provided list of Account ID's contains at least one invalid entry"));
 
         //Verify
         verify(accountService, times(1)).read(invalidAccountIdOne);
