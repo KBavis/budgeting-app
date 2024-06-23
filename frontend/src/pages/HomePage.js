@@ -14,6 +14,7 @@ import AddTransaction from "../components/transaction/AddTransaction";
 import DropdownMenu from "../components/layout/Dropdown";
 import Savings from "../components/category/types/Savings";
 import RenameTransaction from "../components/transaction/RenameTransaction";
+import AlertContext from "../context/alert/alertContext";
 
 const HomePage = () => {
    //Local State
@@ -43,6 +44,7 @@ const HomePage = () => {
    const {
       accounts,
       fetchAccounts,
+      createAccount,
       loading: accountsLoading,
       setLoading: setAccountsLoading,
    } = useContext(accountContext);
@@ -65,6 +67,7 @@ const HomePage = () => {
       setLoading: setIncomesLoading,
       loading: incomesLoading,
    } = useContext(IncomeContext);
+   const { setAlert } = useContext(AlertContext);
 
    // Set Authenticated User's Name
    useEffect(() => {
@@ -183,6 +186,46 @@ const HomePage = () => {
       }
    };
 
+   //Functionality to map a given account type to our backend enum value
+   const mapAccountType = (type, subtype) => {
+      switch (type) {
+         case "depository":
+            return subtype === "checking" ? "CHECKING" : "SAVING";
+         case "credit":
+            return "CREDIT";
+         case "loan":
+            return "LOAN";
+         case "investment":
+            return "INVESTMENT";
+         default:
+            return null;
+      }
+   };
+
+   //Functionality to handle a users successful connection of their financial institution via Plaid
+   const handleOnSuccess = (publicToken, metadata) => {
+      //Create paylaoad to send to backend
+      const accountData = {
+         plaidAccountId: metadata.account_id,
+         accountName: metadata.institution.name,
+         publicToken,
+         accountType: mapAccountType(
+            metadata.account.type,
+            metadata.account.subtype
+         ),
+      };
+      console.log(accountData);
+      createAccount(accountData);
+
+      setAlert("Account added succesfully", "SUCCESS");
+   };
+
+   //Functonality to handle a user closing Plaid Link
+   const handleOnExit = (err, metadata) => {
+      console.log("Error:", err);
+      console.log("Metadata:", metadata);
+   };
+
    //Fetch All Entities from Backend initial Component Mounting
    useEffect(() => {
       console.log(
@@ -233,6 +276,9 @@ const HomePage = () => {
             dropdownVisible={dropdownVisible}
             setDropdownVisible={setDropdownVisible}
             handleShowAddTransactionModal={handleShowAddTransactionModal}
+            user={user} // Pass the user prop
+            handleOnSuccess={handleOnSuccess} // Pass the handleOnSuccess prop
+            handleOnExit={handleOnExit} // Pass the handleOnExit prop
          />
 
          {/* Main Content */}
