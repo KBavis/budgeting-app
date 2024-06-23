@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
+import com.bavis.budgetapp.dto.AccountsDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
@@ -36,8 +36,8 @@ public class TransactionSyncRequestAccountsValidatorTests {
     @InjectMocks
     private TransactionSyncRequestAccountsValidator validator;
 
-    private TransactionSyncRequestDto invalidDto;
-    private TransactionSyncRequestDto validDto;
+    private AccountsDto invalidDto;
+    private AccountsDto validDto;
 
     private String accountIdOne;
     private String accountIdTwo;
@@ -47,11 +47,11 @@ public class TransactionSyncRequestAccountsValidatorTests {
         accountIdOne = "ABCDE12345";
         accountIdTwo = "WZYZ789";
 
-        validDto = TransactionSyncRequestDto.builder()
+        validDto = AccountsDto.builder()
                 .accounts(List.of(accountIdOne, accountIdTwo))
                 .build();
 
-        invalidDto = TransactionSyncRequestDto.builder()
+        invalidDto = AccountsDto.builder()
                 .accounts(null)
                 .build();
     }

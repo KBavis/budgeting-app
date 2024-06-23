@@ -200,7 +200,7 @@ public class TransactionServiceTests {
                 .connection(accountConnectionTwo)
                 .build();
         ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne, accountIdTwo));
-        TransactionSyncRequestDto transactionSyncRequestDto = TransactionSyncRequestDto.builder()
+        AccountsDto accountsDto = AccountsDto.builder()
                 .accounts(accountIds)
                 .build();
 
@@ -234,7 +234,7 @@ public class TransactionServiceTests {
         });
 
         //Act
-        List<Transaction> actualTransactions = transactionService.syncTransactions(transactionSyncRequestDto);
+        List<Transaction> actualTransactions = transactionService.syncTransactions(accountsDto);
 
         //Assert
         assertNotNull(actualTransactions);
@@ -298,7 +298,7 @@ public class TransactionServiceTests {
                 .connection(accountConnectionTwo)
                 .build();
         ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne, accountIdTwo));
-        TransactionSyncRequestDto transactionSyncRequestDto = TransactionSyncRequestDto.builder()
+        AccountsDto accountsDto = AccountsDto.builder()
                 .accounts(accountIds)
                 .build();
 
@@ -333,7 +333,7 @@ public class TransactionServiceTests {
         });
 
         //Act
-        List<Transaction> actualTransactions = transactionService.syncTransactions(transactionSyncRequestDto);
+        List<Transaction> actualTransactions = transactionService.syncTransactions(accountsDto);
 
         //Assert
         assertNotNull(actualTransactions);
@@ -368,7 +368,7 @@ public class TransactionServiceTests {
         String accountIdOne = "12345XYZ";
         String accountIdTwo = "6789ABCD";
         ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne, accountIdTwo));
-        TransactionSyncRequestDto transactionSyncRequestDto = TransactionSyncRequestDto.builder()
+        AccountsDto accountsDto = AccountsDto.builder()
                 .accounts(accountIds)
                 .build();
 
@@ -377,7 +377,7 @@ public class TransactionServiceTests {
 
         //Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            transactionService.syncTransactions(transactionSyncRequestDto);
+            transactionService.syncTransactions(accountsDto);
         });
         assertNotNull(exception);
         //TODO: modify the exception thrown to be our own Exception so we don't see java.lang.RuntimeExeption
@@ -406,7 +406,7 @@ public class TransactionServiceTests {
                 .build();
         ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne, accountIdTwo));
 
-        TransactionSyncRequestDto transactionSyncRequestDto = TransactionSyncRequestDto.builder()
+        AccountsDto accountsDto = AccountsDto.builder()
                 .accounts(accountIds)
                 .build();
 
@@ -416,7 +416,7 @@ public class TransactionServiceTests {
 
         //Act & Assert
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
-            transactionService.syncTransactions(transactionSyncRequestDto);
+            transactionService.syncTransactions(accountsDto);
         });
         assertNotNull(exception);
         assertEquals(plaidServiceErrorMessage, exception.getMessage());
@@ -454,7 +454,7 @@ public class TransactionServiceTests {
                 .connection(accountConnectionTwo)
                 .build();
         ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne, accountIdTwo));
-        TransactionSyncRequestDto transactionSyncRequestDto = TransactionSyncRequestDto.builder()
+        AccountsDto accountsDto = AccountsDto.builder()
                 .accounts(accountIds)
                 .build();
         String errorMessage = "Unable to find Connection with ID 5 to update.";
@@ -482,7 +482,7 @@ public class TransactionServiceTests {
 
         //Act
         RuntimeException thrownException = assertThrows(RuntimeException.class, () -> {
-            transactionService.syncTransactions(transactionSyncRequestDto);
+            transactionService.syncTransactions(accountsDto);
         });
         assertNotNull(thrownException);
         //TODO: make this our own unique exception to remove java.lang.Runtime

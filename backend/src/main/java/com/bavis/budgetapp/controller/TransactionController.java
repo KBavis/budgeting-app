@@ -3,7 +3,7 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.SplitTransactionDto;
 import com.bavis.budgetapp.dto.TransactionDto;
-import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
+import com.bavis.budgetapp.dto.AccountsDto;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.validator.group.TransactionDtoAddValidationGroup;
@@ -33,15 +33,15 @@ public class TransactionController {
     /**
      * Sync all Transaction with external financial institutions
      *
-     * @param transactionSyncRequestDto
+     * @param accountsDto
      *          - DTO storing all Account IDs to sync transactions for
      * @return
      *          - all modified/added transactions
      */
     @PostMapping("/sync")
-    public ResponseEntity<List<Transaction>> syncTransactions(@Valid @RequestBody TransactionSyncRequestDto transactionSyncRequestDto){
-        log.info("Received request to SyncTransactions for following TransactionSyncRequest: [{}]", transactionSyncRequestDto);
-        return ResponseEntity.ok(_transactionService.syncTransactions(transactionSyncRequestDto));
+    public ResponseEntity<List<Transaction>> syncTransactions(@Valid @RequestBody AccountsDto accountsDto){
+        log.info("Received request to SyncTransactions for following TransactionSyncRequest: [{}]", accountsDto);
+        return ResponseEntity.ok(_transactionService.syncTransactions(accountsDto));
     }
 
     /**

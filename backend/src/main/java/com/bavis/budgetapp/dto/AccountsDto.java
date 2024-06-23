@@ -18,6 +18,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @TransactionSyncRequestValidAccounts
-public class TransactionSyncRequestDto {
+public class AccountsDto {
     private List<String> accounts;
 }

@@ -3,7 +3,7 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.SplitTransactionDto;
 import com.bavis.budgetapp.dto.TransactionDto;
-import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
+import com.bavis.budgetapp.dto.AccountsDto;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
 import com.bavis.budgetapp.service.impl.CategoryServiceImpl;
@@ -59,9 +59,9 @@ public class TransactionControllerTests {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private TransactionSyncRequestDto validTransactionSyncRequest;
+    private AccountsDto validTransactionSyncRequest;
 
-    private TransactionSyncRequestDto invalidTransactionSyncRequest;
+    private AccountsDto invalidTransactionSyncRequest;
 
     private List<String> validAccountIds;
 
@@ -84,11 +84,11 @@ public class TransactionControllerTests {
         invalidAccountIds = List.of("ABCDE");
         LocalDate transactionDate = LocalDate.now();
 
-        validTransactionSyncRequest = TransactionSyncRequestDto.builder()
+        validTransactionSyncRequest = AccountsDto.builder()
                 .accounts(validAccountIds)
                 .build();
 
-        invalidTransactionSyncRequest = TransactionSyncRequestDto.builder()
+        invalidTransactionSyncRequest = AccountsDto.builder()
                 .accounts(invalidAccountIds)
                 .build();
 

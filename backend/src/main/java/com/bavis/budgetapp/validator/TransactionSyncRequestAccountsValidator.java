@@ -1,15 +1,13 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.TransactionSyncRequestValidAccounts;
-import com.bavis.budgetapp.dto.TransactionSyncRequestDto;
+import com.bavis.budgetapp.dto.AccountsDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.User;
-import com.bavis.budgetapp.service.AccountService;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +20,7 @@ import java.util.Objects;
  * Validation class to validate list of Account IDs corresponding to TransactionSyncRequestDto
  */
 @Component
-public class TransactionSyncRequestAccountsValidator implements ConstraintValidator<TransactionSyncRequestValidAccounts, TransactionSyncRequestDto> {
+public class TransactionSyncRequestAccountsValidator implements ConstraintValidator<TransactionSyncRequestValidAccounts, AccountsDto> {
 
     @Autowired
     private AccountServiceImpl accountService;
@@ -36,8 +34,8 @@ public class TransactionSyncRequestAccountsValidator implements ConstraintValida
     }
 
     @Override
-    public boolean isValid(TransactionSyncRequestDto transactionSyncRequestDto, ConstraintValidatorContext constraintValidatorContext) {
-        List<String> accountIds = transactionSyncRequestDto.getAccounts();
+    public boolean isValid(AccountsDto accountsDto, ConstraintValidatorContext constraintValidatorContext) {
+        List<String> accountIds = accountsDto.getAccounts();
         if(accountIds == null) {
             return false;
         }

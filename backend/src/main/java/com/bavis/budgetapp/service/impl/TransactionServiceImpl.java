@@ -57,11 +57,11 @@ public class TransactionServiceImpl implements TransactionService {
     //TODO: considering returning separate DTO w/ modified/added/removed lists so we can update frontend state with transactions that must be removed
     //TODO: Split this functionality into multiple private functions
     @Override
-    public List<Transaction> syncTransactions(TransactionSyncRequestDto transactionSyncRequestDto) throws PlaidServiceException{
+    public List<Transaction> syncTransactions(AccountsDto accountsDto) throws PlaidServiceException{
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
 
         //Sync Transaction for each specified Account
-        for(String accountId: transactionSyncRequestDto.getAccounts()){
+        for(String accountId: accountsDto.getAccounts()){
             try{
                 //Extract Access Token and Previous Cursor for Specified Account
                 Account account = _accountService.read(accountId);
