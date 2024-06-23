@@ -291,7 +291,7 @@ const HomePage = () => {
                   Let's Start Budgeting
                </h2>
                <button
-                  className="bg-indigo-600 md:text-base hover:bg-indigo-700 duration-150 text-white font-bold py-2 px-4 rounded mt-4"
+                  className="bg-indigo-600 border-2 border-indigo-600 md:text-base hover:bg-transparent duration-1000 text-white font-bold py-2 px-4 rounded mt-4"
                   onClick={fetchUpdatedTransactions}
                >
                   Sync Transactions
