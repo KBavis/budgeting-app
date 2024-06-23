@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.annotation.TransactionSyncRequestValidAccounts;
+import com.bavis.budgetapp.annotation.AccountsDtoValidAccounts;
 import com.bavis.budgetapp.dto.AccountsDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.User;
@@ -20,7 +20,7 @@ import java.util.Objects;
  * Validation class to validate list of Account IDs corresponding to TransactionSyncRequestDto
  */
 @Component
-public class TransactionSyncRequestAccountsValidator implements ConstraintValidator<TransactionSyncRequestValidAccounts, AccountsDto> {
+public class AccountsDtoAccountsValidator implements ConstraintValidator<AccountsDtoValidAccounts, AccountsDto> {
 
     @Autowired
     private AccountServiceImpl accountService;
@@ -29,7 +29,7 @@ public class TransactionSyncRequestAccountsValidator implements ConstraintValida
     private UserServiceImpl userService;
 
     @Override
-    public void initialize(TransactionSyncRequestValidAccounts constraintAnnotation) {
+    public void initialize(AccountsDtoValidAccounts constraintAnnotation) {
         //nothing to initialize
     }
 

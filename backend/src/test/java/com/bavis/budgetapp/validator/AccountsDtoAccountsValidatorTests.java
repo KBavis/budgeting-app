@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles(profiles = "test")
-public class TransactionSyncRequestAccountsValidatorTests {
+public class AccountsDtoAccountsValidatorTests {
 
     @Mock
     private AccountServiceImpl accountService;
@@ -34,7 +34,7 @@ public class TransactionSyncRequestAccountsValidatorTests {
     ConstraintValidatorContext context;
 
     @InjectMocks
-    private TransactionSyncRequestAccountsValidator validator;
+    private AccountsDtoAccountsValidator validator;
 
     private AccountsDto invalidDto;
     private AccountsDto validDto;

@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.dto;
 
-import com.bavis.budgetapp.annotation.TransactionSyncRequestValidAccounts;
+import com.bavis.budgetapp.annotation.AccountsDtoValidAccounts;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +17,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TransactionSyncRequestValidAccounts
+@AccountsDtoValidAccounts
 public class AccountsDto {
     private List<String> accounts;
 }
