@@ -186,46 +186,6 @@ const HomePage = () => {
       }
    };
 
-   //Functionality to map a given account type to our backend enum value
-   const mapAccountType = (type, subtype) => {
-      switch (type) {
-         case "depository":
-            return subtype === "checking" ? "CHECKING" : "SAVING";
-         case "credit":
-            return "CREDIT";
-         case "loan":
-            return "LOAN";
-         case "investment":
-            return "INVESTMENT";
-         default:
-            return null;
-      }
-   };
-
-   //Functionality to handle a users successful connection of their financial institution via Plaid
-   const handleOnSuccess = (publicToken, metadata) => {
-      //Create paylaoad to send to backend
-      const accountData = {
-         plaidAccountId: metadata.account_id,
-         accountName: metadata.institution.name,
-         publicToken,
-         accountType: mapAccountType(
-            metadata.account.type,
-            metadata.account.subtype
-         ),
-      };
-      console.log(accountData);
-      createAccount(accountData);
-
-      setAlert("Account added succesfully", "SUCCESS");
-   };
-
-   //Functonality to handle a user closing Plaid Link
-   const handleOnExit = (err, metadata) => {
-      console.log("Error:", err);
-      console.log("Metadata:", metadata);
-   };
-
    //Fetch All Entities from Backend initial Component Mounting
    useEffect(() => {
       console.log(
@@ -268,7 +228,6 @@ const HomePage = () => {
       accountsLoading,
    ]);
 
-   // Inside your return statement
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 relative pt-6">
          {/* Drop Down For Adding Transaction/Accounts/Categories */}
@@ -277,8 +236,6 @@ const HomePage = () => {
             setDropdownVisible={setDropdownVisible}
             handleShowAddTransactionModal={handleShowAddTransactionModal}
             user={user} // Pass the user prop
-            handleOnSuccess={handleOnSuccess} // Pass the handleOnSuccess prop
-            handleOnExit={handleOnExit} // Pass the handleOnExit prop
          />
 
          {/* Main Content */}

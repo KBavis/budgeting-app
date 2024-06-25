@@ -3,89 +3,95 @@
 @tailwind utilities;
 
 .plaid-link-wrapper {
-  background-color: #4f46e5 !important;
-  border: none !important;
-  padding: 0 !important;
-  transition: background-color 0.5s ease !important;
+   background-color: #4f46e5 !important;
+   border: none !important;
+   padding: 0 !important;
+   transition: background-color 0.5s ease !important;
+}
+
+.plaid-link-wrapper-class {
+   border: none !important;
+   padding: 0 !important;
+   transition: background-color 0.5s ease !important;
 }
 
 .dropdown-toggle::after {
-  display: none !important;
+   display: none !important;
 }
 
 .dropdown-button:active {
-  border-radius: 10px;
-  background-color: rgba(0, 0, 0, 0.65) !important;
+   border-radius: 10px;
+   background-color: rgba(0, 0, 0, 0.65) !important;
 }
 
 .dropdown-button {
-  background-color: #4338ca !important;
+   background-color: #4338ca !important;
 }
 
 .plaid-link-wrapper:hover {
-  background-color: #4338ca !important;
+   background-color: #4338ca !important;
 }
 
 .plaid-link-wrapper > button {
-  color: white !important;
-  padding: 12px 24px !important;
+   color: white !important;
+   padding: 12px 24px !important;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+   display: none;
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+   -ms-overflow-style: none;
+   scrollbar-width: none;
 }
 
 /* Define slow slide transitions */
 .slow-slide-enter {
-  opacity: 0;
-  transform: translateX(100%);
+   opacity: 0;
+   transform: translateX(100%);
 }
 .slow-slide-enter-active {
-  opacity: 1;
-  transform: translateX(0);
-  transition: opacity 750ms, transform 750ms;
+   opacity: 1;
+   transform: translateX(0);
+   transition: opacity 750ms, transform 750ms;
 }
 .slow-slide-exit {
-  opacity: 1;
-  transform: translateX(0);
+   opacity: 1;
+   transform: translateX(0);
 }
 .slow-slide-exit-active {
-  opacity: 0;
-  transform: translateX(-100%);
-  transition: opacity 750ms, transform 750ms;
+   opacity: 0;
+   transform: translateX(-100%);
+   transition: opacity 750ms, transform 750ms;
 }
 
 @keyframes nextPage {
-  0% {
-    opacity: 0;
-    transform: translate(10em, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(0, 0);
-  }
+   0% {
+      opacity: 0;
+      transform: translate(10em, 0);
+   }
+   100% {
+      opacity: 1;
+      transform: translate(0, 0);
+   }
 }
 
 @keyframes prevPage {
-  0% {
-    opacity: 0;
-    transform: translate(-10em, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(0, 0);
-  }
+   0% {
+      opacity: 0;
+      transform: translate(-10em, 0);
+   }
+   100% {
+      opacity: 1;
+      transform: translate(0, 0);
+   }
 }
 
 .animate-nextPage {
-  animation: nextPage 0.2s ease-in-out;
+   animation: nextPage 0.2s ease-in-out;
 }
 
 .animate-prevPage {
-  animation: prevPage 0\2s ease-in-out;
+   animation: prevPage 0\2s ease-in-out;
 }
