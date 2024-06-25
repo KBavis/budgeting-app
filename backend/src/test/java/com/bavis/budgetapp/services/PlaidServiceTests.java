@@ -5,6 +5,7 @@ import com.bavis.budgetapp.config.PlaidConfig;
 import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.helper.TestHelper;
+import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
 import com.bavis.budgetapp.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,8 +68,10 @@ public class PlaidServiceTests {
         //Arrange
         Long userId = 123L;
         String expectedLinkToken = "link-token";
+        LocalDateTime expectedExpiration = LocalDateTime.now();
         LinkTokenResponseDto linkTokenResponseDto = LinkTokenResponseDto.builder()
                 .linkToken(expectedLinkToken)
+                .expiration(expectedExpiration)
                 .build();
         ResponseEntity<LinkTokenResponseDto> responseEntity = new ResponseEntity<>(linkTokenResponseDto, HttpStatus.OK);
 
@@ -78,10 +82,11 @@ public class PlaidServiceTests {
         when(plaidClient.createLinkToken(any(LinkTokenRequestDto.class))).thenReturn(responseEntity);
 
         //Act
-        String actualLinkToken = plaidService.generateLinkToken(userId);
+        LinkToken actualLinkToken = plaidService.generateLinkToken(userId);
 
         //Assert
-        assertEquals(expectedLinkToken, actualLinkToken);
+        assertEquals(expectedLinkToken, actualLinkToken.getToken());
+        assertEquals(expectedExpiration, actualLinkToken.getExpiration());
 
         //Verify
         verify(plaidConfig, times(1)).getClientId();

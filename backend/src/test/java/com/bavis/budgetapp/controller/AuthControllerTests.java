@@ -6,6 +6,7 @@ import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.dto.AuthRequestDto;
 import com.bavis.budgetapp.dto.AuthResponseDto;
+import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.impl.AuthServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +22,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -51,10 +56,23 @@ public class AuthControllerTests {
 
     private AuthResponseDto expectedAuthResponseDto;
 
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
     private User testUser;
+
+    private String expectedExpiration;
 
     @BeforeEach
     public void setup() {
+        LocalDateTime expiration = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+        expectedExpiration = expiration.truncatedTo(ChronoUnit.MILLIS).format(dateTimeFormatter);
+
+        String token = "link-token";
+        LinkToken linkToken = LinkToken.builder()
+                .token(token)
+                .expiration(expiration)
+                .build();
+
         registerAuthRequestDto = AuthRequestDto.builder()
                 .name("Register User")
                 .passwordOne("testPassword12!")
@@ -69,7 +87,7 @@ public class AuthControllerTests {
 
        testUser = User.builder()
                .name("Test User")
-               .linkToken("link-token")
+               .linkToken(linkToken)
                .username("test-username")
                .build();
 
@@ -95,7 +113,8 @@ public class AuthControllerTests {
                 .andExpect(jsonPath("$.token").value(expectedAuthResponseDto.getToken()))
                 .andExpect(jsonPath("$.user.name").value(testUser.getName()))
                 .andExpect(jsonPath("$.user.userName").value(testUser.getUsername()))
-                .andExpect(jsonPath("$.user.linkToken").value(testUser.getLinkToken()));
+                .andExpect(jsonPath("$.user.linkToken.token").value(testUser.getLinkToken().getToken()))
+                .andExpect(jsonPath("$.user.linkToken.expiration").value(testUser.getLinkToken().getExpiration().toString()));
         // Verify
         verify(authService, times(1)).authenticate(any(AuthRequestDto.class));
     }
@@ -116,7 +135,8 @@ public class AuthControllerTests {
                 .andExpect(jsonPath("$.token").value(expectedAuthResponseDto.getToken()))
                 .andExpect(jsonPath("$.user.name").value(testUser.getName()))
                 .andExpect(jsonPath("$.user.userName").value(testUser.getUsername()))
-                .andExpect(jsonPath("$.user.linkToken").value(testUser.getLinkToken()));
+                .andExpect(jsonPath("$.user.linkToken.token").value(testUser.getLinkToken().getToken()))
+                .andExpect(jsonPath("$.user.linkToken.expiration").value(expectedExpiration));
 
         verify(authService, times(1)).register(any(AuthRequestDto.class));
     }
@@ -373,7 +393,8 @@ public class AuthControllerTests {
         mockMvc.perform(get("/auth"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userName").value(testUser.getUsername()))
-                .andExpect(jsonPath("$.linkToken").value(testUser.getLinkToken()))
+                .andExpect(jsonPath("$.linkToken.token").value(testUser.getLinkToken().getToken()))
+                .andExpect(jsonPath("$.linkToken.expiration").value(expectedExpiration))
                 .andExpect(jsonPath("$.name").value(testUser.getName()));
 
         //Verify

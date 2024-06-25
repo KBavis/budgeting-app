@@ -5,6 +5,7 @@ import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.dto.AuthRequestDto;
 import com.bavis.budgetapp.dto.AuthResponseDto;
+import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.UserService;
@@ -25,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
@@ -84,7 +86,13 @@ public class AuthServiceTests {
     @Test
     public void testRegister_Success() {
         //Arrange
-        String linkToken = "link-token";
+        String token = "link-token";
+        LocalDateTime localDateTime = LocalDateTime.now();
+        LinkToken linkToken = LinkToken.builder()
+                .token(token)
+                .expiration(localDateTime)
+                .build();
+
         String encryptedPassword = "encrypted-password";
         String jwtToken = "jwt-token";
         Long userId = 10L;

@@ -2,6 +2,7 @@ package com.bavis.budgetapp.mapper;
 
 
 import com.bavis.budgetapp.entity.User;
+import com.bavis.budgetapp.model.LinkToken;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
@@ -28,13 +29,18 @@ public class UserMapperTests {
     @Test
     public void testUpdateUserProfile_Successful() {
         //Arrange
+        LocalDateTime expiration = LocalDateTime.now();
+        LinkToken linkToken = LinkToken.builder()
+                .token("token")
+                .expiration(expiration)
+                .build();
         User source = User.builder()
                 .userId(10L)
                 .name("Test User")
                 .username("test-user")
                 .password("test-password")
                 .profileImage("https://aws-bucket/my-profle")
-                .linkToken("link-token")
+                .linkToken(linkToken)
                 .lockoutEndTime(LocalDateTime.now())
                 .failedLoginAttempts(10)
                 .build();
