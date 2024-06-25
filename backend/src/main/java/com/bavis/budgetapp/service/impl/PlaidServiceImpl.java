@@ -4,6 +4,7 @@ import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.config.PlaidConfig;
 import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
+import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.util.JsonUtil;
 import feign.FeignException.FeignClientException;
@@ -36,7 +37,7 @@ public class PlaidServiceImpl implements PlaidService{
     }
 
     @Override
-    public String generateLinkToken(Long userId) throws PlaidServiceException {
+    public LinkToken generateLinkToken(Long userId) throws PlaidServiceException {
         LinkTokenRequestDto linkTokenRequestDto = LinkTokenRequestDto.builder()
                 .clientId(_plaidConfig.getClientId())
                 .secretKey(_plaidConfig.getSecretKey())
@@ -70,7 +71,7 @@ public class PlaidServiceImpl implements PlaidService{
                     log.error("Link Token fetched from Plaid API was null/blank");
                     throw new PlaidServiceException("Link Token returned from Plaid Client is NULL");
                 }
-                return responseBody.getLinkToken();
+                return new LinkToken(responseBody.getExpiration(), responseBody.getLinkToken());
             } else {
                 log.error("Response from Plaid API when attempting to retrieve Link Token was null");
                 throw new PlaidServiceException("Response Body from Plaid Client when Generating Link Token Is Null");

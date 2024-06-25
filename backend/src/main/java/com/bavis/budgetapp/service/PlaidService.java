@@ -3,6 +3,7 @@ package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.exception.PlaidServiceException;
+import com.bavis.budgetapp.model.LinkToken;
 
 import java.util.List;
 
@@ -18,11 +19,11 @@ public interface PlaidService {
      * @param userId
      *          - User ID corresponding to User to generate Link Token for
      * @return
-     *          - Generated Link Token
+     *          - Generated Link Token & Expiration
      * @throws PlaidServiceException
      *          - Thrown in the case that an error occurs while generating our Link Token
      */
-    public String generateLinkToken(Long userId) throws PlaidServiceException;
+    public LinkToken generateLinkToken(Long userId) throws PlaidServiceException;
 
     /**
      * Functionality to generate an Access Token based on specified Public Token
