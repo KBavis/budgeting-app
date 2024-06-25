@@ -7,6 +7,7 @@ import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.dto.AuthRequestDto;
 import com.bavis.budgetapp.dto.AuthResponseDto;
+import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.AuthService;
 import com.bavis.budgetapp.service.JwtService;
 import com.bavis.budgetapp.service.PlaidService;
@@ -65,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("Registered User: [" + _userService.create(user) + "]");
 
         //Generate Plaid Link Token for authenticated user
-        String linkToken = _plaidService.generateLinkToken(user.getUserId());
+        LinkToken linkToken = _plaidService.generateLinkToken(user.getUserId());
         user.setLinkToken(linkToken);
         log.debug("Link Token Generated for User {} : {}", user.getUserId(), linkToken);
 
