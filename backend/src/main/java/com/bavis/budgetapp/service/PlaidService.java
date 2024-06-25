@@ -23,7 +23,7 @@ public interface PlaidService {
      * @throws PlaidServiceException
      *          - Thrown in the case that an error occurs while generating our Link Token
      */
-    public LinkToken generateLinkToken(Long userId) throws PlaidServiceException;
+    LinkToken generateLinkToken(Long userId) throws PlaidServiceException;
 
     /**
      * Functionality to generate an Access Token based on specified Public Token
@@ -35,7 +35,7 @@ public interface PlaidService {
      * @throws PlaidServiceException
      *          - Thrown in the case that an error occurs while generating access token
      */
-    public String exchangeToken(String publicToken) throws PlaidServiceException;
+    String exchangeToken(String publicToken) throws PlaidServiceException;
 
     /**
      * Functionality to retrieve the balance of a particular account
@@ -49,7 +49,7 @@ public interface PlaidService {
      * @throws PlaidServiceException
      *          - Thrown in the case that an error occurs while fetching balance 
      */
-    public double retrieveBalance(String accountId, String accessToken) throws PlaidServiceException;
+    double retrieveBalance(String accountId, String accessToken) throws PlaidServiceException;
 
 
     /**
@@ -62,6 +62,6 @@ public interface PlaidService {
      * @return
      *      - DTO containing all added, modified, and removed Transactions, and a cursor for subsequent requests
      */
-    public PlaidTransactionSyncResponseDto syncTransactions(String accessToken, String previousCursor);
+    PlaidTransactionSyncResponseDto syncTransactions(String accessToken, String previousCursor);
 
 }
