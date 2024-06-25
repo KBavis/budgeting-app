@@ -8,10 +8,15 @@ import java.util.List;
 
 
 import com.bavis.budgetapp.constants.Role;
+import com.bavis.budgetapp.model.LinkToken;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -51,10 +56,16 @@ public class User implements UserDetails{
 	private String username;
 	private String password;
 	private String profileImage;
-	private String linkToken; //Plaid Link token
 	private int failedLoginAttempts; //TODO: increment this value when user fails to login (if username is associated with account) AND reset once succesful login
 	private LocalDateTime lockoutEndTime; //TODO: Compare users attempt to login with this lockout time
-	
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "token", column = @Column(name = "link_token")),
+			@AttributeOverride(name = "expiration", column = @Column(name = "link_token_expiration"))
+	})
+	private LinkToken linkToken;
+
 	@Enumerated(EnumType.STRING)
 	private Role role;
 	
