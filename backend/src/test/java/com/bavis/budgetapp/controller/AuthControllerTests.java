@@ -136,7 +136,7 @@ public class AuthControllerTests {
                 .andExpect(jsonPath("$.user.name").value(testUser.getName()))
                 .andExpect(jsonPath("$.user.userName").value(testUser.getUsername()))
                 .andExpect(jsonPath("$.user.linkToken.token").value(testUser.getLinkToken().getToken()))
-                .andExpect(jsonPath("$.user.linkToken.expiration").value(expectedExpiration));
+                .andExpect(jsonPath("$.user.linkToken.expiration").value(testUser.getLinkToken().getExpiration().toString()));
 
         verify(authService, times(1)).register(any(AuthRequestDto.class));
     }
