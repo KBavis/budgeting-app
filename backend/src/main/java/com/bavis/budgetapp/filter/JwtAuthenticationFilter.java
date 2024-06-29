@@ -76,7 +76,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
            decodedJWT = jwtVerifier.verify(jwt);
 
            //Extract Username & Validate Presence
-            //TODO: Consider Using Subject As A Separate Field, And Then Just Generate Our Own Unique Claim Called userId
             String jwtUsername = decodedJWT.getSubject();
 
             //Skip Authentication If User Has Already Been Authenticated
