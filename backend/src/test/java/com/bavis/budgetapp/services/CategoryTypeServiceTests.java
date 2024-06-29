@@ -6,6 +6,7 @@ import com.bavis.budgetapp.dto.CategoryTypeDto;
 import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;
+import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.mapper.CategoryTypeMapper;
 import com.bavis.budgetapp.service.IncomeService;
 import com.bavis.budgetapp.service.UserService;
@@ -26,7 +27,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyByte;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -190,8 +190,18 @@ public class CategoryTypeServiceTests {
 
     //TODO: implement me
     @Test
-    public void testCreateMany_Failure() {
+    public void testCreateMany_UserServiceException_Failure() {
+        //Arrange
+        UserServiceException expectedException = new UserServiceException("Unable to find any Authenticated user");
 
+        //Mock
+        when(userService.getCurrentAuthUser()).thenThrow(expectedException);
+
+        //Act & Assert
+        UserServiceException actualException = assertThrows(UserServiceException.class, () -> {
+            categoryTypeService.createMany(new ArrayList<>());
+        });
+        assertEquals(expectedException, actualException);
     }
 
     @Test
