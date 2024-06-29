@@ -12,8 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -82,7 +80,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwtUsername = decodedJWT.getSubject();
 
             //Skip Authentication If User Has Already Been Authenticated
-            //TODO: Ensure That When A User Logs Out That The SecurityContextHolder Authentication Is Set To Null
             if(jwtUsername != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 //Fetch User Details From DB
                 UserDetails userDetails = this._userDetailsService.loadUserByUsername(jwtUsername);
