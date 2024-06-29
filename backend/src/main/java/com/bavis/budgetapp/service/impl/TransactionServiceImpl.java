@@ -7,6 +7,7 @@ import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.util.GeneralUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -26,124 +30,85 @@ import java.util.stream.Collectors;
  */
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
-    private PlaidServiceImpl _plaidService;
+    private final PlaidServiceImpl _plaidService;
 
-    private AccountServiceImpl _accountService;
+    private final AccountServiceImpl _accountService;
 
-    private ConnectionServiceImpl _connectionService;
+    private final ConnectionServiceImpl _connectionService;
 
-    private UserServiceImpl _userService;
+    private final UserServiceImpl _userService;
 
-    private TransactionRepository _transactionRepository;
+    private final TransactionRepository _transactionRepository;
 
-    private TransactionMapper _transactionMapper;
+    private final TransactionMapper _transactionMapper;
 
-    private CategoryServiceImpl categoryService;
+    private final CategoryServiceImpl categoryService;
 
-
-
-    public TransactionServiceImpl(PlaidServiceImpl plaidService, AccountServiceImpl accountService, TransactionMapper transactionMapper, TransactionRepository transactionRepository, ConnectionServiceImpl connectionService, UserServiceImpl userService, CategoryServiceImpl categoryService) {
-        this._transactionRepository = transactionRepository;
-        this._plaidService = plaidService;
-        this._userService = userService;
-        this._accountService = accountService;
-        this._transactionMapper = transactionMapper;
-        this._connectionService = connectionService;
-        this.categoryService = categoryService;
-    }
-
-    //TODO: considering returning separate DTO w/ modified/added/removed lists so we can update frontend state with transactions that must be removed
-    //TODO: Split this functionality into multiple private functions
+    //TODO: Consider returning DTO instead of only added/modified Transactions so we can update frontend with remove Transactions
     @Override
     public List<Transaction> syncTransactions(AccountsDto accountsDto) throws PlaidServiceException{
+        log.info("Syncing Transactions for the following Accounts: [{}]", accountsDto.getAccounts());
+
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
+        List<String> allRemovedTransactionIds = new ArrayList<>();
+
+        boolean hasMore;
+        boolean updateOriginalCursor;
+        String accessToken;
+        String previousCursor;
+        String originalCursor;
+        Account account;
+        Connection accountConnection;
 
         //Sync Transaction for each specified Account
         for(String accountId: accountsDto.getAccounts()){
             try{
-                //Extract Access Token and Previous Cursor for Specified Account
-                Account account = _accountService.read(accountId);
-                Connection accountConnection = account.getConnection();
-                log.debug("Syncing Transactions for Following Account: [{}]", account);
-                String previousCursor = accountConnection.getPreviousCursor();
-                String accessToken = accountConnection.getAccessToken();
-                String originalCursor = accountConnection.getOriginalCursor();
-                boolean hasMore = true;
-                boolean updateOriginalCursor = StringUtils.isBlank(originalCursor); //flag to determine if we need to persist originalCursor or not
+                //Fetch relevant Account/Connection information
+                account = _accountService.read(accountId);
+                log.info("Syncing Transactions for Account ID {}", account.getAccountId());
+                accountConnection = account.getConnection();
+                originalCursor = accountConnection.getOriginalCursor();
+                accessToken = accountConnection.getAccessToken();
+                previousCursor = accountConnection.getPreviousCursor();
+                hasMore = true;
+                updateOriginalCursor = StringUtils.isBlank(originalCursor); //flag to determine if we need to persist originalCursor or not
 
+                //Collect Added, Modified, and Removed Transactions for Account until Plaid specifies none remain
                 while(hasMore){
-                    //Fetch Added, Modified, and Removed Transactions
                     PlaidTransactionSyncResponseDto syncResponseDto = _plaidService.syncTransactions(accessToken, previousCursor);
                     log.info("PlaidTransactionSyncResponseDto for Account ID {} : [{}]", accountId, syncResponseDto);
 
-                    //For each Added Transaction --> Map to Transaction Entities & Set Account/Category
-                    List<Transaction> addedTransactions = Optional.ofNullable(syncResponseDto.getAdded()).stream().flatMap(List::stream)
-                            .map(_transactionMapper::toEntity)
-                            .peek(transaction -> {
-                                //TODO: Intelligently assign CategoryType & Category in future
-                                transaction.setCategory(null);
-                                transaction.setAccount(account);
-                            })
-                            .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
-                            .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate()))
+                    //Collect Added Transactions
+                    allModifiedOrAddedTransactions.addAll(mapAddedTransactions(syncResponseDto.getAdded(), account));
+
+                    //Collect Modified Transactions
+                    allModifiedOrAddedTransactions.addAll(mapModifiedTransactions(syncResponseDto.getModified(), account));
+
+                    //Collect Removed TransactionIds
+                    List<String> removedTransactionIds = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
+                            .map(PlaidTransactionDto::getTransaction_id)
                             .toList();
-                    log.debug("Updating DB With The Following Added Transactions: [{}]", addedTransactions);
-                    List<Transaction> persistedAddedTransactions = _transactionRepository.saveAllAndFlush(addedTransactions);
-
-                    //Add Persisted Transactions to List of Transactions to Return
-                    allModifiedOrAddedTransactions.addAll(persistedAddedTransactions);
-
-                    //For each Modified Transaction --> Map to Transaction Entities, Set Account/Category, Filter Out Transaction with Non-Existent IDs
-                    //TODO: Make these filters into single Filter class
-                    List<Transaction> modifiedTransactions = Optional.ofNullable(syncResponseDto.getModified()).stream().flatMap(List::stream)
-                            .map(_transactionMapper::toEntity)
-                            .filter(transaction -> _transactionRepository.existsById(transaction.getTransactionId())) //Ensure Transaction Exists within DB (filter out all updates pertaining to user updated Transactions)
-                            .filter(transaction -> !_transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(transaction.getTransactionId())) //Ensure Transaction WAS NOT Updated by User
-                            .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
-                            .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate())) //filter out transactions not within current month
-                            .peek(transaction -> {
-                                //TODO: Intelligently assign CategoryType & Category in future
-                                transaction.setCategory(null);
-                                transaction.setAccount(account);
-                            })
-                            .toList();
-                    log.debug("Updating DB With The Following Modified Transactions: [{}]", modifiedTransactions);
-                    List<Transaction> persistedModifiedTransactions = _transactionRepository.saveAllAndFlush(modifiedTransactions);
-
-                    //Add All Persisted Modified Transactions to List of Transactions to Return
-                    allModifiedOrAddedTransactions.addAll(persistedModifiedTransactions);
-
-
-                    //Remove Transaction Associated with 'Removed' List from Plaid API
-                    List<Transaction> removedTransactions = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
-                            .map(_transactionMapper::toEntity)
-                            .toList();
-                    log.debug("Removing following Transaction due to Plaid API marking them as 'removed': [{}]", removedTransactions);
-                    _transactionRepository.deleteAll(removedTransactions);
+                    log.info("Removed Transaction IDs for Account {} : [{}]", accountId, removedTransactionIds);
+                    allRemovedTransactionIds.addAll(removedTransactionIds);
 
                     //Update Previous Cursor For Subsequent Request
                     previousCursor = syncResponseDto.getNext_cursor();
 
-                    //Update Original Cursor Value If This Is The First Paginated Response
+                    //Update OriginalCursor value if this is the first paginated response for the current Account
                     if(StringUtils.isBlank(originalCursor)){
                         originalCursor = previousCursor;
 
                     }
 
-                    //Update HasMore Flag
+                    //Determine if Plaid has more Transactions to sync for current Account
                     hasMore = syncResponseDto.isHas_more();
                 }
 
-
-                //Update Cursor & Sync Time for Connection & Persist
-                accountConnection.setPreviousCursor(previousCursor);
-                accountConnection.setLastSyncTime(LocalDateTime.now());
-                if(updateOriginalCursor){
-                    accountConnection.setOriginalCursor(originalCursor);
-                }
-                _connectionService.update(accountConnection, accountConnection.getConnectionId());
+                //Update persisted Connection
+                updateConnection(accountConnection, originalCursor, previousCursor, updateOriginalCursor);
 
             } catch (PlaidServiceException plaidServiceException){
                log.error("PlaidServiceException occurred while syncing transactions via our TransactionService: [{}]", plaidServiceException.getMessage());
@@ -154,6 +119,11 @@ public class TransactionServiceImpl implements TransactionService {
                 throw new RuntimeException(e);
             }
         }
+
+        //Persist updates
+        _transactionRepository.saveAllAndFlush(allModifiedOrAddedTransactions);
+        _transactionRepository.deleteAllById(allRemovedTransactionIds);
+
         return allModifiedOrAddedTransactions;
     }
 
@@ -333,4 +303,91 @@ public class TransactionServiceImpl implements TransactionService {
         //Delete
         _transactionRepository.delete(transaction);
     }
+
+    /**
+     * Functionality to map added PlaidTransactions to Transaction entities.
+     * All Transactions with a negative amount and are not within the
+     * current month should be filtered out.
+     *
+     * @param addedPlaidTransactions
+     *          - newly added PlaidTransactions
+     * @param account
+     *          - Account the Transactions correspond to
+     * @return
+     *          - Transaction entities to be persisted
+     */
+    private List<Transaction> mapAddedTransactions(List<PlaidTransactionDto> addedPlaidTransactions, Account account) {
+
+        List<Transaction> addedTransactionEntities = Optional.ofNullable(addedPlaidTransactions).stream().flatMap(List::stream)
+                .map(_transactionMapper::toEntity)
+                .peek(transaction -> {
+                    //TODO: Intelligently assign CategoryType & Category in future
+                    transaction.setCategory(null);
+                    transaction.setAccount(account);
+                })
+                //TODO: Make these filters a separate filter class
+                .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
+                .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate()))
+                .toList();
+
+        log.info("Added Transaction entities for Account {} to be persisted: [{}]", account.getAccountId(), addedTransactionEntities);
+        return addedTransactionEntities;
+    }
+
+    /**
+     * Functionality to map modified PlaidTransactions to Transaction entities.
+     * All Transactions that don't currently exist in database (due to being
+     * either split or removed), exist but were modified by user (amount reduced
+     * or name changed), have a negative amount, or are not within the current month
+     * should be filtered out and not persisted.
+     *
+     * @param modifiedPlaidTransactions
+     *          - newly modified PlaidTransactions
+     * @param account
+     *          - Account the Transactions correspond to
+     * @return
+     *          - Transaction entities to be persisted
+     */
+    private List<Transaction> mapModifiedTransactions(List<PlaidTransactionDto> modifiedPlaidTransactions, Account account) {
+
+        List<Transaction> modifiedTransactionEntities = Optional.ofNullable(modifiedPlaidTransactions).stream().flatMap(List::stream)
+                .map(_transactionMapper::toEntity)
+                //TODO: make these two attributes a separate filter class, and utilize this as well as the filter class created for amount/date
+                .filter(transaction -> _transactionRepository.existsById(transaction.getTransactionId()))
+                .filter(transaction -> !_transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(transaction.getTransactionId()))
+                .filter(transaction -> transaction.getAmount() > 0)
+                .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate()))
+                .peek(transaction -> {
+                    //TODO: Intelligently assign CategoryType & Category in future
+                    transaction.setCategory(null);
+                    transaction.setAccount(account);
+                })
+                .toList();
+
+        log.info("Modified Transaction entities for Account {} to be persisted: [{}]", account.getAccountId(), modifiedTransactionEntities);
+        return modifiedTransactionEntities;
+    }
+
+
+    /**
+     * Functionality to update persisted a Connection cursor(s) & sync time
+     *
+     * @param connection
+     *          - Connection to update
+     * @param originalCursor
+     *          - Cursor from first paginated syncTransactions response from PlaidAPI
+     * @param previousCursor
+     *          - Most recent cursor from paginated response from PlaidAPI
+     * @param updateOriginalCursor
+     *          - Flag to determine if we must persist original cursor or not
+     */
+    private void updateConnection(Connection connection, String originalCursor, String previousCursor, boolean updateOriginalCursor) {
+        connection.setPreviousCursor(previousCursor);
+        connection.setLastSyncTime(LocalDateTime.now());
+        if(updateOriginalCursor){
+            connection.setOriginalCursor(originalCursor);
+        }
+        _connectionService.update(connection, connection.getConnectionId());
+    }
+
 }
