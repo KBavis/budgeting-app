@@ -13,8 +13,6 @@ import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.AccountRepository;
@@ -23,7 +21,6 @@ import com.bavis.budgetapp.service.AccountService;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Kellen Bavis
@@ -121,9 +118,9 @@ public class AccountServiceImpl implements AccountService{
 		
 	}
 
+	//TODO: Implement
 	@Override
 	public Account update(Account account, Long accountId) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
