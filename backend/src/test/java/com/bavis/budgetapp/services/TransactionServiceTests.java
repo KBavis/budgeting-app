@@ -226,7 +226,7 @@ public class TransactionServiceTests {
         });
         when(transactionRepository.existsById(any())).thenReturn(true);
         when(transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(any())).thenReturn(false);
-        doNothing().when(transactionRepository).deleteAll(anyList());
+        doNothing().when(transactionRepository).deleteAllById(anyList());
         when(connectionService.update(any(Connection.class), any(Long.class))).thenAnswer(invocationOnMock -> {
             Connection connectionToUpdate = invocationOnMock.getArgument(0);
             connectionToUpdate.setPreviousCursor(previousCursor);
@@ -254,9 +254,9 @@ public class TransactionServiceTests {
         verify(accountService, times(1)).read(accountIdTwo);
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
         verify(connectionService, times(1)).update(accountConnectionTwo, accountConnectionTwo.getConnectionId());
-        verify(transactionRepository, times(4)).saveAllAndFlush(anyList());
-        verify(transactionRepository, times(2)).deleteAll(anyList());
-        verify(transactionMapper, times(12)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
+        verify(transactionRepository, times(1)).deleteAllById(anyList());
+        verify(transactionMapper, times(8)).toEntity(any(PlaidTransactionDto.class));
         verify(transactionRepository, times(2)).existsByTransactionIdAndUpdatedByUserIsTrue(any());
         verify(transactionRepository, times(2)).existsById(any());
         verify(plaidService, times(2)).syncTransactions(accessToken, previousCursor);
@@ -324,7 +324,7 @@ public class TransactionServiceTests {
         });
         when(transactionRepository.existsById(any())).thenReturn(true);
         when(transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(any())).thenReturn(false);
-        doNothing().when(transactionRepository).deleteAll(anyList());
+        doNothing().when(transactionRepository).deleteAllById(anyList());
         when(connectionService.update(any(Connection.class), any(Long.class))).thenAnswer(invocationOnMock -> {
             Connection connectionToUpdate = invocationOnMock.getArgument(0);
             connectionToUpdate.setPreviousCursor(nextCursor);
@@ -353,9 +353,9 @@ public class TransactionServiceTests {
         verify(accountService, times(1)).read(accountIdTwo);
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
         verify(connectionService, times(1)).update(accountConnectionTwo, accountConnectionTwo.getConnectionId());
-        verify(transactionRepository, times(8)).saveAllAndFlush(anyList());
-        verify(transactionRepository, times(4)).deleteAll(anyList());
-        verify(transactionMapper, times(24)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
+        verify(transactionRepository, times(1)).deleteAllById(anyList());
+        verify(transactionMapper, times(16)).toEntity(any(PlaidTransactionDto.class));
         verify(transactionRepository, times(4)).existsByTransactionIdAndUpdatedByUserIsTrue(any());
         verify(transactionRepository, times(4)).existsById(any());
         verify(plaidService, times(2)).syncTransactions(accessToken, previousCursor);
@@ -430,7 +430,6 @@ public class TransactionServiceTests {
     void testSyncTransactions_ConnectionServiceException_Failure() {
         //Arrange
         String accountIdOne = "12345XYZ";
-        String accountIdTwo = "6789ABCD";
 
         Connection accountConnectionOne = Connection.builder()
                 .connectionId(5L)
@@ -438,27 +437,18 @@ public class TransactionServiceTests {
                 .previousCursor(previousCursor)
                 .build();
 
-        Connection accountConnectionTwo = Connection.builder()
-                .connectionId(10L)
-                .accessToken(accessToken)
-                .previousCursor(previousCursor)
-                .build();
 
         Account accountOne = Account.builder()
                 .accountId(accountIdOne)
                 .connection(accountConnectionOne)
                 .build();
 
-        Account accountTwo = Account.builder()
-                .accountId(accountIdTwo)
-                .connection(accountConnectionTwo)
-                .build();
-        ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne, accountIdTwo));
+        ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne));
         AccountsDto accountsDto = AccountsDto.builder()
                 .accounts(accountIds)
                 .build();
         String errorMessage = "Unable to find Connection with ID 5 to update.";
-        RuntimeException exception = new RuntimeException(errorMessage);
+        RuntimeException runtimeException = new RuntimeException(errorMessage);
 
 
         //Mock
@@ -476,9 +466,7 @@ public class TransactionServiceTests {
                     .category(null)
                     .build();
         });
-        when(transactionRepository.saveAllAndFlush(anyList())).thenAnswer(invocationOnMock -> invocationOnMock.<List<Transaction>>getArgument(0));
-        doNothing().when(transactionRepository).deleteAll(anyList());
-        when(connectionService.update(any(Connection.class), any(Long.class))).thenThrow(new RuntimeException(errorMessage));
+        when(connectionService.update(accountConnectionOne, accountConnectionOne.getConnectionId())).thenThrow(runtimeException);
 
         //Act
         RuntimeException thrownException = assertThrows(RuntimeException.class, () -> {
@@ -491,10 +479,9 @@ public class TransactionServiceTests {
         //Verify
         verify(accountService, times(1)).read(accountIdOne);
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
-        verify(transactionRepository, times(2)).saveAllAndFlush(anyList());
-        verify(transactionRepository, times(1)).deleteAll(anyList());
-        verify(transactionMapper, times(6)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionMapper, times(4)).toEntity(any(PlaidTransactionDto.class));
     }
+
 
     @Test
     void testReadAll_Successful() {
