@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.helper;
+package com.bavis.budgetapp;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -6,23 +6,15 @@ import com.bavis.budgetapp.config.JwtConfig;
 import com.bavis.budgetapp.constants.TimeType;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.util.GeneralUtil;
-import lombok.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 /**
  * Test Helper functionality for all Unit Tests
  *
- * TODO: Make a separate Test Helper for each Package and extract logic from existing test cases into each TestHelper class
- *
  * @author Kellen Bavis
  */
-@Component
-public class TestHelper {
-    private static final Logger LOG = LoggerFactory.getLogger(TestHelper.class);
+public final class TestHelper {
 
 
 
@@ -39,7 +31,7 @@ public class TestHelper {
      * @return
      *          - valid JWT token for corresponding user
      */
-    public String getValidJwtToken(Algorithm algorithm, User user){
+    public static String getValidJwtToken(Algorithm algorithm, User user){
 
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime expirationTime = GeneralUtil.addTimeToDate(currentTime,3, TimeType.HOURS);
@@ -50,7 +42,6 @@ public class TestHelper {
                     .withExpiresAt(GeneralUtil.localDateTimeToDate(expirationTime))
                     .sign(algorithm);
         } catch (Exception e) {
-            LOG.error("Failed to generated JWT Token for User [{}]", user.toString());
             throw new RuntimeException("Failed to Generate JWT Token: ", e);
         }
     }
@@ -63,7 +54,7 @@ public class TestHelper {
      *      - valid JWT Algorithm
      *
      */
-    public Algorithm createAlgorithm() {
+    public static Algorithm createAlgorithm() {
         JwtConfig jwtConfig = new JwtConfig();
         return jwtConfig.jwtAlgorithm();
     }
@@ -78,7 +69,7 @@ public class TestHelper {
      * @return
      *              - Balance Response
      */
-    public Object createBalanceResponse(String accountId, double balance) {
+    public static Object createBalanceResponse(String accountId, double balance) {
         return new Object() {
             public final Object[] accounts = {
                     new Object() {
