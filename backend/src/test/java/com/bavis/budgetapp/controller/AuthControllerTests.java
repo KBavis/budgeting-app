@@ -56,14 +56,12 @@ public class AuthControllerTests {
 
     private AuthResponseDto expectedAuthResponseDto;
 
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-
     private User testUser;
 
 
     @BeforeEach
     public void setup() {
-        LocalDateTime expiration = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+        LocalDateTime expiration = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 
         String token = "link-token";
         LinkToken linkToken = LinkToken.builder()
