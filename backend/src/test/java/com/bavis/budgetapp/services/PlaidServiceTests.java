@@ -4,7 +4,7 @@ import com.bavis.budgetapp.clients.PlaidClient;
 import com.bavis.budgetapp.config.PlaidConfig;
 import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
-import com.bavis.budgetapp.helper.TestHelper;
+import com.bavis.budgetapp.TestHelper;
 import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
 import com.bavis.budgetapp.util.JsonUtil;
@@ -49,14 +49,12 @@ public class PlaidServiceTests {
     private PlaidServiceImpl plaidService;
 
     private JsonUtil _jsonUtil;
-    private TestHelper _testHelper;
 
     @BeforeEach
     public void setup() {
 
         ObjectMapper mapper = new ObjectMapper();
         _jsonUtil = new JsonUtil(mapper);
-        _testHelper = new TestHelper();
     }
 
 
@@ -103,7 +101,7 @@ public class PlaidServiceTests {
         String accountId = "account-id";
         String accessToken = "access-token";
         double expectedBalance = 1000.0;
-        String responseBody = _jsonUtil.toJson(_testHelper.createBalanceResponse(accountId, expectedBalance));
+        String responseBody = _jsonUtil.toJson(TestHelper.createBalanceResponse(accountId, expectedBalance));
         ResponseEntity<String> responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
 
         //Mock
@@ -223,7 +221,7 @@ public class PlaidServiceTests {
         String accountId = "account-id";
         String accessToken = "access-token";
         double expectedBalance = 1000.0;
-        String responseBody = _jsonUtil.toJson(_testHelper.createBalanceResponse(accountId, expectedBalance));
+        String responseBody = _jsonUtil.toJson(TestHelper.createBalanceResponse(accountId, expectedBalance));
         ResponseEntity<String> responseEntity = new ResponseEntity<>(responseBody, HttpStatus.BAD_REQUEST);
 
         //Mock
@@ -257,7 +255,7 @@ public class PlaidServiceTests {
         String invalidAccountId = "invalid-account-id";
         String accessToken = "access-token";
         double expectedBalance = 1000.0;
-        String responseBody = _jsonUtil.toJson(_testHelper.createBalanceResponse(invalidAccountId, expectedBalance)); //create response with invalid account id
+        String responseBody = _jsonUtil.toJson(TestHelper.createBalanceResponse(invalidAccountId, expectedBalance)); //create response with invalid account id
         ResponseEntity<String> responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK); //response with invalid account id
 
         //Mock

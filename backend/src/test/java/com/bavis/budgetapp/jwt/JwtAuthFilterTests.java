@@ -4,7 +4,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bavis.budgetapp.constants.Role;
 import com.bavis.budgetapp.filter.JwtAuthenticationFilter;
-import com.bavis.budgetapp.helper.TestHelper;
+import com.bavis.budgetapp.TestHelper;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.JwtService;
 import jakarta.servlet.FilterChain;
@@ -62,14 +62,13 @@ public class JwtAuthFilterTests {
     @BeforeEach
     public void setup() {
         //Generate Valid JWT Token
-        TestHelper testHelper = new TestHelper();
         User fakeUser = User.builder()
                 .name("Test User")
                 .username("test-user")
                 .password("password")
                 .build();
-        Algorithm algorithm = testHelper.createAlgorithm();
-        validToken = testHelper.getValidJwtToken(algorithm, fakeUser); //pass in algo so we can use same algo to validate token
+        Algorithm algorithm = TestHelper.createAlgorithm();
+        validToken = TestHelper.getValidJwtToken(algorithm, fakeUser); //pass in algo so we can use same algo to validate token
 
         //Invalid Jwt Token
         invalidToken = "invalid-token";

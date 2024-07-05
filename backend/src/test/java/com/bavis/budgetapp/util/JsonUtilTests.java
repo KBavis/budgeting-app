@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.util;
 
-import com.bavis.budgetapp.helper.TestHelper;
+import com.bavis.budgetapp.TestHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -29,12 +29,10 @@ public class JsonUtilTests {
     @InjectMocks
     private JsonUtil jsonUtil;
 
-    private TestHelper testHelper;
     private ObjectMapper testObjectMapper;
 
     @BeforeEach
     void setUp() {
-        testHelper = new TestHelper();
         testObjectMapper = new ObjectMapper();
     }
 
@@ -88,7 +86,7 @@ public class JsonUtilTests {
         // Arrange
         String accountId = "123456";
         double balance = 1000.0;
-        String jsonString = testObjectMapper.writeValueAsString(testHelper.createBalanceResponse(accountId, balance));
+        String jsonString = testObjectMapper.writeValueAsString(TestHelper.createBalanceResponse(accountId, balance));
         ObjectNode rootNode = testObjectMapper.createObjectNode();
         ArrayNode accountsNode = testObjectMapper.createArrayNode();
         ObjectNode accountNode = testObjectMapper.createObjectNode();
@@ -133,7 +131,7 @@ public class JsonUtilTests {
         double balance = 1000.0;
         String invalidAccountId = "1";
         String correctAccountId = "123456";
-        String jsonString = testObjectMapper.writeValueAsString(testHelper.createBalanceResponse(correctAccountId, balance));
+        String jsonString = testObjectMapper.writeValueAsString(TestHelper.createBalanceResponse(correctAccountId, balance));
         ObjectNode rootNode = testObjectMapper.createObjectNode();
         ArrayNode accountsNode = testObjectMapper.createArrayNode();
         ObjectNode accountNode = testObjectMapper.createObjectNode();
