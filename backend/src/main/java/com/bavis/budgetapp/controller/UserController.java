@@ -35,6 +35,7 @@ public class UserController {
      */
     @PutMapping("/refresh/link-token")
     public ResponseEntity<LinkToken> refreshLinkToken() {
+        log.info("Received request to refresh Plaid Link Token");
         //Fetch Authenticated User
         User currentAuthUser = userService.getCurrentAuthUser();
         Long userId = currentAuthUser.getUserId();
