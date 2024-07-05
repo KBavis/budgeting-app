@@ -60,12 +60,10 @@ public class AuthControllerTests {
 
     private User testUser;
 
-    private String expectedExpiration;
 
     @BeforeEach
     public void setup() {
         LocalDateTime expiration = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-        expectedExpiration = expiration.truncatedTo(ChronoUnit.MILLIS).format(dateTimeFormatter);
 
         String token = "link-token";
         LinkToken linkToken = LinkToken.builder()
@@ -394,7 +392,7 @@ public class AuthControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userName").value(testUser.getUsername()))
                 .andExpect(jsonPath("$.linkToken.token").value(testUser.getLinkToken().getToken()))
-                .andExpect(jsonPath("$.linkToken.expiration").value(expectedExpiration))
+                .andExpect(jsonPath("$.linkToken.expiration").value(testUser.getLinkToken().getExpiration().toString()))
                 .andExpect(jsonPath("$.name").value(testUser.getName()));
 
         //Verify
