@@ -1,48 +1,29 @@
 import React, { useContext, useState, useEffect } from "react";
 import categoryTypeContext from "../../context/category/types/categoryTypeContext";
-import categoryContext from "../../context/category/categoryContext";
 import AlertContext from "../../context/alert/alertContext";
 import transactionContext from "../../context/transaction/transactionContext";
-import { FaEllipsisV } from "react-icons/fa";
 
 const AssignCategoryModal = ({ onClose, transaction }) => {
   // Global State
   const { categoryTypes } = useContext(categoryTypeContext);
-  const { categories } = useContext(categoryContext);
   const { setAlert } = useContext(AlertContext);
-  const { assignCategoryToTransaction } = useContext(transactionContext);
+  const { updateCategory } = useContext(transactionContext);
 
   // Local State
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [needsCategories, setNeedsCategories] = useState([]);
   const [wantsCategories, setWantsCategories] = useState([]);
   const [investmentsCategories, setInvestmentsCategories] = useState([]);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   // Function to handle category selection
   const handleCategorySelection = (category) => {
-    setSelectedCategory(category);
-    console.log(category);
-    //TODO:
-  };
-
-  // Functionality to confirm category assignment
-  const onConfirm = () => {
-    if (!selectedCategory) {
+    if (!category) {
       setAlert("Please select a category.", "danger");
       return;
     }
 
-    assignCategoryToTransaction(
-      transaction.transactionId,
-      selectedCategory.categoryId
-    );
+    updateCategory(transaction.transactionId, category.categoryId);
+    setAlert("Category successfully assigned", "success");
     onClose();
-  };
-
-  // Toggle dropdown visibility
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
   };
 
   // Filter Categories for each Category Type
@@ -67,7 +48,7 @@ const AssignCategoryModal = ({ onClose, transaction }) => {
     if (investmentCategoryType) {
       setInvestmentsCategories(investmentCategoryType.categories);
     }
-  }, [categoryTypes]); // Only depend on categoryTypes as categories is not used here
+  }, [categoryTypes]);
 
   return (
     <div className="fixed inset-0 flex text-center items-center justify-center z-[500] backdrop-blur-sm overflow-y-auto">
@@ -148,18 +129,12 @@ const AssignCategoryModal = ({ onClose, transaction }) => {
             </div>
           ))}
         </div>
-        <div className="flex justify-between mt-4">
+        <div className="flex justify-center mt-4">
           <button
             onClick={onClose}
             className="modal-button-cancel px-4 py-2 mr-2 text-white bg-red-500 rounded hover:bg-red-600"
           >
             Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="modal-button-confirm px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
-          >
-            Confirm
           </button>
         </div>
       </div>
