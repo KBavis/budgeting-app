@@ -2,12 +2,34 @@ import React, { useState, useEffect, useContext } from "react";
 import transactionContext from "../../context/transaction/transactionContext";
 import DetailedCategoryTransaction from "../transaction/DetailedCategoryTransaction";
 
-const DetailedCategory = ({ category }) => {
+/**
+ * Component for representing a Category entitiy in detail
+ *
+ * @param category
+ *       - Category to generate component for
+ * @param handleShowSplitTransactionModal
+ *       - functionality to show SplitTransaction modal
+ * @param handleShowReduceTransactionModal
+ *       - functionality to show ReduceTransaction modal
+ * @param handleShowRenameTransactionModal
+ *       - functionality to show RenameTransactionModal
+ * @param handleShowAssignCategoryModal
+ *       - functionlaity to show AssignCategoryModal
+ * @returns
+ */
+const DetailedCategory = ({
+  category,
+  handleShowSplitTransactionModal,
+  handleShowReduceTransactionModal,
+  handleShowRenameTransactionModal,
+  handleShowAssignCategoryModal,
+}) => {
   const [totalAmountSpent, setTotalAmountSpent] = useState(0);
   const [budgetUsage, setBudgetUsage] = useState(0);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
 
   const { transactions } = useContext(transactionContext);
+
   useEffect(() => {
     if (transactions) {
       const filtered = transactions.filter(
@@ -79,6 +101,10 @@ const DetailedCategory = ({ category }) => {
           <DetailedCategoryTransaction
             key={transaction.transactionId}
             transaction={transaction}
+            handleShowSplitTransactionModal={handleShowSplitTransactionModal}
+            handleShowReduceTransactionModal={handleShowReduceTransactionModal}
+            handleShowRenameTransactionModal={handleShowRenameTransactionModal}
+            handleShowAssignCategoryModal={handleShowAssignCategoryModal}
           />
         ))}
       </div>
