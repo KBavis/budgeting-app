@@ -15,6 +15,7 @@ const Category = ({
    handleShowSplitTransactionModal,
    handleShowReduceTransactionModal,
    handleShowRenameTransactionModal,
+   handleShowAssignCategoryModal,
 }) => {
    //Global State
    const { transactions, updateCategory } = useContext(transactionContext);
@@ -117,6 +118,7 @@ const Category = ({
                   handleShowRenameTransactionModal={
                      handleShowRenameTransactionModal
                   }
+                  handleShowAssignCategoryModal={handleShowAssignCategoryModal}
                />
             ))}
          </div>

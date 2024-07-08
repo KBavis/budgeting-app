@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useDrag } from "react-dnd";
-import { FaEllipsisV } from "react-icons/fa"; // Importing icon
 import transactionContext from "../../context/transaction/transactionContext";
+import TransactionDropdown from "../layout/TransactionDropdown";
 
 /**
  *
@@ -18,6 +18,7 @@ const Transaction = ({
    handleShowSplitTransactionModal,
    handleShowReduceTransactionModal,
    handleShowRenameTransactionModal,
+   handleShowAssignCategoryModal,
 }) => {
    //Local State
    const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -34,9 +35,14 @@ const Transaction = ({
       }),
    }));
 
-   //Function to Handle
+   //Function to Handle Dropdown
    const toggleDropdown = () => {
       setDropdownVisible(!dropdownVisible);
+   };
+
+   //Function to Assing a Transaction a Category
+   const handleReassignTransaction = () => {
+      handleShowAssignCategoryModal(transaction);
    };
 
    //Function to handle drop down option 'Split Transaction'
@@ -90,43 +96,13 @@ const Transaction = ({
             <p className="text-xs xl:text-sm">${roundedAmount}</p>
          </div>
          {transaction.category && ( // Only display the dropdown if category is not null
-            <div className="relative ">
-               <button
-                  onClick={toggleDropdown}
-                  className="text-white focus:outline-none"
-               >
-                  <FaEllipsisV />
-               </button>
-               {/* Drop Down options to edit Transaction. TODO: Update this to be Dropdown component */}
-               {dropdownVisible && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-[200]">
-                     <button
-                        onClick={handleSplitTransaction}
-                        className="font-bold border-[1px] border-black block w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                     >
-                        Split Transaction
-                     </button>
-                     <button
-                        onClick={handleReduceTransaction}
-                        className="font-bold block border-[1px] border-black w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                     >
-                        Reduce Amount
-                     </button>
-                     <button
-                        onClick={handleDeleteTransaction}
-                        className="font-bold block border-[1px] border-black w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                     >
-                        Delete Transaction
-                     </button>
-                     <button
-                        onClick={handleRenameTransaction}
-                        className="font-bold block border-[1px] border-black w-full px-2 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                     >
-                        Rename Transaction
-                     </button>
-                  </div>
-               )}
-            </div>
+            <TransactionDropdown
+               handleDeleteTransaction={handleDeleteTransaction}
+               handleSplitTransaction={handleSplitTransaction}
+               handleReassignTransaction={handleReassignTransaction}
+               handleRenameTransaction={handleRenameTransaction}
+               handleReduceTransaction={handleReduceTransaction}
+            />
          )}
       </div>
    );

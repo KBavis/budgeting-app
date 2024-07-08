@@ -15,6 +15,7 @@ import DropdownMenu from "../components/layout/Dropdown";
 import Savings from "../components/category/types/Savings";
 import RenameTransaction from "../components/transaction/RenameTransaction";
 import AlertContext from "../context/alert/alertContext";
+import AssignCategoryModal from "../components/transaction/AssignCategoryModal";
 
 const HomePage = () => {
    //Local State
@@ -27,6 +28,8 @@ const HomePage = () => {
    const [showAddTransactionModal, setShowAddTransactionModal] =
       useState(false);
    const [showRenameTransactionModal, setShowRenameTransactionModal] =
+      useState(false);
+   const [showAssignCategoryModal, setShowAssignCategoryModal] =
       useState(false);
    const [transaction, setTransaction] = useState(null);
    const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown visibility
@@ -80,6 +83,17 @@ const HomePage = () => {
    const handleShowSplitTransactionModal = (splitTransaction) => {
       setTransaction(splitTransaction);
       setShowSplitTransactionModal(true);
+   };
+
+   //Function to open AssignCategory modal
+   const handleShowAssignCategoryModal = (transaction) => {
+      setTransaction(transaction);
+      setShowAssignCategoryModal(true);
+   };
+
+   //Function to close AssignCategory modal
+   const handleCloseAssignCategoryModal = () => {
+      setShowAssignCategoryModal(false);
    };
 
    //Function to close SplitTransaction modal
@@ -270,6 +284,9 @@ const HomePage = () => {
                         handleShowRenameTransactionModal={
                            handleShowRenameTransactionModal
                         }
+                        handleShowAssignCategoryModal={
+                           handleShowAssignCategoryModal
+                        }
                      />
                   ))
                ) : (
@@ -304,6 +321,14 @@ const HomePage = () => {
             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
                <RenameTransaction
                   onClose={handleCloseRenameTransactionModal}
+                  transaction={transaction}
+               />
+            </div>
+         )}
+         {showAssignCategoryModal && (
+            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+               <AssignCategoryModal
+                  onClose={handleCloseAssignCategoryModal}
                   transaction={transaction}
                />
             </div>

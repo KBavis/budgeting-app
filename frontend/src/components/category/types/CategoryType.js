@@ -10,6 +10,7 @@ const CategoryType = ({
    handleShowSplitTransactionModal,
    handleShowReduceTransactionModal,
    handleShowRenameTransactionModal,
+   handleShowAssignCategoryModal,
 }) => {
    const { transactions } = useContext(transactionContext);
    const { categories } = useContext(categoryContext);
@@ -127,6 +128,9 @@ const CategoryType = ({
                      }
                      handleShowRenameTransactionModal={
                         handleShowRenameTransactionModal
+                     }
+                     handleShowAssignCategoryModal={
+                        handleShowAssignCategoryModal
                      }
                   />
                ))}
