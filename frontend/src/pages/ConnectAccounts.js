@@ -87,7 +87,7 @@ const ConnectAccounts = () => {
                </p>
             )}
             <PlaidLink
-               token={user?.linkToken}
+               token={user?.linkToken.token}
                onSuccess={handleOnSuccess}
                onExit={handleOnExit}
                className="plaid-link-wrapper"
