@@ -1,8 +1,10 @@
 package com.bavis.budgetapp.controller;
 
+import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.validator.group.BulkCategoryDtoValidationGroup;
 import com.bavis.budgetapp.validator.group.CategoryDtoValidationGroup;
+import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -52,22 +54,15 @@ public class CategoryController {
 	/**
 	 * Create a single category for a user
 	 *
-	 * @param category
-	 * 			- Category to create
-	 * @param categoryTypeId
-	 * 			- Category Type ID to corresponding newly created Category to
+	 * @param addCategoryDto
+	 * 			- DTO containing new Category and updates to any existing Categories
 	 * @return
 	 * 			- created Category
 	 */
-	@PostMapping("/{categoryTypeId}")
-	public Category create(@RequestBody Category category, @PathVariable(value = "categoryTypeId") Long categoryTypeId) {
-		log.info("Received Category creation request for [{}] within the category type [{}]", category, categoryTypeId);
-		
-		try {
-			return _categoryService.create(category, categoryTypeId);
-		} catch (Exception e) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access - unable to create parent category");
-		}
+	@PostMapping
+	public Category create(@RequestBody @Valid AddCategoryDto addCategoryDto) {
+		log.info("Received Category creation request via following AddCategoryDto: [{}]", addCategoryDto);
+		return _categoryService.create(addCategoryDto);
 	}
 
 	/**
