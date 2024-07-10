@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.dto;
 
+import com.bavis.budgetapp.annotation.AddCategoryDtoValidAttributes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
+@AddCategoryDtoValidAttributes
 public class AddCategoryDto {
     private List<UpdateCategoryDto> updatedCategories;
     private CategoryDto addedCategory;
