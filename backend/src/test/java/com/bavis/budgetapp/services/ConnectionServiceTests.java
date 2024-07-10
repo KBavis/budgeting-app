@@ -104,12 +104,11 @@ public class ConnectionServiceTests {
         String institutionName = "J.P Morgan";
         String previousCursor = "previous-cursor";
         String originalCursor = "original-cursor";
-        LocalDateTime localDateTime = LocalDateTime.now();
 
         Connection connectionWithUpdates = Connection.builder()
                 .previousCursor(previousCursor)
                 .originalCursor(originalCursor)
-                .lastSyncTime(localDateTime)
+                .lastSyncTime(lastSyncTime)
                 .build();
 
         Connection connectionToUpdate = Connection.builder()
