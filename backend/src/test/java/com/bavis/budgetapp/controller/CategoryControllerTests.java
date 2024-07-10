@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.controller;
 
+import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.CategoryDto;
 import com.bavis.budgetapp.entity.Category;
@@ -171,6 +172,29 @@ public class CategoryControllerTests {
         //Verify
         verify(userService, times(3)).getCurrentAuthUser();
         verify(categoryTypeService, times(3)).read(any(long.class));
+    }
+
+    @Test
+    void testCreate_Successful() throws Exception {
+
+    }
+
+    @Test
+    void testCreate_NullUpdateCategories_Failure() throws Exception {
+        //Arrange
+        AddCategoryDto invalidDto = AddCategoryDto.builder()
+                .updatedCategories(null)
+                .build();
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/category")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidDto)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The updated Categories or the created Category is null."));
     }
 
     @Test
