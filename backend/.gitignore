@@ -7,3 +7,8 @@ build/
 src/resources/.env
 .idea/
 frontend/
+bin/
+.settings/
+/gradle/wrapper
+gradlew
+gradlew.bat
