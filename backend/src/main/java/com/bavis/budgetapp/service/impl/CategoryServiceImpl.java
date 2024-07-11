@@ -1,25 +1,22 @@
 package com.bavis.budgetapp.service.impl;
 
 
+import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.UserService;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.CategoryRepository;
-import com.bavis.budgetapp.dao.CategoryTypeRepository;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Kellen Bavis
@@ -71,16 +68,36 @@ public class CategoryServiceImpl implements CategoryService{
 		return categoryRepository.findByUserUserId(currentAuthUser.getUserId());
 	}
 
-	//todo: finish this logic and add logging
 	@Override
-	public Category create(Category category, Long categoryTypeId) throws Exception{
-		log.info("Creating Category [{}] for category type with id [{}]", category, categoryTypeId);
+	public Category create(AddCategoryDto addCategoryDto) {
+		log.info("Creating Category [{}] and updating following Categories: [{}]", addCategoryDto.getAddedCategory(), addCategoryDto.getUpdatedCategories());
 
-		CategoryType type = categoryTypeService.read(categoryTypeId);
+		//Create New Category
+		User authUser = userService.getCurrentAuthUser();
+		CategoryType categoryType = categoryTypeService.read(addCategoryDto.getAddedCategory().getCategoryTypeId());
+		Category createdCategory = categoryMapper.toEntity(addCategoryDto.getAddedCategory());
+		createdCategory.setUser(authUser);
+		createdCategory.setCategoryType(categoryType);
 
-		category.setCategoryType(type);
-		//TODO: Set User of this category to be the authenticated user once JWT established
-		return categoryRepository.save(category);
+		/*
+			Persist Updates to Existing Categories
+
+			1. Fetch Category based on UpdateCategoryId
+			2. Set their Budget Allocation Percentage
+			3. Set their Budget Allocation Amount [BudgetAllocationPercentage * CategoryType.amount]
+			4. Persist
+		 */
+
+		/*
+			Update Category Type's Saving Amount
+
+			1. Determine Category Type's Allocated Amount
+			2. Determine Total Sum of Budget Allocation Amount for each Category pertaining to CategoryType [NOTE: The Total Sum of Categories BudgetAmount MUST BE Less Than CategoryType Amount]
+			3. Update CategoryType Saving Amount [CategoryType.amount - Total Sum of Budget Allocation Amount]
+			4. Persist CategoryType
+		 */
+
+		return null; //TODO: delete me
 	}
 
 	//todo: finish this logic and add logging

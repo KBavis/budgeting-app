@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.service;
 
+import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.entity.Category;
 
@@ -24,16 +25,12 @@ public interface CategoryService {
 	/**
 	 * Function to create a single Category entity
 	 *
-	 * @param category
-	 * 			- Category to be persisted within our database
-	 * @param categoryTypeId
-	 * 			- CategoryType entity ID to associate Category to
+	 * @param addCategoryDto
+	 * 			- DTO used to create new Category and update existing Category allocations
 	 * @return
 	 * 			- Created Category entity
-	 * @throws Exception
-	 * 			- Thrown in the case that an error occurs while creating a Category
 	 */
-	Category create(Category category, Long categoryTypeId) throws Exception;
+	Category create(AddCategoryDto addCategoryDto);
 
 	/**
 	 * Function to update a Category
