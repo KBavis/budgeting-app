@@ -3,6 +3,7 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
+import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.service.CategoryTypeService;
@@ -15,8 +16,11 @@ import com.bavis.budgetapp.dao.CategoryRepository;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Kellen Bavis
@@ -69,6 +73,7 @@ public class CategoryServiceImpl implements CategoryService{
 	}
 
 	@Override
+	@Transactional
 	public Category create(AddCategoryDto addCategoryDto) {
 		log.info("Creating Category [{}] and updating following Categories: [{}]", addCategoryDto.getAddedCategory(), addCategoryDto.getUpdatedCategories());
 
@@ -78,26 +83,32 @@ public class CategoryServiceImpl implements CategoryService{
 		Category createdCategory = categoryMapper.toEntity(addCategoryDto.getAddedCategory());
 		createdCategory.setUser(authUser);
 		createdCategory.setCategoryType(categoryType);
+		categoryRepository.saveAndFlush(createdCategory);
 
-		/*
-			Persist Updates to Existing Categories
+		//Update Existing Categories
+		List<Category> updatedCategories = addCategoryDto.getUpdatedCategories().stream()
+				.map(updateCategoryDto -> updateCategoryAllocation(updateCategoryDto, categoryType))
+				.collect(Collectors.toList());
+		updatedCategories.add(createdCategory); //add newly created Category
 
-			1. Fetch Category based on UpdateCategoryId
-			2. Set their Budget Allocation Percentage
-			3. Set their Budget Allocation Amount [BudgetAllocationPercentage * CategoryType.amount]
-			4. Persist
-		 */
+		//Merge Existing Categories with Updated Categories
+		List<Category> allCategories = mergeCategories(categoryType.getCategories(), updatedCategories);
 
-		/*
-			Update Category Type's Saving Amount
+		//Update CategoryType's Saving Amount
+		double totalBudgetAmount = allCategories.stream()
+				.mapToDouble(Category::getBudgetAmount)
+				.sum();
+		log.info("Total Budget Allocation for all Categories corresponding to CategoryType {} : {}", categoryType.getCategoryTypeId(), totalBudgetAmount);
 
-			1. Determine Category Type's Allocated Amount
-			2. Determine Total Sum of Budget Allocation Amount for each Category pertaining to CategoryType [NOTE: The Total Sum of Categories BudgetAmount MUST BE Less Than CategoryType Amount]
-			3. Update CategoryType Saving Amount [CategoryType.amount - Total Sum of Budget Allocation Amount]
-			4. Persist CategoryType
-		 */
+		//Ensure BudgetAmount is Less Than CategoryType Allocation
+		if(totalBudgetAmount > categoryType.getBudgetAmount()) {
+			throw new RuntimeException("Category allocations exceed total budgeted amount for CategoryType " + categoryType.getCategoryTypeId());
+		}
 
-		return null; //TODO: delete me
+		//Update CategoryType Saved Amount
+		categoryType.setSavedAmount(categoryType.getBudgetAmount() - totalBudgetAmount);
+
+		return createdCategory;
 	}
 
 	//todo: finish this logic and add logging
@@ -131,6 +142,44 @@ public class CategoryServiceImpl implements CategoryService{
 	public void delete(Long categoryId) {
 		log.info("Deleting Category with id [{}]", categoryId);
 		categoryRepository.deleteById(categoryId);
+	}
+
+	/**
+	 * Utility function to adjust existing Categories budgetAllocation
+	 *
+	 * @param updateCategoryDto
+	 * 			- DTO containing Category ID and Budget Allocation Percentage updates
+	 * @param categoryType
+	 * 			- CategoryType this Category is associated with
+	 * @return category
+	 * 			- Updated Category
+	 */
+	private Category updateCategoryAllocation(UpdateCategoryDto updateCategoryDto, CategoryType categoryType) {
+		double budgetAllocationPercentage = updateCategoryDto.getBudgetAllocationPercentage();
+		Category category = read(updateCategoryDto.getCategoryId());
+		category.setBudgetAllocationPercentage(budgetAllocationPercentage);
+		category.setBudgetAmount(budgetAllocationPercentage * categoryType.getBudgetAmount());
+		log.info("Updated Category {} with BudgetAllocationPercentage {} and BudgetAmount {} ", category.getCategoryId(), category.getBudgetAllocationPercentage(), category.getBudgetAmount());
+		return category;
+	}
+
+	/**
+	 * Utility function to merge existing Categories with updated Categories
+	 *
+	 * @param existingCategories
+	 * 	-		- List of Category entities that previously existed
+	 * @param updatedCategories
+	 * 			- List of Category entities that were updated via Category creation
+	 * @return
+	 * 			- Merged List of Category entities
+	 */
+	private List<Category> mergeCategories(List<Category> existingCategories, List<Category> updatedCategories) {
+		Map<Long, Category> updatedCategoryMap = updatedCategories.stream()
+				.collect(Collectors.toMap(Category::getCategoryId, category -> category));
+
+		return existingCategories.stream()
+				.map(existingCategory -> updatedCategoryMap.getOrDefault(existingCategory.getCategoryId(), existingCategory))
+				.toList();
 	}
 
 }
