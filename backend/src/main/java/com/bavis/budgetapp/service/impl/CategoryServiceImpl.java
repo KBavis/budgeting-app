@@ -94,7 +94,7 @@ public class CategoryServiceImpl implements CategoryService{
 		categoryRepository.saveAllAndFlush(updatedCategories); //save new category and
 
 		//Merge Existing Categories with Updated Categories
-		List<Category> allCategories = mergeCategories(categoryType.getCategories(), updatedCategories);
+		List<Category> allCategories = mergeCategories(categoryType.getCategories(), updatedCategories, createdCategory);
 
 		//Update CategoryType's Saving Amount
 		double totalBudgetAmount = allCategories.stream()
@@ -174,13 +174,18 @@ public class CategoryServiceImpl implements CategoryService{
 	 * @return
 	 * 			- Merged List of Category entities
 	 */
-	private List<Category> mergeCategories(List<Category> existingCategories, List<Category> updatedCategories) {
+	private List<Category> mergeCategories(List<Category> existingCategories, List<Category> updatedCategories, Category newCategory) {
 		Map<Long, Category> updatedCategoryMap = updatedCategories.stream()
 				.collect(Collectors.toMap(Category::getCategoryId, category -> category));
 
-		return existingCategories.stream()
+		//Replace Existing Categories with Updated Categories and add new Category
+		List<Category> mergedCategories = existingCategories.stream()
 				.map(existingCategory -> updatedCategoryMap.getOrDefault(existingCategory.getCategoryId(), existingCategory))
-				.toList();
+				.collect(Collectors.toList());
+		mergedCategories.add(newCategory);
+
+		log.info("Merged Categories : [{}]", mergedCategories);
+		return mergedCategories;
 	}
 
 }
