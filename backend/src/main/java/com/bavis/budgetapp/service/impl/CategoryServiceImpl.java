@@ -3,6 +3,7 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
+import com.bavis.budgetapp.dto.CategoryDto;
 import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryMapper;
@@ -79,17 +80,18 @@ public class CategoryServiceImpl implements CategoryService{
 
 		//Create New Category
 		User authUser = userService.getCurrentAuthUser();
-		CategoryType categoryType = categoryTypeService.read(addCategoryDto.getAddedCategory().getCategoryTypeId());
-		Category createdCategory = categoryMapper.toEntity(addCategoryDto.getAddedCategory());
+		CategoryDto categoryToAdd = addCategoryDto.getAddedCategory();
+		CategoryType categoryType = categoryTypeService.read(categoryToAdd.getCategoryTypeId());
+		Category createdCategory = categoryMapper.toEntity(categoryToAdd);
 		createdCategory.setUser(authUser);
 		createdCategory.setCategoryType(categoryType);
-		categoryRepository.saveAndFlush(createdCategory);
 
 		//Update Existing Categories
 		List<Category> updatedCategories = addCategoryDto.getUpdatedCategories().stream()
 				.map(updateCategoryDto -> updateCategoryAllocation(updateCategoryDto, categoryType))
 				.collect(Collectors.toList());
 		updatedCategories.add(createdCategory); //add newly created Category
+		categoryRepository.saveAllAndFlush(updatedCategories); //save new category and
 
 		//Merge Existing Categories with Updated Categories
 		List<Category> allCategories = mergeCategories(categoryType.getCategories(), updatedCategories);
@@ -123,7 +125,6 @@ public class CategoryServiceImpl implements CategoryService{
 		return categoryRepository.save(cat);
 	}
 
-	//todo: finish this logic and add logging
 	@Override
 	public Category read(Long categoryId){
 		log.info("Reading Category with id [{}]", categoryId);
