@@ -3,6 +3,7 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;
@@ -176,7 +177,57 @@ public class CategoryControllerTests {
 
     @Test
     void testCreate_Successful() throws Exception {
+        //Arrange
+        UpdateCategoryDto updateCategoryDto1 = UpdateCategoryDto.builder()
+                .categoryId(category1.getCategoryId())
+                .budgetAllocationPercentage(.4) //720
+                .build();
 
+
+        UpdateCategoryDto updateCategoryDto2 = UpdateCategoryDto.builder()
+                .categoryId(category2.getCategoryId())
+                .budgetAllocationPercentage(.2) //360
+                .build();
+
+        UpdateCategoryDto updateCategoryDto3 = UpdateCategoryDto.builder()
+                .categoryId(category3.getCategoryId())
+                .budgetAllocationPercentage(.1) //180
+                .build();
+
+        CategoryDto categoryToAdd = CategoryDto.builder()
+                .categoryTypeId(10L)
+                .name("New Category")
+                .budgetAmount(540)
+                .budgetAllocationPercentage(.3)
+                .build();
+
+        AddCategoryDto validDto = AddCategoryDto.builder()
+                .updatedCategories(List.of(updateCategoryDto1, updateCategoryDto2, updateCategoryDto3))
+                .addedCategory(categoryToAdd)
+                .build();
+
+        Category createdCategory = Category.builder()
+                .categoryType(categoryType)
+                .categoryId(4L)
+                .name("New Category")
+                .budgetAmount(540)
+                .budgetAllocationPercentage(.3)
+                .build();
+        //Mock
+        when(categoryService.create(validDto)).thenReturn(createdCategory);
+
+        //Act & Assert
+        mockMvc.perform(post("/category").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(validDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.budgetAllocationPercentage").value(createdCategory.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$.categoryType.categoryTypeId").value(categoryType.getCategoryTypeId()))
+                .andExpect(jsonPath("$.budgetAmount").value(createdCategory.getBudgetAmount()))
+                .andExpect(jsonPath("$.name").value(createdCategory.getName()))
+                .andExpect(jsonPath("$.categoryId").value(createdCategory.getCategoryId()));
+
+        //Verify
+        verify(categoryService, times(1)).create(validDto);
     }
 
     @Test
