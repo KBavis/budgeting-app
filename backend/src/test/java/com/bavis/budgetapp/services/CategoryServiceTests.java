@@ -216,16 +216,100 @@ public class CategoryServiceTests {
 
     @Test
     void testCreate_CategoryCreated() {
+        //Arrange
+        List<Category> originalCategories = List.of(category1, category2, category3);
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(10L)
+                .categories(originalCategories)
+                .budgetAmount(1800) //original categories use 100% of budget
+                .savedAmount(0)
+                .build();
 
+        createdCategory = Category.builder()
+                .categoryType(categoryType)
+                .categoryId(4L)
+                .name("New Category")
+                .budgetAmount(540)
+                .budgetAllocationPercentage(.3)
+                .build();
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(categoryTypeService.read(categoryToAdd.getCategoryTypeId())).thenReturn(categoryType);
+        when(categoryMapper.toEntity(categoryToAdd)).thenReturn(createdCategory);
+        when(categoryRepository.findByCategoryId(updateCategoryDto1.getCategoryId())).thenReturn(category1);
+        when(categoryRepository.findByCategoryId(updateCategoryDto2.getCategoryId())).thenReturn(category2);
+        when(categoryRepository.findByCategoryId(updateCategoryDto3.getCategoryId())).thenReturn(category3);
+
+        //Act
+        Category newCategory = categoryService.create(addCategoryDto);
+
+        //Assert
+        assertEquals(createdCategory, newCategory);
     }
 
     @Test
     void testCreate_CategoryTypeUpdated() {
+        //Arrange
+        List<Category> originalCategories = List.of(category1, category2, category3);
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(10L)
+                .categories(originalCategories)
+                .budgetAmount(1800) //original categories use 100% of budget
+                .savedAmount(100)
+                .build();
 
+        createdCategory = Category.builder()
+                .categoryType(categoryType)
+                .categoryId(4L)
+                .name("New Category")
+                .budgetAmount(540)
+                .budgetAllocationPercentage(.3)
+                .build();
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(categoryTypeService.read(categoryToAdd.getCategoryTypeId())).thenReturn(categoryType);
+        when(categoryMapper.toEntity(categoryToAdd)).thenReturn(createdCategory);
+        when(categoryRepository.findByCategoryId(updateCategoryDto1.getCategoryId())).thenReturn(category1);
+        when(categoryRepository.findByCategoryId(updateCategoryDto2.getCategoryId())).thenReturn(category2);
+        when(categoryRepository.findByCategoryId(updateCategoryDto3.getCategoryId())).thenReturn(category3);
+
+        //Act
+        categoryService.create(addCategoryDto);
+
+        //Assert
+        assertEquals(0, categoryType.getSavedAmount()); //ensure CategoryType updated to be 0
     }
     @Test
     void testCreate_ExceedBudget_ThrowsException() {
+        //Arrange
+        List<Category> originalCategories = List.of(category1, category2, category3);
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(10L)
+                .categories(originalCategories)
+                .budgetAmount(1800) //original categories use 100% of budget
+                .savedAmount(0)
+                .build();
 
+        createdCategory = Category.builder()
+                .categoryType(categoryType)
+                .categoryId(4L)
+                .name("New Category")
+                .budgetAmount(600) //this ensures the categoryType budget is exceeded by $60
+                .budgetAllocationPercentage(.3)
+                .build();
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(categoryTypeService.read(categoryToAdd.getCategoryTypeId())).thenReturn(categoryType);
+        when(categoryMapper.toEntity(categoryToAdd)).thenReturn(createdCategory);
+        when(categoryRepository.findByCategoryId(updateCategoryDto1.getCategoryId())).thenReturn(category1);
+        when(categoryRepository.findByCategoryId(updateCategoryDto2.getCategoryId())).thenReturn(category2);
+        when(categoryRepository.findByCategoryId(updateCategoryDto3.getCategoryId())).thenReturn(category3);
+
+        //Act
+        assertThrows(RuntimeException.class, () -> categoryService.create(addCategoryDto));
     }
 
 
