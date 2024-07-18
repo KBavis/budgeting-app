@@ -16,6 +16,7 @@ import Savings from "../components/category/types/Savings";
 import RenameTransaction from "../components/transaction/RenameTransaction";
 import AlertContext from "../context/alert/alertContext";
 import AssignCategoryModal from "../components/transaction/AssignCategoryModal";
+import AddCategory from "../components/category/AddCategory";
 
 const HomePage = () => {
    //Local State
@@ -31,6 +32,7 @@ const HomePage = () => {
       useState(false);
    const [showAssignCategoryModal, setShowAssignCategoryModal] =
       useState(false);
+   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
    const [transaction, setTransaction] = useState(null);
    const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown visibility
 
@@ -89,6 +91,16 @@ const HomePage = () => {
    const handleShowAssignCategoryModal = (transaction) => {
       setTransaction(transaction);
       setShowAssignCategoryModal(true);
+   };
+
+   //Function to open AddCategory modal
+   const handleShowAddCategoryModal = () => {
+      setShowAddCategoryModal(true);
+   };
+
+   //Function to close AddCategory modal
+   const handleCloseAddCategoryModal = () => {
+      setShowAddCategoryModal(false);
    };
 
    //Function to close AssignCategory modal
@@ -249,6 +261,7 @@ const HomePage = () => {
             dropdownVisible={dropdownVisible}
             setDropdownVisible={setDropdownVisible}
             handleShowAddTransactionModal={handleShowAddTransactionModal}
+            handleShowAddCategoryModal={handleShowAddCategoryModal}
             user={user} // Pass the user prop
          />
 
@@ -331,6 +344,11 @@ const HomePage = () => {
                   onClose={handleCloseAssignCategoryModal}
                   transaction={transaction}
                />
+            </div>
+         )}
+         {showAddCategoryModal && (
+            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+               <AddCategory onClose={handleCloseAddCategoryModal} />
             </div>
          )}
       </div>
