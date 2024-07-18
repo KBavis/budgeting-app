@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useReducer, useContext } from "react";
 import categoryReducer from "./categoryReducer";
 import axios from "axios";
 import apiUrl from "../../utils/url";
@@ -9,10 +9,13 @@ import {
    SET_LOADING,
    FETCH_CATEGORIES_SUCCESS,
    FETCH_CATEGORIES_FAIL,
+   CREATE_CATEGORY_SUCCESS,
+   CREATE_CATEGORY_FAIL,
 } from "./types";
 import initialState from "./initialState";
 import CategoryContext from "./categoryContext";
 import setAuthToken from "../../utils/setAuthToken";
+import AlertContext from "../alert/alertContext";
 
 /**
  * Global State for our Categories
@@ -23,6 +26,7 @@ import setAuthToken from "../../utils/setAuthToken";
  */
 const CategoryState = (props) => {
    const [state, dispatch] = useReducer(categoryReducer, initialState);
+   const { setAlert } = useContext(AlertContext);
 
    /**
     * Functionality to Bulk Create Categories via REST API
@@ -78,6 +82,79 @@ const CategoryState = (props) => {
    };
 
    /**
+    * Functionality to add a new Category to a CategoryType and adjust other Categories allocations as needed
+    */
+   const addCategory = async (
+      addedCategory,
+      updatedCategories,
+      categoryType
+   ) => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      const config = {
+         headers: {
+            "Content-Type": "application/json",
+         },
+      };
+
+      const requestBody = { updatedCategories, addedCategory };
+      console.log(requestBody);
+
+      try {
+         const res = await axios.post(
+            `${apiUrl}/category`,
+            requestBody,
+            config
+         );
+
+         //Adjust List<UpdateCategoryDto> with new 'budgetAmount' attribute
+         let categoriesWithUpdates = updatedCategories.map(
+            (updateCategoryDto) => ({
+               ...updateCategoryDto,
+               budgetAmount: calculateAdjustedCategoryAmount(
+                  updateCategoryDto,
+                  categoryType
+               ),
+            })
+         );
+         let payload = { newCategory: res.data, categoriesWithUpdates };
+
+         dispatch({
+            type: CREATE_CATEGORY_SUCCESS,
+            payload,
+         });
+         setAlert("Category created successfully", "success");
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: CREATE_CATEGORY_FAIL,
+            payload: err.response.data.error,
+         });
+         setAlert(err.response.data.error, "danger");
+      }
+   };
+
+   /**
+    * Utility function to determine adjusted 'amountAllocated' for given Category
+    *
+    * @param updateCategoryDto
+    *          - UpdateCategoryDto (categoryId, budgetAllocationPercentage)
+    * @param categoryType
+    *          - CategoryType pertaining to Categories being adjusted
+    */
+   const calculateAdjustedCategoryAmount = (
+      updateCategoryDto,
+      categoryType
+   ) => {
+      return (
+         categoryType.budgetAmount *
+         updateCategoryDto.budgetAllocationPercentage
+      );
+   };
+
+   /**
     *  Functionality to set the loading to true
     */
    const setLoading = () => dispatch({ type: SET_LOADING });
@@ -97,6 +174,7 @@ const CategoryState = (props) => {
             clearErrors,
             fetchCategories,
             setLoading,
+            addCategory,
          }}
       >
          {props.children}
