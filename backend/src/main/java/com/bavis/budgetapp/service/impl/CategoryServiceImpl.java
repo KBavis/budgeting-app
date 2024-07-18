@@ -96,6 +96,7 @@ public class CategoryServiceImpl implements CategoryService{
 		//Merge Existing Categories with Updated Categories
 		List<Category> allCategories = mergeCategories(categoryType.getCategories(), updatedCategories, createdCategory);
 
+
 		//Update CategoryType's Saving Amount
 		double totalBudgetAmount = allCategories.stream()
 				.mapToDouble(Category::getBudgetAmount)
@@ -104,7 +105,7 @@ public class CategoryServiceImpl implements CategoryService{
 
 		//Ensure BudgetAmount is Less Than CategoryType Allocation
 		if(totalBudgetAmount > categoryType.getBudgetAmount()) {
-			throw new RuntimeException("Category allocations exceed total budgeted amount for CategoryType " + categoryType.getCategoryTypeId());
+			throw new RuntimeException("Category allocations, " + totalBudgetAmount + ", exceed total budgeted amount for CategoryType " + categoryType.getCategoryTypeId() + ": " + categoryType.getBudgetAmount());
 		}
 
 		//Update CategoryType Saved Amount
@@ -182,9 +183,10 @@ public class CategoryServiceImpl implements CategoryService{
 		List<Category> mergedCategories = existingCategories.stream()
 				.map(existingCategory -> updatedCategoryMap.getOrDefault(existingCategory.getCategoryId(), existingCategory))
 				.collect(Collectors.toList());
-		mergedCategories.add(newCategory);
 
-		log.info("Merged Categories : [{}]", mergedCategories);
+		List<Long> categoryIds = mergedCategories.stream().map(Category::getCategoryId).toList();
+		log.info("Merged Category Ids : [{}]", categoryIds);
+
 		return mergedCategories;
 	}
 
