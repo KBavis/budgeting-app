@@ -234,11 +234,14 @@ public class TransactionServiceTests {
         });
 
         //Act
-        List<Transaction> actualTransactions = transactionService.syncTransactions(accountsDto);
+        SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
+        List<Transaction> actualTransactions = syncTransactionsDto.getAllModifiedOrAddedTransactions();
+        List<String> removedTransactionIds = syncTransactionsDto.getRemovedTransactionIds();
 
         //Assert
-        assertNotNull(actualTransactions);
+        assertNotNull(syncTransactionsDto);
         assertEquals(4, actualTransactions.size()); //2 modified, 2 added
+        assertEquals(4, removedTransactionIds.size()); //4 removed
 
         //Ensure Each Modified/Added account is present
         assertTrue(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoOne.getTransaction_id())));
@@ -248,6 +251,10 @@ public class TransactionServiceTests {
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFour.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFive.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoSix.getTransaction_id())));
+
+        //Ensure Each Removed Transaction Id is present
+        assertTrue(removedTransactionIds.stream().anyMatch(transactionId -> transactionId.equals(plaidTransactionDtoTwo.getTransaction_id())));
+        assertTrue(removedTransactionIds.stream().anyMatch(transactionId -> transactionId.equals(plaidTransactionDtoFive.getTransaction_id())));
 
         //Verify
         verify(accountService, times(1)).read(accountIdOne);
@@ -333,11 +340,15 @@ public class TransactionServiceTests {
         });
 
         //Act
-        List<Transaction> actualTransactions = transactionService.syncTransactions(accountsDto);
+        SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
+        List<Transaction> actualTransactions = syncTransactionsDto.getAllModifiedOrAddedTransactions();
+        List<String> removedTransactionIds = syncTransactionsDto.getRemovedTransactionIds();
 
         //Assert
         assertNotNull(actualTransactions);
-        assertEquals(8, actualTransactions.size()); //2 modified, 2 added
+        assertEquals(8, actualTransactions.size());
+        assertNotNull(removedTransactionIds);
+        assertEquals(8, removedTransactionIds.size());
 
         //Ensure Each Modified/Added account is present
         assertTrue(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoOne.getTransaction_id())));
@@ -347,6 +358,10 @@ public class TransactionServiceTests {
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFour.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFive.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoSix.getTransaction_id())));
+
+        //Ensure Each Removed Transaction Id is present
+        assertTrue(removedTransactionIds.stream().anyMatch(transactionId -> transactionId.equals(plaidTransactionDtoTwo.getTransaction_id())));
+        assertTrue(removedTransactionIds.stream().anyMatch(transactionId -> transactionId.equals(plaidTransactionDtoFive.getTransaction_id())));
 
         //Verify
         verify(accountService, times(1)).read(accountIdOne);

@@ -2,6 +2,7 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.SplitTransactionDto;
+import com.bavis.budgetapp.dto.SyncTransactionsDto;
 import com.bavis.budgetapp.dto.TransactionDto;
 import com.bavis.budgetapp.dto.AccountsDto;
 import com.bavis.budgetapp.entity.*;
@@ -75,6 +76,8 @@ public class TransactionControllerTests {
 
     private User authUser;
 
+    private SyncTransactionsDto syncTransactionsDto;
+
     @BeforeEach
     void setup() {
         objectMapper = new ObjectMapper();
@@ -128,6 +131,11 @@ public class TransactionControllerTests {
                 .build();
 
         validTransactions = List.of(transactionOne, transactionTwo);
+
+        syncTransactionsDto = SyncTransactionsDto.builder()
+                .allModifiedOrAddedTransactions(validTransactions)
+                .removedTransactionIds(List.of("1", "2", "3"))
+                .build();
     }
 
     @Test
@@ -139,7 +147,7 @@ public class TransactionControllerTests {
         String accountTwoId = validAccountIds.get(1);
 
         //Mock
-        when(transactionService.syncTransactions(validTransactionSyncRequest)).thenReturn(validTransactions);
+        when(transactionService.syncTransactions(validTransactionSyncRequest)).thenReturn(syncTransactionsDto);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
         when(accountService.read(accountOneId)).thenReturn(accountOne);
         when(accountService.read(accountTwoId)).thenReturn(accountTwo);
@@ -152,18 +160,22 @@ public class TransactionControllerTests {
         //Assert
         resultActions.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].transactionId").value(transactionOne.getTransactionId()))
-                .andExpect(jsonPath("$[0].date").value(transactionOne.getDate().toString()))
-                .andExpect(jsonPath("$[0].amount").value(transactionOne.getAmount()))
-                .andExpect(jsonPath("$[0].name").value(transactionOne.getName()))
-                .andExpect(jsonPath("$[0].category").value(transactionOne.getCategory()))
-                .andExpect(jsonPath("$[0].logoUrl").value(transactionOne.getLogoUrl()))
-                .andExpect(jsonPath("$[1].transactionId").value(transactionTwo.getTransactionId()))
-                .andExpect(jsonPath("$[1].date").value(transactionTwo.getDate().toString()))
-                .andExpect(jsonPath("$[1].amount").value(transactionTwo.getAmount()))
-                .andExpect(jsonPath("$[1].category").value(transactionTwo.getCategory()))
-                .andExpect(jsonPath("$[1].logoUrl").value(transactionTwo.getLogoUrl()))
-                .andExpect(jsonPath("$[1].name").value(transactionTwo.getName()));
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[0].transactionId").value(transactionOne.getTransactionId()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[0].date").value(transactionOne.getDate().toString()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[0].amount").value(transactionOne.getAmount()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[0].name").value(transactionOne.getName()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[0].category").value(transactionOne.getCategory()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[0].logoUrl").value(transactionOne.getLogoUrl()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[1].transactionId").value(transactionTwo.getTransactionId()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[1].date").value(transactionTwo.getDate().toString()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[1].amount").value(transactionTwo.getAmount()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[1].category").value(transactionTwo.getCategory()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[1].logoUrl").value(transactionTwo.getLogoUrl()))
+                .andExpect(jsonPath("$.allModifiedOrAddedTransactions[1].name").value(transactionTwo.getName()))
+                .andExpect(jsonPath("$.removedTransactionIds[0]").value("1"))
+                .andExpect(jsonPath("$.removedTransactionIds[1]").value("2"))
+                .andExpect(jsonPath("$.removedTransactionIds[2]").value("3"));
+
 
 
         //Verify
