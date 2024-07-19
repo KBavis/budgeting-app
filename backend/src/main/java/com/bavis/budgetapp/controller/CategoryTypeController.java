@@ -87,12 +87,7 @@ public class CategoryTypeController {
 	@GetMapping("/{categoryTypeId}")
 	public CategoryType read(@PathVariable(value = "categoryTypeId") Long categoryTypeId) {
 		log.info("Received CategoryType read request for Category Type with ID of {}", categoryTypeId);
-		
-		try {
-			return _categoryTypeService.read(categoryTypeId);
-		}  catch (Exception e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find category with id " + categoryTypeId);
-		}
+		return _categoryTypeService.read(categoryTypeId);
 	}
 
 
