@@ -7,6 +7,8 @@ import {
    SET_LOADING,
    UPDATE_CATEGORY_TYPE_FAIL,
    UPDATE_CATEGORY_TYPE_SUCCESS,
+   FETCH_CATEGORY_TYPE_FAILURE,
+   FETCH_CATEGORY_TYPE_SUCCESS,
 } from "./types";
 
 /**
@@ -29,6 +31,16 @@ export default (state, action) => {
             ...state,
             error: action.payload,
             loading: false,
+         };
+      case FETCH_CATEGORY_TYPE_SUCCESS:
+         const categoryTypes = state.categoryTypes.filter(
+            (categoryType) =>
+               categoryType.categoryTypeId !== action.payload.categoryTypeId
+         );
+
+         return {
+            ...state,
+            categoryTypes: [...categoryTypes, action.payload],
          };
       case UPDATE_CATEGORY_TYPE_SUCCESS:
          //Filter Out CategoryTypes Other Than Once To Upate

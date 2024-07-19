@@ -11,6 +11,8 @@ import {
    SET_LOADING,
    UPDATE_CATEGORY_TYPE_FAIL,
    UPDATE_CATEGORY_TYPE_SUCCESS,
+   FETCH_CATEGORY_TYPE_FAILURE,
+   FETCH_CATEGORY_TYPE_SUCCESS,
 } from "./types";
 import initialState from "./initialState";
 import CategoryTypeContext from "./categoryTypeContext";
@@ -99,7 +101,6 @@ const CategoryTypeState = (props) => {
       if (localStorage.token) {
          setAuthToken(localStorage.token);
       }
-      console.log(updateCategoryTypeDto);
 
       try {
          const config = {
@@ -123,6 +124,32 @@ const CategoryTypeState = (props) => {
       }
    };
 
+   /**
+    * Functionality to fetch a single CategoryType
+    *
+    * @param categoryTypeId
+    *          - CategoryType ID to fetch
+    */
+   const fetchCategoryType = async (categoryTypeId) => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      try {
+         const res = await axios.get(
+            `${apiUrl}/category/type/${categoryTypeId}`
+         );
+         console.log(res.data);
+         dispatch({ type: FETCH_CATEGORY_TYPE_SUCCESS, payload: res.data });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: FETCH_CATEGORY_TYPE_FAILURE,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
    return (
       <CategoryTypeContext.Provider
          value={{
@@ -134,6 +161,7 @@ const CategoryTypeState = (props) => {
             fetchCategoryTypes,
             setLoading,
             updateCategoryType,
+            fetchCategoryType,
          }}
       >
          {props.children}
