@@ -47,9 +47,8 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final CategoryServiceImpl categoryService;
 
-    //TODO: Consider returning DTO instead of only added/modified Transactions so we can update frontend with remove Transactions
     @Override
-    public List<Transaction> syncTransactions(AccountsDto accountsDto) throws PlaidServiceException{
+    public SyncTransactionsDto syncTransactions(AccountsDto accountsDto) throws PlaidServiceException{
         log.info("Syncing Transactions for the following Accounts: [{}]", accountsDto.getAccounts());
 
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
@@ -124,7 +123,11 @@ public class TransactionServiceImpl implements TransactionService {
         _transactionRepository.saveAllAndFlush(allModifiedOrAddedTransactions);
         _transactionRepository.deleteAllById(allRemovedTransactionIds);
 
-        return allModifiedOrAddedTransactions;
+        //Return DTO
+        return SyncTransactionsDto.builder()
+                .allModifiedOrAddedTransactions(allModifiedOrAddedTransactions)
+                .removedTransactionIds(allRemovedTransactionIds)
+                .build();
     }
 
     @Override

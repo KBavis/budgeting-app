@@ -2,6 +2,7 @@ package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.SplitTransactionDto;
+import com.bavis.budgetapp.dto.SyncTransactionsDto;
 import com.bavis.budgetapp.dto.TransactionDto;
 import com.bavis.budgetapp.dto.AccountsDto;
 import com.bavis.budgetapp.entity.Transaction;
@@ -21,9 +22,9 @@ public interface TransactionService {
      * @param accountsDto
      *          - DTO contain list of relevant Account IDs's
      * @return
-     *          - List of all modified/created Transaction entities
+     *          - all modified/created Transactions and all removed Transaction ids
      */
-    List<Transaction> syncTransactions(AccountsDto accountsDto);
+    SyncTransactionsDto syncTransactions(AccountsDto accountsDto);
 
     /**
      * Functionality to fetch all Transaction entities corresponding to authenticated User
