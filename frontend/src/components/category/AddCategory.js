@@ -14,7 +14,7 @@ const AddCategory = ({ onClose }) => {
    const [initialCategories, setInitialCategories] = useState([]);
 
    // Global State
-   const { categoryTypes } = useContext(categoryTypeContext);
+   const { categoryTypes, fetchCategoryType } = useContext(categoryTypeContext);
    const { addCategory } = useContext(categoryContext);
    const { setAlert } = useContext(AlertContext);
 
@@ -35,7 +35,7 @@ const AddCategory = ({ onClose }) => {
    };
 
    // Function to handle submission of form
-   const handleSubmit = () => {
+   const handleSubmit = async () => {
       // Create UpdateCategoryDtos for existing categories that were modified
       const updateCategoryDtos = selectedCategories
          .filter(
@@ -49,6 +49,10 @@ const AddCategory = ({ onClose }) => {
          }));
 
       // Create CategoryDto for the new category
+      if (!categoryName) {
+         setAlert("New category must have a name", "danger");
+         return;
+      }
       const newCategory = {
          name: categoryName,
          budgetAllocationPercentage: percentage,
@@ -62,9 +66,10 @@ const AddCategory = ({ onClose }) => {
             (total, category) => total + category.budgetAllocationPercentage,
             0
          ) + percentage;
+      const roundedPercent = roundToNearestTenthPercent(totalBudgetAllocation);
 
       // Check if the total budget allocation percentage exceeds 1.0
-      if (totalBudgetAllocation > 1.0) {
+      if (roundedPercent > 1.0) {
          setAlert(
             "Total budget allocation percentage cannot exceed 100%",
             "danger"
@@ -73,8 +78,14 @@ const AddCategory = ({ onClose }) => {
       }
 
       // Call createCategory with the required parameters
-      addCategory(newCategory, updateCategoryDtos, selectedType);
+      await addCategory(newCategory, updateCategoryDtos, selectedType);
+      await fetchCategoryType(selectedType.categoryTypeId);
+
       onClose();
+   };
+
+   const roundToNearestTenthPercent = (value) => {
+      return Math.round(value * 1000) / 1000;
    };
 
    // Function to handle slider change for new category percentage
