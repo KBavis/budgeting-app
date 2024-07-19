@@ -98,7 +98,6 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 		return repository.save(categoryType);
 	}
 
-	//todo: finish this logic and add logging
 	@Override
 	public CategoryType read(Long categoryTypeId) {
 		log.info("Reading CategoryType with id [{}]", categoryTypeId);
