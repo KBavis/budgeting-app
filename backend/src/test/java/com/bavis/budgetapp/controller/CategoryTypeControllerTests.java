@@ -2,9 +2,8 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.CategoryTypeDto;
 import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
-import com.bavis.budgetapp.entity.User;
-import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.impl.CategoryTypeServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,6 +45,56 @@ public class CategoryTypeControllerTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    void testRead_Successful() throws Exception {
+        //Arrange
+        Category categoryOne = Category.builder()
+                .categoryId(1L)
+                .name("My Test Category")
+                .build();
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(10L)
+                .categories(List.of(categoryOne))
+                .budgetAmount(1000.0)
+                .budgetAllocationPercentage(.5)
+                .savedAmount(100.0)
+                .build();
+
+        //Mock
+        when(categoryTypeService.read(10L)).thenReturn(categoryType);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(get("/category/type/" + categoryType.getCategoryTypeId()));
+
+        //Assert
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.categoryTypeId").value(categoryType.getCategoryTypeId()))
+                .andExpect(jsonPath("$.budgetAmount").value(categoryType.getBudgetAmount()))
+                .andExpect(jsonPath("$.budgetAllocationPercentage").value(categoryType.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$.savedAmount").value(categoryType.getSavedAmount()));
+    }
+
+    @Test
+    void testRead_IdNotFound_Failure() throws Exception {
+        //Arrange
+        long categoryTypeId = 1L;
+        RuntimeException runtimeException = new RuntimeException("Invalid category type id: " + categoryTypeId);
+
+        //Mock
+        when(categoryTypeService.read(1L)).thenThrow(runtimeException);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(get("/category/type/" + categoryTypeId));
+
+        //Assert
+        resultActions
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("Invalid category type id: " + categoryTypeId));
+    }
 
     @Test
     void testReadAll_Successful() throws Exception {
