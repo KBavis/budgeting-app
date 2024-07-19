@@ -19,6 +19,7 @@ import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryService;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -87,11 +88,12 @@ public class CategoryServiceImpl implements CategoryService{
 		createdCategory.setCategoryType(categoryType);
 
 		//Update Existing Categories
-		List<Category> updatedCategories = addCategoryDto.getUpdatedCategories().stream()
+        List<Category> updatedCategories = addCategoryDto.getUpdatedCategories().stream()
 				.map(updateCategoryDto -> updateCategoryAllocation(updateCategoryDto, categoryType))
 				.collect(Collectors.toList());
-		updatedCategories.add(createdCategory); //add newly created Category
-		categoryRepository.saveAllAndFlush(updatedCategories); //save new category and
+        List<Category> categoriesToSave = new ArrayList<>(updatedCategories);
+		categoriesToSave.add(createdCategory);
+		categoryRepository.saveAllAndFlush(categoriesToSave); //save new category and
 
 		//Merge Existing Categories with Updated Categories
 		List<Category> allCategories = mergeCategories(categoryType.getCategories(), updatedCategories, createdCategory);
@@ -183,6 +185,7 @@ public class CategoryServiceImpl implements CategoryService{
 		List<Category> mergedCategories = existingCategories.stream()
 				.map(existingCategory -> updatedCategoryMap.getOrDefault(existingCategory.getCategoryId(), existingCategory))
 				.collect(Collectors.toList());
+		mergedCategories.add(newCategory);
 
 		List<Long> categoryIds = mergedCategories.stream().map(Category::getCategoryId).toList();
 		log.info("Merged Category Ids : [{}]", categoryIds);
