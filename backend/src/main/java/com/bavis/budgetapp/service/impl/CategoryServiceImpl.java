@@ -185,7 +185,7 @@ public class CategoryServiceImpl implements CategoryService{
 		List<Category> mergedCategories = existingCategories.stream()
 				.map(existingCategory -> updatedCategoryMap.getOrDefault(existingCategory.getCategoryId(), existingCategory))
 				.collect(Collectors.toList());
-		mergedCategories.add(newCategory);
+	 	if(!mergedCategories.contains(newCategory))	{ mergedCategories.add(newCategory); }
 
 		List<Long> categoryIds = mergedCategories.stream().map(Category::getCategoryId).toList();
 		log.info("Merged Category Ids : [{}]", categoryIds);
