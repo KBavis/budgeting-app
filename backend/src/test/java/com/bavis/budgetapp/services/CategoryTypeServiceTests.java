@@ -105,6 +105,33 @@ public class CategoryTypeServiceTests {
     }
 
     @Test
+    void testRead_Successful() {
+        //Mock
+        when(repository.findById(categoryTypeNeeds.getCategoryTypeId())).thenReturn(Optional.of(categoryTypeNeeds));
+
+        //Act
+        CategoryType actualCategoryType = categoryTypeService.read(categoryTypeNeeds.getCategoryTypeId());
+
+        //Assert
+        assertEquals(categoryTypeNeeds, actualCategoryType);
+    }
+
+    @Test
+    void testRead_IdNotFound_ThrowsException() {
+        //Mock
+        when(repository.findById(categoryTypeNeeds.getCategoryTypeId())).thenReturn(Optional.empty());
+
+        //Act
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+            categoryTypeService.read(categoryTypeNeeds.getCategoryTypeId());
+        });
+
+        //Assert
+        assertNotNull(runtimeException);
+        assertEquals("Invalid category type id: " + categoryTypeNeeds.getCategoryTypeId(), runtimeException.getMessage());
+    }
+
+    @Test
     public void testCreateMany_Successful() {
         //Arrange
         double userTotalIncome = 15000.0;
