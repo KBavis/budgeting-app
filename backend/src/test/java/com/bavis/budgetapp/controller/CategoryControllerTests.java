@@ -3,6 +3,7 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.EditCategoryDto;
 import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
@@ -32,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -137,6 +139,57 @@ public class CategoryControllerTests {
 
         expectedCategoryList = Arrays.asList(category1, category2, category3);
 
+    }
+
+    @Test
+    void testUpdate_Successful() throws Exception{
+        //Arrange
+        EditCategoryDto editCategoryDto = new EditCategoryDto();
+
+        //Mock
+        when(categoryService.update(editCategoryDto, 1L)).thenReturn(expectedCategoryList);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/category/" + 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(editCategoryDto)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].categoryId").value(category1.getCategoryId()))
+                .andExpect(jsonPath("$[0].name").value(category1.getName()))
+                .andExpect(jsonPath("$[0].budgetAmount").value(category1.getBudgetAmount()))
+                .andExpect(jsonPath("$[0].budgetAllocationPercentage").value(category1.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[1].categoryId").value(category2.getCategoryId()))
+                .andExpect(jsonPath("$[1].name").value(category2.getName()))
+                .andExpect(jsonPath("$[1].budgetAmount").value(category2.getBudgetAmount()))
+                .andExpect(jsonPath("$[1].budgetAllocationPercentage").value(category2.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[2].categoryId").value(category3.getCategoryId()))
+                .andExpect(jsonPath("$[2].name").value(category3.getName()))
+                .andExpect(jsonPath("$[2].budgetAmount").value(category3.getBudgetAmount()))
+                .andExpect(jsonPath("$[2].budgetAllocationPercentage").value(category3.getBudgetAllocationPercentage()));
+    }
+
+    @Test
+    void testUpdate_InvalidDto_ThrowsException() throws Exception{
+        //Arrange
+        EditCategoryDto editCategoryDto = new EditCategoryDto();
+
+        //Mock
+        when(categoryService.update(editCategoryDto, 1L)).thenThrow(new RuntimeException("Invalid EditCategoryDto; ensures updates are not null"));
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/category/" + 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(editCategoryDto)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("Invalid EditCategoryDto; ensures updates are not null"));
     }
 
     @Test
