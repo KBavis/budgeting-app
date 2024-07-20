@@ -12,6 +12,7 @@ const AddCategory = ({ onClose }) => {
    const [selectedType, setSelectedType] = useState(null);
    const [selectedCategories, setSelectedCategories] = useState([]);
    const [initialCategories, setInitialCategories] = useState([]);
+   const [totalBudgetAllocation, setTotalBudgetAllocation] = useState(0);
 
    // Global State
    const { categoryTypes, fetchCategoryType } = useContext(categoryTypeContext);
@@ -32,6 +33,20 @@ const AddCategory = ({ onClose }) => {
       setSelectedType(type);
       setSelectedCategories(initialCat);
       setInitialCategories(initialCat);
+      calculateTotalBudgetAllocation(initialCat, percentage);
+   };
+
+   // Function to calculate the total budget allocation percentage
+   const calculateTotalBudgetAllocation = (
+      categories,
+      newCategoryPercentage
+   ) => {
+      const total =
+         categories.reduce(
+            (sum, category) => sum + category.budgetAllocationPercentage,
+            0
+         ) + newCategoryPercentage;
+      setTotalBudgetAllocation(total);
    };
 
    // Function to handle submission of form
@@ -60,15 +75,8 @@ const AddCategory = ({ onClose }) => {
          budgetAmount: selectedType.budgetAmount * percentage,
       };
 
-      // Calculate the total budget allocation percentage
-      const totalBudgetAllocation =
-         selectedCategories.reduce(
-            (total, category) => total + category.budgetAllocationPercentage,
-            0
-         ) + percentage;
-      const roundedPercent = roundToNearestTenthPercent(totalBudgetAllocation);
-
       // Check if the total budget allocation percentage exceeds 1.0
+      const roundedPercent = roundToNearestTenthPercent(totalBudgetAllocation);
       if (roundedPercent > 1.0) {
          setAlert(
             "Total budget allocation percentage cannot exceed 100%",
@@ -91,22 +99,25 @@ const AddCategory = ({ onClose }) => {
    // Function to handle slider change for new category percentage
    const handleNewCategorySliderChange = (value) => {
       setPercentage(value);
+      calculateTotalBudgetAllocation(selectedCategories, value);
    };
 
    // Function to handle slider change for existing categories
    const handleSliderChange = (categoryId, value) => {
-      setSelectedCategories((prevCategories) =>
-         prevCategories.map((category) =>
-            category.categoryId === categoryId
-               ? { ...category, budgetAllocationPercentage: value }
-               : category
-         )
+      const updatedCategories = selectedCategories.map((category) =>
+         category.categoryId === categoryId
+            ? { ...category, budgetAllocationPercentage: value }
+            : category
       );
+      setSelectedCategories(updatedCategories);
+      calculateTotalBudgetAllocation(updatedCategories, percentage);
    };
 
    // Function to reset categories to initial percentages
    const handleReset = () => {
       setSelectedCategories(initialCategories);
+      setPercentage(0);
+      calculateTotalBudgetAllocation(initialCategories, 0);
    };
 
    return (
@@ -200,9 +211,21 @@ const AddCategory = ({ onClose }) => {
                   </div>
                </div>
             )}
+            {/* Display Total Budget Allocation */}
+            {selectedType && (
+               <div className="mb-4 p-4 border border-gray-300 rounded-md">
+                  <p className="block text-sm font-bold text-gray-700">
+                     Total Budget Allocation:{" "}
+                     {(totalBudgetAllocation * 100).toFixed(1)}%
+                  </p>
+               </div>
+            )}
             {/* Adjust Budget Allocation Section */}
             {selectedType && (
-               <div className="p-4 border border-gray-300 rounded-md">
+               <div
+                  className="p-4 border border-gray-300 rounded-md"
+                  style={{ maxHeight: "300px", overflowY: "auto" }}
+               >
                   <div className="flex justify-between items-center mb-2">
                      <p className="block text-sm font-medium text-gray-700">
                         Adjust Existing Category Allocations
