@@ -2,6 +2,7 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
+import com.bavis.budgetapp.dto.EditCategoryDto;
 import com.bavis.budgetapp.validator.group.BulkCategoryDtoValidationGroup;
 import com.bavis.budgetapp.validator.group.CategoryDtoValidationGroup;
 import jakarta.validation.Valid;
@@ -91,19 +92,19 @@ public class CategoryController {
 	}
 
 	/**
-	 * Update a particular Category
+	 * Edit an existing Category
 	 *
 	 * @param categoryId
-	 * 			- CategoryID pertaining to Category needing updates
-	 * @param category
-	 * 			- Category containing updates
+	 * 			- CategoryID pertaining to Category to be updated
+	 * @param editCategoryDto
+	 * 			- DTO containing updated Category and budget allocation updates to existing categories
 	 * @return
-	 * 			- Updated Category
+	 * 			- Updated Categories
 	 */
 	@PutMapping("/{categoryId}")
-	public Category update(@PathVariable(value = "categoryId") Long categoryId, @RequestBody Category category) {
-		log.info("Received Category update request for id [{}] and category [{}]", categoryId, category);
-		return _categoryService.update(category, categoryId);
+	public List<Category> update(@PathVariable(value = "categoryId") Long categoryId, @RequestBody EditCategoryDto editCategoryDto) {
+		log.info("Received Category update request for id [{}] and EditCategoryDto [{}]", categoryId, editCategoryDto);
+		return _categoryService.update(editCategoryDto, categoryId);
 	}
 
 	/**
