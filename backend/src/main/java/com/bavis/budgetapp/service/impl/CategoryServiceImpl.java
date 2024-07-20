@@ -4,12 +4,14 @@ package com.bavis.budgetapp.service.impl;
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.EditCategoryDto;
 import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.UserService;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -116,16 +118,48 @@ public class CategoryServiceImpl implements CategoryService{
 		return createdCategory;
 	}
 
-	//todo: finish this logic and add logging
 	@Override
-	public Category update(Category category, Long id){
-		log.info("Updating Category with ID {} with the following Category entity: [{}]", id, category);
-		
-		Category cat = categoryRepository.findById(id).orElse(category);
-		cat.setCategoryType(category.getCategoryType());
-		cat.setName(category.getName());
-		cat.setUser(category.getUser());
-		return categoryRepository.save(cat);
+	@Transactional
+	public List<Category> update(EditCategoryDto editCategoryDto, Long id){
+		log.info("Updating Category with ID {} with the following EditCategoryDto: [{}]", id, editCategoryDto);
+
+		//Validation Checks
+		if(editCategoryDto == null) throw new RuntimeException("Invalid EditCategoryDto; ensures updates are not null");
+
+		//Update Categories
+		Category categoryToUpdate = categoryRepository.findByCategoryId(id);
+		CategoryType categoryType = categoryTypeService.read(categoryToUpdate.getCategoryType().getCategoryTypeId());
+		if(!StringUtils.isBlank(editCategoryDto.getName())) categoryToUpdate.setName(editCategoryDto.getName()); //update name
+		if(editCategoryDto.getBudgetAllocationPercentage() > 0.0) {
+			double budgetAllocationPercentage = editCategoryDto.getBudgetAllocationPercentage();
+			categoryToUpdate.setBudgetAllocationPercentage(budgetAllocationPercentage); //update allocation
+			categoryToUpdate.setBudgetAmount(budgetAllocationPercentage * categoryType.getBudgetAmount()); //update amount
+		}
+
+		//Update Other Category Budget Allocations
+		List<Category> updatedCategories = editCategoryDto.getUpdatedCategories().stream()
+				.map(updateCategoryDto -> updateCategoryAllocation(updateCategoryDto, categoryType))
+				.collect(Collectors.toList());
+		updatedCategories.add(categoryToUpdate);
+
+		//Merge Existing Categories with Updates
+		List<Category> mergedCategories = mergeCategories(categoryType.getCategories(), updatedCategories, null);
+
+		//Update CategoryType's Saving Amount
+		double totalBudgetAmount = mergedCategories.stream()
+				.mapToDouble(Category::getBudgetAmount)
+				.sum();
+		log.info("Total Budget Allocation for all Categories corresponding to CategoryType {} : {}", categoryType.getCategoryTypeId(), totalBudgetAmount);
+
+		//Ensure BudgetAmount is Less Than CategoryType Allocation
+		if(totalBudgetAmount > categoryType.getBudgetAmount()) {
+			throw new RuntimeException("Category allocations, " + totalBudgetAmount + ", exceed total budgeted amount for CategoryType " + categoryType.getCategoryTypeId() + ": " + categoryType.getBudgetAmount());
+		}
+
+		//Update Category Type saved amount
+		categoryType.setSavedAmount(categoryType.getBudgetAmount() - totalBudgetAmount);
+
+		return updatedCategories;
 	}
 
 	@Override
@@ -185,7 +219,7 @@ public class CategoryServiceImpl implements CategoryService{
 		List<Category> mergedCategories = existingCategories.stream()
 				.map(existingCategory -> updatedCategoryMap.getOrDefault(existingCategory.getCategoryId(), existingCategory))
 				.collect(Collectors.toList());
-	 	if(!mergedCategories.contains(newCategory))	{ mergedCategories.add(newCategory); }
+	 	if(!mergedCategories.contains(newCategory) && newCategory != null)	{ mergedCategories.add(newCategory); }
 
 		List<Long> categoryIds = mergedCategories.stream().map(Category::getCategoryId).toList();
 		log.info("Merged Category Ids : [{}]", categoryIds);

@@ -2,6 +2,7 @@ package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
+import com.bavis.budgetapp.dto.EditCategoryDto;
 import com.bavis.budgetapp.entity.Category;
 
 import java.util.List;
@@ -33,16 +34,18 @@ public interface CategoryService {
 	Category create(AddCategoryDto addCategoryDto);
 
 	/**
-	 * Function to update a Category
+	 * Function to update a Category and modify
+	 * existing Categories budget allocation percentages
+	 * to account for any modifications to a Category budget allocation
 	 *
-	 * @param category
-	 * 			- Category with updated properties
+	 * @param editCategoryDto
+	 * 			- DTO containing modified Category and modifications to other existing Categories
 	 * @param id
 	 * 			- ID of corresponding Category entity to be updated
 	 * @return
 	 * 			- Updated Category
 	 */
-	Category update(Category category, Long id);
+	List<Category> update(EditCategoryDto editCategoryDto, Long id);
 
 	/**
 	 * Function to fetch a specific Category
