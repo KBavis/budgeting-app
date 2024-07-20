@@ -23,27 +23,38 @@ export default (state, action) => {
    switch (action.type) {
       case SYNC_TRANSACTIONS_SUCCESS:
          // New & Updated Transactions
-         const newTransactions = action.payload.reduce(
-            (acc, transaction) => {
-               if (state.transactions) {
-                  const existingTransactionIndex = state.transactions.findIndex(
-                     (t) => t.transactionId === transaction.transactionId
-                  );
-                  if (existingTransactionIndex !== -1) {
-                     acc[existingTransactionIndex] = transaction;
+         const newTransactions =
+            action.payload.allModifiedOrAddedTransactions.reduce(
+               (acc, transaction) => {
+                  if (state.transactions) {
+                     const existingTransactionIndex =
+                        state.transactions.findIndex(
+                           (t) => t.transactionId === transaction.transactionId
+                        );
+                     if (existingTransactionIndex !== -1) {
+                        acc[existingTransactionIndex] = transaction;
+                     } else {
+                        acc.push(transaction);
+                     }
                   } else {
                      acc.push(transaction);
                   }
-               } else {
-                  acc.push(transaction);
-               }
-               return acc;
-            },
-            state.transactions ? [...state.transactions] : []
+                  return acc;
+               },
+               state.transactions ? [...state.transactions] : []
+            );
+
+         // Remove Transactions
+         const filteredTransactionsSync = newTransactions.filter(
+            (transaction) =>
+               !action.payload.removedTransactionIds.includes(
+                  transaction.transactionId
+               )
          );
+
          return {
             ...state,
-            transactions: newTransactions,
+            transactions: filteredTransactionsSync,
             loading: false,
             error: null,
          };
