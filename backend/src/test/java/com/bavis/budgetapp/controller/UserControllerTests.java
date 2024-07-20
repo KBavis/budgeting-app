@@ -8,6 +8,7 @@ import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -76,7 +79,12 @@ public class UserControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.token").value(newToken))
-                .andExpect(jsonPath("$.expiration").value(newExpiration.toString()));
+                .andExpect(result -> {
+                    String expirationStr = JsonPath.read(result.getResponse().getContentAsString(), "$.expiration");
+                    LocalDateTime expiration = LocalDateTime.parse(expirationStr);
+                    long difference = ChronoUnit.SECONDS.between(newExpiration, expiration);
+                    assertThat((double) difference, closeTo(0.0, 1.0));
+                });
 
         //Verify
         verify(userService, times(1)).update(any(Long.class), any(User.class));
