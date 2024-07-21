@@ -4,6 +4,7 @@ import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.CategoryDto;
 import com.bavis.budgetapp.dto.EditCategoryDto;
+import com.bavis.budgetapp.dto.RenameCategoryDto;
 import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
@@ -170,6 +171,62 @@ public class CategoryControllerTests {
                 .andExpect(jsonPath("$[2].name").value(category3.getName()))
                 .andExpect(jsonPath("$[2].budgetAmount").value(category3.getBudgetAmount()))
                 .andExpect(jsonPath("$[2].budgetAllocationPercentage").value(category3.getBudgetAllocationPercentage()));
+    }
+
+    @Test
+    void testRenameCategory_Successful() throws Exception{
+        //Arrange
+        RenameCategoryDto renameCategoryDto = RenameCategoryDto.builder()
+                .categoryName("New Name")
+                .categoryId(10L)
+                .build();
+
+        //Mock
+        when(categoryService.renameCategory(renameCategoryDto)).thenReturn(category1);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(put("/category/rename")
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(renameCategoryDto)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.categoryId").value(category1.getCategoryId()))
+                .andExpect(jsonPath("$.name").value(category1.getName()))
+                .andExpect(jsonPath("$.budgetAmount").value(category1.getBudgetAmount()))
+                .andExpect(jsonPath("$.budgetAllocationPercentage").value(category1.getBudgetAllocationPercentage()));
+    }
+
+    @Test
+    void testRenameCategory_InvalidName_ThrowsException() throws Exception{
+        //Arrange
+        RenameCategoryDto invalidRenameCategoryDto = RenameCategoryDto.builder()
+                .categoryName("Invvvvvvvvvvvvvvaaaaaaaaa1321212liiiiiiiiiiiidddddddddddddNameeee")
+                .build();
+
+        //Act & Assert
+        mockMvc.perform(put("/category/rename").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(invalidRenameCategoryDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The provided name contain no numbers, symbols, and be between 1-30 characters"));
+    }
+
+    @Test
+    void testRenameCategory_InvalidCategoryId_ThrowsException() throws Exception {
+        //Arrange
+        RenameCategoryDto invalidRenameCategoryDto = RenameCategoryDto.builder()
+                .categoryName("Valid Name")
+                .categoryId(10L)
+                .build();
+        RuntimeException runtimeException = new RuntimeException("Invalid category id: " + 10L);
+
+        //Mock
+        when(categoryService.renameCategory(invalidRenameCategoryDto)).thenThrow(runtimeException);
+
+        //Act & Assert
+        mockMvc.perform(put("/category/rename").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(invalidRenameCategoryDto)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Invalid category id: " + 10L));
     }
 
     @Test
