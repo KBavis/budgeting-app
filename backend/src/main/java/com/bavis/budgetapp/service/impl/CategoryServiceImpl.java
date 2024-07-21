@@ -5,13 +5,13 @@ import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.CategoryDto;
 import com.bavis.budgetapp.dto.EditCategoryDto;
+import com.bavis.budgetapp.dto.RenameCategoryDto;
 import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.UserService;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -152,6 +152,13 @@ public class CategoryServiceImpl implements CategoryService{
 		categoryType.setSavedAmount(categoryType.getBudgetAmount() - totalBudgetAmount);
 
 		return updatedCategories;
+	}
+
+	@Override
+	public Category renameCategory(RenameCategoryDto renameCategoryDto) {
+		Category categoryToUpdate = categoryRepository.findByCategoryId(renameCategoryDto.getCategoryId());
+		categoryToUpdate.setName(renameCategoryDto.getCategoryName());
+		return categoryToUpdate;
 	}
 
 	@Override

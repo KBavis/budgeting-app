@@ -3,6 +3,7 @@ package com.bavis.budgetapp.service;
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.EditCategoryDto;
+import com.bavis.budgetapp.dto.RenameCategoryDto;
 import com.bavis.budgetapp.entity.Category;
 
 import java.util.List;
@@ -42,6 +43,17 @@ public interface CategoryService {
 	 * 			- Updated Categories
 	 */
 	List<Category> updateCategoryAllocations(EditCategoryDto editCategoryDto);
+
+
+	/**
+	 * Function to rename a Category
+	 *
+	 * @param renameCategoryDto
+	 * 			- DTO containing CategoryId to update and updated name
+	 * @return
+	 * 			- updated Category
+	 */
+	Category renameCategory(RenameCategoryDto renameCategoryDto);
 
 	/**
 	 * Function to fetch a specific Category
