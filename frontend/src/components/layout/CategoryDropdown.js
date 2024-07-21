@@ -25,7 +25,7 @@ const CategoryDropdown = ({
 
          <Dropdown.Menu
             align="end"
-            className="bg-white text-black text-sm text-center custom-dropdown-menu"
+            className="bg-white text-black text-sm absolute text-center custom-dropdown-menu"
          >
             <Dropdown.Item
                className="dropdown-item font-semibold"
