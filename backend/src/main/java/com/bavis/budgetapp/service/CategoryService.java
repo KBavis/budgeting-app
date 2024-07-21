@@ -34,18 +34,14 @@ public interface CategoryService {
 	Category create(AddCategoryDto addCategoryDto);
 
 	/**
-	 * Function to update a Category and modify
-	 * existing Categories budget allocation percentages
-	 * to account for any modifications to a Category budget allocation
+	 * Function to update Category allocations
 	 *
 	 * @param editCategoryDto
-	 * 			- DTO containing modified Category and modifications to other existing Categories
-	 * @param id
-	 * 			- ID of corresponding Category entity to be updated
+	 * 			- DTO containing updated category allocations
 	 * @return
-	 * 			- Updated Category
+	 * 			- Updated Categories
 	 */
-	List<Category> update(EditCategoryDto editCategoryDto, Long id);
+	List<Category> updateCategoryAllocations(EditCategoryDto editCategoryDto);
 
 	/**
 	 * Function to fetch a specific Category

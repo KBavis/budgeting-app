@@ -120,27 +120,19 @@ public class CategoryServiceImpl implements CategoryService{
 
 	@Override
 	@Transactional
-	public List<Category> update(EditCategoryDto editCategoryDto, Long id){
-		log.info("Updating Category with ID {} with the following EditCategoryDto: [{}]", id, editCategoryDto);
+	public List<Category> updateCategoryAllocations(EditCategoryDto editCategoryDto){
+		log.info("Updating Category allocations via the following EditCategoryDto: [{}]", editCategoryDto);
 
 		//Validation Checks
 		if(editCategoryDto == null) throw new RuntimeException("Invalid EditCategoryDto; ensures updates are not null");
 
-		//Update Categories
-		Category categoryToUpdate = categoryRepository.findByCategoryId(id);
-		CategoryType categoryType = categoryTypeService.read(categoryToUpdate.getCategoryType().getCategoryTypeId());
-		if(!StringUtils.isBlank(editCategoryDto.getName())) categoryToUpdate.setName(editCategoryDto.getName()); //update name
-		if(editCategoryDto.getBudgetAllocationPercentage() > 0.0) {
-			double budgetAllocationPercentage = editCategoryDto.getBudgetAllocationPercentage();
-			categoryToUpdate.setBudgetAllocationPercentage(budgetAllocationPercentage); //update allocation
-			categoryToUpdate.setBudgetAmount(budgetAllocationPercentage * categoryType.getBudgetAmount()); //update amount
-		}
+		//Fetch Category Type
+		CategoryType categoryType = categoryTypeService.read(editCategoryDto.getCategoryTypeId());
 
-		//Update Other Category Budget Allocations
+		//Update Category Budget Allocations
 		List<Category> updatedCategories = editCategoryDto.getUpdatedCategories().stream()
 				.map(updateCategoryDto -> updateCategoryAllocation(updateCategoryDto, categoryType))
 				.collect(Collectors.toList());
-		updatedCategories.add(categoryToUpdate);
 
 		//Merge Existing Categories with Updates
 		List<Category> mergedCategories = mergeCategories(categoryType.getCategories(), updatedCategories, null);
@@ -149,7 +141,7 @@ public class CategoryServiceImpl implements CategoryService{
 		double totalBudgetAmount = mergedCategories.stream()
 				.mapToDouble(Category::getBudgetAmount)
 				.sum();
-		log.info("Total Budget Allocation for all Categories corresponding to CategoryType {} : {}", categoryType.getCategoryTypeId(), totalBudgetAmount);
+		log.info("Total Budget Allocation for all Categories corresponding to CategoryType {} : {}. Total CategoryType allocation available: {}", categoryType.getCategoryTypeId(), totalBudgetAmount, categoryType.getBudgetAmount());
 
 		//Ensure BudgetAmount is Less Than CategoryType Allocation
 		if(totalBudgetAmount > categoryType.getBudgetAmount()) {
