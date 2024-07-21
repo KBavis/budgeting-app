@@ -4,7 +4,6 @@ import com.bavis.budgetapp.annotation.AuthRequestValidPassword;
 import com.bavis.budgetapp.dto.AuthRequestDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * @author Kellen Bavis
