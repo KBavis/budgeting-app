@@ -12,7 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class EditCategoryDto {
-    private String name;
-    private double budgetAllocationPercentage;
     private List<UpdateCategoryDto> updatedCategories;
+    private long categoryTypeId;
 }
