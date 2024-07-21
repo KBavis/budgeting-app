@@ -2,12 +2,27 @@ import React, { useContext, useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 import Transaction from "../transaction/Transaction";
 import transactionContext from "../../context/transaction/transactionContext";
+import CategoryDropdown from "../layout/CategoryDropdown";
 
 /**
- * Component to store all relevant information for Category entitiy on Home Page
+ * Component to store all relevant information for Category entity on Home Page
  *
  * @param category
- *       - Category entitiy to generate component for
+ *       - Category entity to generate component for
+ * @param handleShowSplitTransactionModal
+ *       - functionality to show SplitTransaction modal
+ * @param handleShowReduceTransactionModal
+ *       - functionality to show ReduceTransaction modal
+ * @param handleShowRenameTransactionModal
+ *       - functionality to show RenameTransactionModal
+ * @param handleShowAssignCategoryModal
+ *       - functionlaity to show AssignCategoryModal
+ * @param handleDeleteCategory
+ *       - function to handle deleting a category
+ * @param handleRenameCategory
+ *       - function to handle renaming a category
+ * @param handleUpdateAllocations
+ *       - function to handle updating category allocations
  * @returns
  */
 const Category = ({
@@ -16,17 +31,28 @@ const Category = ({
    handleShowReduceTransactionModal,
    handleShowRenameTransactionModal,
    handleShowAssignCategoryModal,
+   handleShowUpdateAllocationsModal,
 }) => {
-   //Global State
+   // Global State
    const { transactions, updateCategory } = useContext(transactionContext);
 
-   //Local State
+   // Local State
    const [recentTransactions, setRecentTransactions] = useState([]);
    const [totalAmountSpent, setTotalAmountSpent] = useState(0);
    const [budgetUsage, setBudgetUsage] = useState(0);
    const [budgetAllocation, setBudgetAllocation] = useState(0);
 
-   //Functionality to allow a Transaction to be assigned to a Category
+   //Functions
+   const handleDeleteCategory = () => {};
+
+   const handleRenameCategory = () => {};
+
+   const handleUpdateAllocations = () => {
+      console.log("Handle Update Allocations Modal Clicked");
+      handleShowUpdateAllocationsModal(category.categoryType);
+   };
+
+   // Functionality to allow a Transaction to be assigned to a Category
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
@@ -64,12 +90,12 @@ const Category = ({
       }
    }, [transactions, category.categoryId]);
 
-   //Set Budget Allocation when Category component initally loaded
+   // Set Budget Allocation when Category component initially loaded
    useEffect(() => {
       setBudgetAllocation(category.budgetAmount.toFixed(0));
    }, [category.categoryId]);
 
-   //Function to determine progress bar for our Category entitiy
+   // Function to determine progress bar for our Category entity
    const getProgressBarColor = () => {
       const percentage = budgetUsage;
       if (percentage <= 50) {
@@ -86,11 +112,18 @@ const Category = ({
    return (
       <div
          ref={drop}
-         className={`bg-gray-200 rounded-lg shadow-md p-4 ${
+         className={`bg-gray-200 rounded-lg shadow-md p-4 relative ${
             isOver ? " bg-indigo-200" : canDrop ? " bg-indigo-100" : ""
          }`}
          style={{ width: "90%" }}
       >
+         <div className="absolute top-4 right-4">
+            <CategoryDropdown
+               handleDeleteCategory={handleDeleteCategory}
+               handleRenameCategory={handleRenameCategory}
+               handleUpdateAllocations={handleUpdateAllocations}
+            />
+         </div>
          <h4 className="text-xl font-bold mb-2 text-gray-800">
             {category.name}
          </h4>
