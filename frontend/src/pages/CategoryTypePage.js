@@ -10,6 +10,7 @@ import SplitTransactionModal from "../components/transaction/SplitTransaction";
 import ReduceTransaction from "../components/transaction/ReduceTransaction";
 import RenameTransaction from "../components/transaction/RenameTransaction";
 import AssignCategoryModal from "../components/transaction/AssignCategoryModal";
+import UpdateAllocationsModal from "../components/category/UpdateAllocationsModal";
 
 /**
  * CategoryType Page for all corresponding Categories
@@ -27,11 +28,14 @@ const CategoryTypePage = ({ categoryType }) => {
    const [filteredCategories, setFilteredCategories] = useState([]);
    const [showSplitTransactionModal, setShowSplitTransactionModal] =
       useState(false);
+   const [selectedCategoryType, setSelectedCategoryType] = useState(false);
    const [showReduceTransactionModal, setShowReduceTransactionModal] =
       useState(false);
    const [showRenameTransactionModal, setShowRenameTransactionModal] =
       useState(false);
    const [showAssignCategoryModal, setShowAssignCategoryModal] =
+      useState(false);
+   const [showUpdateAllocationsModal, setShowUpdateAllocationsModal] =
       useState(false);
    const [currentTransaction, setCurrentTransaction] = useState(null);
    const navigate = useNavigate();
@@ -130,6 +134,17 @@ const CategoryTypePage = ({ categoryType }) => {
       setShowAssignCategoryModal(false);
    };
 
+   //Function to open AdjustCategoryAllocation modal
+   const handleShowUpdateAllocationsModal = (type) => {
+      setSelectedCategoryType(type);
+      setShowUpdateAllocationsModal(true);
+   };
+
+   //Function to close AdjustCategoryAllocation modal
+   const handleCloseUpdateAllocationsModal = () => {
+      setShowUpdateAllocationsModal(false);
+   };
+
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
          <FaArrowLeft
@@ -143,7 +158,7 @@ const CategoryTypePage = ({ categoryType }) => {
                   <span className="text-indigo-600"> {categoryType} </span>
                </h2>
             </div>
-            <div className="flex flex-wrap justify-center items-center w-full space-y-8">
+            <div className="flex flex-wrap justify-center items-center w-full space-y-8 overflow-y-auto scrollbar-hide h-screen pb-20">
                {filteredCategories.length > 0 ? (
                   filteredCategories.map((category) => (
                      <DetailedCategory
@@ -160,6 +175,9 @@ const CategoryTypePage = ({ categoryType }) => {
                         }
                         handleShowAssignCategoryModal={
                            handleShowAssignCategoryModal
+                        }
+                        handleShowUpdateAllocationsModal={
+                           handleShowUpdateAllocationsModal
                         }
                      />
                   ))
@@ -200,6 +218,14 @@ const CategoryTypePage = ({ categoryType }) => {
                <AssignCategoryModal
                   onClose={handleCloseAssignCategoryModal}
                   transaction={currentTransaction}
+               />
+            </div>
+         )}
+         {showUpdateAllocationsModal && (
+            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+               <UpdateAllocationsModal
+                  onClose={handleCloseUpdateAllocationsModal}
+                  categoryType={selectedCategoryType}
                />
             </div>
          )}
