@@ -11,6 +11,8 @@ import {
    FETCH_CATEGORIES_FAIL,
    CREATE_CATEGORY_SUCCESS,
    CREATE_CATEGORY_FAIL,
+   UPDATE_CATEGORY_ALLOCATIONS_FAIL,
+   UPDATE_CATEGORY_ALLOCATIONS_SUCCESS,
 } from "./types";
 import initialState from "./initialState";
 import CategoryContext from "./categoryContext";
@@ -78,6 +80,46 @@ const CategoryState = (props) => {
             type: FETCH_CATEGORIES_FAIL,
             payload: err.response.data.error,
          });
+      }
+   };
+
+   /**
+    * Functionality to update Category budget allocations
+    *
+    * @param updateCategorytDtos
+    *       - DTOs containing modifications to Category allocations
+    */
+   const updateAllocations = async (updateCategorytDtos, categoryTypeId) => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      const config = {
+         headers: {
+            "Content-Type": "application/json",
+         },
+      };
+
+      const requestBody = {
+         updatedCategories: updateCategorytDtos,
+         categoryTypeId,
+      };
+
+      try {
+         const res = await axios.put(`${apiUrl}/category`, requestBody, config);
+
+         dispatch({
+            type: UPDATE_CATEGORY_ALLOCATIONS_SUCCESS,
+            payload: res.data,
+         });
+         setAlert("Category allocations updated", "success");
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: UPDATE_CATEGORY_ALLOCATIONS_FAIL,
+            payload: err.response.data.error,
+         });
+         setAlert(err.response.data.error, "danger");
       }
    };
 
@@ -175,6 +217,7 @@ const CategoryState = (props) => {
             fetchCategories,
             setLoading,
             addCategory,
+            updateAllocations,
          }}
       >
          {props.children}

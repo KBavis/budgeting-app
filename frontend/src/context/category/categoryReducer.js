@@ -7,6 +7,8 @@ import {
    SET_LOADING,
    CREATE_CATEGORY_FAIL,
    CREATE_CATEGORY_SUCCESS,
+   UPDATE_CATEGORY_ALLOCATIONS_FAIL,
+   UPDATE_CATEGORY_ALLOCATIONS_SUCCESS,
 } from "./types";
 
 /**
@@ -27,10 +29,33 @@ export default (state, action) => {
       case CREATE_CATEGORY_FAIL:
       case CREATE_CATEGORIES_FAIL:
       case FETCH_CATEGORIES_FAIL:
+      case UPDATE_CATEGORY_ALLOCATIONS_FAIL:
          return {
             ...state,
             error: action.payload,
             loading: false,
+         };
+      case UPDATE_CATEGORY_ALLOCATIONS_SUCCESS:
+         // Filter out original state categories with the same categoryId as in the action payload
+         const filteredCategories = state.categories.filter(
+            (category) =>
+               !action.payload.some(
+                  (updatedCategory) =>
+                     updatedCategory.categoryId === category.categoryId
+               )
+         );
+
+         // Add the updated categories to the state
+         const updatedStateCategories = [
+            ...filteredCategories,
+            ...action.payload,
+         ];
+
+         return {
+            ...state,
+            categories: updatedStateCategories,
+            loading: false,
+            error: null,
          };
       case CREATE_CATEGORY_SUCCESS:
          //Add New Category
