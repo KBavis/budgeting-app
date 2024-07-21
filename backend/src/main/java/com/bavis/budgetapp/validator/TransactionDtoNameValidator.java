@@ -13,8 +13,6 @@ import lombok.extern.log4j.Log4j2;
  */
 public class TransactionDtoNameValidator implements ConstraintValidator<TransactionDtoValidName, TransactionDto> {
 
-    private final String REGEX = "^[\\p{L}\\p{N}\\p{P}\\p{S}\\s]{1,29}$";
-
     @Override
     public void initialize(TransactionDtoValidName constraintAnnotation) {
         //do nothing
@@ -28,6 +26,7 @@ public class TransactionDtoNameValidator implements ConstraintValidator<Transact
             return false;
         }
 
+        String REGEX = "^[\\p{L}\\p{N}\\p{P}\\p{S}\\s]{1,29}$";
         return name.matches(REGEX);
     }
 }
