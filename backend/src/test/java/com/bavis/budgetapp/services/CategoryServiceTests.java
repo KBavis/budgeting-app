@@ -4,6 +4,7 @@ import com.bavis.budgetapp.dao.CategoryRepository;
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.EditCategoryDto;
 import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
@@ -80,6 +81,8 @@ public class CategoryServiceTests {
     private CategoryDto categoryToAdd;
 
     private Category createdCategory;
+
+    private EditCategoryDto editCategoryDto;
 
     @BeforeEach
     public void setup() {
@@ -172,6 +175,11 @@ public class CategoryServiceTests {
         addCategoryDto = AddCategoryDto.builder()
                 .addedCategory(categoryToAdd)
                 .updatedCategories(List.of(updateCategoryDto1, updateCategoryDto2, updateCategoryDto3))
+                .build();
+
+        editCategoryDto = EditCategoryDto.builder()
+                .updatedCategories(List.of(updateCategoryDto1, updateCategoryDto2, updateCategoryDto3))
+                .categoryTypeId(needsCategoryType.getCategoryTypeId())
                 .build();
     }
 
@@ -310,6 +318,108 @@ public class CategoryServiceTests {
 
         //Act
         assertThrows(RuntimeException.class, () -> categoryService.create(addCategoryDto));
+    }
+
+    @Test
+    void testUpdateCategoryAllocations_NullDto_ThrowsException() {
+        //Act & Assert
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+            categoryService.updateCategoryAllocations(null);
+        });
+        assertEquals("Invalid EditCategoryDto; ensures updates are not null", runtimeException.getMessage());
+    }
+
+    @Test
+    void testUpdateCategoryAllocations_ExpectedResult_Success() {
+        //Arrange
+        needsCategoryType.setCategories(List.of(category1, category2, category3));
+
+        //Mock
+        when(categoryTypeService.read(needsCategoryType.getCategoryTypeId())).thenReturn(needsCategoryType);
+        when(categoryRepository.findByCategoryId(updateCategoryDto1.getCategoryId())).thenReturn(category1);
+        when(categoryRepository.findByCategoryId(updateCategoryDto2.getCategoryId())).thenReturn(category2);
+        when(categoryRepository.findByCategoryId(updateCategoryDto3.getCategoryId())).thenReturn(category3);
+
+        //Act
+        List<Category> categories = categoryService.updateCategoryAllocations(editCategoryDto);
+
+        //Assert
+        assertNotNull(categories);
+        assertEquals(3, categories.size());
+        assertCategoriesUpdatedProperly(categories);
+    }
+
+    @Test
+    void testUpdateCategoryAllocations_CategoriesUpdated_Success() {
+        //Arrange
+        needsCategoryType.setCategories(List.of(category1, category2, category3));
+
+        //Mock
+        when(categoryTypeService.read(needsCategoryType.getCategoryTypeId())).thenReturn(needsCategoryType);
+        when(categoryRepository.findByCategoryId(updateCategoryDto1.getCategoryId())).thenReturn(category1);
+        when(categoryRepository.findByCategoryId(updateCategoryDto2.getCategoryId())).thenReturn(category2);
+        when(categoryRepository.findByCategoryId(updateCategoryDto3.getCategoryId())).thenReturn(category3);
+
+        //Act
+        categoryService.updateCategoryAllocations(editCategoryDto);
+
+        //Assert
+        assertEquals(updateCategoryDto1.getBudgetAllocationPercentage(), category1.getBudgetAllocationPercentage());
+        assertEquals(updateCategoryDto2.getBudgetAllocationPercentage(), category2.getBudgetAllocationPercentage());
+        assertEquals(updateCategoryDto3.getBudgetAllocationPercentage(), category3.getBudgetAllocationPercentage());
+
+        double needsCategoryTypeAllocationAmount = needsCategoryType.getBudgetAmount();
+        assertEquals( needsCategoryTypeAllocationAmount * updateCategoryDto1.getBudgetAllocationPercentage(), category1.getBudgetAmount());
+        assertEquals(needsCategoryTypeAllocationAmount * updateCategoryDto2.getBudgetAllocationPercentage(), category2.getBudgetAmount());
+        assertEquals( needsCategoryTypeAllocationAmount * updateCategoryDto3.getBudgetAllocationPercentage(), category3.getBudgetAmount());
+    }
+
+    @Test
+    void testUpdateCategoryAllocations_ExceedTotalBudget_ThrowsException() {
+        //Arrange
+        String expectedErrorMessage = "Category allocations, " + 7260.0 + ", exceed total budgeted amount for CategoryType " + needsCategoryType.getCategoryTypeId() + ": " + needsCategoryType.getBudgetAmount();
+        Category existingNeedsCategory = Category.builder()
+                .categoryId(200L)
+                .budgetAmount(6000)
+                .budgetAllocationPercentage(.8)
+                .build();
+        needsCategoryType.setCategories(List.of(category1, category2, category3, existingNeedsCategory));
+
+        //Mock
+        when(categoryTypeService.read(needsCategoryType.getCategoryTypeId())).thenReturn(needsCategoryType);
+        when(categoryRepository.findByCategoryId(updateCategoryDto1.getCategoryId())).thenReturn(category1);
+        when(categoryRepository.findByCategoryId(updateCategoryDto2.getCategoryId())).thenReturn(category2);
+        when(categoryRepository.findByCategoryId(updateCategoryDto3.getCategoryId())).thenReturn(category3);
+
+        //Act & Assert
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+            categoryService.updateCategoryAllocations(editCategoryDto);
+        });
+        assertEquals(expectedErrorMessage, runtimeException.getMessage());
+    }
+
+    @Test
+    void testUpdateCategoryAllocations_CategoryTypeSavedAmount_Success() {
+        //Arrange
+        needsCategoryType.setCategories(List.of(category1, category2, category3));
+
+        //Mock
+        when(categoryTypeService.read(needsCategoryType.getCategoryTypeId())).thenReturn(needsCategoryType);
+        when(categoryRepository.findByCategoryId(updateCategoryDto1.getCategoryId())).thenReturn(category1);
+        when(categoryRepository.findByCategoryId(updateCategoryDto2.getCategoryId())).thenReturn(category2);
+        when(categoryRepository.findByCategoryId(updateCategoryDto3.getCategoryId())).thenReturn(category3);
+
+        //Act
+        categoryService.updateCategoryAllocations(editCategoryDto);
+
+        //Assert
+        double totalBudgetAmount =
+                updateCategoryDto1.getBudgetAllocationPercentage() * needsCategoryType.getBudgetAmount() +
+                        updateCategoryDto2.getBudgetAllocationPercentage() * needsCategoryType.getBudgetAmount() +
+                            updateCategoryDto3.getBudgetAllocationPercentage() * needsCategoryType.getBudgetAmount();
+
+        double expectedSavedAmount = needsCategoryType.getBudgetAmount() - totalBudgetAmount;
+        assertEquals(expectedSavedAmount, needsCategoryType.getSavedAmount());
     }
 
 
