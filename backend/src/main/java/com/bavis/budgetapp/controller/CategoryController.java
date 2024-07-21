@@ -94,17 +94,15 @@ public class CategoryController {
 	/**
 	 * Edit an existing Category
 	 *
-	 * @param categoryId
-	 * 			- CategoryID pertaining to Category to be updated
 	 * @param editCategoryDto
-	 * 			- DTO containing updated Category and budget allocation updates to existing categories
+	 * 			- DTO containing updated Category budget allocations
 	 * @return
 	 * 			- Updated Categories
 	 */
-	@PutMapping("/{categoryId}")
-	public List<Category> update(@PathVariable(value = "categoryId") Long categoryId, @RequestBody EditCategoryDto editCategoryDto) {
-		log.info("Received Category update request for id [{}] and EditCategoryDto [{}]", categoryId, editCategoryDto);
-		return _categoryService.update(editCategoryDto, categoryId);
+	@PutMapping
+	public List<Category> update(@RequestBody EditCategoryDto editCategoryDto) {
+		log.info("Received Category updates request for EditCategoryDto [{}]", editCategoryDto);
+		return _categoryService.updateCategoryAllocations(editCategoryDto);
 	}
 
 	/**

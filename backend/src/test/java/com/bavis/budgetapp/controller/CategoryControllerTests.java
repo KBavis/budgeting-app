@@ -147,10 +147,10 @@ public class CategoryControllerTests {
         EditCategoryDto editCategoryDto = new EditCategoryDto();
 
         //Mock
-        when(categoryService.update(editCategoryDto, 1L)).thenReturn(expectedCategoryList);
+        when(categoryService.updateCategoryAllocations(editCategoryDto)).thenReturn(expectedCategoryList);
 
         //Act
-        ResultActions resultActions = mockMvc.perform(put("/category/" + 1L)
+        ResultActions resultActions = mockMvc.perform(put("/category")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(editCategoryDto)));
 
@@ -178,10 +178,10 @@ public class CategoryControllerTests {
         EditCategoryDto editCategoryDto = new EditCategoryDto();
 
         //Mock
-        when(categoryService.update(editCategoryDto, 1L)).thenThrow(new RuntimeException("Invalid EditCategoryDto; ensures updates are not null"));
+        when(categoryService.updateCategoryAllocations(editCategoryDto)).thenThrow(new RuntimeException("Invalid EditCategoryDto; ensures updates are not null"));
 
         //Act
-        ResultActions resultActions = mockMvc.perform(put("/category/" + 1L)
+        ResultActions resultActions = mockMvc.perform(put("/category")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(editCategoryDto)));
 
