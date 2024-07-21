@@ -3,6 +3,7 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.EditCategoryDto;
+import com.bavis.budgetapp.dto.RenameCategoryDto;
 import com.bavis.budgetapp.validator.group.BulkCategoryDtoValidationGroup;
 import com.bavis.budgetapp.validator.group.CategoryDtoValidationGroup;
 import jakarta.validation.Valid;
@@ -107,7 +108,7 @@ public class CategoryController {
 	 */
 	@PutMapping
 	public List<Category> updateCategoryAllocations(@RequestBody EditCategoryDto editCategoryDto) {
-		log.info("Received Category updates request for EditCategoryDto [{}]", editCategoryDto);
+		log.info("Received update Category allocations request via EditCategoryDto [{}]", editCategoryDto);
 		return _categoryService.updateCategoryAllocations(editCategoryDto);
 	}
 
@@ -121,5 +122,18 @@ public class CategoryController {
 	public void delete(@PathVariable(value = "categoryId") Long categoryId) {
 		log.info("Received Category delete request for id [{}]", categoryId);
 		_categoryService.delete(categoryId);
+	}
+
+
+	/**
+	 * Endpoint to rename a specific Category
+	 *
+	 * @param renameCategoryDto
+	 * 			- DTO containing updated Category name and CategoryId
+	 */
+	@PutMapping("/rename")
+	public Category renameCategory(@RequestBody @Valid RenameCategoryDto renameCategoryDto) {
+		log.info("Received rename Category request via RenameCategoryDto [{}]", renameCategoryDto);
+		return _categoryService.renameCategory(renameCategoryDto);
 	}
 }
