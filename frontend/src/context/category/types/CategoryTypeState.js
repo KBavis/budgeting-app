@@ -139,7 +139,6 @@ const CategoryTypeState = (props) => {
          const res = await axios.get(
             `${apiUrl}/category/type/${categoryTypeId}`
          );
-         console.log(res.data);
          dispatch({ type: FETCH_CATEGORY_TYPE_SUCCESS, payload: res.data });
       } catch (err) {
          console.error(err);
