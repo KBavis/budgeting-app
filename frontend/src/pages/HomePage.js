@@ -17,6 +17,7 @@ import RenameTransaction from "../components/transaction/RenameTransaction";
 import AlertContext from "../context/alert/alertContext";
 import AssignCategoryModal from "../components/transaction/AssignCategoryModal";
 import AddCategory from "../components/category/AddCategory";
+import UpdateAllocationsModal from "../components/category/UpdateAllocationsModal";
 
 const HomePage = () => {
    //Local State
@@ -32,8 +33,11 @@ const HomePage = () => {
       useState(false);
    const [showAssignCategoryModal, setShowAssignCategoryModal] =
       useState(false);
+   const [showUpdateAllocationsModal, setShowUpdateAllocationsModal] =
+      useState(false);
    const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
    const [transaction, setTransaction] = useState(null);
+   const [categoryType, setCategoryType] = useState(false);
    const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown visibility
 
    const initalFetchRef = useRef(false);
@@ -85,6 +89,18 @@ const HomePage = () => {
    const handleShowSplitTransactionModal = (splitTransaction) => {
       setTransaction(splitTransaction);
       setShowSplitTransactionModal(true);
+   };
+
+   //Function to open AdjustCategoryAllocation modal
+   const handleShowUpdateAllocationsModal = (categoryType) => {
+      setCategoryType(categoryType);
+      setShowUpdateAllocationsModal(true);
+   };
+
+   //Function to close AdjustCategoryAllocation modal
+   const handleCloseUpdateAllocationsModal = () => {
+      setCategoryType(null);
+      setShowUpdateAllocationsModal(false);
    };
 
    //Function to open AssignCategory modal
@@ -300,6 +316,9 @@ const HomePage = () => {
                         handleShowAssignCategoryModal={
                            handleShowAssignCategoryModal
                         }
+                        handleShowUpdateAllocationsModal={
+                           handleShowUpdateAllocationsModal
+                        }
                      />
                   ))
                ) : (
@@ -349,6 +368,14 @@ const HomePage = () => {
          {showAddCategoryModal && (
             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
                <AddCategory onClose={handleCloseAddCategoryModal} />
+            </div>
+         )}
+         {showUpdateAllocationsModal && (
+            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+               <UpdateAllocationsModal
+                  onClose={handleCloseUpdateAllocationsModal}
+                  categoryType={categoryType}
+               />
             </div>
          )}
       </div>

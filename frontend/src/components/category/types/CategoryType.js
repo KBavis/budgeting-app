@@ -3,7 +3,7 @@ import Category from "../Category";
 import transactionContext from "../../../context/transaction/transactionContext";
 import categoryContext from "../../../context/category/categoryContext";
 import { useNavigate } from "react-router-dom";
-import { FaExternalLinkAlt } from "react-icons/fa"; // Importing icon
+import { FaExternalLinkAlt } from "react-icons/fa";
 
 const CategoryType = ({
    categoryType,
@@ -11,6 +11,7 @@ const CategoryType = ({
    handleShowReduceTransactionModal,
    handleShowRenameTransactionModal,
    handleShowAssignCategoryModal,
+   handleShowUpdateAllocationsModal,
 }) => {
    const { transactions } = useContext(transactionContext);
    const { categories } = useContext(categoryContext);
@@ -131,6 +132,9 @@ const CategoryType = ({
                      }
                      handleShowAssignCategoryModal={
                         handleShowAssignCategoryModal
+                     }
+                     handleShowUpdateAllocationsModal={
+                        handleShowUpdateAllocationsModal
                      }
                   />
                ))}
