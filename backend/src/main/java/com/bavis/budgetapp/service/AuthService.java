@@ -21,7 +21,7 @@ public interface AuthService {
      * @param authRequestDto
      *          - DTO to house needed information for registering a user
      * @return
-     *          - registered user & newly created JWT Token
+     *          - registered user and newly created JWT Token
      * @throws UserServiceException
      *              - thrown in the case that our User Service experiences an error
      * @throws PlaidServiceException
@@ -37,7 +37,7 @@ public interface AuthService {
      * @param authRequestDto
      *          - DTO to house needed information for authenticating a user
      * @return
-     *          - authenticated user & newly created JWT token
+     *          - authenticated user and newly created JWT token
      * @throws AuthenticationException
      *          - thrown in the case that our user fails authentication
      */

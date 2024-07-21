@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 /**
- * Ensures that AssignCategoryRequestDto Category ID & Transaction ID correspond to Authenticated User making request
+ * Ensures that AssignCategoryRequestDto Category ID and Transaction ID correspond to Authenticated User making request
  */
 @Component
 @Log4j2

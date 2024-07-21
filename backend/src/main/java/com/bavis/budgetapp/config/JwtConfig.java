@@ -37,7 +37,7 @@ public class JwtConfig {
     }
 
     /**
-     * Used to inject Algorithm into our JwtAuthFilter & JwtService
+     * Used to inject Algorithm into our JwtAuthFilter and JwtService
      *
      * @return
      *      - Algorithm used to generate and validate our JWT Token

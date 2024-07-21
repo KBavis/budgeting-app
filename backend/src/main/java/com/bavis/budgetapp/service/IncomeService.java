@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface IncomeService {
     /**
-     * Functionality to create & persist an Income entity
+     * Functionality to create and persist an Income entity
      *
      * @param income
      *          - IncomeDto utilized to persist Income entity

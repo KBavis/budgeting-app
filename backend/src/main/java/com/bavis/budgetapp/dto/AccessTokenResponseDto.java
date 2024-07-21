@@ -7,9 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author Kellen Bavis
- *
  * DTO to encapsulate needed information returned by Plaid API when attempting to exchange public token for access token
+ *
+ * @author Kellen Bavis
  */
 @Data
 @Builder

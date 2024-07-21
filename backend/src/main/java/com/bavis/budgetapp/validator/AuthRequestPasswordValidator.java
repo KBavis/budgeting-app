@@ -12,7 +12,7 @@ import lombok.extern.log4j.Log4j2;
  * Validation class for ensuring AuthRequest contains a valid password
  *      - At least one digit (0 - 9)
  *      - At least one alphabetical letter (a-zA-Z)
- *      - At least one special character (@#$%^&+=!)
+ *      - At least one special character
  *      - No white space characters
  *      - Minimum length of 10 characters
  */

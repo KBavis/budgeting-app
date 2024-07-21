@@ -49,7 +49,7 @@ public interface CategoryTypeService {
 	 * @param id
 	 * 			- ID corresponding to CategoryType to be updated
 	 * @return
-	 * 			- Updated & saved CategoryType entity
+	 * 			- Updated and saved CategoryType entity
 	 */
 	CategoryType update(UpdateCategoryTypeDto updateCategoryTypeDto, Long id);
 

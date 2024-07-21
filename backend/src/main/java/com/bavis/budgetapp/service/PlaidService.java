@@ -19,7 +19,7 @@ public interface PlaidService {
      * @param userId
      *          - User ID corresponding to User to generate Link Token for
      * @return
-     *          - Generated Link Token & Expiration
+     *          - Generated Link Token and Expiration
      * @throws PlaidServiceException
      *          - Thrown in the case that an error occurs while generating our Link Token
      */

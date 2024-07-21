@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 public interface JwtService {
     /**
-     * Functionality to validate that a JWT token is valid (non-expired & corresponds to requesting User)
+     * Functionality to validate that a JWT token is valid (non-expired and corresponds to requesting User)
      *
      * @param decodedJWT
      *          - Decoded JWT Token corresponding to HTTP Request

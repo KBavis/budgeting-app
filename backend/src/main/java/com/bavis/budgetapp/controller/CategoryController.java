@@ -85,6 +85,12 @@ public class CategoryController {
 		}
 	}
 
+	/**
+	 * Fetch all available Categories for authenticated user
+	 *
+	 * @return
+	 * 		- all available Categories
+	 */
 	@GetMapping
 	public List<Category> readAll() {
 		log.info("Received request to fetch all Categories for current authenticated user");
@@ -100,7 +106,7 @@ public class CategoryController {
 	 * 			- Updated Categories
 	 */
 	@PutMapping
-	public List<Category> update(@RequestBody EditCategoryDto editCategoryDto) {
+	public List<Category> updateCategoryAllocations(@RequestBody EditCategoryDto editCategoryDto) {
 		log.info("Received Category updates request for EditCategoryDto [{}]", editCategoryDto);
 		return _categoryService.updateCategoryAllocations(editCategoryDto);
 	}
