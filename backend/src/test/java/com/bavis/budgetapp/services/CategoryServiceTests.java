@@ -5,6 +5,7 @@ import com.bavis.budgetapp.dto.AddCategoryDto;
 import com.bavis.budgetapp.dto.BulkCategoryDto;
 import com.bavis.budgetapp.dto.CategoryDto;
 import com.bavis.budgetapp.dto.EditCategoryDto;
+import com.bavis.budgetapp.dto.RenameCategoryDto;
 import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
@@ -420,6 +421,42 @@ public class CategoryServiceTests {
 
         double expectedSavedAmount = needsCategoryType.getBudgetAmount() - totalBudgetAmount;
         assertEquals(expectedSavedAmount, needsCategoryType.getSavedAmount());
+    }
+
+    @Test
+    void testRenameCategory_Successful() {
+        //Arrange
+        RenameCategoryDto renameCategoryDto = RenameCategoryDto.builder()
+                .categoryName("Valid Name")
+                .categoryId(category1.getCategoryId())
+                .build();
+
+        //Mock
+        when(categoryRepository.findByCategoryId(renameCategoryDto.getCategoryId())).thenReturn(category1);
+
+        //Act
+        Category updatedCategory = categoryService.renameCategory(renameCategoryDto);
+
+        //Assert
+        assertEquals(renameCategoryDto.getCategoryName(), updatedCategory.getName());
+    }
+
+    @Test
+    void testRenameCategory_InvalidCategoryId_Fail() {
+        //Arrange
+        RenameCategoryDto renameCategoryDto = RenameCategoryDto.builder()
+                .categoryName("Valid Name")
+                .categoryId(11L)
+                .build();
+
+        //Mock
+        when(categoryRepository.findByCategoryId(renameCategoryDto.getCategoryId())).thenThrow(new RuntimeException("Invalid category id: " + renameCategoryDto.getCategoryId()));
+
+        //Act & Assert
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+            categoryService.renameCategory(renameCategoryDto);
+        });
+        assertEquals("Invalid category id: " + renameCategoryDto.getCategoryId(), runtimeException.getMessage());
     }
 
 
