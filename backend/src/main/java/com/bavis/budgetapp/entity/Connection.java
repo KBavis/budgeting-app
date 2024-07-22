@@ -46,9 +46,9 @@ public class Connection {
 	@Column(nullable = false)
 	private LocalDateTime lastSyncTime;
 
-	@Column(nullable = true)
+	@Column
 	private String previousCursor; //stores Plaid API's cursor value for Transaction Sync
 
-	@Column(nullable = true)
+	@Column
 	private String originalCursor;
 }
