@@ -1,10 +1,9 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.mapper.UserMapper;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -12,6 +11,9 @@ import org.springframework.stereotype.Service;
 import com.bavis.budgetapp.dao.UserRepository;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.UserService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Kellen Bavis
@@ -77,4 +79,16 @@ public class UserServiceImpl implements UserService{
 		String username = authentication.getName().trim();
         return readByUsername(username);
 	}
+
+	@Override
+	public void removeCategory(Category category) {
+		log.info("Removing the following Category corresponding to ID {}", category.getCategoryId());
+		User authUser = getCurrentAuthUser();
+		List<Category> userCategories = authUser.getCategories() != null ? new ArrayList<>(authUser.getCategories()) : new ArrayList<>();
+
+        userCategories.remove(category);
+        authUser.setCategories(userCategories);
+        List<Long> categoryIds = userCategories.stream().map(Category::getCategoryId).toList();
+        log.info("Updated User {} to contain only the following Category IDs: [{}]", authUser.getUsername(), categoryIds);
+    }
 }
