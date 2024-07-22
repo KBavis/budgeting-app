@@ -180,6 +180,11 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    public List<Transaction> fetchCategoryTransactions(long categoryId) {
+        return _transactionRepository.findByCategoryCategoryId(categoryId);
+    }
+
+    @Override
     public Transaction reduceTransactionAmount(String transactionId, TransactionDto transactionDto) throws  RuntimeException {
         log.info("Attempting to reduce the Transaction amount to {} for the following Transaction ID: {}", transactionDto.getUpdatedAmount(), transactionId);
 

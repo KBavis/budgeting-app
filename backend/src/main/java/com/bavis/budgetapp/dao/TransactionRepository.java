@@ -55,4 +55,15 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
             "AND (t.date IS NOT NULL AND EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) " +
             "AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date)))")
     List<Transaction> findByCategoryIdsAndCurrentMonth(@Param("categoryIds") List<Long> categoryIds, @Param("currentDate") LocalDate currentDate);
+
+
+    /**
+     * Retrieve all Transactions for a given Category ID
+     *
+     * @param categoryId
+     *          - Category ID to fetch Transactions for
+     * @return
+     *          - List of Transaction entities corresponding to Category ID
+     */
+    List<Transaction> findByCategoryCategoryId(long categoryId);
 }

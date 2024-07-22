@@ -34,6 +34,17 @@ public interface TransactionService {
      */
     List<Transaction> readAll();
 
+
+    /**
+     * Functionality for fetching all relevant Transaction entities corresponding to a particular Category
+     *
+     * @param categoryId
+     *          - CategoryId pertaining to Category to fetch Transactions for
+     * @return
+     *          - all Transactions corresponding to passed in Category ID
+     */
+    List<Transaction> fetchCategoryTransactions(long categoryId);
+
     /**
      * Functionality to create a Transaction entity independent of any Account entity.
      * This is utilized to allow users to create mock Transactions for accounts they are unable to add via Plaid API.
