@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.dao.UserRepository;
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.exception.UserServiceException;
 import com.bavis.budgetapp.mapper.UserMapper;
 import com.bavis.budgetapp.entity.User;
@@ -16,6 +17,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -67,6 +70,44 @@ public class UserServiceTests {
 
 
         verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    @WithMockUser("testuser")
+    void testRemoveCategory_Successful() {
+        //Arrange
+        Category category = Category.builder()
+                .categoryId(1L)
+                .build();
+        user.setCategories(List.of(category));
+
+        //Mock
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+
+        //Act
+        userService.removeCategory(category);
+
+        //Assert
+        assertEquals(Collections.emptyList(), user.getCategories());
+    }
+
+    @Test
+    @WithMockUser("testuser")
+    void testRemoveCategory_NullUserCategories_Successful() {
+        //Arrange
+        Category category = Category.builder()
+                .categoryId(1L)
+                .build();
+        user.setCategories(null);
+
+        //Mock
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+
+        //Act
+        userService.removeCategory(category);
+
+        //Assert
+        assertEquals(Collections.emptyList(), user.getCategories());
     }
 
 
