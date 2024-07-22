@@ -10,6 +10,7 @@ import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionMapper _transactionMapper;
 
+    @Lazy
     private final CategoryServiceImpl categoryService;
 
     @Override

@@ -13,6 +13,7 @@ import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.CategoryRepository;
@@ -36,16 +37,20 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService{
 
 	@Autowired 
-	CategoryRepository categoryRepository;
+	private CategoryRepository categoryRepository;
 
 	@Autowired
-	CategoryTypeService categoryTypeService;
+	private CategoryTypeService categoryTypeService;
 
 	@Autowired
-	UserService userService;
+	private UserService userService;
 
 	@Autowired
-	CategoryMapper categoryMapper;
+	@Lazy
+	private TransactionServiceImpl transactionService;
+
+	@Autowired
+	private CategoryMapper categoryMapper;
 
 
 
@@ -174,7 +179,6 @@ public class CategoryServiceImpl implements CategoryService{
 		return category;
 	}
 
-	//todo: finish this logic and add logging
 	@Override
 	public void delete(Long categoryId) {
 		log.info("Deleting Category with id [{}]", categoryId);
