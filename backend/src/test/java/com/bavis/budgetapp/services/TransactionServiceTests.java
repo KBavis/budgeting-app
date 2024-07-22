@@ -12,10 +12,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -169,6 +171,49 @@ public class TransactionServiceTests {
                 .next_cursor(nextCursor)
                 .has_more(false)
                 .build();
+    }
+
+    @Test
+    void testFetchCategoryTransactions_NotNull_Success() {
+        //Arrange
+        Transaction transaction = Transaction.builder()
+                        .transactionId("tx-id")
+                        .build();
+
+        //Mock
+        when(transactionRepository.findByCategoryCategoryId(1L)).thenReturn(List.of(transaction));
+
+        //Act
+        List<Transaction> actualTransactions = transactionService.fetchCategoryTransactions(1L);
+
+        //Assert
+        assertNotNull(actualTransactions);
+        assertTrue(actualTransactions.contains(transaction));
+        assertEquals(1, actualTransactions.size());
+    }
+
+    @Test
+    void testFetchCategoryTransactions_Null_Success() {
+        //Mock
+        when(transactionRepository.findByCategoryCategoryId(1L)).thenReturn(Collections.emptyList());
+
+        //Act
+        List<Transaction> actualTransactions = transactionService.fetchCategoryTransactions(1L);
+
+        //Assert
+        assertEquals(Collections.emptyList(), actualTransactions);
+    }
+
+    @Test
+    void testFetchCategoryTransactions_DataAccessException_Fail() {
+        //Mock
+        when(transactionRepository.findByCategoryCategoryId(1L)).thenThrow(new DataRetrievalFailureException("Failed to retrieve"));
+
+        //Act & Assert
+        DataRetrievalFailureException exception = assertThrows(DataRetrievalFailureException.class, () -> {
+            transactionService.fetchCategoryTransactions(1L);
+        });
+        assertEquals("Failed to retrieve", exception.getMessage());
     }
 
 
