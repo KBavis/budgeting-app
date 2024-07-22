@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.service;
 
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.User;
 
 /**
@@ -19,4 +20,6 @@ public interface UserService {
 	boolean existsByUsername(String username);
 
 	User getCurrentAuthUser();
+
+	void removeCategory(Category category);
 }
