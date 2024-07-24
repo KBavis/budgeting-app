@@ -3,6 +3,8 @@ import { useDrop } from "react-dnd";
 import Transaction from "../transaction/Transaction";
 import transactionContext from "../../context/transaction/transactionContext";
 import CategoryDropdown from "../layout/CategoryDropdown";
+import categoryContext from "../../context/category/categoryContext";
+import categoryTypeContext from "../../context/category/types/categoryTypeContext";
 
 /**
  * Component to store all relevant information for Category entity on Home Page
@@ -34,7 +36,10 @@ const Category = ({
    handleShowUpdateAllocationsModal,
 }) => {
    // Global State
-   const { transactions, updateCategory } = useContext(transactionContext);
+   const { transactions, updateCategory, removeCategory } =
+      useContext(transactionContext);
+   const { deleteCategory } = useContext(categoryContext);
+   const { fetchCategoryType } = useContext(categoryTypeContext);
 
    // Local State
    const [recentTransactions, setRecentTransactions] = useState([]);
@@ -43,7 +48,11 @@ const Category = ({
    const [budgetAllocation, setBudgetAllocation] = useState(0);
 
    //Functions
-   const handleDeleteCategory = () => {};
+   const handleDeleteCategory = async () => {
+      removeCategory(category.categoryId); //update correlated Transactions
+      await deleteCategory(category.categoryId); //remove from backend
+      await fetchCategoryType(category.categoryType.categoryTypeId); //fetch updated Category type
+   };
 
    const handleRenameCategory = () => {};
 
