@@ -9,10 +9,12 @@ import com.bavis.budgetapp.dto.RenameCategoryDto;
 import com.bavis.budgetapp.dto.UpdateCategoryDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
+import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.service.impl.CategoryServiceImpl;
 import com.bavis.budgetapp.service.impl.CategoryTypeServiceImpl;
+import com.bavis.budgetapp.service.impl.TransactionServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +54,9 @@ public class CategoryServiceTests {
 
     @Mock
     CategoryMapper categoryMapper;
+
+    @Mock
+    TransactionServiceImpl transactionService;
 
     @Captor
     private ArgumentCaptor<List<Category>> categoryListCaptor;
@@ -398,6 +406,45 @@ public class CategoryServiceTests {
         });
         assertEquals(expectedErrorMessage, runtimeException.getMessage());
     }
+
+    @Test
+    void testDeleteCategory_Successful() {
+        Category category = Category.builder()
+                .categoryId(4L)
+                .name("New Category")
+                .budgetAmount(540)
+                .budgetAllocationPercentage(.3)
+                .build();
+
+        Transaction transaction = new Transaction();
+        transaction.setTransactionId("id");
+        List<Transaction> transactions = List.of(transaction);
+
+        doNothing().when(transactionService).removeAssignedCategory(any(String.class));
+        doNothing().when(userService).removeCategory(category);
+        doNothing().when(categoryRepository).deleteById(category.getCategoryId());
+        when(transactionService.fetchCategoryTransactions(category.getCategoryId())).thenReturn(transactions);
+        when(categoryRepository.findByCategoryId(category.getCategoryId())).thenReturn(category);
+
+        categoryService.delete(category.getCategoryId());
+
+        verify(transactionService, times(1)).fetchCategoryTransactions(category.getCategoryId());
+        verify(transactionService, times(1)).removeAssignedCategory(transaction.getTransactionId());
+        verify(categoryTypeService, times(1)).removeCategory(category);
+        verify(categoryRepository, times(1)).deleteById(category.getCategoryId());
+        verify(categoryRepository, times(1)).findByCategoryId(category.getCategoryId());
+    }
+
+    @Test
+    void testDeleteCategory_CategoryNotFound_ThrowsException() {
+        long categoryId = 1L;
+        String expectedErrorMsg = "Invalid category id: " + categoryId;
+        when(categoryRepository.findByCategoryId(any(Long.class))).thenThrow(new RuntimeException(expectedErrorMsg));
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> categoryService.delete(categoryId));
+        assertEquals(expectedErrorMsg, runtimeException.getMessage());
+    }
+
+
 
     @Test
     void testUpdateCategoryAllocations_CategoryTypeSavedAmount_Success() {
