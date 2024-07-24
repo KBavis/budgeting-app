@@ -68,6 +68,11 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 			categoriesToUpdate.remove(category);
 			categoryType.setCategories(categoriesToUpdate);
 
+			//Calculate new savedAmount value
+			double totalCategoryAllocations = categoriesToUpdate.stream().mapToDouble(Category::getBudgetAmount).sum();
+			log.info("CategoryType {} updated saved amount after removal of Category {} : ${}", categoryType.getCategoryTypeId(), category.getCategoryId(), categoryType.getBudgetAmount() - totalCategoryAllocations);
+			categoryType.setSavedAmount(categoryType.getBudgetAmount() - totalCategoryAllocations);
+
 			List<Long> categoryIds = categoriesToUpdate.stream().map(Category::getCategoryId).toList();
 			log.info("Updated list of Category Ids corresponding to CategoryType {}: [{}]", categoryType.getCategoryTypeId(), categoryIds);
 			repository.save(categoryType);
