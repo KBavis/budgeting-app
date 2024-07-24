@@ -4,6 +4,7 @@ package com.bavis.budgetapp.services;
 import com.bavis.budgetapp.dao.CategoryTypeRepository;
 import com.bavis.budgetapp.dto.CategoryTypeDto;
 import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.exception.UserServiceException;
@@ -15,13 +16,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,11 +65,15 @@ public class CategoryTypeServiceTests {
     private CategoryType categoryTypeWants;
     private CategoryType categoryTypeInvestments;
 
+    private ArgumentCaptor<CategoryType> argumentCaptor;
+
     @BeforeEach
     public void setup() {
         user = User.builder()
                 .userId(10L)
                 .build();
+
+        argumentCaptor = ArgumentCaptor.forClass(CategoryType.class);
 
         //Arrange DTOs
        categoryTypeDtoNeeds = CategoryTypeDto.builder()
@@ -102,6 +110,60 @@ public class CategoryTypeServiceTests {
                 .budgetAllocationPercentage(.2)
                 .build();
 
+    }
+
+    @Test
+    void testRemoveCategory_NullCategory_NoUpdates() {
+        categoryTypeService.removeCategory(null);
+        Mockito.verify(repository, times(0)).save(any(CategoryType.class));
+    }
+
+    @Test
+    void testRemoveCategory_NullCategoryType_NoUpdates() {
+        Category categoryWithNullCategoryType = Category.builder()
+                .categoryType(null)
+                .build();
+        categoryTypeService.removeCategory(categoryWithNullCategoryType);
+        Mockito.verify(repository, times(0)).save(any(CategoryType.class));
+    }
+
+    @Test
+    void testRemoveCategory_UpdatesCategory_Success() {
+        Category category = Category.builder()
+                .categoryId(1L)
+                .build();
+
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(10L)
+                .categories(List.of(category))
+                .build();
+
+        category.setCategoryType(categoryType);
+
+        categoryTypeService.removeCategory(category);
+
+        Mockito.verify(repository, times(1)).save(argumentCaptor.capture());
+        CategoryType actualCategoryType = argumentCaptor.getValue();
+        assertFalse(actualCategoryType.getCategories().contains(category));
+    }
+
+    @Test
+    void testRemoveCategory_NullCategories_Success()  {
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(10L)
+                .categories(null)
+                .build();
+
+        Category category = Category.builder()
+                .categoryId(1L)
+                .categoryType(categoryType)
+                .build();
+
+        categoryTypeService.removeCategory(category);
+
+        Mockito.verify(repository, times(1)).save(argumentCaptor.capture());
+        CategoryType actualCategoryType = argumentCaptor.getValue();
+        assertEquals(Collections.emptyList(), actualCategoryType.getCategories());
     }
 
     @Test
