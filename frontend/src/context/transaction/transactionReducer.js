@@ -101,10 +101,12 @@ export default (state, action) => {
             transactions: [transactionToUpdate, ...remainingTransactions],
          };
       case REMOVE_CATEGORY:
+         //Find Transactions with this Category in state and update to be Null
          const removedCategoryTransactions = state.transactions
-            ? state.transactions.filter(
-                 (transaction) =>
-                    transaction.category?.categoryId !== action.payload
+            ? state.transactions.map((transaction) =>
+                 transaction.category?.categoryId === action.payload
+                    ? { ...transaction, category: null }
+                    : transaction
               )
             : [];
 
