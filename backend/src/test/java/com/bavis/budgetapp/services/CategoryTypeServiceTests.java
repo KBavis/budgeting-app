@@ -119,6 +119,40 @@ public class CategoryTypeServiceTests {
     }
 
     @Test
+    void testRemoveCategory_SavedAmount_Updated() {
+        //Arrange
+        Category category1 = Category.builder()
+                .categoryId(1L)
+                .budgetAmount(100)
+                .build();
+        Category category2 = Category.builder()
+                .categoryId(2L)
+                .budgetAmount(200)
+                .build();
+        Category category3 = Category.builder()
+                .categoryId(3L)
+                .budgetAmount(300)
+                .build();
+        List<Category> categories = List.of(category1, category2, category3);
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(10L)
+                .categories(categories)
+                .budgetAmount(600)
+                .savedAmount(0)
+                .build();
+        category1.setCategoryType(categoryType);
+        double expectedSavedAmount = categoryType.getBudgetAmount() - (category2.getBudgetAmount() + category3.getBudgetAmount());
+
+        //Act
+        categoryTypeService.removeCategory(category1);
+
+        //Verify & Assert
+        Mockito.verify(repository, times(1)).save(argumentCaptor.capture());
+        CategoryType actualCategoryType = argumentCaptor.getValue();
+        assertEquals(expectedSavedAmount, actualCategoryType.getSavedAmount());
+    }
+
+    @Test
     void testRemoveCategory_NullCategoryType_NoUpdates() {
         Category categoryWithNullCategoryType = Category.builder()
                 .categoryType(null)
