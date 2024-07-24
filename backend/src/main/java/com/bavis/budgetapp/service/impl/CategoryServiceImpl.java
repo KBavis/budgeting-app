@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -182,6 +183,19 @@ public class CategoryServiceImpl implements CategoryService{
 	@Override
 	public void delete(Long categoryId) {
 		log.info("Deleting Category with id [{}]", categoryId);
+
+		//Fetch Category
+		Category categoryToDelete = read(categoryId);
+
+		//Fetch all Transactions corresponding to Category and update Category to be null
+		Optional.ofNullable(transactionService.fetchCategoryTransactions(categoryId))
+				.ifPresent(transactions -> transactions.forEach(transaction -> transactionService.removeAssignedCategory(transaction.getTransactionId())));
+
+		//Update User and CategoryType to no longer correspond to Category
+		userService.removeCategory(categoryToDelete);
+		categoryTypeService.removeCategory(categoryToDelete);
+
+		//Remove Category from DB
 		categoryRepository.deleteById(categoryId);
 	}
 
