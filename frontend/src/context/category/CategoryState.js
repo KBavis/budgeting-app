@@ -13,6 +13,8 @@ import {
    CREATE_CATEGORY_FAIL,
    UPDATE_CATEGORY_ALLOCATIONS_FAIL,
    UPDATE_CATEGORY_ALLOCATIONS_SUCCESS,
+   DELETE_CATEGORY_FAIL,
+   DELETE_CATEGORY_SUCCESS,
 } from "./types";
 import initialState from "./initialState";
 import CategoryContext from "./categoryContext";
@@ -124,6 +126,31 @@ const CategoryState = (props) => {
    };
 
    /**
+    * Functionality to remove a Category
+    *
+    * @param categoryId
+    */
+   const deleteCategory = async (categoryId) => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      try {
+         const res = await axios.delete(`${apiUrl}/category/${categoryId}`);
+         dispatch({
+            type: DELETE_CATEGORY_SUCCESS,
+            payload: categoryId,
+         });
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: DELETE_CATEGORY_FAIL,
+            payload: err.response.data.error,
+         });
+      }
+   };
+
+   /**
     * Functionality to add a new Category to a CategoryType and adjust other Categories allocations as needed
     */
    const addCategory = async (
@@ -218,6 +245,7 @@ const CategoryState = (props) => {
             setLoading,
             addCategory,
             updateAllocations,
+            deleteCategory,
          }}
       >
          {props.children}

@@ -9,6 +9,7 @@ import {
    CREATE_CATEGORY_SUCCESS,
    UPDATE_CATEGORY_ALLOCATIONS_FAIL,
    UPDATE_CATEGORY_ALLOCATIONS_SUCCESS,
+   DELETE_CATEGORY_SUCCESS,
 } from "./types";
 
 /**
@@ -34,6 +35,17 @@ export default (state, action) => {
             ...state,
             error: action.payload,
             loading: false,
+         };
+      case DELETE_CATEGORY_SUCCESS:
+         const updates = state.categories
+            ? state.categories.filter(
+                 (category) => category.categoryId !== action.payload
+              )
+            : [];
+         return {
+            ...state,
+            loading: false,
+            categories: updates,
          };
       case UPDATE_CATEGORY_ALLOCATIONS_SUCCESS:
          // Filter out original state categories with the same categoryId as in the action payload
