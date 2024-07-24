@@ -23,6 +23,7 @@ import {
    DELETE_TRANSACTION_SUCCESS,
    RENAME_TRANSACTION_SUCCESS,
    RENAME_TRANSACTION_FAILURE,
+   REMOVE_CATEGORY,
 } from "./types";
 import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
@@ -94,6 +95,19 @@ const TransactionState = (props) => {
             payload: err.response.data.error,
          });
       }
+   };
+
+   /**
+    * Functionality to update the state of Transactions to no longer correlate with remove Category
+    *
+    * @param categoryId
+    *          - CategoryId corresponding to Category that needs to be removed
+    */
+   const removeCategory = async (categoryId) => {
+      dispatch({
+         type: REMOVE_CATEGORY,
+         payload: categoryId,
+      });
    };
 
    /**
@@ -375,6 +389,7 @@ const TransactionState = (props) => {
             reduceTransactionAmount,
             deleteTransaction,
             renameTransaction,
+            removeCategory,
          }}
       >
          {props.children}

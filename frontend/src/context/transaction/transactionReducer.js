@@ -17,6 +17,7 @@ import {
    DELETE_TRANSACTION_FAILURE,
    RENAME_TRANSACTION_FAILURE,
    RENAME_TRANSACTION_SUCCESS,
+   REMOVE_CATEGORY,
 } from "./types";
 
 export default (state, action) => {
@@ -98,6 +99,18 @@ export default (state, action) => {
          return {
             ...state,
             transactions: [transactionToUpdate, ...remainingTransactions],
+         };
+      case REMOVE_CATEGORY:
+         const removedCategoryTransactions = state.transactions
+            ? state.transactions.filter(
+                 (transaction) =>
+                    transaction.category?.categoryId !== action.payload
+              )
+            : [];
+
+         return {
+            ...state,
+            transactions: removedCategoryTransactions,
          };
       case SPLIT_TRANSACTIONS_SUCCESS:
          const splitTransactionId = action.payload.originalTransactionId;
