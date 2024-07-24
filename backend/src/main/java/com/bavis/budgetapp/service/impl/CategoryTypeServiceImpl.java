@@ -2,25 +2,21 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dto.CategoryTypeDto;
 import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
-import com.bavis.budgetapp.entity.Income;
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryTypeMapper;
 import com.bavis.budgetapp.service.IncomeService;
 import com.bavis.budgetapp.service.UserService;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.CategoryTypeRepository;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryTypeService;
 
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Kellen Bavis
@@ -56,6 +52,26 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 
 		log.info("Creating CategoryType [{}]", categoryType);
 		return repository.save(categoryType);
+	}
+
+
+	@Override
+	public void removeCategory(Category category) {
+		if(category == null) return; //Ensure Not-Null
+
+		log.info("Removing Category {} from corresponding CategoryType", category.getCategoryId());
+		CategoryType categoryType = category.getCategoryType();
+		if(categoryType != null) {
+			List<Category> categoriesToUpdate = categoryType.getCategories() != null ?
+				new ArrayList<>(categoryType.getCategories()) :
+				new ArrayList<>();
+			categoriesToUpdate.remove(category);
+			categoryType.setCategories(categoriesToUpdate);
+
+			List<Long> categoryIds = categoriesToUpdate.stream().map(Category::getCategoryId).toList();
+			log.info("Updated list of Category Ids corresponding to CategoryType {}: [{}]", categoryType.getCategoryTypeId(), categoryIds);
+			repository.save(categoryType);
+		}
 	}
 
 	@Override

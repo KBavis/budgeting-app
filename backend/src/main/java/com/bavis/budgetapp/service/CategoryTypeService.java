@@ -2,6 +2,7 @@ package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.CategoryTypeDto;
 import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 
 import java.util.List;
@@ -69,4 +70,12 @@ public interface CategoryTypeService {
 	 * 			- ID corresponding to CategoryType to be deleted
 	 */
 	void delete(Long categoryTypeId);
+
+	/**
+	 * Function to remove a particular Category from a CategoryType entity
+	 *
+	 * @param category
+	 * 			- Category to be removed
+	 */
+	void removeCategory(Category category);
 }
