@@ -13,6 +13,7 @@ import {
    UPDATE_CATEGORY_TYPE_SUCCESS,
    FETCH_CATEGORY_TYPE_FAILURE,
    FETCH_CATEGORY_TYPE_SUCCESS,
+   REMOVE_CATEGORY,
 } from "./types";
 import initialState from "./initialState";
 import CategoryTypeContext from "./categoryTypeContext";
@@ -125,6 +126,20 @@ const CategoryTypeState = (props) => {
    };
 
    /**
+    *
+    * @param categoryTypeId
+    *          - CateogoryTypeId corresponding to CategoryType to be updated in state
+    * @param categoryId
+    *          - CategoryId corresponding to Category to be removed from CategoryType
+    */
+   const removeCategory = (categoryTypeId, categoryId) => {
+      dispatch({
+         type: REMOVE_CATEGORY,
+         payload: { categoryTypeId, categoryId },
+      });
+   };
+
+   /**
     * Functionality to fetch a single CategoryType
     *
     * @param categoryTypeId
@@ -161,6 +176,7 @@ const CategoryTypeState = (props) => {
             setLoading,
             updateCategoryType,
             fetchCategoryType,
+            removeCategory,
          }}
       >
          {props.children}

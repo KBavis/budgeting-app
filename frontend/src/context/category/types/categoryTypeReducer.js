@@ -9,6 +9,7 @@ import {
    UPDATE_CATEGORY_TYPE_SUCCESS,
    FETCH_CATEGORY_TYPE_FAILURE,
    FETCH_CATEGORY_TYPE_SUCCESS,
+   REMOVE_CATEGORY,
 } from "./types";
 
 /**
@@ -32,6 +33,34 @@ export default (state, action) => {
             error: action.payload,
             loading: false,
          };
+      case REMOVE_CATEGORY:
+         const removeCategoryCategoryTypes = state.categoryTypes
+            ? state.categoryTypes.map((categoryType) => {
+                 if (
+                    categoryType.categoryTypeId ===
+                    action.payload.categoryTypeId
+                 ) {
+                    return {
+                       ...categoryType,
+                       categories: categoryType.categories //Remove Category from 'categories' attribute
+                          ? categoryType.categories.filter(
+                               (category) =>
+                                  category.categoryId !==
+                                  action.payload.categoryId
+                            )
+                          : [],
+                    };
+                 } else {
+                    return categoryType;
+                 }
+              })
+            : [];
+
+         return {
+            ...state,
+            categoryTypes: removeCategoryCategoryTypes,
+         };
+
       case FETCH_CATEGORY_TYPE_SUCCESS:
          const categoryTypes = state.categoryTypes.filter(
             (categoryType) =>
