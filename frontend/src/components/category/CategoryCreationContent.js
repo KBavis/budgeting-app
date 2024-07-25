@@ -121,36 +121,6 @@ const CategoryCreationContent = ({ categoryType }) => {
          return;
       }
 
-      // Update CategoryType 'savedAmount', 'budgetAmount', and 'percentAllocation' if less than 100% allocation
-      if (totalPercentage < 1) {
-         let categoryTypeId = getCategoryTypeId(categoryType);
-         let originalCategoryTypeAmount = getTotalBudget();
-
-         // Calculate Updated CategoryType Allocation Amount
-         let updatedAmount = parseFloat(
-            (originalCategoryTypeAmount * totalPercentage).toFixed(2)
-         );
-
-         // Calculate Savings
-         let savings = parseFloat(
-            (originalCategoryTypeAmount - updatedAmount).toFixed(2)
-         );
-
-         // Calculate CategoryType Percent Allocation Amount
-         let updatedPercentage = parseFloat(
-            (updatedAmount / totalIncome).toFixed(2)
-         );
-
-         // Construct DTO
-         const updateCategoryTypeDto = {
-            budgetAllocationPercentage: updatedPercentage,
-            savedAmount: savings,
-            amountAllocated: updatedAmount,
-         };
-
-         await updateCategoryType(categoryTypeId, updateCategoryTypeDto);
-      }
-
       // Sets the corresponding CategoryType of each of these Categories
       const categoriesWithType = selectedCategories.map((category) => ({
          ...category,
