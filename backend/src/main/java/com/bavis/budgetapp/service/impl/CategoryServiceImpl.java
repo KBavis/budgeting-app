@@ -62,7 +62,7 @@ public class CategoryServiceImpl implements CategoryService{
 
 		User user = userService.getCurrentAuthUser();
 		CategoryType categoryType = categoryTypeService.read(bulkCategoryDto.getCategories().get(0).getCategoryTypeId());
-		log.debug("CategoryType corresponding to BulkCategoryDto: [{}], corresponding User: [{}]", categoryType, user);
+		log.info("CategoryType corresponding to BulkCategoryDto: [{}], corresponding User: [{}]", categoryType, user);
 
 		//For Each Category DTO --> 1) set user, set category type, calculate budget amount
 		List<Category> categories = bulkCategoryDto.getCategories().stream()
@@ -70,7 +70,13 @@ public class CategoryServiceImpl implements CategoryService{
 				.peek(category -> category.setCategoryType(categoryType))
 				.peek(category -> category.setUser(user))
 				.toList();
-		log.debug("Successfully set User, CategoryType, and budget amount for each Category");
+		log.info("Successfully set User, CategoryType, and budget amount for each Category");
+
+		//Update CategoryType Saved Amount
+		double totalCategoryAllocations = categories.stream().mapToDouble(Category::getBudgetAmount).sum();
+		double savedAmount = categoryType.getBudgetAmount() - totalCategoryAllocations;
+		categoryType.setSavedAmount(savedAmount);
+		log.info("CategoryType {} total saved amount based on newly added Categories: {}", categoryType.getCategoryTypeId(), savedAmount);
 
 		return categoryRepository.saveAllAndFlush(categories);
 	}
