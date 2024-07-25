@@ -557,6 +557,11 @@ public class CategoryServiceTests {
                 fail("Unrecognized Category was created!");
             }
         }
+
+        //Ensure CategoryType Saved Amount Updated as Expected
+        double totalCategoryAllocations = createdCategories.stream().mapToDouble(Category::getBudgetAmount).sum();
+        double expectedSavedAmount = needsCategoryType.getBudgetAmount() - totalCategoryAllocations;
+        assertEquals(expectedSavedAmount, needsCategoryType.getSavedAmount());
     }
 
 
