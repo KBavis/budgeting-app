@@ -2,6 +2,9 @@ import React, { useState, useEffect, useContext } from "react";
 import transactionContext from "../../context/transaction/transactionContext";
 import DetailedCategoryTransaction from "../transaction/DetailedCategoryTransaction";
 import CategoryDropdown from "../layout/CategoryDropdown";
+import categoryTypeContext from "../../context/category/types/categoryTypeContext";
+import categoryContext from "../../context/category/categoryContext";
+import AlertContext from "../../context/alert/alertContext";
 
 const DetailedCategory = ({
    category,
@@ -14,7 +17,12 @@ const DetailedCategory = ({
    const [totalAmountSpent, setTotalAmountSpent] = useState(0);
    const [budgetUsage, setBudgetUsage] = useState(0);
    const [filteredTransactions, setFilteredTransactions] = useState([]);
-   const { transactions } = useContext(transactionContext);
+
+   //Global State
+   const { transactions, removeCategory } = useContext(transactionContext);
+   const { deleteCategory } = useContext(categoryContext);
+   const { fetchCategoryType } = useContext(categoryTypeContext);
+   const { setAlert } = useContext(AlertContext);
 
    useEffect(() => {
       if (transactions) {
@@ -61,8 +69,11 @@ const DetailedCategory = ({
       }
    };
 
-   const handleDeleteCategory = () => {
-      console.log("Delete Category Clicked!");
+   const handleDeleteCategory = async () => {
+      removeCategory(category.categoryId); //update correlated Transactions
+      await deleteCategory(category.categoryId); //remove from backend
+      await fetchCategoryType(category.categoryType.categoryTypeId); //fetch updated Category type
+      setAlert("Category deleted successfully", "success");
    };
 
    const handleRenameCategory = () => {
