@@ -5,6 +5,7 @@ import transactionContext from "../../context/transaction/transactionContext";
 import CategoryDropdown from "../layout/CategoryDropdown";
 import categoryContext from "../../context/category/categoryContext";
 import categoryTypeContext from "../../context/category/types/categoryTypeContext";
+import AlertContext from "../../context/alert/alertContext";
 
 /**
  * Component to store all relevant information for Category entity on Home Page
@@ -40,6 +41,7 @@ const Category = ({
       useContext(transactionContext);
    const { deleteCategory } = useContext(categoryContext);
    const { fetchCategoryType } = useContext(categoryTypeContext);
+   const { setAlert } = useContext(AlertContext);
 
    // Local State
    const [recentTransactions, setRecentTransactions] = useState([]);
@@ -52,6 +54,7 @@ const Category = ({
       removeCategory(category.categoryId); //update correlated Transactions
       await deleteCategory(category.categoryId); //remove from backend
       await fetchCategoryType(category.categoryType.categoryTypeId); //fetch updated Category type
+      setAlert("Category deleted successfully", "success");
    };
 
    const handleRenameCategory = () => {};
