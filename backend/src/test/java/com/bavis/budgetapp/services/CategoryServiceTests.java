@@ -480,12 +480,16 @@ public class CategoryServiceTests {
 
         //Mock
         when(categoryRepository.findByCategoryId(renameCategoryDto.getCategoryId())).thenReturn(category1);
+        when(categoryRepository.saveAndFlush(any(Category.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
         //Act
         Category updatedCategory = categoryService.renameCategory(renameCategoryDto);
 
         //Assert
         assertEquals(renameCategoryDto.getCategoryName(), updatedCategory.getName());
+
+        //Verify
+        verify(categoryRepository, times(1)).saveAndFlush(any(Category.class));
     }
 
     @Test

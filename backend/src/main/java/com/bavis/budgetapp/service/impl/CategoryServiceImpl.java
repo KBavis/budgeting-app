@@ -168,9 +168,10 @@ public class CategoryServiceImpl implements CategoryService{
 
 	@Override
 	public Category renameCategory(RenameCategoryDto renameCategoryDto) {
+		log.info("Setting Category {} to have the name '{}'", renameCategoryDto.getCategoryId(), renameCategoryDto.getCategoryName());
 		Category categoryToUpdate = categoryRepository.findByCategoryId(renameCategoryDto.getCategoryId());
 		categoryToUpdate.setName(renameCategoryDto.getCategoryName());
-		return categoryToUpdate;
+		return categoryRepository.saveAndFlush(categoryToUpdate);
 	}
 
 	@Override
