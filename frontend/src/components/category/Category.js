@@ -35,6 +35,7 @@ const Category = ({
    handleShowRenameTransactionModal,
    handleShowAssignCategoryModal,
    handleShowUpdateAllocationsModal,
+   handleShowRenameCategoryModal
 }) => {
    // Global State
    const { transactions, updateCategory, removeCategory } =
@@ -57,7 +58,9 @@ const Category = ({
       setAlert("Category deleted successfully", "success");
    };
 
-   const handleRenameCategory = () => {};
+   const handleRenameCategory = () => {
+      handleShowRenameCategoryModal(category);
+   };
 
    const handleUpdateAllocations = () => {
       console.log("Handle Update Allocations Modal Clicked");

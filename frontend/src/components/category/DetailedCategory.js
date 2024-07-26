@@ -13,6 +13,7 @@ const DetailedCategory = ({
    handleShowRenameTransactionModal,
    handleShowAssignCategoryModal,
    handleShowUpdateAllocationsModal,
+   handleShowRenameCategoryModal
 }) => {
    const [totalAmountSpent, setTotalAmountSpent] = useState(0);
    const [budgetUsage, setBudgetUsage] = useState(0);
@@ -77,7 +78,7 @@ const DetailedCategory = ({
    };
 
    const handleRenameCategory = () => {
-      console.log("Rename Category Clicked!");
+      handleShowRenameCategoryModal(category)
    };
 
    const handleUpdateAllocations = () => {

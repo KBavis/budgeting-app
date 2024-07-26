@@ -18,6 +18,7 @@ import AlertContext from "../context/alert/alertContext";
 import AssignCategoryModal from "../components/transaction/AssignCategoryModal";
 import AddCategory from "../components/category/AddCategory";
 import UpdateAllocationsModal from "../components/category/UpdateAllocationsModal";
+import RenameCategory from "../components/category/RenameCategory";
 
 const HomePage = () => {
    //Local State
@@ -35,9 +36,12 @@ const HomePage = () => {
       useState(false);
    const [showUpdateAllocationsModal, setShowUpdateAllocationsModal] =
       useState(false);
+   const [showRenameCategoryModal, setShowRenameCategoryModal] =
+      useState(false);
    const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
    const [transaction, setTransaction] = useState(null);
    const [categoryType, setCategoryType] = useState(false);
+   const [category, setCategory] = useState(null);
    const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown visibility
 
    const initalFetchRef = useRef(false);
@@ -84,6 +88,18 @@ const HomePage = () => {
          setName(user.name);
       }
    }, [user]);
+
+   //Function to open RenameCategory modal
+   const handleShowRenameCategoryModal = (category) => {
+      setCategory(category);
+      setShowRenameCategoryModal(true);
+   }
+
+   //Function to close RenameCategory modal
+   const handleCloseRenameCategoryModal = () => {
+      setShowRenameCategoryModal(false);
+      setCategory(null);
+   }
 
    // Function to open SplitTransaction modal
    const handleShowSplitTransactionModal = (splitTransaction) => {
@@ -319,6 +335,9 @@ const HomePage = () => {
                         handleShowUpdateAllocationsModal={
                            handleShowUpdateAllocationsModal
                         }
+                        handleShowRenameCategoryModal={
+                           handleShowRenameCategoryModal
+                        }
                      />
                   ))
                ) : (
@@ -377,6 +396,14 @@ const HomePage = () => {
                   categoryType={categoryType}
                />
             </div>
+         )}
+         {showRenameCategoryModal && (
+             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+                <RenameCategory
+                    onClose={handleCloseRenameCategoryModal}
+                    category={category}
+                />
+             </div>
          )}
       </div>
    );

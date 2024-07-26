@@ -12,6 +12,7 @@ const CategoryType = ({
    handleShowRenameTransactionModal,
    handleShowAssignCategoryModal,
    handleShowUpdateAllocationsModal,
+   handleShowRenameCategoryModal
 }) => {
    const { transactions } = useContext(transactionContext);
    const { categories } = useContext(categoryContext);
@@ -135,6 +136,9 @@ const CategoryType = ({
                      }
                      handleShowUpdateAllocationsModal={
                         handleShowUpdateAllocationsModal
+                     }
+                     handleShowRenameCategoryModal={
+                        handleShowRenameCategoryModal
                      }
                   />
                ))}

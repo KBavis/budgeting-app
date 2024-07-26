@@ -11,6 +11,7 @@ import ReduceTransaction from "../components/transaction/ReduceTransaction";
 import RenameTransaction from "../components/transaction/RenameTransaction";
 import AssignCategoryModal from "../components/transaction/AssignCategoryModal";
 import UpdateAllocationsModal from "../components/category/UpdateAllocationsModal";
+import RenameCategory from "../components/category/RenameCategory";
 
 /**
  * CategoryType Page for all corresponding Categories
@@ -37,7 +38,11 @@ const CategoryTypePage = ({ categoryType }) => {
       useState(false);
    const [showUpdateAllocationsModal, setShowUpdateAllocationsModal] =
       useState(false);
+   const [showRenameCategoryModal, setShowRenameCategoryModal] =
+      useState(false);
    const [currentTransaction, setCurrentTransaction] = useState(null);
+   const [selectedCategory, setSelectedCategory] =
+      useState(null);
    const navigate = useNavigate();
 
    const initialFetchRef = useRef(false);
@@ -145,6 +150,19 @@ const CategoryTypePage = ({ categoryType }) => {
       setShowUpdateAllocationsModal(false);
    };
 
+   //Function to open RenameCategory modal
+   const handleShowRenameCategoryModal = (category) => {
+      setSelectedCategory(category);
+      setShowRenameCategoryModal(true);
+   }
+
+   //Function to close RenameCategory modal
+   const handleCloseRenameCategoryModal = () => {
+      setShowRenameCategoryModal(false);
+   }
+
+
+
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
          <FaArrowLeft
@@ -178,6 +196,9 @@ const CategoryTypePage = ({ categoryType }) => {
                         }
                         handleShowUpdateAllocationsModal={
                            handleShowUpdateAllocationsModal
+                        }
+                        handleShowRenameCategoryModal={
+                           handleShowRenameCategoryModal
                         }
                      />
                   ))
@@ -228,6 +249,14 @@ const CategoryTypePage = ({ categoryType }) => {
                   categoryType={selectedCategoryType}
                />
             </div>
+         )}
+         {showRenameCategoryModal && (
+             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+                <RenameCategory
+                    onClose={handleCloseRenameCategoryModal}
+                    category={selectedCategory}
+                />
+             </div>
          )}
       </div>
    );
