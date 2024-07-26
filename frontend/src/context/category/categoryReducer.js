@@ -1,4 +1,5 @@
 import {
+   RENAME_CATEGORY_FAIL,
    CREATE_CATEGORIES_SUCCESS,
    CREATE_CATEGORIES_FAIL,
    CLEAR_ERRORS,
@@ -9,7 +10,7 @@ import {
    CREATE_CATEGORY_SUCCESS,
    UPDATE_CATEGORY_ALLOCATIONS_FAIL,
    UPDATE_CATEGORY_ALLOCATIONS_SUCCESS,
-   DELETE_CATEGORY_SUCCESS,
+   DELETE_CATEGORY_SUCCESS, RENAME_CATEGORY_SUCCESS,
 } from "./types";
 
 /**
@@ -27,6 +28,7 @@ export default (state, action) => {
             loading: false,
             error: null,
          };
+      case RENAME_CATEGORY_FAIL:
       case CREATE_CATEGORY_FAIL:
       case CREATE_CATEGORIES_FAIL:
       case FETCH_CATEGORIES_FAIL:
@@ -100,6 +102,13 @@ export default (state, action) => {
             loading: false,
             error: null,
          };
+      case RENAME_CATEGORY_SUCCESS:
+         let categoriesWithRenamed = state.categories?.map((category) => category.categoryId === action.payload.categoryId ? action.payload : category);
+         return {
+            ...state,
+            categories: categoriesWithRenamed,
+            loading: false
+         }
       case CLEAR_ERRORS:
          return {
             ...state,

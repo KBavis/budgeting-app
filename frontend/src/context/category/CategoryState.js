@@ -14,7 +14,7 @@ import {
    UPDATE_CATEGORY_ALLOCATIONS_FAIL,
    UPDATE_CATEGORY_ALLOCATIONS_SUCCESS,
    DELETE_CATEGORY_FAIL,
-   DELETE_CATEGORY_SUCCESS,
+   DELETE_CATEGORY_SUCCESS, RENAME_CATEGORY_SUCCESS, RENAME_CATEGORY_FAIL,
 } from "./types";
 import initialState from "./initialState";
 import CategoryContext from "./categoryContext";
@@ -136,7 +136,7 @@ const CategoryState = (props) => {
       }
 
       try {
-         const res = await axios.delete(`${apiUrl}/category/${categoryId}`);
+         await axios.delete(`${apiUrl}/category/${categoryId}`);
          dispatch({
             type: DELETE_CATEGORY_SUCCESS,
             payload: categoryId,
@@ -149,6 +149,34 @@ const CategoryState = (props) => {
          });
       }
    };
+
+   const renameCategory = async (renameCategoryDto) => {
+
+      if(localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      const config = {
+         headers: {
+            "Content-Type": "application/json",
+         },
+      };
+
+      try {
+         const res = await axios.put(`${apiUrl}/category/rename`, renameCategoryDto, config);
+         dispatch({
+            type: RENAME_CATEGORY_SUCCESS,
+            payload: res.data
+         });
+         setAlert("Category renamed successfully", "success");
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: RENAME_CATEGORY_FAIL,
+            payload: err.response.data.error
+         });
+      }
+   }
 
    /**
     * Functionality to add a new Category to a CategoryType and adjust other Categories allocations as needed
@@ -246,6 +274,7 @@ const CategoryState = (props) => {
             addCategory,
             updateAllocations,
             deleteCategory,
+            renameCategory
          }}
       >
          {props.children}
