@@ -1,9 +1,5 @@
 import React, { useContext, useEffect } from "react";
 import CategoryCreationContent from "../components/category/CategoryCreationContent";
-import authContext from "../context/auth/authContext";
-import categoryTypeContext from "../context/category/types/categoryTypeContext";
-import IncomeContext from "../context/income/incomeContext";
-import accountContext from "../context/account/accountContext";
 
 /**
  * Page to allow user to add corresponding sub-categories to a CategoryType
