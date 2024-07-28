@@ -20,6 +20,6 @@ public class ScheduledTasksConfig {
      */
     @Scheduled(cron = "0 0 0 1 * ?")
     public void generateBudgetPerformance() {
-        budgetPerformanceService.runGenerateBudgetPerformanceJob();
+        budgetPerformanceService.runGenerateBudgetPerformanceJob(null);
     }
 }
