@@ -68,4 +68,9 @@ public class GeneralUtil {
         return currentYear == dateToCheck.getYear() && currentMonth == dateToCheck.getMonthValue();
     }
 
+
+    public static String nullSafeToLowerCaseOrEmpty(String input) {
+        return input != null ? input.toLowerCase() : "";
+    }
+
 }
