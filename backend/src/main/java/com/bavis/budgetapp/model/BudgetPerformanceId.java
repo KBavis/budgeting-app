@@ -1,6 +1,5 @@
 package com.bavis.budgetapp.model;
 
-import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +11,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Embeddable
-public class MonthYear implements Serializable {
-    private String month;
-    private int year;
+public class BudgetPerformanceId implements Serializable {
+    private MonthYear monthYear;
+    private Long userId;
 }
