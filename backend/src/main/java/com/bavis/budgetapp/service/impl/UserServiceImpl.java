@@ -40,6 +40,11 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
+	public List<User> readAll() {
+		return _userRepository.findAll();
+	}
+
+	@Override
 	public User readById(Long id) throws UserServiceException {
 		log.info("Attempting to read a User by the following user ID: {}", id);
 		return _userRepository.findById(id)

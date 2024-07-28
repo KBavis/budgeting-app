@@ -3,6 +3,8 @@ package com.bavis.budgetapp.service;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.User;
 
+import java.util.List;
+
 /**
  * User Service for storing functionality that interacts with our User entity
  *
@@ -22,4 +24,6 @@ public interface UserService {
 	User getCurrentAuthUser();
 
 	void removeCategory(Category category);
+
+	List<User> readAll();
 }
