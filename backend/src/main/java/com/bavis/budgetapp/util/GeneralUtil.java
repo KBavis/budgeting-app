@@ -1,9 +1,11 @@
 package com.bavis.budgetapp.util;
 
 import com.bavis.budgetapp.constants.TimeType;
+import com.bavis.budgetapp.model.MonthYear;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -68,7 +70,35 @@ public class GeneralUtil {
         return currentYear == dateToCheck.getYear() && currentMonth == dateToCheck.getMonthValue();
     }
 
+    /**
+     * Functionality to determine if a specific MonthYear corresponds to a LocalDate
+     *
+     * @param dateToCheck
+     *          - LocalDate object to check
+     * @param monthYear
+     *          - MonthYear model to check date against
+     * @return
+     *          - flag indicating validity of date
+     */
+    public static boolean isDateInMonthAndYear(LocalDate dateToCheck, MonthYear monthYear) {
+        if(dateToCheck == null || monthYear == null) {
+            return false;
+        }
 
+        Month month = dateToCheck.getMonth();
+
+        return dateToCheck.getYear() == monthYear.getYear() && (month != null && month.name().equals(monthYear.getMonth()));
+    }
+
+
+    /**
+     * Functionality to update a String to be all lowercase but to avoid NPE
+     *
+     * @param input
+     *          - input to make lower case
+     * @return
+     *          - lowercase input
+     */
     public static String nullSafeToLowerCaseOrEmpty(String input) {
         return input != null ? input.toLowerCase() : "";
     }
