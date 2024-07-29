@@ -56,6 +56,6 @@ public class BudgetPerformanceController {
     @GetMapping
     public List<BudgetPerformance> fetchUsersBudgetPerformances() {
         log.info("Fetching the BudgetPerformance entities for current authenticated user");
-        budgetPerformanceService.fetchBudgetPerformances();
+        return budgetPerformanceService.fetchBudgetPerformances();
     }
 }
