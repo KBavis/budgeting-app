@@ -84,10 +84,11 @@ public class GeneralUtil {
         if(dateToCheck == null || monthYear == null) {
             return false;
         }
-
         Month month = dateToCheck.getMonth();
 
-        return dateToCheck.getYear() == monthYear.getYear() && (month != null && month.name().equals(monthYear.getMonth()));
+        if(month == null || monthYear.getMonth() == null) return false;
+
+        return dateToCheck.getYear() == monthYear.getYear() && month.name().equals(monthYear.getMonth().toUpperCase());
     }
 
 
