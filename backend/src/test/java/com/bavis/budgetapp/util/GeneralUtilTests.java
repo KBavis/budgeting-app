@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.util;
 
 import com.bavis.budgetapp.constants.TimeType;
+import com.bavis.budgetapp.model.MonthYear;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,6 +30,27 @@ public class GeneralUtilTests {
         //Assert
         assertNotEquals(updatedLocalDateTime, originalDateTime);
         assertEquals(originalDateTime.plusHours(2), updatedLocalDateTime);
+    }
+
+    @Test
+    void testIsDateInMonthAndYear_NullDateToCheck() {
+        assertFalse(GeneralUtil.isDateInMonthAndYear(null, new MonthYear("March", 2024)));
+    }
+
+    @Test
+    void testIsDateInMonthAndYear_NullMonthYear() {
+        assertFalse(GeneralUtil.isDateInMonthAndYear(LocalDate.now(), null));
+    }
+
+    @Test
+    void testIsDateInMonthAndYear_Valid() {
+        MonthYear monthYear = MonthYear.builder()
+                .month("March")
+                .year(2024)
+                .build();
+        LocalDate localDate = LocalDate.of(2024, 3, 25);
+
+        assertTrue(GeneralUtil.isDateInMonthAndYear(localDate, monthYear));
     }
 
 
