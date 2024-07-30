@@ -11,9 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -108,6 +110,28 @@ public class UserServiceTests {
 
         //Assert
         assertEquals(Collections.emptyList(), user.getCategories());
+    }
+
+
+    @Test
+    void testReadAll_Successful() {
+        //Arrange
+        List<User> users = List.of(user);
+        when(userRepository.findAll()).thenReturn(users);
+
+        //Act
+        List<User> actualUsers = userService.readAll();
+
+        //Assert
+        assertEquals(users, actualUsers);
+        Mockito.verify(userRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testReadAll_ThrowsDataAccessException() {
+        when(userRepository.findAll()).thenThrow(new DataRetrievalFailureException("Data Access Exception"));
+        assertThrows(DataRetrievalFailureException.class, () -> userService.readAll());
+        Mockito.verify(userRepository, times(1)).findAll();
     }
 
 
