@@ -53,7 +53,7 @@ public class BudgetPerformanceController {
      * @return
      *      - all BudgetPerformance entities corresponding to auth user
      */
-    @GetMapping
+    @GetMapping("/all")
     public List<BudgetPerformance> fetchUsersBudgetPerformances() {
         log.info("Fetching the BudgetPerformance entities for current authenticated user");
         return budgetPerformanceService.fetchBudgetPerformances();
