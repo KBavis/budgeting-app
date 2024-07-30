@@ -4,10 +4,10 @@ import com.bavis.budgetapp.constants.OverviewType;
 import com.bavis.budgetapp.dao.BudgetPerformanceRepository;
 import com.bavis.budgetapp.entity.BudgetPerformance;
 import com.bavis.budgetapp.entity.Category;
-import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.model.BudgetOverview;
+import com.bavis.budgetapp.model.BudgetPerformanceId;
 import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.BudgetPerformanceService;
 import com.bavis.budgetapp.service.TransactionService;
@@ -15,7 +15,6 @@ import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.sql.ast.tree.expression.Over;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of our BudgetPerformance service
@@ -45,7 +43,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
     @Override
     public List<BudgetPerformance> fetchBudgetPerformances() {
         User user = userService.getCurrentAuthUser();
-        return repository.findByUserUserId(user.getUserId());
+        return repository.findById_UserId(user.getUserId());
     }
 
     @Override
@@ -86,8 +84,12 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
             BudgetOverview investmentOverview = generateBudgetOverview(categories, OverviewType.INVESTMENTS, monthYear);
             budgetPerformance.setInvestmentOverview(investmentOverview);
 
-            budgetPerformance.setMonthYear(monthYear);
-            budgetPerformance.setUser(user);
+            //Generate BudgetPerformanceId
+            BudgetPerformanceId id = BudgetPerformanceId.builder()
+                            .monthYear(monthYear)
+                            .userId(user.getUserId())
+                            .build();
+            budgetPerformance.setId(id);
             budgetPerformance.setCategories(categories);
 
             //Add to List
@@ -101,7 +103,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
     @Override
     public BudgetPerformance fetchBudgetPerformance(MonthYear monthYear) {
         User user = userService.getCurrentAuthUser();
-        return repository.findByMonthYear_MonthAndMonthYear_YearAndUserUserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId());
+        return repository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId());
     }
 
     /**
