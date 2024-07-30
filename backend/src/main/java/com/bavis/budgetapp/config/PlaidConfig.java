@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
  * @author Kellen Bavis
  *
  * Configuration class utilized to house our Plaid Client values from external properties file
+ *
+ * TODO: Remove class
  */
 @Configuration("plaidConfig")
 @Getter
