@@ -20,10 +20,11 @@ public interface BudgetPerformanceRepository extends JpaRepository<BudgetPerform
      * @return
      *          - fetched BudgetPerformance entities
      */
-     List<BudgetPerformance> findByUserUserId(Long userId);
+    List<BudgetPerformance> findById_UserId(Long userId);
 
     /**
-     * Fetch BudgetPerformance for
+     * Fetch BudgetPerformance for a specific month, year, and user ID
+     *
      * @param month
      *          - month to fetch BudgetPerformance for
      * @param year
@@ -33,7 +34,6 @@ public interface BudgetPerformanceRepository extends JpaRepository<BudgetPerform
      * @return
      *          - BudgetPerformance entity
      */
-     BudgetPerformance findByMonthYear_MonthAndMonthYear_YearAndUserUserId(String month, int year, Long userId);
-
-
+    BudgetPerformance findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(String month, int year, Long userId);
 }
+
