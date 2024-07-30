@@ -3,7 +3,9 @@ package com.bavis.budgetapp.constants;
 import lombok.Getter;
 
 /**
- * Enum of
+ * Enum containing potential BudgetOverview types
+ *
+ * @author Kellen Bavis
  */
 @Getter
 public enum OverviewType {
