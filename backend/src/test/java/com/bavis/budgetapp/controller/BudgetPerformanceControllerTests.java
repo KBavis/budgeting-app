@@ -93,7 +93,7 @@ public class BudgetPerformanceControllerTests {
                 .build();
 
         budgetPerformance = new BudgetPerformance();
-        monthYear = new MonthYear("March", 2024);
+        monthYear = new MonthYear("MARCH", 2024);
         BudgetPerformanceId budgetPerformanceId = BudgetPerformanceId.builder()
                         .userId(10L)
                         .monthYear(monthYear)
@@ -145,6 +145,42 @@ public class BudgetPerformanceControllerTests {
                 .andExpect(jsonPath("$[0].wantsOverview").value(budgetPerformance.getWantsOverview()));
 
     verify(budgetPerformanceService, times(1)).fetchBudgetPerformances();
+    }
+
+    @Test
+    void testFetchBudgetPerformance_InvalidMonthYear_Fail() throws Exception {
+        //Arrange
+        MonthYear invalidMonthYear = new MonthYear();
+        invalidMonthYear.setMonth("march");
+        invalidMonthYear.setYear(2002);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(get("/budget/performance")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidMonthYear)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The provided month and/or year is not valid"));
+    }
+
+    @Test
+    void testInvokeGenerateBudgetPerformanceJob_InvalidMonthYear_Fail() throws Exception {
+        //Arrange
+        MonthYear invalidMonthYear = new MonthYear();
+        invalidMonthYear.setMonth("MARCH");
+        invalidMonthYear.setYear(0);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(post("/budget/performance")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidMonthYear)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("The provided month and/or year is not valid"));
     }
 
     @Test
