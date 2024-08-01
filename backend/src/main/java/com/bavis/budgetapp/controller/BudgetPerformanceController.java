@@ -3,6 +3,7 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.entity.BudgetPerformance;
 import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.BudgetPerformanceService;
+import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +31,7 @@ public class BudgetPerformanceController {
      *          - persisted BudgetPerformance
      */
     @GetMapping
-    public BudgetPerformance fetchBudgetPerformance(@RequestBody MonthYear monthYear) {
+    public BudgetPerformance fetchBudgetPerformance(@Valid @RequestBody MonthYear monthYear) {
         log.info("Fetching BudgetPerformance entity for the MonthYear {}", monthYear);
         return budgetPerformanceService.fetchBudgetPerformance(monthYear);
     }
@@ -42,7 +43,7 @@ public class BudgetPerformanceController {
      *          - month/year to generate BudgetPerformance for
      */
     @PostMapping
-    public void invokeGenerateBudgetPerformanceJob(@RequestBody MonthYear monthYear) {
+    public void invokeGenerateBudgetPerformanceJob(@Valid @RequestBody MonthYear monthYear) {
         log.info("Invoking the GenerateBudgetPerformanceJob for the MonthYear {}", monthYear);
         budgetPerformanceService.runGenerateBudgetPerformanceJob(monthYear);
     }
