@@ -24,9 +24,6 @@ public class BudgetPerformance {
     @Column(name = "BUDGET_PERFORMANCE_ID", nullable = false)
     private BudgetPerformanceId id;
 
-    @OneToMany
-    @Column(name = "CATEGORIES", nullable = false)
-    private List<Category> categories;
 
     @Embedded
     @AttributeOverrides({

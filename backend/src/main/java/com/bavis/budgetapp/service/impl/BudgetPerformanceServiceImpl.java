@@ -107,7 +107,6 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
                     case GENERAL -> budgetPerformance.setGeneralOverview(budgetOverview);
                 }
             }));
-            budgetPerformance.setCategories(categories);
 
             //Add to List
             budgetPerformances.add(budgetPerformance);

@@ -139,7 +139,6 @@ public class BudgetPerformanceServiceTests {
         budgetPerformance.setNeedsOverview(needsOverview);
         budgetPerformance.setGeneralOverview(generalOverview);
         budgetPerformance.setWantsOverview(wantsOverview);
-        budgetPerformance.setCategories(List.of(category));
 
         needsCategoryType = CategoryType.builder()
                 .categoryTypeId(1L)

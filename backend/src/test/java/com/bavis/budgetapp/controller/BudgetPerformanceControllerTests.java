@@ -103,7 +103,6 @@ public class BudgetPerformanceControllerTests {
         budgetPerformance.setNeedsOverview(needsOverview);
         budgetPerformance.setGeneralOverview(generalOverview);
         budgetPerformance.setWantsOverview(wantsOverview);
-        budgetPerformance.setCategories(List.of(category));
 
         MockitoAnnotations.openMocks(this);
 
@@ -138,7 +137,6 @@ public class BudgetPerformanceControllerTests {
 
         resultActions
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].categories[0].categoryId").value(category.getCategoryId()))
                 .andExpect(jsonPath("$[0].generalOverview").value(budgetPerformance.getGeneralOverview()))
                 .andExpect(jsonPath("$[0].needsOverview").value(budgetPerformance.getNeedsOverview()))
                 .andExpect(jsonPath("$[0].investmentOverview").value(budgetPerformance.getInvestmentOverview()))
@@ -228,7 +226,6 @@ public class BudgetPerformanceControllerTests {
 
         resultActions
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.categories[0].categoryId").value(category.getCategoryId()))
                 .andExpect(jsonPath("$.generalOverview").value(budgetPerformance.getGeneralOverview()))
                 .andExpect(jsonPath("$.needsOverview").value(budgetPerformance.getNeedsOverview()))
                 .andExpect(jsonPath("$.investmentOverview").value(budgetPerformance.getInvestmentOverview()))
