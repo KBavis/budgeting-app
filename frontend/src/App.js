@@ -21,6 +21,8 @@ import CategoryTypePage from "./pages/CategoryTypePage";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import Navbar from "./components/layout/Navbar";
+import BudgetSummaryPage from "./pages/BudgetSummaryPage";
+import SummaryState from "./context/summary/SummaryState";
 
 /**
  *  Main Application File
@@ -34,6 +36,7 @@ function App() {
                   <CategoryTypeState>
                      <CategoryState>
                         <TransactionState>
+                           <SummaryState>
                            <Router>
                               <Fragment>
                                  <Navbar />
@@ -108,9 +111,16 @@ function App() {
                                           <CategoryTypePage categoryType="Investments" />
                                        }
                                     />
+                                    <Route
+                                        path="/budget/summary"
+                                        element={
+                                           <BudgetSummaryPage />
+                                        }
+                                    />
                                  </Routes>
                               </Fragment>
                            </Router>
+                           </SummaryState>
                         </TransactionState>
                      </CategoryState>
                   </CategoryTypeState>
