@@ -19,6 +19,7 @@ import AssignCategoryModal from "../components/transaction/AssignCategoryModal";
 import AddCategory from "../components/category/AddCategory";
 import UpdateAllocationsModal from "../components/category/UpdateAllocationsModal";
 import RenameCategory from "../components/category/RenameCategory";
+import SummaryContext from "../context/summary/summaryContext";
 
 const HomePage = () => {
    //Local State
@@ -81,6 +82,12 @@ const HomePage = () => {
       loading: incomesLoading,
    } = useContext(IncomeContext);
    const { setAlert } = useContext(AlertContext);
+   const {
+       summaries,
+       fetchBudgetSummaries,
+       setLoading: setSummariesLoading,
+       loading: summariesLoading
+   } = useContext(SummaryContext);
 
    // Set Authenticated User's Name
    useEffect(() => {
@@ -204,6 +211,16 @@ const HomePage = () => {
       }
    };
 
+   //Fetch All Budget Summaries
+   const getBudgetSummaries = async () => {
+      if(!summaries || summaries.length === 0) {
+         //Fetch All Budget Summaries
+         console.log("Fetching budget summaries...");
+         setSummariesLoading();
+         await fetchBudgetSummaries();
+      }
+   }
+
    //Fetch All Category Types
    const getCategoryTypes = async () => {
       if (!categoryTypes || categoryTypes.length === 0) {
@@ -255,6 +272,7 @@ const HomePage = () => {
          getIncomes();
          getCategories();
          getCategoryTypes();
+         getBudgetSummaries();
          initalFetchRef.current = true;
       }
 
@@ -276,7 +294,8 @@ const HomePage = () => {
             incomesLoading &&
             categoriesLoading &&
             categoryTypesLoading &&
-            accountsLoading
+            accountsLoading &&
+            summariesLoading
       );
    }, [
       transactionsLoading,
@@ -284,6 +303,7 @@ const HomePage = () => {
       categoriesLoading,
       categoryTypesLoading,
       accountsLoading,
+      summariesLoading
    ]);
 
    return (
