@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of our BudgetPerformance service
@@ -64,7 +65,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
         if(monthYear == null) {
             monthYear = new MonthYear();
             LocalDate currentDate = LocalDate.now();
-
+            log.info("No MonthYear passed in; using current Month and Year");
             monthYear.setMonth(currentDate.getMonth().name());
             monthYear.setYear(currentDate.getYear());
         }
@@ -78,6 +79,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
         for(User user: users) {
             //Skip all generating BudgetPerformance for users who already have a BudgetPerformance created for that Month/Year
             if(repository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId()) != null){
+                log.info("BudgetPerformance for MonthYear {} and User {} already exists; skipping generation", monthYear, user.getUserId());
                 continue;
             }
 
@@ -96,6 +98,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
                             .build();
             budgetPerformance.setId(id);
 
+            log.info("Generating Budget Performance with ID {} for User {} and MonthYear {}", id, user.getUserId(), monthYear);
             budgetOverviews.forEach(((overviewType, budgetOverview) -> {
                 switch (overviewType){
                     case NEEDS -> budgetPerformance.setNeedsOverview(budgetOverview);
@@ -111,7 +114,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
         }
 
         //Persist all BudgetPerformance Entities
-        repository.saveAllAndFlush(budgetPerformances);
+        if(!budgetPerformances.isEmpty()) { repository.saveAllAndFlush(budgetPerformances); }
     }
 
     /**
@@ -139,6 +142,11 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
      *          - BudgetOverview model
      */
     public HashMap<OverviewType, BudgetOverview> generateBudgetOverviews(List<Category> userCategories, MonthYear monthYear) {
+        String categoryIds = userCategories.stream()
+                                .map(category -> String.valueOf(category.getCategoryId()))
+                                .collect(Collectors.joining(", "));
+        log.info("Generating Budget Overviews for the Categories [{}] and the Month {} and Year {}", categoryIds, monthYear.getMonth(), monthYear.getYear());
+
         HashMap<OverviewType, BudgetOverview> budgetOverviews = new HashMap<>();
         List<OverviewType> overviewTypes = List.of(OverviewType.GENERAL, OverviewType.NEEDS, OverviewType.WANTS, OverviewType.INVESTMENTS);
 
@@ -149,6 +157,10 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
             if(overviewType != OverviewType.GENERAL) {
                 String categoryTypeName = GeneralUtil.nullSafeToLowerCaseOrEmpty(overviewType.getType());
                 filteredCategories = userCategories.stream().filter(category -> categoryTypeName.equals(GeneralUtil.nullSafeToLowerCaseOrEmpty(category.getCategoryType().getName()))).toList();
+                String filteredCategoryIds = filteredCategories.stream()
+                        .map(category -> String.valueOf(category.getCategoryId()))
+                        .collect(Collectors.joining(", "));
+                log.info("Filtered Category Ids for Overview Type {} : [{}]", overviewType.getType(), filteredCategoryIds);
             }
 
             double totalAmountBudgeted = filteredCategories.stream()
@@ -168,6 +180,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
                     .totalAmountAllocated(totalAmountBudgeted)
                     .totalPercentUtilized(totalBudgetUtilization)
                     .build();
+            log.info("Generated BudgetOverview for MonthYear {} and Categories [{}] : {}", monthYear, categoryIds, budgetOverview);
             budgetOverviews.put(overviewType, budgetOverview);
         }
 
