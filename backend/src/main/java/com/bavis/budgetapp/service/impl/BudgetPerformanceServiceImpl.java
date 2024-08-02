@@ -172,6 +172,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
                                             .mapToDouble(Transaction::getAmount)
                                             .sum();
             double totalBudgetUtilization = totalAmountSpent != 0 ? totalAmountSpent / totalAmountBudgeted : 0;
+            if(totalBudgetUtilization != 0) { totalBudgetUtilization = (double) Math.round(totalBudgetUtilization * 100) / 100; } //round to nearest hundreth
 
             BudgetOverview budgetOverview = BudgetOverview.builder()
                     .overviewType(overviewType)
