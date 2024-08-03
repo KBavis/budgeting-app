@@ -31,6 +31,17 @@ public interface CategoryTypeService {
 	 */
 	List<CategoryType> readAll();
 
+
+	/**
+	 * Functionality to retrieve a user's CategoryType corresponding to a particular name
+	 *
+	 * @param categoryTypeName
+	 * 			- CategoryType name to fetch
+	 * @return
+	 * 			- retrieved CategoryType
+	 */
+	CategoryType readByName(String categoryTypeName);
+
 	/**
 	 * Function to create multiple Category Type entities in a singular request
 	 *
