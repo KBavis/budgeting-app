@@ -23,4 +23,8 @@ public class BudgetOverview {
     private double totalAmountAllocated;
 
     private double totalPercentUtilized;
+
+    private double savedAmountAttributesTotal;
+
+    private double totalAmountSaved;
 }

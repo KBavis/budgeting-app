@@ -30,7 +30,9 @@ public class BudgetPerformance {
             @AttributeOverride(name = "overviewType", column = @Column(name = "GENERAL_OVERVIEW_TYPE")),
             @AttributeOverride(name = "totalSpent", column = @Column(name = "GENERAL_TOTAL_SPENT")),
             @AttributeOverride(name = "totalAmountAllocated", column = @Column(name = "GENERAL_TOTAL_AMOUNT_ALLOCATED")),
-            @AttributeOverride(name = "totalPercentUtilized", column = @Column(name = "GENERAL_TOTAL_PERCENT_UTILIZED"))
+            @AttributeOverride(name = "totalPercentUtilized", column = @Column(name = "GENERAL_TOTAL_PERCENT_UTILIZED")),
+            @AttributeOverride(name = "totalAmountSaved", column = @Column(name = "GENERAL_TOTAL_AMOUNT_SAVED")),
+            @AttributeOverride(name = "savedAmountAttributesTotal", column = @Column(name = "GENERAL_SAVED_AMOUNT_ATTRIBUTES_TOTAL"))
     })
     private BudgetOverview generalOverview;
 
@@ -39,7 +41,9 @@ public class BudgetPerformance {
             @AttributeOverride(name = "overviewType", column = @Column(name = "NEEDS_OVERVIEW_TYPE")),
             @AttributeOverride(name = "totalSpent", column = @Column(name = "NEEDS_TOTAL_SPENT")),
             @AttributeOverride(name = "totalAmountAllocated", column = @Column(name = "NEEDS_TOTAL_AMOUNT_ALLOCATED")),
-            @AttributeOverride(name = "totalPercentUtilized", column = @Column(name = "NEEDS_TOTAL_PERCENT_UTILIZED"))
+            @AttributeOverride(name = "totalPercentUtilized", column = @Column(name = "NEEDS_TOTAL_PERCENT_UTILIZED")),
+            @AttributeOverride(name = "totalAmountSaved", column = @Column(name = "NEEDS_TOTAL_AMOUNT_SAVED")),
+            @AttributeOverride(name = "savedAmountAttributesTotal", column = @Column(name = "NEEDS_SAVED_AMOUNT_ATTRIBUTES_TOTAL"))
     })
     private BudgetOverview needsOverview;
 
@@ -48,7 +52,9 @@ public class BudgetPerformance {
             @AttributeOverride(name = "overviewType", column = @Column(name = "WANTS_OVERVIEW_TYPE")),
             @AttributeOverride(name = "totalSpent", column = @Column(name = "WANTS_TOTAL_SPENT")),
             @AttributeOverride(name = "totalAmountAllocated", column = @Column(name = "WANTS_TOTAL_AMOUNT_ALLOCATED")),
-            @AttributeOverride(name = "totalPercentUtilized", column = @Column(name = "WANTS_TOTAL_PERCENT_UTILIZED"))
+            @AttributeOverride(name = "totalPercentUtilized", column = @Column(name = "WANTS_TOTAL_PERCENT_UTILIZED")),
+            @AttributeOverride(name = "totalAmountSaved", column = @Column(name = "WANTS_TOTAL_AMOUNT_SAVED")),
+            @AttributeOverride(name = "savedAmountAttributesTotal", column = @Column(name = "WANTS_SAVED_AMOUNT_ATTRIBUTES_TOTAL"))
     })
     private BudgetOverview wantsOverview;
 
@@ -57,7 +63,9 @@ public class BudgetPerformance {
             @AttributeOverride(name = "overviewType", column = @Column(name = "INVESTMENTS_OVERVIEW_TYPE")),
             @AttributeOverride(name = "totalSpent", column = @Column(name = "INVESTMENTS_TOTAL_SPENT")),
             @AttributeOverride(name = "totalAmountAllocated", column = @Column(name = "INVESTMENTS_TOTAL_AMOUNT_ALLOCATED")),
-            @AttributeOverride(name = "totalPercentUtilized", column = @Column(name = "INVESTMENTS_TOTAL_PERCENT_UTILIZED"))
+            @AttributeOverride(name = "totalPercentUtilized", column = @Column(name = "INVESTMENTS_TOTAL_PERCENT_UTILIZED")),
+            @AttributeOverride(name = "totalAmountSaved", column = @Column(name = "INVESTMENTS_TOTAL_AMOUNT_SAVED")),
+            @AttributeOverride(name = "savedAmountAttributesTotal", column = @Column(name = "INVESTMENTS_SAVED_AMOUNT_ATTRIBUTES_TOTAL"))
     })
     private BudgetOverview investmentOverview;
 }
