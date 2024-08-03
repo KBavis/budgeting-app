@@ -18,10 +18,12 @@ public interface CategoryTypeRepository extends JpaRepository<CategoryType, Long
 	 *
 	 * @param categoryTypeName
 	 * 			- specified name to search for
+	 * @param userId
+	  *			- userId to fetch CategoryType for
 	 * @return
 	 * 			- CategoryType pertaining to specified name
 	 */
-	CategoryType findByName(String categoryTypeName);
+	CategoryType findByNameAndUserUserId(String categoryTypeName, long userId);
 
 	List<CategoryType> findByUserUserId(Long id);
 }
