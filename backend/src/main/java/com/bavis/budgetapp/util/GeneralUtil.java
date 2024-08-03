@@ -2,6 +2,7 @@ package com.bavis.budgetapp.util;
 
 import com.bavis.budgetapp.constants.TimeType;
 import com.bavis.budgetapp.model.MonthYear;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -91,6 +92,20 @@ public class GeneralUtil {
         return dateToCheck.getYear() == monthYear.getYear() && month.name().equals(monthYear.getMonth().toUpperCase());
     }
 
+
+    /**
+     * Functionality to transform a word to normal case
+     *
+     * @param input
+     *          - Word to transform to normal case
+     * @return
+     *          - Normal case word
+     */
+    public static String toNormalCase(String input) {
+        if(StringUtils.isBlank(input)) { return  ""; }
+
+        return StringUtils.capitalize(input.toLowerCase()); //transform word to lower case and upper case firs letter
+    }
 
     /**
      * Functionality to update a String to be all lowercase but to avoid NPE
