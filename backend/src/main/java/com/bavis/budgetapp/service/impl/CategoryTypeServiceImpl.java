@@ -7,6 +7,7 @@ import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryTypeMapper;
 import com.bavis.budgetapp.service.IncomeService;
 import com.bavis.budgetapp.service.UserService;
+import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
@@ -125,6 +126,15 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 
         return repository.findById(categoryTypeId).orElseThrow(
 				() -> (new RuntimeException("Invalid category type id: " + categoryTypeId)));
+	}
+
+	@Override
+	public CategoryType readByName(String categoryTypeName) {
+		User currentAuthUser = userService.getCurrentAuthUser();
+		long userId = currentAuthUser.getUserId();
+		String normalCaseType = GeneralUtil.toNormalCase(categoryTypeName);
+		log.info("Attempting to fetch Category Type with the name {} for User {}", normalCaseType, userId);
+		return repository.findByNameAndUserUserId(normalCaseType, userId);
 	}
 
 	//todo: finish this logic and add logging
