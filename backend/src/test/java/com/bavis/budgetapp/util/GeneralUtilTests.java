@@ -90,4 +90,40 @@ public class GeneralUtilTests {
         //Assert
         assertFalse(validity);
     }
+
+    @Test
+    void testToNormalCase_NullWord_ReturnsEmpty() {
+        String testInput = null;
+
+        String output = GeneralUtil.toNormalCase(testInput);
+
+        assertEquals("", output);
+    }
+
+    @Test
+    void testToNormalCase_EmptyWord_ReturnsEmpty() {
+        String testInput = "";
+
+        String output = GeneralUtil.toNormalCase(testInput);
+
+        assertEquals("", output);
+    }
+
+    @Test
+    void testToNormalCase_MultipleWords_FirstLetterCapitalized() {
+        String testInput = "THIS IS A PHRASE.";
+
+        String output = GeneralUtil.toNormalCase(testInput);
+
+        assertEquals("This is a phrase.", output);
+    }
+
+    @Test
+    void testToNormalCase_SingleWord_FirstLetterCapitalized() {
+        String testInput = "PHRASE";
+
+        String output = GeneralUtil.toNormalCase(testInput);
+
+        assertEquals("Phrase", output);
+    }
 }
