@@ -1,6 +1,14 @@
 import React from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
+/**
+ * Component used to represent a BudgetOverview in our BudgetPerformance entity
+ *
+ * @param overview
+ *          - BudgetOverview to generate component for
+ * @returns
+ * '        - BudgetOverview component
+ */
 const BudgetOverview = ({ overview }) => {
     const { overviewType, totalSpent, totalAmountAllocated, totalPercentUtilized, totalAmountSaved, savedAmountAttributesTotal } = overview;
 
