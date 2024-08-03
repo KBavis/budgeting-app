@@ -10,6 +10,7 @@ import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.model.BudgetOverview;
 import com.bavis.budgetapp.model.BudgetPerformanceId;
 import com.bavis.budgetapp.model.MonthYear;
+import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.service.impl.BudgetPerformanceServiceImpl;
@@ -48,6 +49,9 @@ public class BudgetPerformanceServiceTests {
 
     @Mock
     private TransactionService transactionService;
+
+    @Mock
+    private CategoryTypeService categoryTypeService;
 
     @InjectMocks
     @Spy
@@ -143,16 +147,19 @@ public class BudgetPerformanceServiceTests {
         needsCategoryType = CategoryType.builder()
                 .categoryTypeId(1L)
                 .name("Needs")
+                .savedAmount(500.0)
                 .build();
 
         wantsCategoryType = CategoryType.builder()
                 .categoryTypeId(2L)
                 .name("Wants")
+                .savedAmount(1000.0)
                 .build();
 
         investmentsCategoryType = CategoryType.builder()
                 .categoryTypeId(3L)
                 .name("Investments")
+                .savedAmount(600.0)
                 .build();
 
         needsCategory = Category.builder()
@@ -477,6 +484,8 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(needsCategory.getCategoryId())).thenReturn(List.of(needsTransaction));
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
+        doReturn(0.0).when(budgetPerformanceService)
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
 
         HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
 
@@ -500,6 +509,8 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(needsCategory.getCategoryId())).thenReturn(List.of(needsTransaction));
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
+        doReturn(0.0).when(budgetPerformanceService)
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
 
         HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
 
@@ -523,6 +534,8 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(needsCategory.getCategoryId())).thenReturn(List.of(needsTransaction));
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
+        doReturn(0.0).when(budgetPerformanceService)
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
 
         HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
 
@@ -551,6 +564,8 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(needsCategory.getCategoryId())).thenReturn(null);
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(null);
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(null);
+        doReturn(0.0).when(budgetPerformanceService)
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
 
         HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
 
@@ -572,6 +587,8 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(needsCategory.getCategoryId())).thenReturn(List.of(needsTransaction));
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
+        doReturn(0.0).when(budgetPerformanceService)
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
 
         HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
 
@@ -580,6 +597,136 @@ public class BudgetPerformanceServiceTests {
         assertTrue(budgetOverviews.containsKey(OverviewType.NEEDS));
         assertTrue(budgetOverviews.containsKey(OverviewType.INVESTMENTS));
         assertTrue(budgetOverviews.containsKey(OverviewType.WANTS));
+    }
+
+
+    @Test
+    @DisplayName("Test generateBudgetOverview calls calculateTotalAmountSaved")
+    void testGenerateBudgetOverviews_CallsCalculateTotalAmountSaved() {
+        //Mock
+        when(transactionService.fetchCategoryTransactions(needsCategory.getCategoryId())).thenReturn(List.of(needsTransaction));
+        when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
+        when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
+        doReturn(50.0).when(budgetPerformanceService)
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+
+
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
+
+
+        //Each BudgetOverview should have totalSavings of $50.0
+        for(Map.Entry<OverviewType, BudgetOverview> entry : budgetOverviews.entrySet()) {
+            BudgetOverview budgetOverview = entry.getValue();
+            assertEquals(50.0, budgetOverview.getTotalAmountSaved());
+            assertEquals(50.0 - calculateDifference(entry.getKey()), budgetOverview.getSavedAmountAttributesTotal()); //total saved amount - (budgetedAmount - spending)
+        }
+
+        verify(budgetPerformanceService, times(4)).calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+    }
+
+    @Test
+    void testCalculateTotalAmountSaved_GeneralOverview() {
+        //Arrange
+        double difference = 456.20;
+        double expectedTotalAmountSaved = needsCategoryType.getSavedAmount() + wantsCategoryType.getSavedAmount() + investmentsCategoryType.getSavedAmount();
+        expectedTotalAmountSaved += difference;
+
+        //Mock
+        when(categoryTypeService.readAll()).thenReturn(List.of(needsCategoryType, wantsCategoryType, investmentsCategoryType));
+
+        //Act
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, difference);
+
+        //Assert
+        assertEquals(expectedTotalAmountSaved, totalAmountSaved);
+
+        //Verify
+        verify(categoryTypeService, times(1)).readAll();
+        verify(categoryTypeService, times(0)).readByName(any(String.class));
+    }
+
+
+    @Test
+    void testCalculateTotalAmountSaved_AnyOtherOverview() {
+        //Arrange
+        double difference = 456.20;
+        double expectedTotalAmountSaved = needsCategoryType.getSavedAmount() + difference;
+
+        //Mock
+        when(categoryTypeService.readByName(OverviewType.NEEDS.name())).thenReturn(needsCategoryType);
+
+        //Act
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, difference);
+
+        //Assert
+        assertEquals(expectedTotalAmountSaved, totalAmountSaved);
+
+        //Verify
+        verify(categoryTypeService, times(0)).readAll();
+        verify(categoryTypeService, times(1)).readByName(OverviewType.NEEDS.name());
+    }
+
+    @Test
+    void testCalculateTotalAmountSaved_NullCategoryType_ReturnsDifference() {
+        //Arrange
+        double difference = 456.20;
+
+        //Mock
+        when(categoryTypeService.readByName(OverviewType.NEEDS.name())).thenReturn(null);
+
+        //Act
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, difference);
+
+        //Assert
+        assertEquals(difference, totalAmountSaved); //difference + 0 = difference
+
+        //Verify
+        verify(categoryTypeService, times(0)).readAll();
+        verify(categoryTypeService, times(1)).readByName(OverviewType.NEEDS.name());
+    }
+
+    @Test
+    void testCalculateTotalAmountSaved_NullCategoryTypes_ReturnsZero() {
+        //Arrange
+        double difference = 456.20;
+
+        //Mock
+        when(categoryTypeService.readAll()).thenReturn(null);
+
+        //Act
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, difference);
+
+        //Assert
+        assertEquals(difference, totalAmountSaved); //difference + 0 = difference
+
+        //Verify
+        verify(categoryTypeService, times(1)).readAll();
+        verify(categoryTypeService, times(0)).readByName(any(String.class));
+    }
+
+
+    /**
+     * Utility function to calculate total categoryType 'savedAmount' attribute values
+     *
+     * @param overviewType
+     *          - categoryType to fetch budget for
+     * @return
+     *          - difference
+     */
+    private double calculateDifference(OverviewType overviewType) {
+        switch (overviewType) {
+            case GENERAL:
+                return (needsCategory.getBudgetAmount() + wantsCategory.getBudgetAmount() + investmentsCategory.getBudgetAmount())
+                        - (needsTransaction.getAmount() + wantsTransaction.getAmount() + investmentTransaction.getAmount());
+            case INVESTMENTS:
+                return investmentsCategory.getBudgetAmount() - investmentTransaction.getAmount();
+            case WANTS:
+                return wantsCategory.getBudgetAmount() - wantsTransaction.getAmount();
+            case NEEDS:
+                return needsCategory.getBudgetAmount() - needsTransaction.getAmount();
+            default:
+                throw new IllegalArgumentException("Unknown OverviewType: " + overviewType);
+        }
     }
 
 
