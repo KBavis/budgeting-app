@@ -108,7 +108,8 @@ const Category = ({
    // Set Budget Allocation when Category component initially loaded
    useEffect(() => {
       setBudgetAllocation(category.budgetAmount.toFixed(0));
-   }, [category.categoryId]);
+   }, [category]);
+
 
    // Function to determine progress bar for our Category entity
    const getProgressBarColor = () => {
