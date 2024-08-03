@@ -9,7 +9,8 @@ const BudgetOverview = ({ overview }) => {
         { name: 'Remaining', value: totalAmountAllocated - totalSpent },
     ];
 
-    const COLORS = ['#ff0000', '#82ca9d']; // Red for spent, green for remaining
+    const COLORS = ['#4f46e5', '#d1d5db']; // Indigo for spent, light gray for remaining
+
 
     const getProgressBarColor = () => {
         const percentage = totalPercentUtilized * 100;
