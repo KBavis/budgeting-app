@@ -5,8 +5,8 @@ const BudgetOverview = ({ overview }) => {
     const { overviewType, totalSpent, totalAmountAllocated, totalPercentUtilized, totalAmountSaved, savedAmountAttributesTotal } = overview;
 
     const data = [
-        { name: 'Spent', value: totalSpent },
-        { name: 'Remaining', value: totalAmountAllocated - totalSpent },
+        { name: 'Spent', value: parseFloat(totalSpent.toFixed(2)) },
+        { name: 'Remaining', value: parseFloat((totalAmountAllocated - totalSpent).toFixed(2)) },
     ];
 
     const COLORS = ['#4f46e5', '#d1d5db']; // Indigo for spent, light gray for remaining
