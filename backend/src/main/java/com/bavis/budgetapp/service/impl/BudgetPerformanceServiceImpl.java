@@ -4,12 +4,14 @@ import com.bavis.budgetapp.constants.OverviewType;
 import com.bavis.budgetapp.dao.BudgetPerformanceRepository;
 import com.bavis.budgetapp.entity.BudgetPerformance;
 import com.bavis.budgetapp.entity.Category;
+import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.model.BudgetOverview;
 import com.bavis.budgetapp.model.BudgetPerformanceId;
 import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.BudgetPerformanceService;
+import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.util.GeneralUtil;
@@ -42,6 +44,9 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
 
     @Autowired
     private TransactionService transactionService;
+
+    @Autowired
+    private CategoryTypeService categoryTypeService;
 
     @Override
     public List<BudgetPerformance> fetchBudgetPerformances() {
@@ -162,28 +167,67 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
                 log.info("Filtered Category Ids for Overview Type {} : [{}]", overviewType.getType(), filteredCategoryIds);
             }
 
+            //Calculate Total Amount Allocated to Budget for CategoryType
             double totalAmountBudgeted = filteredCategories.stream()
                                             .mapToDouble(Category::getBudgetAmount)
                                             .sum();
+
+            //Calculate Total Amount Spent on Budget for CategoryType
             double totalAmountSpent = filteredCategories.stream()
                                             .map(category -> Optional.ofNullable(transactionService.fetchCategoryTransactions(category.getCategoryId())).orElse(Collections.emptyList())) //Fetch Transactions or use empty List
                                             .flatMap(List::stream)
                                             .filter(transaction -> GeneralUtil.isDateInMonthAndYear(transaction.getDate(), monthYear)) //Filter Transactions to verify ones in present month
                                             .mapToDouble(Transaction::getAmount)
                                             .sum();
+
+            //Calculate Budget Utilization
             double totalBudgetUtilization = totalAmountSpent != 0 ? totalAmountSpent / totalAmountBudgeted : 0;
-            if(totalBudgetUtilization != 0) { totalBudgetUtilization = (double) Math.round(totalBudgetUtilization * 100) / 100; } //round to nearest hundreth
+            if(totalBudgetUtilization != 0) { totalBudgetUtilization = (double) Math.round(totalBudgetUtilization * 100) / 100; } //round to nearest hundredth
+
+            //Calculate Savings
+            log.info("Total Amount Budgeted {} and Total Amount Spent {}", totalAmountBudgeted, totalAmountSpent);
+            double difference = totalAmountBudgeted - totalAmountSpent;
+            double totalAmountSaved = calculateTotalAmountSaved(overviewType, difference);
+            double totalCategoryTypeSavedAmounts = totalAmountSaved - difference;
 
             BudgetOverview budgetOverview = BudgetOverview.builder()
                     .overviewType(overviewType)
                     .totalSpent(totalAmountSpent)
                     .totalAmountAllocated(totalAmountBudgeted)
                     .totalPercentUtilized(totalBudgetUtilization)
+                    .totalAmountSaved(totalAmountSaved)
+                    .savedAmountAttributesTotal(totalCategoryTypeSavedAmounts)
                     .build();
+
             log.info("Generated BudgetOverview for MonthYear {} and Categories [{}] : {}", monthYear, categoryIds, budgetOverview);
             budgetOverviews.put(overviewType, budgetOverview);
         }
 
         return budgetOverviews;
+    }
+
+    /**
+     * Functionality to calculate savings for a Category Type based on monthly budget
+     *
+     * @param overviewType
+     *          - OverviewType to calculate savings for
+     * @param difference
+     *          - total amount budgeted MINUS total amount spent
+     * @return
+     *          - total amount saved for CategoryType
+     */
+    public double calculateTotalAmountSaved(OverviewType overviewType, double difference) {
+        //Sum of all CategoryTypes 'savedAmount' AND amount saved via budget
+        if(overviewType == OverviewType.GENERAL) {
+            double categoryTypeSavedAmounts = Optional.ofNullable(categoryTypeService.readAll()).orElse(Collections.emptyList()).stream()
+                    .mapToDouble(CategoryType::getSavedAmount)
+                    .sum();
+
+            return difference + categoryTypeSavedAmounts;
+        }
+
+        CategoryType categoryType = categoryTypeService.readByName(overviewType.name());
+        double categoryTypeSavedAmount = categoryType == null ? 0 : categoryType.getSavedAmount();
+        return categoryTypeSavedAmount + difference;
     }
 }
