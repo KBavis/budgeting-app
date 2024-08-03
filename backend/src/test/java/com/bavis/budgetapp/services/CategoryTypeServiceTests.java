@@ -12,6 +12,7 @@ import com.bavis.budgetapp.mapper.CategoryTypeMapper;
 import com.bavis.budgetapp.service.IncomeService;
 import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.service.impl.CategoryTypeServiceImpl;
+import com.bavis.budgetapp.util.GeneralUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -198,6 +199,64 @@ public class CategoryTypeServiceTests {
         Mockito.verify(repository, times(1)).save(argumentCaptor.capture());
         CategoryType actualCategoryType = argumentCaptor.getValue();
         assertEquals(Collections.emptyList(), actualCategoryType.getCategories());
+    }
+
+    @Test
+    void testReadByName_Successful() {
+        //Arrange
+        String categoryType = "Needs";
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(repository.findByNameAndUserUserId(categoryType, user.getUserId())).thenReturn(categoryTypeNeeds);
+
+        //Act
+        CategoryType actualCategoryType = categoryTypeService.readByName(categoryType);
+
+        //Assert
+        assertEquals(categoryTypeNeeds, actualCategoryType);
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
+        verify(repository, times(1)).findByNameAndUserUserId(categoryType,user.getUserId());
+    }
+
+    @Test
+    void testReadByName_CorrectsCapitalization() {
+        //Arrange
+        String categoryType = "NEEDS";
+        String expectedCategoryTypeName = GeneralUtil.toNormalCase(categoryType);
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(repository.findByNameAndUserUserId(expectedCategoryTypeName, user.getUserId())).thenReturn(categoryTypeNeeds);
+
+        //Act
+        categoryTypeService.readByName(categoryType);
+
+
+        //Verify
+        verify(repository, times(1)).findByNameAndUserUserId(expectedCategoryTypeName,user.getUserId());
+    }
+
+    @Test
+    void testReadByName_ReturnsNull() {
+        //Arrange
+        String categoryType = "Needs";
+
+        //Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(repository.findByNameAndUserUserId(categoryType, user.getUserId())).thenReturn(null);
+
+        //Act
+        CategoryType actualCategoryType = categoryTypeService.readByName(categoryType);
+
+        //Assert
+        assertNull(actualCategoryType);
+
+        //Verify
+        verify(userService, times(1)).getCurrentAuthUser();
+        verify(repository, times(1)).findByNameAndUserUserId(categoryType,user.getUserId());
     }
 
     @Test
