@@ -2,7 +2,7 @@ import React from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 const BudgetOverview = ({ overview }) => {
-    const { overviewType, totalSpent, totalAmountAllocated, totalPercentUtilized } = overview;
+    const { overviewType, totalSpent, totalAmountAllocated, totalPercentUtilized, totalAmountSaved, savedAmountAttributesTotal } = overview;
 
     const data = [
         { name: 'Spent', value: totalSpent },
@@ -37,26 +37,20 @@ const BudgetOverview = ({ overview }) => {
         }
     };
 
-    /**
-     * Functionality to convert to normal case
-     *
-     * @param str
-     *          - String to convert
-     * @returns {string}
-     */
     const convertToNormalCase = (str) => {
-        // Split the string by spaces to handle multi-word strings
         return str
             .toLowerCase()
             .split(' ')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
-    }
+    };
 
-
+    const getTextColor = (value) => {
+        return value >= 0 ? "text-green-500" : "text-red-500";
+    };
 
     return (
-        <div className="relative bg-white rounded-lg shadow-md p-6 mx-4 w-full lg:w-2/3 mb-4">
+        <div className="relative bg-white rounded-lg shadow-md p-6 mx-4 w-full lg:w-2/3 mb-14">
             <h3 className="text-2xl font-bold mb-5 text-center">{convertToNormalCase(overviewType)} Overview</h3>
             <div className="text-center mb-2 font-semibold text-xl ">
                 Spent{" "}
@@ -71,11 +65,19 @@ const BudgetOverview = ({ overview }) => {
             <div className="w-full bg-gray-300 rounded-full h-4 mb-4">
                 <div
                     className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()}`}
-                    style={{ width: `${totalPercentUtilized * 100 > 100 ? 100 : totalPercentUtilized * 100}%` }}
+                    style={{width: `${totalPercentUtilized * 100 > 100 ? 100 : totalPercentUtilized * 100}%`}}
                 ></div>
             </div>
             <div className="text-center font-semibold text-lg mb-4">
-                Utilization: <span className="font-bold">{(totalPercentUtilized * 100).toFixed(2)}%</span>
+                Budget Utilization: <span className="font-bold">{(totalPercentUtilized * 100).toFixed(2)}%</span>
+            </div>
+            <div className="text-center font-semibold text-lg mb-4">
+                Savings Based on Allocations: <span
+                className={`font-bold`}>${savedAmountAttributesTotal.toFixed(2)}</span>
+            </div>
+            <div className="text-center font-semibold text-lg mb-4">
+                Total Amount Saved: <span
+                className={`font-bold ${getTextColor(totalAmountSaved)}`}>${totalAmountSaved.toFixed(2)}</span>
             </div>
             <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
@@ -89,10 +91,10 @@ const BudgetOverview = ({ overview }) => {
                         dataKey="value"
                     >
                         {data.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
                         ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip/>
                 </PieChart>
             </ResponsiveContainer>
         </div>
