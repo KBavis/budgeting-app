@@ -18,6 +18,7 @@ pipeline {
                     def props = readProperties file: 'backend/gradle.properties'
                     def baseVersion = props['projectVersion']
                     def buildNumber = env.BUILD_NUMBER
+                    env.BASE_VERSION = ${baseVersion}
                     env.VERSION = "${baseVersion}.${buildNumber}"
                     echo "Version: ${env.VERSION}"
                 }
@@ -46,8 +47,8 @@ pipeline {
             steps {
                 dir('backend') {
                     script {
-                        def version = env.VERSION
-                        bat "docker build -t budget-app-backend:${version} --build-arg VERSION=${version} -f docker/Dockerfile ."
+                        def baseVersion = env.BASE_VERSION
+                        bat "docker build -t budget-app-backend:${baseVersion} --build-arg VERSION=${baseVersion} -f docker/Dockerfile ."
                     }
                 }
             }
