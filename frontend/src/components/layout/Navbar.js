@@ -24,14 +24,6 @@ const Navbar = () => {
           <ul className="flex justify-end space-x-12 text-sm">
             <li>
               <Link
-                to="/transactions"
-                className="text-white font-bold duration-500 hover:text-indigo-400"
-              >
-                Transactions
-              </Link>
-            </li>
-            <li>
-              <Link
                 to="/accounts"
                 className="text-white font-bold duration-500 hover:text-indigo-400"
               >
