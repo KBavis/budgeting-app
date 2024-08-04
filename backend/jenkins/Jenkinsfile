@@ -47,8 +47,9 @@ pipeline {
             steps {
                 dir('backend') {
                     script {
+                        def imageVersion = env.VERSION
                         def baseVersion = env.BASE_VERSION
-                        bat "docker build -t budget-app-backend:${baseVersion} --build-arg VERSION=${baseVersion} -f docker/Dockerfile ."
+                        bat "docker build -t budget-app-backend:${imageVersion} --build-arg VERSION=${baseVersion} -f docker/Dockerfile ."
                     }
                 }
             }
