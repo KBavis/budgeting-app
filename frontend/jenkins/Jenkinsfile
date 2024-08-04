@@ -12,7 +12,9 @@ pipeline {
             steps {
                 script {
                     def packageJson = readJSON file: 'frontend/package.json'
-                    env.VERSION = packageJson.version
+                    def baseVersion = packageJson.version
+                    def buildNumber = env.BUILD_NUMBER
+                    env.VERSION = "${baseVersion}.${buildNumber}"
                     echo "Version: ${env.VERSION}"
                 }
             }
