@@ -78,7 +78,7 @@ pipeline {
                       bat 'gcloud auth activate-service-account --key-file %GOOGLE_APPLICATION_CREDENTIALS%'
                       script {
                         def version = env.VERSION
-                        def imageUrl = "docker.io/library/baviske/budget-app-backend:${version}"
+                        def imageUrl = "docker.io/baviske/budget-app-backend:${version}"
                         def serviceName = "budget-app-backend"
                         def region = "northamerica-northeast2"
                         def projectId = "budget-application-421004"
