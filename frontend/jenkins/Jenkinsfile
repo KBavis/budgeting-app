@@ -20,17 +20,6 @@ pipeline {
             }
         }
 
-        stage('Remove Previous Docker Image') {
-            steps {
-                script {
-                    def version = env.VERSION
-                    def dockerImage = "budget-app-frontend:${version}"
-                    bat "docker rmi -f ${dockerImage} || true"
-                }
-            }
-         }
-
-
         stage('Build Frontend Docker Image') {
             steps {
                 dir('frontend') {
