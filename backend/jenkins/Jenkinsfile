@@ -16,7 +16,9 @@ pipeline {
             steps {
                 script {
                     def props = readProperties file: 'backend/gradle.properties'
-                    env.VERSION = props['projectVersion']
+                    def baseVersion = props['projectVersion']
+                    def buildNumber = env.BUILD_NUMBER
+                    env.VERSION = "${baseVersion}.${buildNumber}"
                     echo "Version: ${env.VERSION}"
                 }
             }
