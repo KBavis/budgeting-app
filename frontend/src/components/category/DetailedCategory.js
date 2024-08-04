@@ -18,6 +18,7 @@ const DetailedCategory = ({
    const [totalAmountSpent, setTotalAmountSpent] = useState(0);
    const [budgetUsage, setBudgetUsage] = useState(0);
    const [filteredTransactions, setFilteredTransactions] = useState([]);
+   const [filterQuery, setFilterQuery] = useState("");
 
    //Global State
    const { transactions, removeCategory } = useContext(transactionContext);
@@ -86,56 +87,71 @@ const DetailedCategory = ({
       handleShowUpdateAllocationsModal(category.categoryType);
    };
 
-   return (
-      <div className="relative bg-white rounded-lg shadow-md p-6 mx-4 w-full lg:w-2/3">
-         <div className="absolute top-4 right-4">
-            <CategoryDropdown
-               handleDeleteCategory={handleDeleteCategory}
-               handleRenameCategory={handleRenameCategory}
-               handleUpdateAllocations={handleUpdateAllocations}
-            />
-         </div>
-         <h3 className="text-2xl font-bold mb-5 text-center">
-            {category.name}
-         </h3>
-         <div className="text-center mb-2 font-semibold text-xl">
-            Spent{" "}
-            <span className={`font-extrabold ${getProgressTextColor()}`}>
-               {" "}
-               ${totalAmountSpent}{" "}
-            </span>{" "}
-            out of allocated
-            <span className="text-black font-bold">
-               {" "}
-               ${category.budgetAmount.toFixed(0)}
-            </span>
-         </div>
-         <div className="w-full bg-gray-300 rounded-full h-4 mb-4">
-            <div
-               className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()}`}
-               style={{ width: `${budgetUsage > 100 ? 100 : budgetUsage}%` }}
-            ></div>
-         </div>
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-h-64 overflow-y-auto">
-            {filteredTransactions.map((transaction) => (
-               <DetailedCategoryTransaction
-                  key={transaction.transactionId}
-                  transaction={transaction}
-                  handleShowSplitTransactionModal={
-                     handleShowSplitTransactionModal
-                  }
-                  handleShowReduceTransactionModal={
-                     handleShowReduceTransactionModal
-                  }
-                  handleShowRenameTransactionModal={
-                     handleShowRenameTransactionModal
-                  }
-                  handleShowAssignCategoryModal={handleShowAssignCategoryModal}
-               />
-            ))}
-         </div>
-      </div>
+   const filterTransactionsByQuery = filteredTransactions.filter((transaction) =>
+      transaction.name.toLowerCase().startsWith(filterQuery.toLowerCase())
    );
+
+   return (
+       <div className="relative bg-white rounded-lg shadow-md p-6 mx-4 w-full lg:w-2/3">
+          <div className="absolute top-4 right-4">
+             <CategoryDropdown
+                 handleDeleteCategory={handleDeleteCategory}
+                 handleRenameCategory={handleRenameCategory}
+                 handleUpdateAllocations={handleUpdateAllocations}
+             />
+          </div>
+          <h3 className="text-2xl font-bold mb-2 text-center">
+             {category.name}
+          </h3>
+          <div className="flex justify-center mb-8">
+             <input
+                 type="text"
+                 placeholder="Filter transactions..."
+                 value={filterQuery}
+                 onChange={(e) => setFilterQuery(e.target.value)}
+                 className="p-2 w-full md:w-1/4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+             />
+          </div>
+          <div className="text-center mb-2 font-semibold text-xl">
+             Spent{" "}
+             <span className={`font-extrabold ${getProgressTextColor()}`}>
+                {" "}
+                ${totalAmountSpent}{" "}
+            </span>{" "}
+             out of allocated
+             <span className="text-black font-bold">
+                {" "}
+                ${category.budgetAmount.toFixed(0)}
+            </span>
+          </div>
+          <div className="w-full bg-gray-300 rounded-full h-4 mb-4">
+             <div
+                 className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()}`}
+                 style={{width: `${budgetUsage > 100 ? 100 : budgetUsage}%`}}
+             ></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-h-64 overflow-y-auto">
+             {filterTransactionsByQuery.length > 0 ? (
+                 filterTransactionsByQuery.map((transaction) => (
+                     <DetailedCategoryTransaction
+                         key={transaction.transactionId}
+                         transaction={transaction}
+                         handleShowSplitTransactionModal={handleShowSplitTransactionModal}
+                         handleShowReduceTransactionModal={handleShowReduceTransactionModal}
+                         handleShowRenameTransactionModal={handleShowRenameTransactionModal}
+                         handleShowAssignCategoryModal={handleShowAssignCategoryModal}
+                     />
+                 ))
+             ) : (
+                 <div className="col-span-full text-center text-gray-500 py-4">
+                    No transactions found.
+                 </div>
+             )}
+          </div>
+
+       </div>
+   );
+
 };
 
 export default DetailedCategory;

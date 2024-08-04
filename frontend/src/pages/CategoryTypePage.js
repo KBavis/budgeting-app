@@ -22,27 +22,28 @@ import RenameCategory from "../components/category/RenameCategory";
  */
 const CategoryTypePage = ({ categoryType }) => {
    const { categoryTypes, fetchCategoryTypes } =
-      useContext(categoryTypeContext);
+       useContext(categoryTypeContext);
    const { categories, fetchCategories } = useContext(categoryContext);
    const { user, fetchAuthenticatedUser } = useContext(authContext);
    const { transactions, fetchTransactions } = useContext(transactionContext);
    const [filteredCategories, setFilteredCategories] = useState([]);
+   const [filterQuery, setFilterQuery] = useState("");
    const [showSplitTransactionModal, setShowSplitTransactionModal] =
-      useState(false);
+       useState(false);
    const [selectedCategoryType, setSelectedCategoryType] = useState(false);
    const [showReduceTransactionModal, setShowReduceTransactionModal] =
-      useState(false);
+       useState(false);
    const [showRenameTransactionModal, setShowRenameTransactionModal] =
-      useState(false);
+       useState(false);
    const [showAssignCategoryModal, setShowAssignCategoryModal] =
-      useState(false);
+       useState(false);
    const [showUpdateAllocationsModal, setShowUpdateAllocationsModal] =
-      useState(false);
+       useState(false);
    const [showRenameCategoryModal, setShowRenameCategoryModal] =
-      useState(false);
+       useState(false);
    const [currentTransaction, setCurrentTransaction] = useState(null);
    const [selectedCategory, setSelectedCategory] =
-      useState(null);
+       useState(null);
    const navigate = useNavigate();
 
    const initialFetchRef = useRef(false);
@@ -50,14 +51,14 @@ const CategoryTypePage = ({ categoryType }) => {
    //Filter The Categories for Current Category Type
    useEffect(() => {
       const currentCategoryType = categoryTypes.find(
-         (ct) => ct.name.toLowerCase() === categoryType.toLowerCase()
+          (ct) => ct.name.toLowerCase() === categoryType.toLowerCase()
       );
 
       if (currentCategoryType) {
          const filtered = categories.filter(
-            (category) =>
-               category.categoryType.categoryTypeId ===
-               currentCategoryType.categoryTypeId
+             (category) =>
+                 category.categoryType.categoryTypeId ===
+                 currentCategoryType.categoryTypeId
          );
          setFilteredCategories(filtered);
       }
@@ -161,104 +162,110 @@ const CategoryTypePage = ({ categoryType }) => {
       setShowRenameCategoryModal(false);
    }
 
-
+   // Filter categories based on the filter query
+   const filteredCategoriesByQuery = filteredCategories.filter((category) =>
+       category.name.toLowerCase().startsWith(filterQuery.toLowerCase())
+   );
 
    return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
-         <FaArrowLeft
-            className="text-3xl text-white ml-5 mt-5 hover:scale-105 hover:text-gray-200 cursor-pointer z-[500]"
-            onClick={handleBackClick}
-         />
-         <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
-            <div className="max-w-md text-center mb-8">
-               <h2 className="text-4xl md:text-5xl font-bold text-white">
-                  Explore your{" "}
-                  <span className="text-indigo-600"> {categoryType} </span>
-               </h2>
-            </div>
-            <div className="flex flex-wrap justify-center items-center w-full space-y-8 overflow-y-auto scrollbar-hide h-screen pb-20">
-               {filteredCategories.length > 0 ? (
-                  filteredCategories.map((category) => (
-                     <DetailedCategory
-                        key={category.categoryId}
-                        category={category}
-                        handleShowSplitTransactionModal={
-                           handleShowSplitTransactionModal
-                        }
-                        handleShowReduceTransactionModal={
-                           handleShowReduceTransactionModal
-                        }
-                        handleShowRenameTransactionModal={
-                           handleShowRenameTransactionModal
-                        }
-                        handleShowAssignCategoryModal={
-                           handleShowAssignCategoryModal
-                        }
-                        handleShowUpdateAllocationsModal={
-                           handleShowUpdateAllocationsModal
-                        }
-                        handleShowRenameCategoryModal={
-                           handleShowRenameCategoryModal
-                        }
-                     />
-                  ))
-               ) : (
-                  <p className="text-white">
-                     No categories found for this type.
-                  </p>
-               )}
-            </div>
-         </div>
-         {/* Modals */}
-         {showSplitTransactionModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <SplitTransactionModal
-                  onClose={handleCloseSplitTransactionModal}
-                  transaction={currentTransaction}
-               />
-            </div>
-         )}
-         {showReduceTransactionModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <ReduceTransaction
-                  onClose={handleCloseReduceTransactionModal}
-                  transaction={currentTransaction}
-               />
-            </div>
-         )}
-         {showRenameTransactionModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <RenameTransaction
-                  onClose={handleCloseRenameTransactionModal}
-                  transaction={currentTransaction}
-               />
-            </div>
-         )}
-         {showAssignCategoryModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <AssignCategoryModal
-                  onClose={handleCloseAssignCategoryModal}
-                  transaction={currentTransaction}
-               />
-            </div>
-         )}
-         {showUpdateAllocationsModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <UpdateAllocationsModal
-                  onClose={handleCloseUpdateAllocationsModal}
-                  categoryType={selectedCategoryType}
-               />
-            </div>
-         )}
-         {showRenameCategoryModal && (
-             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-                <RenameCategory
-                    onClose={handleCloseRenameCategoryModal}
-                    category={selectedCategory}
+       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
+          <FaArrowLeft
+              className="text-3xl text-white ml-5 mt-5 hover:scale-105 hover:text-gray-200 cursor-pointer z-[500]"
+              onClick={handleBackClick}
+          />
+          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
+             <div className="max-w-md text-center mb-8">
+                <h2 className="text-4xl md:text-5xl font-bold text-white">
+                   Explore your{" "}
+                   <span className="text-indigo-600"> {categoryType} </span>
+                </h2>
+                <input
+                    type="text"
+                    placeholder="Filter categories..."
+                    value={filterQuery}
+                    onChange={(e) => setFilterQuery(e.target.value)}
+                    className="mt-4 p-2 w-full rounded-md text-black"
                 />
              </div>
-         )}
-      </div>
+             <div
+                 className="flex flex-wrap justify-center items-center w-full space-y-8 overflow-y-auto scrollbar-hide h-screen pb-20">
+                {filteredCategoriesByQuery.length > 0 ? (
+                    filteredCategoriesByQuery.map((category) => (
+                        <DetailedCategory
+                            key={category.categoryId}
+                            category={category}
+                            handleShowSplitTransactionModal={handleShowSplitTransactionModal}
+                            handleShowReduceTransactionModal={handleShowReduceTransactionModal}
+                            handleShowRenameTransactionModal={handleShowRenameTransactionModal}
+                            handleShowAssignCategoryModal={handleShowAssignCategoryModal}
+                            handleShowUpdateAllocationsModal={handleShowUpdateAllocationsModal}
+                            handleShowRenameCategoryModal={handleShowRenameCategoryModal}
+                        />
+                    ))
+                ) : (
+                    <div className="flex flex-col items-center justify-center w-full py-8 text-center">
+                       <h2 className="text-2xl md:text-3xl font-bold text-white p-4 rounded-md shadow-md border-white border">
+                          No categories found
+                          <p className="text-lg text-gray-300 mt-4">Try adjusting your filters or add new
+                             categories.</p>
+                       </h2>
+                    </div>
+                )}
+             </div>
+          </div>
+          {/* Modals */}
+          {showSplitTransactionModal && (
+              <div
+                  className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+                 <SplitTransactionModal
+                     onClose={handleCloseSplitTransactionModal}
+                     transaction={currentTransaction}
+                 />
+              </div>
+          )}
+          {showReduceTransactionModal && (
+              <div
+                  className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+                 <ReduceTransaction
+                     onClose={handleCloseReduceTransactionModal}
+                     transaction={currentTransaction}
+                 />
+              </div>
+          )}
+          {showRenameTransactionModal && (
+              <div
+                  className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+                 <RenameTransaction
+                     onClose={handleCloseRenameTransactionModal}
+                     transaction={currentTransaction}
+                 />
+              </div>
+          )}
+          {showAssignCategoryModal && (
+              <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+                 <AssignCategoryModal
+                     onClose={handleCloseAssignCategoryModal}
+                     transaction={currentTransaction}
+                 />
+              </div>
+          )}
+          {showUpdateAllocationsModal && (
+              <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+                 <UpdateAllocationsModal
+                     onClose={handleCloseUpdateAllocationsModal}
+                     categoryType={selectedCategoryType}
+                 />
+              </div>
+          )}
+          {showRenameCategoryModal && (
+              <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+                 <RenameCategory
+                     onClose={handleCloseRenameCategoryModal}
+                     category={selectedCategory}
+                 />
+              </div>
+          )}
+       </div>
    );
 };
 
