@@ -38,6 +38,7 @@ button.text-white.bg-transparent.border-none.p-0.m-0:active {
    border: none !important;
    padding: 0 !important;
    transition: background-color 0.5s ease !important;
+   background: none !important;
 }
 
 .dropdown-toggle::after {
