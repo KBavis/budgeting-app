@@ -18,6 +18,7 @@ import CategoryState from "./context/category/CategoryState";
 import CategoryCreationPage from "./pages/CategoryCreationPage";
 import TransactionState from "./context/transaction/TransactionState";
 import CategoryTypePage from "./pages/CategoryTypePage";
+import AccountsPage from "./pages/AccountsPage";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import Navbar from "./components/layout/Navbar";
@@ -115,6 +116,12 @@ function App() {
                                         path="/budget/summary"
                                         element={
                                            <BudgetSummaryPage />
+                                        }
+                                    />
+                                    <Route
+                                        path="/accounts"
+                                        element={
+                                           <AccountsPage />
                                         }
                                     />
                                  </Routes>
