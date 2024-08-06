@@ -119,5 +119,5 @@ button.text-white.bg-transparent.border-none.p-0.m-0:active {
 }
 
 .animate-prevPage {
-   animation: prevPage 0\2s ease-in-out;
+   animation: prevPage 0.2s ease-in-out;
 }
