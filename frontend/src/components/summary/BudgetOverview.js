@@ -81,7 +81,7 @@ const BudgetOverview = ({ overview }) => {
                 Budget Utilization: <span className="font-bold">{(totalPercentUtilized * 100).toFixed(2)}%</span>
             </div>
             <div className="text-center font-semibold text-lg mb-4">
-                Savings Based on Allocations: <span
+                Expected Savings Based on Budget: <span
                 className={`font-bold`}>${savedAmountAttributesTotal.toFixed(2)}</span>
             </div>
             <div className="text-center font-semibold text-lg mb-4">
