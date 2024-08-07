@@ -28,4 +28,7 @@ public interface PlaidClient {
 
     @PostMapping("/transactions/sync")
     ResponseEntity<PlaidTransactionSyncResponseDto> syncTransactions(@RequestBody PlaidTransactionSyncRequestDto plaidTransactionSyncRequestDto) throws FeignClientException;
+
+    @PostMapping("/item/remove")
+    ResponseEntity<Void> removeAccount(@RequestBody AccountRemovalRequestDto accountRemovalRequestDto) throws FeignClientException;
 }
