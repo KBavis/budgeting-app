@@ -114,8 +114,30 @@ public class AccountServiceImpl implements AccountService{
 	}
 
 	@Override
-	public void delete(Long accountId) {
-		
+	public void delete(String accountId) {
+		log.info("Attempting to delete account with ID {}", accountId);
+		//Fetch Corresponding Account
+		Account accountToDelete = read(accountId);
+		Connection connection = accountToDelete.getConnection();
+		String accessToken = connection.getAccessToken();
+
+		//Remove Via Plaid Service
+		_plaidService.removeAccount(accessToken);
+
+		//Update corresponding User entity to no longer reference deleted account
+		if(accountToDelete.getUser() != null) {
+			long userId = accountToDelete.getUser().getUserId();
+			User user = _userService.readById(userId);
+			List<Account> userAccounts = user.getAccounts();
+
+			if(userAccounts != null) { userAccounts.remove(accountToDelete); }
+
+			user.setAccounts(userAccounts);
+		}
+
+
+		//Remove Account & corresponding Connection entity
+		_accountRepository.delete(accountToDelete);
 	}
 
 	//TODO: Implement

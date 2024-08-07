@@ -32,7 +32,7 @@ public interface AccountService {
 	 * @param accountId
 	 * 			- Account ID of relevant Account to be deleted
 	 */
-	void delete(Long accountId);
+	void delete(String accountId);
 
 	/**
 	 * Functionality to update an existing user Account
