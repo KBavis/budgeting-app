@@ -63,4 +63,12 @@ public interface PlaidService {
      */
     PlaidTransactionSyncResponseDto syncTransactions(String accessToken, String previousCursor);
 
+
+    /**
+     * Functionality to remove an account from Plaid API
+     *
+     * @param accessToken
+     *          - access token corresponding to account to be removed
+     */
+    void removeAccount(String accessToken);
 }

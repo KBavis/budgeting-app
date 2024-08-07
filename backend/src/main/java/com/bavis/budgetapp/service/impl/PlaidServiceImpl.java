@@ -10,6 +10,7 @@ import com.bavis.budgetapp.util.JsonUtil;
 import feign.FeignException.FeignClientException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +80,38 @@ public class PlaidServiceImpl implements PlaidService{
         } else {
             log.error("Response Code From Plaid API when extracting Link Token was not successful. Status Code: {}", responseEntity.getStatusCode());
             throw new PlaidServiceException("Invalid Response Code When Generating Link Token Via PlaidClient: [" + responseEntity.getStatusCode() + "]");
+        }
+    }
+
+
+    @Override
+    public void removeAccount(String accessToken) {
+        log.info("Attempting to remove corresponding Account from Plaid API");
+
+        //Build Request
+        AccountRemovalRequestDto accountRemovalRequestDto = AccountRemovalRequestDto.builder()
+                .secret(_plaidConfig.getSecretKey())
+                .client_id(_plaidConfig.getClientId())
+                .access_token(accessToken)
+                .build();
+
+
+        ResponseEntity<Void> responseEntity;
+        try {
+            responseEntity = _plaidClient.removeAccount(accountRemovalRequestDto);
+        } catch (FeignClientException e) {
+           log.error("An error occurred while attempting to remove Account from Plaid API: [{}]", e.getMessage());
+            String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
+            throw new PlaidServiceException(plaidClientExceptionMessage);
+        } catch (Exception ex){
+            log.error(ex.getLocalizedMessage());
+            throw new PlaidServiceException(ex.getMessage());
+        }
+
+        HttpStatusCode httpStatusCode = responseEntity.getStatusCode();
+        if(!httpStatusCode.is2xxSuccessful()) {
+            log.error("Response Code from Plaid API when removing account was not successful: {}", httpStatusCode);
+            throw new PlaidServiceException("Invalid Response Code When Removing Account via Plaid Client");
         }
     }
 
