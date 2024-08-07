@@ -97,7 +97,7 @@ public class AccountController {
 	 * 			- Account ID pertaining to particular account needing to be deleted
 	 */
 	@DeleteMapping("/{accountId}")
-	public void delete(@PathVariable(value = "accountId") Long accountId) {
+	public void delete(@PathVariable(value = "accountId") String accountId) {
 		log.info("Received request to delete account with ID {}", accountId);
 		_accountService.delete(accountId);
 	}
