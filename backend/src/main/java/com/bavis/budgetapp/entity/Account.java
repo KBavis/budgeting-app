@@ -41,7 +41,7 @@ public class Account {
 	@JoinColumn(name = "userId", nullable = false)
 	private User user;
 
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
 	@JoinColumn(name = "connectionId", referencedColumnName = "connectionId")
 	private Connection connection;
 }
