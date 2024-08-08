@@ -6,6 +6,7 @@ import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.TestHelper;
 import com.bavis.budgetapp.model.LinkToken;
+import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.impl.PlaidServiceImpl;
 import com.bavis.budgetapp.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +44,7 @@ public class PlaidServiceTests {
     private PlaidConfig plaidConfig;
 
     @Mock
-    private JsonUtil jsonUtil;
+    private JsonUtil mockJsonUtil;
 
     @InjectMocks
     private PlaidServiceImpl plaidService;
@@ -55,6 +56,80 @@ public class PlaidServiceTests {
 
         ObjectMapper mapper = new ObjectMapper();
         _jsonUtil = new JsonUtil(mapper);
+    }
+
+    @Test
+    void testRemoveAccount_Success() {
+        //Arrange
+        String accessToken = "accessToken";
+        ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
+
+        //Mock
+        when(plaidClient.removeAccount(any(AccountRemovalRequestDto.class))).thenReturn(responseEntity);
+
+        //Act
+        plaidService.removeAccount(accessToken);
+
+        //Verify
+        verify(plaidClient, times(1)).removeAccount(any(AccountRemovalRequestDto.class));
+    }
+
+    @Test
+    void testRemoveAccount_ThrowsFeignClientException() {
+        //Arrange
+        String accessToken = "accessToken";
+        Request request = Request.create(
+                Request.HttpMethod.POST,
+                "/item/remove",
+                Collections.emptyMap(),
+                "request_body".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8,
+                null
+        );
+        FeignException.FeignClientException feignClientException = new FeignException.FeignClientException(400, "Bad Request", request, null, null);
+
+        //Mock
+        when(plaidClient.removeAccount(any(AccountRemovalRequestDto.class))).thenThrow(feignClientException);
+        when(mockJsonUtil.extractErrorMessage(feignClientException)).thenReturn("Bad Request");
+
+        //Act
+        PlaidServiceException plaidServiceException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.removeAccount(accessToken);
+        });
+        assertEquals("PlaidServiceException: [Bad Request]", plaidServiceException.getMessage());
+    }
+
+    @Test
+    void testRemoveAccount_ThrowsException() {
+        //Arrange
+        String accessToken = "accessToken";
+        RuntimeException exception = new RuntimeException("Error Message");
+
+
+        //Mock
+        when(plaidClient.removeAccount(any(AccountRemovalRequestDto.class))).thenThrow(exception);
+
+        //Act
+        PlaidServiceException plaidServiceException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.removeAccount(accessToken);
+        });
+        assertEquals("PlaidServiceException: [Error Message]", plaidServiceException.getMessage());
+    }
+
+    @Test
+    void testRemoveAccount_InvalidStatus() {
+        //Arrange
+        String accessToken = "accessToken";
+        ResponseEntity<Void> responseEntity = ResponseEntity.badRequest().build();
+
+        //Mock
+        when(plaidClient.removeAccount(any(AccountRemovalRequestDto.class))).thenReturn(responseEntity);
+
+        //Act
+        PlaidServiceException plaidServiceException = assertThrows(PlaidServiceException.class, () -> {
+            plaidService.removeAccount(accessToken);
+        });
+        assertEquals("PlaidServiceException: [Invalid Response Code When Removing Account via Plaid Client]", plaidServiceException.getMessage());
     }
 
 
@@ -108,7 +183,7 @@ public class PlaidServiceTests {
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
         when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequestDto.class))).thenReturn(responseEntity);
-        when(jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available"))
+        when(mockJsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available"))
                 .thenReturn(_jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available"));
 
 
@@ -122,7 +197,7 @@ public class PlaidServiceTests {
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
         verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
-        verify(jsonUtil, times(1)).extractBalanceByAccountId(responseBody, accountId, "/balances/available");
+        verify(mockJsonUtil, times(1)).extractBalanceByAccountId(responseBody, accountId, "/balances/available");
     }
 
     /**
@@ -241,7 +316,7 @@ public class PlaidServiceTests {
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
         verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
-        verify(jsonUtil, times(0)).extractBalanceByAccountId(responseBody, accountId, "/balances/available");
+        verify(mockJsonUtil, times(0)).extractBalanceByAccountId(responseBody, accountId, "/balances/available");
     }
 
 
@@ -262,7 +337,7 @@ public class PlaidServiceTests {
         when(plaidConfig.getClientId()).thenReturn("client-id");
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
         when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequestDto.class))).thenReturn(responseEntity);
-        when(jsonUtil.extractBalanceByAccountId(responseBody, validAccountId, "/balances/available")).thenReturn(null);
+        when(mockJsonUtil.extractBalanceByAccountId(responseBody, validAccountId, "/balances/available")).thenReturn(null);
 
 
         //Act & Assert
@@ -276,7 +351,7 @@ public class PlaidServiceTests {
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
         verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
-        verify(jsonUtil, times(1)).extractBalanceByAccountId(responseBody, validAccountId, "/balances/available");
+        verify(mockJsonUtil, times(1)).extractBalanceByAccountId(responseBody, validAccountId, "/balances/available");
     }
 
     /**
@@ -361,7 +436,7 @@ public class PlaidServiceTests {
         when(plaidClient.createAccessToken(any(ExchangeTokenRequestDto.class)))
                 .thenThrow(feignClientException);
 
-        when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
+        when(mockJsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
                 .thenReturn(errorMessage);
 
         // Act & Assert
@@ -373,7 +448,7 @@ public class PlaidServiceTests {
 
         //Verify
         verify(plaidClient, times(1)).createAccessToken(any(ExchangeTokenRequestDto.class));
-        verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
+        verify(mockJsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
     }
 
     /**
@@ -400,7 +475,7 @@ public class PlaidServiceTests {
         //Mock
         when(plaidClient.createLinkToken(any(LinkTokenRequestDto.class)))
                 .thenThrow(feignClientException);
-        when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
+        when(mockJsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
                 .thenReturn(errorMessage);
 
         // Act & Assert
@@ -412,7 +487,7 @@ public class PlaidServiceTests {
 
         //Verify
         verify(plaidClient, times(1)).createLinkToken(any(LinkTokenRequestDto.class));
-        verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
+        verify(mockJsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
     }
 
 
@@ -441,7 +516,7 @@ public class PlaidServiceTests {
         //Mock
         when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequestDto.class)))
                 .thenThrow(feignClientException);
-        when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
+        when(mockJsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
                 .thenReturn(errorMessage);
 
         // Act & Assert
@@ -453,7 +528,7 @@ public class PlaidServiceTests {
 
         //Verify
         verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
-        verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
+        verify(mockJsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
     }
 
     @Test
@@ -565,7 +640,7 @@ public class PlaidServiceTests {
         //Mock
         when(plaidClient.syncTransactions(any(PlaidTransactionSyncRequestDto.class)))
                 .thenThrow(feignClientException);
-        when(jsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
+        when(mockJsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class)))
                 .thenReturn(errorMessage);
 
         // Act & Assert
@@ -577,7 +652,7 @@ public class PlaidServiceTests {
 
         //Verify
         verify(plaidClient, times(1)).syncTransactions(any(PlaidTransactionSyncRequestDto.class));
-        verify(jsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
+        verify(mockJsonUtil, times(1)).extractErrorMessage(any(FeignException.FeignClientException.class));
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
     }
