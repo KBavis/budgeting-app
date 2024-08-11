@@ -2,10 +2,9 @@ package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AccountDto;
 import com.bavis.budgetapp.constants.AccountType;
-import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
-import com.bavis.budgetapp.service.AccountService;
+import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,12 +19,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import javax.xml.transform.Result;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -62,6 +61,28 @@ public class AccountControllerTests {
                 .balance(1000.0)
                 .accountName("Test Account")
                 .build();
+    }
+
+    @Test
+    void testDelete_Success() throws Exception{
+        String accountId = "account-id";
+        doNothing().when(accountService).delete(accountId);
+
+        ResultActions resultActions = mockMvc.perform(delete("/account/" + accountId));
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    void testDelete_RuntimeException() throws Exception{
+        String accountId = "account-id";
+        PlaidServiceException plaidServiceException = new PlaidServiceException("Account not found");
+        doThrow(plaidServiceException).when(accountService).delete(accountId);
+
+        ResultActions resultActions = mockMvc.perform(delete("/account/" + accountId))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("PlaidServiceException: [Account not found]"));
     }
 
     /**
