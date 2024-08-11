@@ -13,6 +13,8 @@ import {
 } from "./types";
 import setAuthToken from "../../utils/setAuthToken";
 import AccountContext from "./accountContext";
+import accountContext from "./accountContext";
+import alertContext from "../alert/alertContext";
 
 /**
  * File to store the global state for our Account
@@ -22,6 +24,7 @@ import AccountContext from "./accountContext";
  */
 const AccountState = (props) => {
    const [state, dispatch] = useReducer(connReducer, initalState);
+   const { setAlert } = useContext(alertContext);
 
    /**
     * Functionality to create account via REST API
@@ -99,7 +102,7 @@ const AccountState = (props) => {
       try {
          await axios.delete(`${apiUrl}/account/${accountId}`);
          dispatch({type: REMOVE_ACCOUNT_SUCCESS, payload: accountId});
-
+         setAlert("Account successfully deleted", "success");
       } catch (err) {
          console.error(err);
          dispatch({
