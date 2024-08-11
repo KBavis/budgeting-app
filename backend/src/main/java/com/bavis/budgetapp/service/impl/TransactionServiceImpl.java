@@ -314,6 +314,11 @@ public class TransactionServiceImpl implements TransactionService {
         _transactionRepository.delete(transaction);
     }
 
+    @Override
+    public void removeAccountTransactions(String accountId) {
+        _transactionRepository.deleteByAccountAccountId(accountId);
+    }
+
     /**
      * Functionality to map added PlaidTransactions to Transaction entities.
      * All Transactions with a negative amount and are not within the

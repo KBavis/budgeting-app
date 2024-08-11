@@ -130,4 +130,13 @@ public interface TransactionService {
      */
     void deleteTransaction(String transactionId);
 
+
+    /**
+     * Functionality to remove all Transactions corresponding to a particular Account
+     *
+     * @param accountId
+     *          - Account ID to remove Transactions for
+     */
+    void removeAccountTransactions(String accountId);
+
 }
