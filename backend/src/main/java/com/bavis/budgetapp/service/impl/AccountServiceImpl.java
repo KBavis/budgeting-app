@@ -20,6 +20,7 @@ import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.service.AccountService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -128,9 +129,9 @@ public class AccountServiceImpl implements AccountService{
 		if(accountToDelete.getUser() != null) {
 			long userId = accountToDelete.getUser().getUserId();
 			User user = _userService.readById(userId);
-			List<Account> userAccounts = user.getAccounts();
+			List<Account> userAccounts = user.getAccounts() == null ? new ArrayList<>() : new ArrayList<>(user.getAccounts()); //empty list or existing list
 
-			if(userAccounts != null) { userAccounts.remove(accountToDelete); }
+			userAccounts.remove(accountToDelete);
 
 			user.setAccounts(userAccounts);
 		}
