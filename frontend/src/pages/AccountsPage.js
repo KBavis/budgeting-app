@@ -6,6 +6,8 @@ import { FaArrowLeft } from "react-icons/fa";
 import { PlaidLink } from "react-plaid-link";
 import { useNavigate } from "react-router-dom";
 import Account from "../components/accounts/Account";
+import ConfirmationModal from "../components/layout/ConfirmationModal";
+import transactionContext from "../context/transaction/transactionContext";
 
 /**
  * Page to display the current users connected Accounts
@@ -13,9 +15,10 @@ import Account from "../components/accounts/Account";
  */
 const AccountsPage = () => {
     //Global State
-    const { accounts, fetchAccounts, setLoading, createAccount } = useContext(accountContext);
+    const { accounts, fetchAccounts, setLoading, createAccount, removeAccount, error } = useContext(accountContext);
     const { setAlert } = useContext(alertContext);
     const { refreshLinkToken, user } = useContext(authContext);
+    const { fetchTransactions } = useContext(transactionContext);
 
     //Local State
     const initialFetchRef = useRef(false);
@@ -23,11 +26,31 @@ const AccountsPage = () => {
     const navigate = useNavigate();
     const [accountAdded, setAccountAdded] = useState(null);
     const [plaidKey, setPlaidKey] = useState(Date.now());
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [accountToDelete, setAccountToDelete] = useState(null);
+
+    //Functionality to show confirmation modal
+    const handleShowConfirmationModal = (account) => {
+        setAccountToDelete(account)
+        setShowConfirmationModal(true);
+    }
+
+    //Functionality to close confirmation modal
+    const handleCloseConfirmationModal = () => {
+        setShowConfirmationModal(false);
+        setAccountToDelete(null);
+    }
 
     //Navigation back to Hoem page
     const handleBackClick = () => {
         navigate("/home");
     };
+
+    const handleConfirm = async () => {
+        await removeAccount(accountToDelete.accountId); //remove Account from backend & frontend
+        await fetchTransactions();
+        handleCloseConfirmationModal()
+    }
 
     // Functionality to handle a user's successful connection of their financial institution via Plaid
     const handleOnSuccess = (publicToken, metadata) => {
@@ -105,7 +128,11 @@ const AccountsPage = () => {
             getAccounts();
             initialFetchRef.current = true;
         }
-    }, []);
+    }, [accounts]);
+
+    useEffect(() => {
+        if(error) { setAlert(error, "danger"); }
+    }, [error]);
 
     return accounts && (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
@@ -130,10 +157,25 @@ const AccountsPage = () => {
                 </PlaidLink>
                 <div className="flex flex-col items-center w-full h-3/5 overflow-y-auto scrollbar-hide">
                     {accounts.map((account, index) => (
-                        <Account key={index} account={account} />
+                        <Account key={index} account={account} handleShowConfirmationModal={handleShowConfirmationModal} />
                     ))}
                 </div>
             </div>
+            {showConfirmationModal && (
+                <div
+                    className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+                    <ConfirmationModal
+                        account={accountToDelete}
+                        onConfirm={handleConfirm}
+                        onClose={handleCloseConfirmationModal}
+                        question="Are you sure you want to remove the following account?"
+                        accountName={accountToDelete.accountName}
+                        confirmText="Yes"
+                        cancelText="No"
+                    />
+                </div>
+
+            )}
         </div>
     );
 };
