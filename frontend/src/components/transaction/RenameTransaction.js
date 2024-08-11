@@ -3,9 +3,12 @@ import AlertContext from "../../context/alert/alertContext";
 import transactionContext from "../../context/transaction/transactionContext";
 
 /**
+ * Modal to handle renaming a Transaction
  *
- * @param {*} param0
- * @returns
+ * @param transaction
+ *          - Transaction to be renamed
+ *  @param onClose
+ *          - Function to close modal
  */
 const RenameTransaction = ({ onClose, transaction }) => {
    // Global State
