@@ -2,11 +2,10 @@ import {
    ACCOUNTS_FETCHED,
    ACCOUNTS_FETCH_FAILED,
    ACCOUNT_CREATED,
-   ACCOUNT_DELETED,
    ACCOUNT_FAILED_CREATED,
    ACCOUNT_FAILED_DELETED,
    CLEAR_ERRORS,
-   SET_LOADING,
+   SET_LOADING, REMOVE_ACCOUNT_SUCCESS, REMOVE_ACCOUNT_FAILURE,
 } from "./types";
 
 /**
@@ -23,23 +22,22 @@ export default (state, action) => {
             loading: false,
             error: null,
          };
-      case ACCOUNT_DELETED:
+      case REMOVE_ACCOUNT_SUCCESS:
          return {
             ...state,
-            accounts: state.accounts
-               ? state.accounts.filter(
-                    (account) => account.id !== action.payload
-                 )
-               : [],
+            accounts: state.accounts ?
+                state.accounts.filter((account) => account.accountId !== action.payload) :
+                [],
             loading: false,
-            error: null,
-         };
+            error: null
+         }
       case ACCOUNTS_FETCHED:
          return {
             ...state,
             accounts: action.payload,
          };
       case ACCOUNT_FAILED_CREATED:
+      case REMOVE_ACCOUNT_FAILURE:
          return {
             ...state,
             loading: false,
