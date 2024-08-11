@@ -5,13 +5,11 @@ import apiUrl from "../../utils/url";
 import initalState from "./initialState";
 import {
    ACCOUNT_CREATED,
-   ACCOUNT_DELETED,
    ACCOUNT_FAILED_CREATED,
-   ACCOUNT_FAILED_DELETED,
    ACCOUNTS_FETCHED,
    ACCOUNTS_FETCH_FAILED,
    CLEAR_ERRORS,
-   SET_LOADING,
+   SET_LOADING, REMOVE_ACCOUNT_FAILURE, REMOVE_ACCOUNT_SUCCESS,
 } from "./types";
 import setAuthToken from "../../utils/setAuthToken";
 import AccountContext from "./accountContext";
@@ -87,6 +85,30 @@ const AccountState = (props) => {
       }
    };
 
+   /**
+    * Functionality to remove an Account from state
+    *
+    * @param accountId
+    *          - Account ID to remove from state
+    */
+   const removeAccount = async (accountId) => {
+      if(localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      try {
+         await axios.delete(`${apiUrl}/account/${accountId}`);
+         dispatch({type: REMOVE_ACCOUNT_SUCCESS, payload: accountId});
+
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: REMOVE_ACCOUNT_FAILURE,
+            payload: err.response.data.error
+         })
+      }
+   }
+
    return (
       <AccountContext.Provider
          value={{
@@ -97,6 +119,7 @@ const AccountState = (props) => {
             clearErrors,
             fetchAccounts,
             setLoading,
+            removeAccount
          }}
       >
          {props.children}
