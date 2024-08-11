@@ -10,9 +10,12 @@ import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.ConnectionService;
 import com.bavis.budgetapp.service.PlaidService;
+import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.bavis.budgetapp.dao.AccountRepository;
@@ -31,27 +34,26 @@ import java.util.List;
 @Service
 @Log4j2
 public class AccountServiceImpl implements AccountService{
-	private final AccountRepository _accountRepository;
 
-	private final PlaidService _plaidService;
+	@Autowired
+	private AccountRepository _accountRepository;
 
-	private final UserService _userService;
+	@Autowired
+	private PlaidService _plaidService;
 
-	private final AccountMapper _accountMapper;
+	@Autowired
+	private UserService _userService;
 
-	private final ConnectionService _connectionService;
+	@Autowired
+	private AccountMapper _accountMapper;
 
-	public AccountServiceImpl(AccountRepository _accountRepository,
-	 						  PlaidService _plaidService,
-							  AccountMapper _accountMapper,
-							  ConnectionService _connectionService,
-							  UserService _userService) {
-		this._accountRepository = _accountRepository;
-		this._plaidService = _plaidService;
-		this._accountMapper = _accountMapper;
-		this._userService = _userService;
-		this._connectionService = _connectionService;
-	}
+	@Autowired
+	private ConnectionService _connectionService;
+
+	@Autowired
+	@Lazy
+	private TransactionService _transactionService;
+
 
 	@Override
 	@Transactional
@@ -135,6 +137,8 @@ public class AccountServiceImpl implements AccountService{
 
 			user.setAccounts(userAccounts);
 		}
+
+		_transactionService.removeAccountTransactions(accountId);
 
 
 		//Remove Account & corresponding Connection entity
