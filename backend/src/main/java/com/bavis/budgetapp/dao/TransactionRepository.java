@@ -66,4 +66,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
      *          - List of Transaction entities corresponding to Category ID
      */
     List<Transaction> findByCategoryCategoryId(long categoryId);
+
+
+    /**
+     * Removal of all Transactions corresponding to a particular Account ID
+     *
+     * @param accountId
+     *          - account ID to remove Transactions for
+     */
+    void deleteByAccountAccountId(String accountId);
 }
