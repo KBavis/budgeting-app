@@ -341,6 +341,14 @@ const TransactionState = (props) => {
       }
    };
 
+   /**
+    * Functionality to rename a Transaction
+    *
+    * @param transactionId
+    *          - Transaction ID corresponding to Transaction to be renamed
+    * @param updatedName
+    *          - Updated Transaction name
+    */
    const renameTransaction = async (transactionId, updatedName) => {
       try {
          if (localStorage.token) {
