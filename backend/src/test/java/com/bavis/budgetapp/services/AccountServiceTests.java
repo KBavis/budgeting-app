@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,6 +30,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,6 +60,9 @@ public class AccountServiceTests {
     AccountServiceImpl accountService;
 
     private ConnectAccountRequestDto connectAccountRequestDto;
+    private String accountId;
+    private String accessToken;
+    private Account expectedAccount;
 
     @BeforeEach
     public void setup() {
@@ -67,7 +72,91 @@ public class AccountServiceTests {
                 .publicToken("public-token")
                 .accountType(AccountType.CHECKING)
                 .build();
+
+        //Arrange
+        accountId = "account-id";
+        accessToken = "access-token";
+        Connection expectedConnection = Connection.builder()
+                .connectionId(10L)
+                .accessToken(accessToken)
+                .build();
+        expectedAccount = Account.builder()
+                .accountId(accountId)
+                .connection(expectedConnection)
+                .build();
+
+
+
     }
+
+    @Test
+    void testDelete_CallsPlaidService() {
+        //Mock
+        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        doNothing().when(plaidService).removeAccount(accessToken);
+
+        //Act
+        accountService.delete(accountId);
+
+        //Verify
+        Mockito.verify(plaidService, times(1)).removeAccount(accessToken);
+    }
+
+    @Test
+    void testDelete_RemovesFromDb() {
+        //Mock
+        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        doNothing().when(plaidService).removeAccount(accessToken);
+
+        //Act
+        accountService.delete(accountId);
+
+        //Verify
+        Mockito.verify(accountRepository, times(1)).delete(expectedAccount);
+    }
+
+    @Test
+    void testDelete_NullUserOnAccount_NoUserFetch() {
+        //Mock
+        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        doNothing().when(plaidService).removeAccount(accessToken);
+
+        //Act
+        accountService.delete(accountId);
+
+        //Verify
+        Mockito.verify(userService, times(0)).readById(any(Long.class));
+    }
+
+
+    @Test
+    void testDelete_ValidUserONAccount_AccountsUpdated() {
+        //Arrange
+        Account remainingAccount = new Account();
+        long userId = 10L;
+        User user = new User();
+        user.setUserId(userId);
+        user.setAccounts(List.of(remainingAccount, expectedAccount));
+        expectedAccount.setUser(user); //assign user to account to delete
+
+        //Mock
+        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        when(userService.readById(userId)).thenReturn(user);
+        doNothing().when(plaidService).removeAccount(accessToken);
+
+        //Act
+        accountService.delete(accountId);
+
+        //Verify
+        Mockito.verify(userService, times(1)).readById(any(Long.class));
+
+        //Assert
+        assertTrue(user.getAccounts().contains(remainingAccount));
+        assertFalse(user.getAccounts().contains(expectedAccount));
+    }
+
+
+
 
     /**
      * Validate that connect account works successfully
