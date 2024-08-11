@@ -1189,4 +1189,20 @@ public class TransactionServiceTests {
         assertEquals(transactionId, actualTransaction.getTransactionId());
     }
 
+
+    @Test
+    void testRemoveAccountTransactions_RemovesTransactions() {
+        //Arrange
+        String accountId = "account-id";
+
+        //Mock
+        doNothing().when(transactionRepository).deleteByAccountAccountId(accountId);
+
+        //Act
+        transactionService.removeAccountTransactions(accountId);
+
+        //Verify
+        verify(transactionRepository, times(1)).deleteByAccountAccountId(accountId);
+    }
+
 }
