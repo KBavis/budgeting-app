@@ -14,6 +14,7 @@ import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.ConnectionService;
 import com.bavis.budgetapp.service.PlaidService;
+import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +57,9 @@ public class AccountServiceTests {
     @Mock
     ConnectionService connectionService;
 
+    @Mock
+    TransactionService transactionService;
+
     @InjectMocks
     AccountServiceImpl accountService;
 
@@ -87,6 +91,19 @@ public class AccountServiceTests {
 
 
 
+    }
+
+    @Test
+    void testDelete_CallsTransactionService() {
+        //Mock
+        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        doNothing().when(plaidService).removeAccount(accessToken);
+
+        //Act
+        accountService.delete(accountId);
+
+        //Verify
+        Mockito.verify(transactionService, times(1)).removeAccountTransactions(accountId);
     }
 
     @Test
