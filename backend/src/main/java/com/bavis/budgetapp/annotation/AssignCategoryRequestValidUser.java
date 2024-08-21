@@ -10,6 +10,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation for ensuring our AssignCategoryRequest pertains to currently logged in user
+ *
+ * @author Kellen Bavis
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Constraint(validatedBy = AssignCategoryRequestUserValidator.class)
