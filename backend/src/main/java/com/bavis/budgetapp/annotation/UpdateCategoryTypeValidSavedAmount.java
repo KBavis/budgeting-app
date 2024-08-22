@@ -10,9 +10,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author Kellen Bavis
- *
  * Annotation utilized for validating that a UpdateCategoyrTypeDto has a valid saved amount associated with it
+ *
+ * @author Kellen Bavis
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
