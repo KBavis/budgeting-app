@@ -12,7 +12,7 @@ const CategoryType = ({
    handleShowRenameTransactionModal,
    handleShowAssignCategoryModal,
    handleShowUpdateAllocationsModal,
-   handleShowRenameCategoryModal
+   handleShowRenameCategoryModal,
 }) => {
    const { transactions } = useContext(transactionContext);
    const { categories } = useContext(categoryContext);
@@ -20,11 +20,8 @@ const CategoryType = ({
    const [filteredCategories, setFilteredCategories] = useState([]);
    const [filteredTransactions, setFilteredTransactions] = useState([]);
    const [totalAmountSpent, setTotalAmountSpent] = useState(0);
-   const [totalAmountAllocated, setTotalAmountAllocated] = useState(0);
-
-   useEffect(() => {
-      setTotalAmountAllocated(Math.round(categoryType.budgetAmount));
-   }, [categoryType]);
+   const [totalAmountBudgeted, setTotalAmountBudgeted] = useState(0);
+   const [expectedSavings, setExpectedSavings] = useState(0);
 
    useEffect(() => {
       const filtered = categories.filter(
@@ -33,6 +30,17 @@ const CategoryType = ({
       );
       setFilteredCategories(filtered);
    }, [categories, categoryType.categoryTypeId]);
+
+   useEffect(() => {
+      if (filteredCategories.length > 0) {
+         // Calculate total budgeted amount
+         const totalBudgeted = filteredCategories.reduce(
+            (sum, category) => sum + category.budgetAmount,
+            0
+         );
+         setTotalAmountBudgeted(Math.round(totalBudgeted));
+      }
+   }, [filteredCategories]);
 
    useEffect(() => {
       if (transactions && filteredCategories.length > 0) {
@@ -59,12 +67,29 @@ const CategoryType = ({
       setTotalAmountSpent(Math.round(totalSpent));
    }, [filteredTransactions]);
 
+   useEffect(() => {
+      // Calculate expected savings
+      const totalBudgeted = totalAmountBudgeted;
+      const savedAmount = categoryType.savedAmount || 0; // Assuming savedAmount is provided in categoryType
+
+      // Expected savings is the saved amount plus the difference between total budgeted and total spent
+      const calculatedSavings =
+         savedAmount + (totalBudgeted - totalAmountSpent);
+      setExpectedSavings(calculatedSavings);
+   }, [
+      totalAmountBudgeted,
+      filteredCategories,
+      filteredTransactions,
+      categoryType.savedAmount,
+      totalAmountSpent,
+   ]);
+
    const navigate = useNavigate();
 
    const percentageUtilized =
-      totalAmountAllocated > 0
+      totalAmountBudgeted > 0
          ? Math.min(
-              Math.round((totalAmountSpent / totalAmountAllocated) * 100),
+              Math.round((totalAmountSpent / totalAmountBudgeted) * 100),
               100
            )
          : 0;
@@ -82,7 +107,10 @@ const CategoryType = ({
       }
    };
 
-   //Function to navigate to CategoryType page
+   const getSavingsColor = () => {
+      return expectedSavings >= 0 ? "text-green-500" : "text-red-500";
+   };
+
    const handleClick = () => {
       navigate(`/category/type/${categoryType.name.toLowerCase()}`);
    };
@@ -102,8 +130,14 @@ const CategoryType = ({
                   <FaExternalLinkAlt size={20} />
                </button>
             </div>
-            <p className="mb-4 text-center font-semibold">
-               Spent: ${totalAmountSpent} / ${totalAmountAllocated}
+            <p className="mb-2 text-center font-semibold">
+               Spent: ${totalAmountSpent} / ${totalAmountBudgeted}
+            </p>
+            <p className="text-center font-semibold mb-6">
+               Expected Savings:{" "}
+               <span className={`font-semibold ${getSavingsColor()}`}>
+                  ${expectedSavings.toFixed(2)}
+               </span>
             </p>
             <div className="w-full bg-gray-300 rounded-full h-4 mb-4 pb-3">
                <div
