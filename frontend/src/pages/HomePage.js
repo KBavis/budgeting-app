@@ -12,7 +12,6 @@ import SplitTransactionModal from "../components/transaction/SplitTransaction";
 import ReduceTransaction from "../components/transaction/ReduceTransaction";
 import AddTransaction from "../components/transaction/AddTransaction";
 import DropdownMenu from "../components/layout/Dropdown";
-import Savings from "../components/category/types/Savings";
 import RenameTransaction from "../components/transaction/RenameTransaction";
 import AlertContext from "../context/alert/alertContext";
 import AssignCategoryModal from "../components/transaction/AssignCategoryModal";
@@ -83,10 +82,10 @@ const HomePage = () => {
    } = useContext(IncomeContext);
    const { setAlert } = useContext(AlertContext);
    const {
-       summaries,
-       fetchBudgetSummaries,
-       setLoading: setSummariesLoading,
-       loading: summariesLoading
+      summaries,
+      fetchBudgetSummaries,
+      setLoading: setSummariesLoading,
+      loading: summariesLoading,
    } = useContext(SummaryContext);
 
    // Set Authenticated User's Name
@@ -100,13 +99,13 @@ const HomePage = () => {
    const handleShowRenameCategoryModal = (category) => {
       setCategory(category);
       setShowRenameCategoryModal(true);
-   }
+   };
 
    //Function to close RenameCategory modal
    const handleCloseRenameCategoryModal = () => {
       setShowRenameCategoryModal(false);
       setCategory(null);
-   }
+   };
 
    // Function to open SplitTransaction modal
    const handleShowSplitTransactionModal = (splitTransaction) => {
@@ -213,13 +212,13 @@ const HomePage = () => {
 
    //Fetch All Budget Summaries
    const getBudgetSummaries = async () => {
-      if(!summaries || summaries.length === 0) {
+      if (!summaries || summaries.length === 0) {
          //Fetch All Budget Summaries
          console.log("Fetching budget summaries...");
          setSummariesLoading();
          await fetchBudgetSummaries();
       }
-   }
+   };
 
    //Fetch All Category Types
    const getCategoryTypes = async () => {
@@ -303,7 +302,7 @@ const HomePage = () => {
       categoriesLoading,
       categoryTypesLoading,
       accountsLoading,
-      summariesLoading
+      summariesLoading,
    ]);
 
    return (
@@ -319,7 +318,7 @@ const HomePage = () => {
 
          {/* Main Content */}
          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
-            <div className="max-w-md text-center mb-8 mt-8 xxl:mt-4">
+            <div className="max-w-md text-center mb-16 mt-8 xxl:mt-4">
                <h1 className="text-2xl font-bold mb-4 text-white">
                   Welcome <span className="text-indigo-500">{name}</span>
                </h1>
@@ -333,7 +332,6 @@ const HomePage = () => {
                   Sync Transactions
                </button>
             </div>
-            <Savings />
             <div className="flex justify-center space-x-4 w-full mb-5">
                {!loading ? (
                   categoryTypes.map((categoryType) => (
@@ -418,12 +416,12 @@ const HomePage = () => {
             </div>
          )}
          {showRenameCategoryModal && (
-             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-                <RenameCategory
-                    onClose={handleCloseRenameCategoryModal}
-                    category={category}
-                />
-             </div>
+            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
+               <RenameCategory
+                  onClose={handleCloseRenameCategoryModal}
+                  category={category}
+               />
+            </div>
          )}
       </div>
    );
