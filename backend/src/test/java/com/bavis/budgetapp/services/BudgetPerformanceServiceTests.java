@@ -296,7 +296,7 @@ public class BudgetPerformanceServiceTests {
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
         doReturn(budgetOverviews).when(budgetPerformanceService)
-                .generateBudgetOverviews(any(), any(MonthYear.class));
+                .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
                 .findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(expectedMonth, expectedYear, user.getUserId()))
                 .thenReturn(null);
@@ -332,7 +332,7 @@ public class BudgetPerformanceServiceTests {
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
         doReturn(budgetOverviews).when(budgetPerformanceService)
-                .generateBudgetOverviews(any(), any(MonthYear.class));
+                .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
                 .findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId()))
                 .thenReturn(null);
@@ -368,7 +368,7 @@ public class BudgetPerformanceServiceTests {
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
         doReturn(budgetOverviews).when(budgetPerformanceService)
-                .generateBudgetOverviews(any(), any(MonthYear.class));
+                .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
                 .findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId()))
                 .thenReturn(null);
@@ -404,7 +404,7 @@ public class BudgetPerformanceServiceTests {
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
         doReturn(budgetOverviews).when(budgetPerformanceService)
-                .generateBudgetOverviews(any(), any(MonthYear.class));
+                .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
                 .findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId()))
                 .thenReturn(null);
@@ -440,7 +440,7 @@ public class BudgetPerformanceServiceTests {
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
         doReturn(budgetOverviews).when(budgetPerformanceService)
-                .generateBudgetOverviews(any(), any(MonthYear.class));
+                .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
                 .findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId()))
                 .thenReturn(null);
@@ -451,7 +451,7 @@ public class BudgetPerformanceServiceTests {
 
 
         //Verify
-        verify(budgetPerformanceService, times(1)).generateBudgetOverviews(any(), any());
+        verify(budgetPerformanceService, times(1)).generateBudgetOverviews(any(), any(), any());
         verify(budgetPerformanceRepository, times(1)).saveAllAndFlush(any());
         verify(userService, times(1)).readAll();
         verify(budgetPerformanceRepository, times(1)).saveAllAndFlush(any());
@@ -488,9 +488,9 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
         doReturn(0.0).when(budgetPerformanceService)
-                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class), any());
 
-        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear, user);
 
 
         for(Map.Entry<OverviewType, BudgetOverview> entry : budgetOverviews.entrySet()) {
@@ -513,9 +513,9 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
         doReturn(0.0).when(budgetPerformanceService)
-                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class), any());
 
-        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear, user);
 
 
         for(Map.Entry<OverviewType, BudgetOverview> entry : budgetOverviews.entrySet()) {
@@ -538,9 +538,9 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
         doReturn(0.0).when(budgetPerformanceService)
-                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class), any());
 
-        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear, user);
 
         double expectedNeedsUtilization = needsTransaction.getAmount() / needsCategory.getBudgetAmount();
         double expectedWantsUtilization = wantsTransaction.getAmount() / wantsCategory.getBudgetAmount();
@@ -568,9 +568,9 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(null);
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(null);
         doReturn(0.0).when(budgetPerformanceService)
-                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class), any());
 
-        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear, user);
 
         assertEquals(4, budgetOverviews.size());
 
@@ -591,9 +591,9 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
         doReturn(0.0).when(budgetPerformanceService)
-                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class), any());
 
-        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear, user);
 
         assertEquals(4, budgetOverviews.size());
         assertTrue(budgetOverviews.containsKey(OverviewType.GENERAL));
@@ -611,10 +611,10 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
         doReturn(50.0).when(budgetPerformanceService)
-                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class), any());
 
 
-        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear, user);
 
 
         //Each BudgetOverview should have totalSavings of $50.0
@@ -623,7 +623,7 @@ public class BudgetPerformanceServiceTests {
             assertEquals(50.0, budgetOverview.getTotalAmountSaved());
         }
 
-        verify(budgetPerformanceService, times(4)).calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+        verify(budgetPerformanceService, times(4)).calculateTotalAmountSaved(any(OverviewType.class), any(double.class), any());
     }
 
     @Test
@@ -641,10 +641,10 @@ public class BudgetPerformanceServiceTests {
         when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
         when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
         doReturn(50.0).when(budgetPerformanceService)
-                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class), any());
 
 
-        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear, user);
 
 
         //Each BudgetOverview should have totalSavings of $50.0
@@ -669,7 +669,7 @@ public class BudgetPerformanceServiceTests {
             }
         }
 
-        verify(budgetPerformanceService, times(4)).calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+        verify(budgetPerformanceService, times(4)).calculateTotalAmountSaved(any(OverviewType.class), any(double.class), any());
     }
 
     @Test
@@ -680,17 +680,16 @@ public class BudgetPerformanceServiceTests {
         expectedTotalAmountSaved -= totalAmountSpent;
 
         //Mock
-        when(categoryTypeService.readAll()).thenReturn(List.of(needsCategoryType, wantsCategoryType, investmentsCategoryType));
+        when(categoryTypeService.readAll(user)).thenReturn(List.of(needsCategoryType, wantsCategoryType, investmentsCategoryType));
 
         //Act
-        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, totalAmountSpent);
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, totalAmountSpent, user);
 
         //Assert
         assertEquals(expectedTotalAmountSaved, totalAmountSaved);
 
         //Verify
-        verify(categoryTypeService, times(1)).readAll();
-        verify(categoryTypeService, times(0)).readByName(any(String.class));
+        verify(categoryTypeService, times(1)).readAll(user);
     }
 
 
@@ -701,17 +700,17 @@ public class BudgetPerformanceServiceTests {
         double expectedTotalAmountSaved = needsCategoryType.getBudgetAmount() - totalAmountSpent;
 
         //Mock
-        when(categoryTypeService.readByName(OverviewType.NEEDS.name())).thenReturn(needsCategoryType);
+        when(categoryTypeService.readByName(OverviewType.NEEDS.name(), user)).thenReturn(needsCategoryType);
 
         //Act
-        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, totalAmountSpent);
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, totalAmountSpent, user);
 
         //Assert
         assertEquals(expectedTotalAmountSaved, totalAmountSaved);
 
         //Verify
-        verify(categoryTypeService, times(0)).readAll();
-        verify(categoryTypeService, times(1)).readByName(OverviewType.NEEDS.name());
+        verify(categoryTypeService, times(0)).readAll(user);
+        verify(categoryTypeService, times(1)).readByName(OverviewType.NEEDS.name(), user);
     }
 
     @Test
@@ -720,17 +719,17 @@ public class BudgetPerformanceServiceTests {
         double totalAmountSpent = 456.20;
 
         //Mock
-        when(categoryTypeService.readByName(OverviewType.NEEDS.name())).thenReturn(null);
+        when(categoryTypeService.readByName(OverviewType.NEEDS.name(), user)).thenReturn(null);
 
         //Act
-        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, totalAmountSpent);
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, totalAmountSpent, user);
 
         //Assert
         assertEquals(totalAmountSpent * -1, totalAmountSaved); //0 - 456.20 = -456.20
 
         //Verify
-        verify(categoryTypeService, times(0)).readAll();
-        verify(categoryTypeService, times(1)).readByName(OverviewType.NEEDS.name());
+        verify(categoryTypeService, times(0)).readAll(user);
+        verify(categoryTypeService, times(1)).readByName(OverviewType.NEEDS.name(), user);
     }
 
     @Test
@@ -739,16 +738,16 @@ public class BudgetPerformanceServiceTests {
         double totalAmountSpent = 456.20;
 
         //Mock
-        when(categoryTypeService.readAll()).thenReturn(null);
+        when(categoryTypeService.readAll(user)).thenReturn(null);
 
         //Act
-        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, totalAmountSpent);
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, totalAmountSpent, user);
 
         //Assert
         assertEquals(-1 * totalAmountSpent, totalAmountSaved); //totalAmountSaved = 0 - 456.20
 
         //Verify
-        verify(categoryTypeService, times(1)).readAll();
+        verify(categoryTypeService, times(1)).readAll(user);
         verify(categoryTypeService, times(0)).readByName(any(String.class));
     }
 
