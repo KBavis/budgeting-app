@@ -186,9 +186,8 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
 
             //Calculate Savings
             log.info("Total Amount Budgeted {} and Total Amount Spent {}", totalAmountBudgeted, totalAmountSpent);
-            double difference = totalAmountBudgeted - totalAmountSpent;
-            double totalAmountSaved = calculateTotalAmountSaved(overviewType, difference);
-            double totalCategoryTypeSavedAmounts = totalAmountSaved - difference;
+            double difference = totalAmountBudgeted - totalAmountSpent; //amount over/under budget
+            double totalAmountSaved = calculateTotalAmountSaved(overviewType, totalAmountSpent);
 
             BudgetOverview budgetOverview = BudgetOverview.builder()
                     .overviewType(overviewType)
@@ -196,7 +195,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
                     .totalAmountAllocated(totalAmountBudgeted)
                     .totalPercentUtilized(totalBudgetUtilization)
                     .totalAmountSaved(totalAmountSaved)
-                    .savedAmountAttributesTotal(totalCategoryTypeSavedAmounts)
+                    .savedAmountAttributesTotal(difference)
                     .build();
 
             log.info("Generated BudgetOverview for MonthYear {} and Categories [{}] : {}", monthYear, categoryIds, budgetOverview);
@@ -211,23 +210,23 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
      *
      * @param overviewType
      *          - OverviewType to calculate savings for
-     * @param difference
-     *          - total amount budgeted MINUS total amount spent
+     * @param totalAmountSpent
+     *          - total amount spent (corresponding to single CategoryType or ALL CategoryTypes)
      * @return
      *          - total amount saved for CategoryType
      */
-    public double calculateTotalAmountSaved(OverviewType overviewType, double difference) {
-        //Sum of all CategoryTypes 'savedAmount' AND amount saved via budget
+    public double calculateTotalAmountSaved(OverviewType overviewType, double totalAmountSpent) {
+        //Sum of all CategoryTypes 'budget_amount_allocated' MINUS total amount spent
         if(overviewType == OverviewType.GENERAL) {
-            double categoryTypeSavedAmounts = Optional.ofNullable(categoryTypeService.readAll()).orElse(Collections.emptyList()).stream()
-                    .mapToDouble(CategoryType::getSavedAmount)
+            double allCategoryTypeAllocations = Optional.ofNullable(categoryTypeService.readAll()).orElse(Collections.emptyList()).stream()
+                    .mapToDouble(CategoryType::getBudgetAmount)
                     .sum();
 
-            return difference + categoryTypeSavedAmounts;
+            return allCategoryTypeAllocations - totalAmountSpent;
         }
 
         CategoryType categoryType = categoryTypeService.readByName(overviewType.name());
-        double categoryTypeSavedAmount = categoryType == null ? 0 : categoryType.getSavedAmount();
-        return categoryTypeSavedAmount + difference;
+        double categoryTypeAllocation = categoryType == null ? 0 : categoryType.getBudgetAmount();
+        return categoryTypeAllocation - totalAmountSpent;
     }
 }

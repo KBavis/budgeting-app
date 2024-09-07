@@ -148,18 +148,21 @@ public class BudgetPerformanceServiceTests {
                 .categoryTypeId(1L)
                 .name("Needs")
                 .savedAmount(500.0)
+                .budgetAmount(2000.0)
                 .build();
 
         wantsCategoryType = CategoryType.builder()
                 .categoryTypeId(2L)
                 .name("Wants")
                 .savedAmount(1000.0)
+                .budgetAmount(1000.0)
                 .build();
 
         investmentsCategoryType = CategoryType.builder()
                 .categoryTypeId(3L)
                 .name("Investments")
                 .savedAmount(600.0)
+                .budgetAmount(1000.0)
                 .build();
 
         needsCategory = Category.builder()
@@ -618,7 +621,52 @@ public class BudgetPerformanceServiceTests {
         for(Map.Entry<OverviewType, BudgetOverview> entry : budgetOverviews.entrySet()) {
             BudgetOverview budgetOverview = entry.getValue();
             assertEquals(50.0, budgetOverview.getTotalAmountSaved());
-            assertEquals(50.0 - calculateDifference(entry.getKey()), budgetOverview.getSavedAmountAttributesTotal()); //total saved amount - (budgetedAmount - spending)
+        }
+
+        verify(budgetPerformanceService, times(4)).calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+    }
+
+    @Test
+    @DisplayName("Test generateBudgetOverview correctly assigns savedAmountAttributesTotal equal to amount over/under budget")
+    void testGenerateBudgetOverview_OverUnderBudgetCalculation() {
+        //Arrange
+        double totalAmountSpentGeneral = needsTransaction.getAmount() + wantsTransaction.getAmount() + investmentTransaction.getAmount();
+        double totalAmountSpentNeeds =  needsTransaction.getAmount();
+        double totalAmountSpentWants = wantsTransaction.getAmount();
+        double totalAmountSpentInvestments = investmentTransaction.getAmount();
+        double totalAmountBudgeted = wantsCategory.getBudgetAmount() + investmentsCategory.getBudgetAmount() + needsCategory.getBudgetAmount();
+
+        //Mock
+        when(transactionService.fetchCategoryTransactions(needsCategory.getCategoryId())).thenReturn(List.of(needsTransaction));
+        when(transactionService.fetchCategoryTransactions(wantsCategory.getCategoryId())).thenReturn(List.of(wantsTransaction));
+        when(transactionService.fetchCategoryTransactions(investmentsCategory.getCategoryId())).thenReturn(List.of(investmentTransaction));
+        doReturn(50.0).when(budgetPerformanceService)
+                .calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
+
+
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = budgetPerformanceService.generateBudgetOverviews(userCategories, monthYear);
+
+
+        //Each BudgetOverview should have totalSavings of $50.0
+        for(Map.Entry<OverviewType, BudgetOverview> entry : budgetOverviews.entrySet()) {
+            BudgetOverview budgetOverview = entry.getValue();
+            OverviewType type = entry.getKey();
+            switch (type) {
+                case GENERAL:
+                    assertEquals(totalAmountBudgeted - totalAmountSpentGeneral, budgetOverview.getSavedAmountAttributesTotal());
+                    break;
+                case NEEDS:
+                    assertEquals(needsCategory.getBudgetAmount() - totalAmountSpentNeeds, budgetOverview.getSavedAmountAttributesTotal());
+                    break;
+                case INVESTMENTS:
+                    assertEquals(investmentsCategory.getBudgetAmount() - totalAmountSpentInvestments, budgetOverview.getSavedAmountAttributesTotal());
+                    break;
+                case WANTS:
+                    assertEquals(wantsCategory.getBudgetAmount() - totalAmountSpentWants, budgetOverview.getSavedAmountAttributesTotal());
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + type);
+            }
         }
 
         verify(budgetPerformanceService, times(4)).calculateTotalAmountSaved(any(OverviewType.class), any(double.class));
@@ -627,15 +675,15 @@ public class BudgetPerformanceServiceTests {
     @Test
     void testCalculateTotalAmountSaved_GeneralOverview() {
         //Arrange
-        double difference = 456.20;
-        double expectedTotalAmountSaved = needsCategoryType.getSavedAmount() + wantsCategoryType.getSavedAmount() + investmentsCategoryType.getSavedAmount();
-        expectedTotalAmountSaved += difference;
+        double totalAmountSpent = 456.20;
+        double expectedTotalAmountSaved = needsCategoryType.getBudgetAmount() + wantsCategoryType.getBudgetAmount() + investmentsCategoryType.getBudgetAmount();
+        expectedTotalAmountSaved -= totalAmountSpent;
 
         //Mock
         when(categoryTypeService.readAll()).thenReturn(List.of(needsCategoryType, wantsCategoryType, investmentsCategoryType));
 
         //Act
-        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, difference);
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, totalAmountSpent);
 
         //Assert
         assertEquals(expectedTotalAmountSaved, totalAmountSaved);
@@ -649,14 +697,14 @@ public class BudgetPerformanceServiceTests {
     @Test
     void testCalculateTotalAmountSaved_AnyOtherOverview() {
         //Arrange
-        double difference = 456.20;
-        double expectedTotalAmountSaved = needsCategoryType.getSavedAmount() + difference;
+        double totalAmountSpent = 456.20;
+        double expectedTotalAmountSaved = needsCategoryType.getBudgetAmount() - totalAmountSpent;
 
         //Mock
         when(categoryTypeService.readByName(OverviewType.NEEDS.name())).thenReturn(needsCategoryType);
 
         //Act
-        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, difference);
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, totalAmountSpent);
 
         //Assert
         assertEquals(expectedTotalAmountSaved, totalAmountSaved);
@@ -669,16 +717,16 @@ public class BudgetPerformanceServiceTests {
     @Test
     void testCalculateTotalAmountSaved_NullCategoryType_ReturnsDifference() {
         //Arrange
-        double difference = 456.20;
+        double totalAmountSpent = 456.20;
 
         //Mock
         when(categoryTypeService.readByName(OverviewType.NEEDS.name())).thenReturn(null);
 
         //Act
-        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, difference);
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.NEEDS, totalAmountSpent);
 
         //Assert
-        assertEquals(difference, totalAmountSaved); //difference + 0 = difference
+        assertEquals(totalAmountSpent * -1, totalAmountSaved); //0 - 456.20 = -456.20
 
         //Verify
         verify(categoryTypeService, times(0)).readAll();
@@ -688,16 +736,16 @@ public class BudgetPerformanceServiceTests {
     @Test
     void testCalculateTotalAmountSaved_NullCategoryTypes_ReturnsZero() {
         //Arrange
-        double difference = 456.20;
+        double totalAmountSpent = 456.20;
 
         //Mock
         when(categoryTypeService.readAll()).thenReturn(null);
 
         //Act
-        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, difference);
+        double totalAmountSaved = budgetPerformanceService.calculateTotalAmountSaved(OverviewType.GENERAL, totalAmountSpent);
 
         //Assert
-        assertEquals(difference, totalAmountSaved); //difference + 0 = difference
+        assertEquals(-1 * totalAmountSpent, totalAmountSaved); //totalAmountSaved = 0 - 456.20
 
         //Verify
         verify(categoryTypeService, times(1)).readAll();
