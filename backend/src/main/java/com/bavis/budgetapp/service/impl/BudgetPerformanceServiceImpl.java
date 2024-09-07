@@ -216,17 +216,20 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
      *          - total amount saved for CategoryType
      */
     public double calculateTotalAmountSaved(OverviewType overviewType, double totalAmountSpent) {
+        log.info("Calculating the Total Amount Saved for OverviewType {} and Expenditure {}", overviewType.name(), totalAmountSpent);
+
         //Sum of all CategoryTypes 'budget_amount_allocated' MINUS total amount spent
         if(overviewType == OverviewType.GENERAL) {
             double allCategoryTypeAllocations = Optional.ofNullable(categoryTypeService.readAll()).orElse(Collections.emptyList()).stream()
                     .mapToDouble(CategoryType::getBudgetAmount)
                     .sum();
-
+            log.info("Total Amount Allocated for {} Overview : {}", overviewType.name(), allCategoryTypeAllocations);
             return allCategoryTypeAllocations - totalAmountSpent;
         }
 
         CategoryType categoryType = categoryTypeService.readByName(overviewType.name());
         double categoryTypeAllocation = categoryType == null ? 0 : categoryType.getBudgetAmount();
+        log.info("Total Amount Allocated for {} Overview: {}", overviewType.name(), categoryTypeAllocation);
         return categoryTypeAllocation - totalAmountSpent;
     }
 }
