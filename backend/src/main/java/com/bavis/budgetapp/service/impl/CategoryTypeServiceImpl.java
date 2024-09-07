@@ -106,6 +106,12 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 	}
 
 	@Override
+	public List<CategoryType> readAll(User user) {
+		log.info("Attempting to read all CategoryTypes for the User {}", user.getUserId());
+		return repository.findByUserUserId(user.getUserId());
+	}
+
+	@Override
 	public CategoryType update(UpdateCategoryTypeDto updateCategoryTypeDto, Long id) {
 		//Fetch CategoryType or throw NotFoundException
 		CategoryType categoryType = read(id);
@@ -136,6 +142,16 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 		log.info("Attempting to fetch Category Type with the name {} for User {}", normalCaseType, userId);
 		return repository.findByNameAndUserUserId(normalCaseType, userId);
 	}
+
+	@Override
+	public CategoryType readByName(String categoryTypeName, User user) {
+		long userId = user.getUserId();
+		String normalCaseType = GeneralUtil.toNormalCase(categoryTypeName);
+		log.info("Attempting to fetch Category Type with the name {} for User {}", normalCaseType, userId);
+		return repository.findByNameAndUserUserId(normalCaseType, userId);
+	}
+
+
 
 	//todo: finish this logic and add logging
 	@Override

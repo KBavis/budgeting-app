@@ -240,6 +240,24 @@ public class CategoryTypeServiceTests {
     }
 
     @Test
+    void testReadByName_WithUser_Success() {
+        //Arrange
+        String categoryType = "Needs";
+
+        //Mock
+        when(repository.findByNameAndUserUserId(categoryType, user.getUserId())).thenReturn(categoryTypeNeeds);
+
+        //Act
+        CategoryType actualCategoryType = categoryTypeService.readByName(categoryType, user);
+
+        //Assert
+        assertEquals(categoryTypeNeeds, actualCategoryType);
+
+        //Verify
+        verify(repository, times(1)).findByNameAndUserUserId(categoryType,user.getUserId());
+    }
+
+    @Test
     void testReadByName_ReturnsNull() {
         //Arrange
         String categoryType = "Needs";
@@ -370,7 +388,51 @@ public class CategoryTypeServiceTests {
         assertTrue(actualCategoryTypes.contains(categoryTypeThree));
     }
 
-    //TODO: implement me
+    @Test
+    void testReadAll_WithUser_Successful() {
+        //Arrange
+        CategoryType categoryTypeOne = CategoryType.builder()
+                .categoryTypeId(10L)
+                .name("Needs")
+                .budgetAllocationPercentage(.5)
+                .categories(new ArrayList<>())
+                .build();
+
+        CategoryType categoryTypeTwo = CategoryType.builder()
+                .categoryTypeId(11L)
+                .name("Wants")
+                .budgetAllocationPercentage(.2)
+                .categories(new ArrayList<>())
+                .build();
+
+        CategoryType categoryTypeThree = CategoryType.builder()
+                .categoryTypeId(12L)
+                .name("Investments")
+                .budgetAllocationPercentage(.3)
+                .categories(new ArrayList<>())
+                .build();
+
+        List<CategoryType> expectedCategoryTypes = List.of(categoryTypeOne, categoryTypeTwo, categoryTypeThree);
+
+        User currentAuthUSer = User.builder()
+                .userId(10L)
+                .username("auth-user")
+                .build();
+
+        //Mock
+        when(repository.findByUserUserId(user.getUserId())).thenReturn(expectedCategoryTypes);
+
+        //Act
+        List<CategoryType> actualCategoryTypes = categoryTypeService.readAll(currentAuthUSer);
+
+        //Assert
+        assertNotNull(actualCategoryTypes);
+        assertEquals(actualCategoryTypes.size(), 3);
+        assertTrue(actualCategoryTypes.contains(categoryTypeOne));
+        assertTrue(actualCategoryTypes.contains(categoryTypeTwo));
+        assertTrue(actualCategoryTypes.contains(categoryTypeThree));
+    }
+
     @Test
     public void testCreateMany_UserServiceException_Failure() {
         //Arrange
