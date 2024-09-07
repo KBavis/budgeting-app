@@ -19,11 +19,17 @@ const BudgetOverview = ({ overview }) => {
       savedAmountAttributesTotal,
    } = overview;
 
+   // If over budget, make the spent percentage 100% for pie chart display
+   const adjustedTotalSpent =
+      totalSpent > totalAmountAllocated ? totalAmountAllocated : totalSpent;
+
    const data = [
-      { name: "Spent", value: parseFloat(totalSpent.toFixed(2)) },
+      { name: "Spent", value: parseFloat(adjustedTotalSpent.toFixed(2)) },
       {
          name: "Remaining",
-         value: parseFloat((totalAmountAllocated - totalSpent).toFixed(2)),
+         value: parseFloat(
+            Math.max(totalAmountAllocated - adjustedTotalSpent, 0).toFixed(2)
+         ),
       },
    ];
 
@@ -112,7 +118,7 @@ const BudgetOverview = ({ overview }) => {
                   savedAmountAttributesTotal
                )}`}
             >
-               ${savedAmountAttributesTotal.toFixed(2)}
+               ${Math.abs(savedAmountAttributesTotal).toFixed(2)}
             </span>
          </div>
          <div className="text-center font-semibold text-lg mb-4">
