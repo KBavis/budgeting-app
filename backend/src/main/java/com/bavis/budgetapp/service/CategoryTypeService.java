@@ -4,6 +4,7 @@ import com.bavis.budgetapp.dto.CategoryTypeDto;
 import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
+import com.bavis.budgetapp.entity.User;
 
 import java.util.List;
 
@@ -31,6 +32,16 @@ public interface CategoryTypeService {
 	 */
 	List<CategoryType> readAll();
 
+	/**
+	 * Functionality to read all Categories pertaining to a specific User
+	 *
+	 * @param user
+	 * 			- User to fetch all CategoryTypes for
+	 * @return
+	 * 		- all Category entities corresponding to authenticated user
+	 */
+	List<CategoryType> readAll(User user);
+
 
 	/**
 	 * Functionality to retrieve a user's CategoryType corresponding to a particular name
@@ -41,6 +52,18 @@ public interface CategoryTypeService {
 	 * 			- retrieved CategoryType
 	 */
 	CategoryType readByName(String categoryTypeName);
+
+	/**
+	 * Functionality to retrieve a user's CategoryType corresponding to a particular name
+	 *
+	 * @param categoryTypeName
+	 * 			- CategoryType name to fetch
+	 * @param user
+	 * 			- User to fetch CategoryType by name for
+	 * @return
+	 * 			- retrieved CategoryType
+	 */
+	CategoryType readByName(String categoryTypeName, User user);
 
 	/**
 	 * Function to create multiple Category Type entities in a singular request

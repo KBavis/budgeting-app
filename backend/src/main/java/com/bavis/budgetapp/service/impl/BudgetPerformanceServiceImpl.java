@@ -93,7 +93,8 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
             List<Category> categories = user.getCategories();
 
             //Generate General BudgetOverviews
-            HashMap<OverviewType, BudgetOverview> budgetOverviews = generateBudgetOverviews(categories, monthYear);
+            log.info("Calculating Budget Overviews for User {}", user.getUsername());
+            HashMap<OverviewType, BudgetOverview> budgetOverviews = generateBudgetOverviews(categories, monthYear, user);
 
 
             //Generate BudgetPerformanceId
@@ -145,7 +146,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
      * @return
      *          - BudgetOverview model
      */
-    public HashMap<OverviewType, BudgetOverview> generateBudgetOverviews(List<Category> userCategories, MonthYear monthYear) {
+    public HashMap<OverviewType, BudgetOverview> generateBudgetOverviews(List<Category> userCategories, MonthYear monthYear, User user) {
         String categoryIds = userCategories.stream()
                                 .map(category -> String.valueOf(category.getCategoryId()))
                                 .collect(Collectors.joining(", "));
@@ -187,7 +188,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
             //Calculate Savings
             log.info("Total Amount Budgeted {} and Total Amount Spent {}", totalAmountBudgeted, totalAmountSpent);
             double difference = totalAmountBudgeted - totalAmountSpent; //amount over/under budget
-            double totalAmountSaved = calculateTotalAmountSaved(overviewType, totalAmountSpent);
+            double totalAmountSaved = calculateTotalAmountSaved(overviewType, totalAmountSpent, user);
 
             BudgetOverview budgetOverview = BudgetOverview.builder()
                     .overviewType(overviewType)
@@ -212,22 +213,24 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
      *          - OverviewType to calculate savings for
      * @param totalAmountSpent
      *          - total amount spent (corresponding to single CategoryType or ALL CategoryTypes)
+     * @param user
+     *          - User we are calculating savings for
      * @return
      *          - total amount saved for CategoryType
      */
-    public double calculateTotalAmountSaved(OverviewType overviewType, double totalAmountSpent) {
+    public double calculateTotalAmountSaved(OverviewType overviewType, double totalAmountSpent, User user) {
         log.info("Calculating the Total Amount Saved for OverviewType {} and Expenditure {}", overviewType.name(), totalAmountSpent);
 
         //Sum of all CategoryTypes 'budget_amount_allocated' MINUS total amount spent
         if(overviewType == OverviewType.GENERAL) {
-            double allCategoryTypeAllocations = Optional.ofNullable(categoryTypeService.readAll()).orElse(Collections.emptyList()).stream()
+            double allCategoryTypeAllocations = Optional.ofNullable(categoryTypeService.readAll(user)).orElse(Collections.emptyList()).stream()
                     .mapToDouble(CategoryType::getBudgetAmount)
                     .sum();
             log.info("Total Amount Allocated for {} Overview : {}", overviewType.name(), allCategoryTypeAllocations);
             return allCategoryTypeAllocations - totalAmountSpent;
         }
 
-        CategoryType categoryType = categoryTypeService.readByName(overviewType.name());
+        CategoryType categoryType = categoryTypeService.readByName(overviewType.name(), user);
         double categoryTypeAllocation = categoryType == null ? 0 : categoryType.getBudgetAmount();
         log.info("Total Amount Allocated for {} Overview: {}", overviewType.name(), categoryTypeAllocation);
         return categoryTypeAllocation - totalAmountSpent;
