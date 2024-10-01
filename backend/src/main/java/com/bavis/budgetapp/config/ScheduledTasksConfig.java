@@ -20,9 +20,9 @@ public class ScheduledTasksConfig {
     private BudgetPerformanceService budgetPerformanceService;
 
     /**
-     * Generate User's BudgetPerformances on the first day of every month
+     * Generate User's BudgetPerformances on at 11:55 PM on the last day of every month
      */
-    @Scheduled(cron = "0 0 0 1 * ?")
+    @Scheduled(cron = "0 55 23 L * ?")
     public void generateBudgetPerformance() {
         log.info("Executing monthly Budget Performance job");
         budgetPerformanceService.runGenerateBudgetPerformanceJob(null);
