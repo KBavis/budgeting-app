@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.IncomeDto;
+import com.bavis.budgetapp.dto.UpdateIncomeDto;
 import com.bavis.budgetapp.entity.Income;
 import com.bavis.budgetapp.service.IncomeService;
 import jakarta.validation.Valid;
@@ -52,5 +53,11 @@ public class IncomeController {
     public ResponseEntity<List<Income>> readAll() {
         log.info("Received request to fetch all incomes corresponding to authenticated user");
         return ResponseEntity.ok(_incomeService.readAll());
+    }
+
+    @PatchMapping()
+    public ResponseEntity<Income> update(@RequestBody UpdateIncomeDto incomeDto) {
+        log.info("Received request to update a users income via the following RequestBody: [{}]", incomeDto);
+        return ResponseEntity.ok(_incomeService.update(incomeDto));
     }
 }
