@@ -4,9 +4,13 @@ import com.bavis.budgetapp.dao.IncomeRepository;
 import com.bavis.budgetapp.dto.IncomeDto;
 import com.bavis.budgetapp.constants.IncomeSource;
 import com.bavis.budgetapp.constants.IncomeType;
+import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.UpdateIncomeDto;
+import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.mapper.IncomeMapper;
 import com.bavis.budgetapp.entity.Income;
 import com.bavis.budgetapp.entity.User;
+import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.impl.IncomeServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -37,6 +42,9 @@ public class IncomeServiceTests {
 
     @Mock
     private IncomeMapper incomeMapper;
+
+    @Mock
+    private CategoryTypeService categoryTypeService;
 
     @InjectMocks
     private IncomeServiceImpl incomeService;
@@ -58,16 +66,17 @@ public class IncomeServiceTests {
                 .description("Bi-weekly salary from Company")
                 .build();
 
+        user = User.builder()
+                .userId(10L)
+                .build();
+
         income = Income.builder()
                 .incomeSource(IncomeSource.EMPLOYER)
                 .incomeType(IncomeType.SALARY)
                 .amount(5000.0)
                 .description("Bi-weekly salary from Company")
                 .incomeId(1L)
-                .build();
-
-        user = User.builder()
-                .userId(10L)
+                .user(user)
                 .build();
     }
 
@@ -151,5 +160,95 @@ public class IncomeServiceTests {
         //Assert
         assertEquals(expectedAmount, totalAmount);
     }
+
+
+    @Test
+    void testUpdate_returnsExpectedIncome() {
+        //Arrange
+        UpdateIncomeDto updateIncomeDto = UpdateIncomeDto.builder()
+                .incomeId(1L)
+                .amount(2912)
+                .build();
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(1L)
+                .savedAmount(200)
+                .budgetAmount(1000)
+                .budgetAllocationPercentage(.50)
+                .build();
+        List<CategoryType> categoryTypes = List.of(categoryType);
+
+        //Mock
+        when(categoryTypeService.readAll()).thenReturn(categoryTypes);
+        when(incomeRepository.findById(1L)).thenReturn(Optional.of(income));
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(categoryTypeService.update(any(UpdateCategoryTypeDto.class), any(Long.class))).thenReturn(null);
+
+        //Act
+        Income actualIncome = incomeService.update(updateIncomeDto);
+
+        //Assert
+        assertEquals(actualIncome.getAmount(), updateIncomeDto.getAmount());
+        assertNotNull(actualIncome.getUpdatedAt());
+    }
+
+    @Test
+    void testUpdate_throwExceptionIfNonAuthUser() {
+        //Arrange
+        User invalidUser = User.builder()
+                .userId(30204L)
+                .build();
+        income.setUser(invalidUser);
+        UpdateIncomeDto updateIncomeDto = UpdateIncomeDto.builder()
+                .incomeId(1L)
+                .amount(2912)
+                .build();
+
+
+        //Mock
+        when(incomeRepository.findById(1L)).thenReturn(Optional.of(income));
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+
+        //Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            incomeService.update(updateIncomeDto);
+        });
+        assertEquals("Unable to update user Income due to user not being owner of specified income", exception.getMessage());
+    }
+
+    @Test
+    void testUpdate_UpdatesCategoryTypesCorrectly() {
+        //Arrange
+        UpdateIncomeDto updateIncomeDto = UpdateIncomeDto.builder()
+                .incomeId(1L)
+                .amount(2912)
+                .build();
+        CategoryType categoryType = CategoryType.builder()
+                .categoryTypeId(1L)
+                .savedAmount(200)
+                .budgetAmount(1000)
+                .budgetAllocationPercentage(.50)
+                .build();
+        List<CategoryType> categoryTypes = List.of(categoryType);
+
+        UpdateCategoryTypeDto expectedDto = UpdateCategoryTypeDto.builder()
+                .budgetAllocationPercentage(categoryType.getBudgetAllocationPercentage())
+                .amountAllocated(updateIncomeDto.getAmount() * categoryType.getBudgetAllocationPercentage())
+                .savedAmount((updateIncomeDto.getAmount() * categoryType.getBudgetAllocationPercentage()) - (categoryType.getBudgetAmount() - categoryType.getSavedAmount()))
+                .build();
+
+        //Mock
+        when(categoryTypeService.readAll()).thenReturn(categoryTypes);
+        when(incomeRepository.findById(1L)).thenReturn(Optional.of(income));
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(categoryTypeService.update(any(UpdateCategoryTypeDto.class), any(Long.class))).thenReturn(null);
+
+        //Act
+        incomeService.update(updateIncomeDto);
+
+        //Verify
+        verify(categoryTypeService, times(1)).update(expectedDto, categoryType.getCategoryTypeId());
+    }
+
+
 
 }
