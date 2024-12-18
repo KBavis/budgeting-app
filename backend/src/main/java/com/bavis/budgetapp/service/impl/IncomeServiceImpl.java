@@ -2,16 +2,22 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dao.IncomeRepository;
 import com.bavis.budgetapp.dto.IncomeDto;
+import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.UpdateIncomeDto;
+import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.mapper.IncomeMapper;
 import com.bavis.budgetapp.entity.Income;
 import com.bavis.budgetapp.entity.User;
+import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.IncomeService;
 import com.bavis.budgetapp.service.UserService;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Kellen Bavis
@@ -28,10 +34,13 @@ public class IncomeServiceImpl implements IncomeService {
 
     private IncomeMapper _incomeMapper;
 
-    public IncomeServiceImpl(IncomeRepository _incomeRepository, UserService _userService, IncomeMapper _incomeMapper){
+    private CategoryTypeService _categoryTypeService;
+
+    public IncomeServiceImpl(IncomeRepository _incomeRepository, UserService _userService, IncomeMapper _incomeMapper, @Lazy CategoryTypeService _categoryTypeService){
         this._incomeRepository = _incomeRepository;
         this._userService = _userService;
         this._incomeMapper = _incomeMapper;
+        this._categoryTypeService = _categoryTypeService;
     }
     @Override
     public Income create(IncomeDto incomeDto) {
@@ -54,10 +63,10 @@ public class IncomeServiceImpl implements IncomeService {
         return _incomeRepository.findByUserUserId(authenticatedUser.getUserId());
     }
 
-    //TODO: finish impl and add comments
     @Override
     public Income readById(Long incomeId) {
-        return null;
+        log.info("Attempting to fetch income corresponding to the following ID: {}", incomeId);
+        return _incomeRepository.findById(incomeId).orElseThrow(() -> new RuntimeException("Unable to locate Income with the following ID: " + incomeId));
     }
 
 
@@ -76,10 +85,41 @@ public class IncomeServiceImpl implements IncomeService {
                 .reduce(0.0, Double::sum);
     }
 
-    //TODO: complete and add comments/logging
     @Override
-    public Income update(Income income, Long incomeId) {
-        return null;
+    public Income update(UpdateIncomeDto incomeDto) {
+        log.info("Attempting to update user's Income via the following incomeDto: [{}]", incomeDto);
+        User authUser = _userService.getCurrentAuthUser();
+
+        //Fetch Income corresponding to IncomeDto
+        Income incomeToUpdate = readById(incomeDto.getIncomeId());
+
+        //Ensure Income corresponds to Authenticated User
+        if(!Objects.equals(incomeToUpdate.getUser().getUserId(), authUser.getUserId())){
+            log.error("Error: Non-auth user is attempting to update income not owned by them");
+            throw new RuntimeException("Unable to update user Income due to user not being owner of specified income");
+        }
+
+        //Fetch All Category Types corresponding to user
+        List<CategoryType> categoryTypes = _categoryTypeService.readAll();
+
+        // Update budgetAmount & savedAmount for each CategoryType
+        for(CategoryType type: categoryTypes) {
+            double totalCategoryAmount = type.getBudgetAmount() - type.getSavedAmount();
+            double newBudgetAmount = type.getBudgetAllocationPercentage() * incomeDto.getAmount();
+            double newSavedAmount = newBudgetAmount - totalCategoryAmount;
+
+            UpdateCategoryTypeDto categoryTypeDto = UpdateCategoryTypeDto.builder()
+                            .savedAmount(newSavedAmount)
+                            .budgetAllocationPercentage(type.getBudgetAllocationPercentage()) //budget allocation percentage remains the same
+                            .amountAllocated(newBudgetAmount)
+                            .build();
+
+            _categoryTypeService.update(categoryTypeDto, type.getCategoryTypeId()); //update
+        }
+
+        incomeToUpdate.setUpdatedAt(LocalDateTime.now());
+        incomeToUpdate.setAmount(incomeDto.getAmount());
+        return incomeToUpdate;
     }
 
     //TODO: complete and add comments/logging

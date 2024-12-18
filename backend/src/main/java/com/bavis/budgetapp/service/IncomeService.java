@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.IncomeDto;
+import com.bavis.budgetapp.dto.UpdateIncomeDto;
 import com.bavis.budgetapp.entity.Income;
 
 import java.util.List;
@@ -44,14 +45,12 @@ public interface IncomeService {
     /**
      * Functionality to update a particular Income entity with updated attributes
      *
-     * @param income
-     *          - Income with updated propertied
-     * @param incomeId
-     *          - ID corresponding to Income entity to be updated
+     * @param incomeDto
+     *          - updated income amount & corresponding Income ID to update
      * @return
      *          - Updated Income entity
      */
-    Income update(Income income, Long incomeId);
+    Income update(UpdateIncomeDto incomeDto);
 
     /**
      * Functionality to find the sum of all Income entities pertaining to a particular user
