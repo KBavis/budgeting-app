@@ -3,6 +3,7 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.IncomeDto;
 import com.bavis.budgetapp.constants.IncomeSource;
 import com.bavis.budgetapp.constants.IncomeType;
+import com.bavis.budgetapp.dto.UpdateIncomeDto;
 import com.bavis.budgetapp.entity.Income;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.IncomeServiceImpl;
@@ -26,6 +27,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -77,6 +79,34 @@ public class IncomeControllerTests {
                .user(user)
                .updatedAt(localDateTime)
                .build();
+    }
+
+    @Test
+    void testUpdate_Successful() throws Exception{
+        //Arrange
+        UpdateIncomeDto updateIncomeDto = UpdateIncomeDto.builder()
+                .amount(2000)
+                .incomeId(11L)
+                .build();
+
+        //Mock
+        when(incomeService.update(updateIncomeDto)).thenReturn(income);
+
+        //Act
+        ResultActions resultActions = mockMvc.perform(patch("/income")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateIncomeDto)));
+
+        //Assert
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.incomeSource").value(income.getIncomeSource().toString()))
+                .andExpect(jsonPath("$.incomeType").value(income.getIncomeType().toString()))
+                .andExpect(jsonPath("$.amount").value(income.getAmount()))
+                .andExpect(jsonPath("$.description").value(income.getDescription()))
+                .andExpect(jsonPath("$.incomeId").value(income.getIncomeId()))
+                .andExpect(jsonPath("$.updatedAt").value(income.getUpdatedAt()));
     }
 
     @Test
