@@ -12,6 +12,7 @@ import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.IncomeService;
 import com.bavis.budgetapp.service.UserService;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,7 +36,7 @@ public class IncomeServiceImpl implements IncomeService {
 
     private CategoryTypeService _categoryTypeService;
 
-    public IncomeServiceImpl(IncomeRepository _incomeRepository, UserService _userService, IncomeMapper _incomeMapper, CategoryTypeService _categoryTypeService){
+    public IncomeServiceImpl(IncomeRepository _incomeRepository, UserService _userService, IncomeMapper _incomeMapper, @Lazy CategoryTypeService _categoryTypeService){
         this._incomeRepository = _incomeRepository;
         this._userService = _userService;
         this._incomeMapper = _incomeMapper;
