@@ -182,6 +182,7 @@ public class IncomeServiceTests {
         when(incomeRepository.findById(1L)).thenReturn(Optional.of(income));
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(categoryTypeService.update(any(UpdateCategoryTypeDto.class), any(Long.class))).thenReturn(null);
+        when(incomeRepository.save(any())).thenReturn(null);
 
         //Act
         Income actualIncome = incomeService.update(updateIncomeDto);
@@ -241,6 +242,7 @@ public class IncomeServiceTests {
         when(incomeRepository.findById(1L)).thenReturn(Optional.of(income));
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(categoryTypeService.update(any(UpdateCategoryTypeDto.class), any(Long.class))).thenReturn(null);
+        when(incomeRepository.save(any())).thenReturn(null);
 
         //Act
         incomeService.update(updateIncomeDto);

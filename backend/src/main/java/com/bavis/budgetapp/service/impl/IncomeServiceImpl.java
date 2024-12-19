@@ -119,6 +119,7 @@ public class IncomeServiceImpl implements IncomeService {
 
         incomeToUpdate.setUpdatedAt(LocalDateTime.now());
         incomeToUpdate.setAmount(incomeDto.getAmount());
+        _incomeRepository.save(incomeToUpdate); //save income
         return incomeToUpdate;
     }
 
