@@ -76,6 +76,10 @@ public class TransactionServiceTests {
 
     PlaidTransactionDto plaidTransactionDtoSix;
 
+    PlaidTransactionDto plaidPreviousMonthTransactionOne;
+
+    PlaidTransactionDto plaidPreviousMonthTransactionTwo;
+
     PlaidTransactionSyncResponseDto syncResponseDto;
 
     List<PlaidTransactionDto> addedTransactions;
@@ -130,7 +134,9 @@ public class TransactionServiceTests {
                 .build();
 
         /**
+         * ****************************************
          * Transactions that should be filtered out
+         * **************************************
          */
 
         plaidTransactionDtoFour = PlaidTransactionDto.builder()
@@ -160,9 +166,39 @@ public class TransactionServiceTests {
                 .account_id(accountId)
                 .build();
 
-        addedTransactions = List.of(plaidTransactionDtoOne, plaidTransactionDtoFour, plaidTransactionDtoSix); //include transaction with 0 amount and date outside of current month
+        /**
+         * ****************************************
+         * Transactions corresponding to previous month
+         * **************************************
+         */
+        int currentYear = date.getYear();
+        int currentMonth = date.getMonthValue();
+
+        // added transaction for previous month
+        plaidPreviousMonthTransactionOne = PlaidTransactionDto.builder()
+                .transaction_id("17843")
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
+                .amount(500)
+                .datetime(LocalDate.of(currentYear, currentMonth - 1, 19))
+                .account_id(accountId)
+                .build();
+
+        // modified transaction for previous month
+        plaidPreviousMonthTransactionTwo = PlaidTransactionDto.builder()
+                .transaction_id("138848")
+                .counterparties(List.of(counterpartyDto))
+                .personal_finance_category(personalFinanceCategoryDto)
+                .amount(600)
+                .datetime(LocalDate.of(currentYear, currentMonth - 1, 19))
+                .account_id(accountId)
+                .build();
+
+
+        //include transaction with 0 amount, transaction with date outside of current month / year
+        addedTransactions = List.of(plaidTransactionDtoOne, plaidTransactionDtoFour, plaidTransactionDtoSix, plaidPreviousMonthTransactionOne);
         removedTransactions = List.of(plaidTransactionDtoTwo, plaidTransactionDtoFive); //include transaction with negative amount
-        modifiedTransactions = List.of(plaidTransactionDtoThree);
+        modifiedTransactions = List.of(plaidTransactionDtoThree, plaidPreviousMonthTransactionTwo);
 
         syncResponseDto = PlaidTransactionSyncResponseDto.builder()
                 .added(addedTransactions)
@@ -282,6 +318,7 @@ public class TransactionServiceTests {
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
         List<Transaction> actualTransactions = syncTransactionsDto.getAllModifiedOrAddedTransactions();
         List<String> removedTransactionIds = syncTransactionsDto.getRemovedTransactionIds();
+        List<Transaction> previousMonthTransactions = syncTransactionsDto.getPreviousMonthTransactions();
 
         //Assert
         assertNotNull(syncTransactionsDto);
@@ -296,21 +333,29 @@ public class TransactionServiceTests {
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFour.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFive.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoSix.getTransaction_id())));
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidPreviousMonthTransactionOne.getTransaction_id())));
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidPreviousMonthTransactionTwo.getTransaction_id())));
+
 
         //Ensure Each Removed Transaction Id is present
         assertTrue(removedTransactionIds.stream().anyMatch(transactionId -> transactionId.equals(plaidTransactionDtoTwo.getTransaction_id())));
         assertTrue(removedTransactionIds.stream().anyMatch(transactionId -> transactionId.equals(plaidTransactionDtoFive.getTransaction_id())));
+
+        //Ensure Previous Month Transactions Are Accounted For
+        assertEquals(2, previousMonthTransactions.size());
+        assertTrue(previousMonthTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidPreviousMonthTransactionOne.getTransaction_id())));
+        assertTrue(previousMonthTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidPreviousMonthTransactionTwo.getTransaction_id())));
 
         //Verify
         verify(accountService, times(1)).read(accountIdOne);
         verify(accountService, times(1)).read(accountIdTwo);
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
         verify(connectionService, times(1)).update(accountConnectionTwo, accountConnectionTwo.getConnectionId());
-        verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
+        verify(transactionRepository, times(2)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(1)).deleteAllById(anyList());
-        verify(transactionMapper, times(8)).toEntity(any(PlaidTransactionDto.class));
-        verify(transactionRepository, times(2)).existsByTransactionIdAndUpdatedByUserIsTrue(any());
-        verify(transactionRepository, times(2)).existsById(any());
+        verify(transactionMapper, times(24)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionRepository, times(4)).existsByTransactionIdAndUpdatedByUserIsTrue(any());
+        verify(transactionRepository, times(4)).existsById(any());
         verify(plaidService, times(2)).syncTransactions(accessToken, previousCursor);
     }
 
@@ -388,6 +433,7 @@ public class TransactionServiceTests {
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
         List<Transaction> actualTransactions = syncTransactionsDto.getAllModifiedOrAddedTransactions();
         List<String> removedTransactionIds = syncTransactionsDto.getRemovedTransactionIds();
+        List<Transaction> previousMonthTransactions = syncTransactionsDto.getPreviousMonthTransactions();
 
         //Assert
         assertNotNull(actualTransactions);
@@ -403,21 +449,28 @@ public class TransactionServiceTests {
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFour.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoFive.getTransaction_id())));
         assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidTransactionDtoSix.getTransaction_id())));
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidPreviousMonthTransactionOne.getTransaction_id())));
+        assertFalse(actualTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidPreviousMonthTransactionTwo.getTransaction_id())));
 
         //Ensure Each Removed Transaction Id is present
         assertTrue(removedTransactionIds.stream().anyMatch(transactionId -> transactionId.equals(plaidTransactionDtoTwo.getTransaction_id())));
         assertTrue(removedTransactionIds.stream().anyMatch(transactionId -> transactionId.equals(plaidTransactionDtoFive.getTransaction_id())));
+
+        //Ensure Previous Month Transactions Are Accounted For
+        assertEquals(2, previousMonthTransactions.size());
+        assertTrue(previousMonthTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidPreviousMonthTransactionOne.getTransaction_id())));
+        assertTrue(previousMonthTransactions.stream().anyMatch(transaction -> transaction.getTransactionId().equals(plaidPreviousMonthTransactionTwo.getTransaction_id())));
 
         //Verify
         verify(accountService, times(1)).read(accountIdOne);
         verify(accountService, times(1)).read(accountIdTwo);
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
         verify(connectionService, times(1)).update(accountConnectionTwo, accountConnectionTwo.getConnectionId());
-        verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
+        verify(transactionRepository, times(2)).saveAllAndFlush(anyList());
         verify(transactionRepository, times(1)).deleteAllById(anyList());
-        verify(transactionMapper, times(16)).toEntity(any(PlaidTransactionDto.class));
-        verify(transactionRepository, times(4)).existsByTransactionIdAndUpdatedByUserIsTrue(any());
-        verify(transactionRepository, times(4)).existsById(any());
+        verify(transactionMapper, times(48)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionRepository, times(8)).existsByTransactionIdAndUpdatedByUserIsTrue(any());
+        verify(transactionRepository, times(8)).existsById(any());
         verify(plaidService, times(2)).syncTransactions(accessToken, previousCursor);
         verify(plaidService, times(2)).syncTransactions(accessToken, nextCursor);
     }
@@ -539,7 +592,7 @@ public class TransactionServiceTests {
         //Verify
         verify(accountService, times(1)).read(accountIdOne);
         verify(connectionService, times(1)).update(accountConnectionOne, accountConnectionOne.getConnectionId());
-        verify(transactionMapper, times(4)).toEntity(any(PlaidTransactionDto.class));
+        verify(transactionMapper, times(12)).toEntity(any(PlaidTransactionDto.class));
     }
 
 
