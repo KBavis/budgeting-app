@@ -68,6 +68,32 @@ public class GeneralUtilTests {
     }
 
     @Test
+    public  void testIsDateInPreviousMonth_Failure() {
+        //Arrange date to be current month
+        LocalDate now = LocalDate.now();
+        LocalDate dateToTest = LocalDate.of(now.getYear(), now.getMonthValue(), 19);
+
+        //Act
+        boolean validity = GeneralUtil.isDateInPreviousMonth(dateToTest);
+
+        //Assert
+        assertFalse(validity);
+    }
+
+    @Test
+    public  void testIsDateInPreviousMonth_Successful() {
+        //Arrange date to be previous month
+        LocalDate now = LocalDate.now();
+        LocalDate dateToTest = LocalDate.of(now.getYear(), now.getMonthValue() - 1, 19);
+
+        //Act
+        boolean validity = GeneralUtil.isDateInPreviousMonth(dateToTest);
+
+        //Assert
+        assertTrue(validity);
+    }
+
+    @Test
     public  void testIsDateInCurrentMonth_Successful() {
         //Arrange
         LocalDate dateToTest = LocalDate.now();
