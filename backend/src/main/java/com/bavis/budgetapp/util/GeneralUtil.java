@@ -72,6 +72,28 @@ public class GeneralUtil {
     }
 
     /**
+     * Functionality to determine if a date is within the previous month and current year
+     *
+     * @param dateToCheck
+     *          - the date to validate
+     * @return
+     *      - validly of date
+     */
+    public static boolean isDateInPreviousMonth(LocalDate dateToCheck){
+        if(dateToCheck == null) {
+            return false;
+        }
+
+        LocalDate currentDate = LocalDate.now();
+
+        //Current Month & Year
+        int currentYear = currentDate.getYear();
+        int currentMonth =  currentDate.getMonthValue();
+
+        return currentYear == dateToCheck.getYear() && currentMonth - 1 == dateToCheck.getMonthValue(); // account for previous month
+    }
+
+    /**
      * Functionality to determine if a specific MonthYear corresponds to a LocalDate
      *
      * @param dateToCheck
