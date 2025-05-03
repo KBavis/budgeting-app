@@ -93,7 +93,7 @@ public class TransactionServiceImpl implements TransactionService {
                     List<PlaidTransactionDto> allPlaidTransactions = new ArrayList<>();
                     allPlaidTransactions.addAll(syncResponseDto.getModified());
                     allPlaidTransactions.addAll(syncResponseDto.getAdded());
-                    previousMonthTransactions.addAll(mapPreviousMonthTransactions(allPlaidTransactions, account));
+                    previousMonthTransactions.addAll(mapPreviousMonthTransactions(allPlaidTransactions, account, previousMonthTransactions));
 
                     //Collect Removed TransactionIds
                     List<String> removedTransactionIds = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
@@ -404,7 +404,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @return
      *          - Transaction entities to persist and return
      */
-    private List<Transaction> mapPreviousMonthTransactions(List<PlaidTransactionDto> allModifiedAndAddedPlaidTransactions, Account account) {
+    private List<Transaction> mapPreviousMonthTransactions(List<PlaidTransactionDto> allModifiedAndAddedPlaidTransactions, Account account, List<Transaction> previousMonthTransactions) {
         List<Transaction> prevMonthTransactionEntities = Optional.ofNullable(allModifiedAndAddedPlaidTransactions).stream().flatMap(List::stream)
                 .map(_transactionMapper::toEntity)
                 .peek(transaction -> {
@@ -415,6 +415,9 @@ public class TransactionServiceImpl implements TransactionService {
                 //TODO: Make these filters a separate filter class
                 .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
                 .filter(transaction -> GeneralUtil.isDateInPreviousMonth(transaction.getDate()))
+                .filter(transaction -> previousMonthTransactions.stream() // filter out any previously accounted for transactions
+                        .map(Transaction::getTransactionId)
+                        .noneMatch(id -> id.equals(transaction.getTransactionId())))
                 .toList();
 
 
