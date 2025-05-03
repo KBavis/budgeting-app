@@ -129,9 +129,9 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         //Persist updates
-        _transactionRepository.saveAllAndFlush(allModifiedOrAddedTransactions);
-        _transactionRepository.saveAllAndFlush(previousMonthTransactions);
-        _transactionRepository.deleteAllById(allRemovedTransactionIds);
+        if(!allModifiedOrAddedTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(allModifiedOrAddedTransactions);
+        if(!previousMonthTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(previousMonthTransactions);
+        if(!allRemovedTransactionIds.isEmpty()) _transactionRepository.deleteAllById(allRemovedTransactionIds);
 
         //Return DTO
         return SyncTransactionsDto.builder()
