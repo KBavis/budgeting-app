@@ -24,10 +24,6 @@ export default (state, action) => {
    switch (action.type) {
       case SYNC_TRANSACTIONS_SUCCESS:
 
-         //TODO: Delete me 
-         console.log('Sync Transactions Response')
-         console.log(action.payload)
-
          // New & Updated Transactions
          const newTransactions =
             action.payload.allModifiedOrAddedTransactions.reduce(
