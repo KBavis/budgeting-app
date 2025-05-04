@@ -51,6 +51,7 @@ const HomePage = () => {
       syncTransactions,
       fetchTransactions,
       transactions,
+      prevMonthTransactions,
       loading: transactionsLoading,
       setLoading: setTransactionLoading,
    } = useContext(transactionContext);
@@ -278,6 +279,16 @@ const HomePage = () => {
       //Logic To Fetch Authenticated User Present in Fetch Function
       getAuthUser();
    }, []);
+
+
+   useEffect(() => {
+
+      if(prevMonthTransactions && prevMonthTransactions.length > 0) {
+         console.log('Previous Month Transactions')
+         console.log(prevMonthTransactions)
+      }
+
+   }, [prevMonthTransactions])
 
    //Trigger Fetching of Transactions When Accounts loaded into Context
    useEffect(() => {

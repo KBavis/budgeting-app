@@ -384,6 +384,7 @@ const TransactionState = (props) => {
       <TransactionContext.Provider
          value={{
             transactions: state.transactions,
+            prevMonthTransactions: state.prevMonthTransactions,
             loading: state.loading,
             error: state.error,
             syncTransactions,
