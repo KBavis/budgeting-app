@@ -61,7 +61,7 @@ export default (state, action) => {
          return {
             ...state,
             transactions: filteredTransactionsSync,
-            prev_month_transactions: action.payload.previousMonthTransactions || [],
+            prevMonthTransactions: action.payload.previousMonthTransactions,
             loading: false,
             error: null,
          };
