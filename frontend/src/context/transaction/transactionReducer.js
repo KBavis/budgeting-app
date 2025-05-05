@@ -18,6 +18,7 @@ import {
    RENAME_TRANSACTION_FAILURE,
    RENAME_TRANSACTION_SUCCESS,
    REMOVE_CATEGORY,
+   UPDATE_PREV_MONTH_TRANSACTION_CATEGORY,
 } from "./types";
 
 export default (state, action) => {
@@ -101,6 +102,17 @@ export default (state, action) => {
          return {
             ...state,
             transactions: [transactionToUpdate, ...remainingTransactions],
+         };
+      case UPDATE_PREV_MONTH_TRANSACTION_CATEGORY:
+         const targetId = action.payload; 
+
+         const updatedPrevMonthTransactions = state.prevMonthTransactions.filter(
+            (transaction) => transaction.transactionId !== targetId
+         );
+
+         return {
+            ...state,
+            prevMonthTransactions: updatedPrevMonthTransactions,
          };
       case REMOVE_CATEGORY:
          //Find Transactions with this Category in state and update to be Null

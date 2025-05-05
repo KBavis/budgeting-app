@@ -23,7 +23,7 @@ const PreviousTransactionsModal = ({
   };
 
   const handleConfirm = () => {
-    updateCategory(transaction.transactionId, selectedCategory.categoryId);
+    updateCategory(transaction.transactionId, selectedCategory.categoryId, true);
     setAlert("Category assigned successfully", "success");
     setSelectedCategory(null);
     setConfirmationVisible(false);

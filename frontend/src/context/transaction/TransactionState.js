@@ -23,6 +23,7 @@ import {
    DELETE_TRANSACTION_SUCCESS,
    RENAME_TRANSACTION_SUCCESS,
    RENAME_TRANSACTION_FAILURE,
+   UPDATE_PREV_MONTH_TRANSACTION_CATEGORY,
    REMOVE_CATEGORY,
 } from "./types";
 import initialState from "./initialState";
@@ -118,7 +119,7 @@ const TransactionState = (props) => {
     * @param categoryId
     *          - ID of the category to assign to the transaction
     */
-   const updateCategory = async (transactionId, categoryId) => {
+   const updateCategory = async (transactionId, categoryId, isPrevMonth = false) => {
       if (localStorage.token) {
          setAuthToken(localStorage.token);
       }
@@ -141,10 +142,19 @@ const TransactionState = (props) => {
          const data = res.data;
          const { category } = data;
          const payload = { transactionId, category };
-         dispatch({
-            type: UPDATE_TRANSACTION_CATEGORY,
-            payload,
-         });
+
+         if (isPrevMonth == false) {
+            dispatch({
+               type: UPDATE_TRANSACTION_CATEGORY,
+               payload,
+            });
+         } else {
+            dispatch({
+               type: UPDATE_PREV_MONTH_TRANSACTION_CATEGORY,
+               payload: transactionId
+            })
+         }
+
       } catch (err) {
          console.error(err);
          dispatch({
