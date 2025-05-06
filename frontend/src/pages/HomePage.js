@@ -19,6 +19,7 @@ import AddCategory from "../components/category/AddCategory";
 import UpdateAllocationsModal from "../components/category/UpdateAllocationsModal";
 import RenameCategory from "../components/category/RenameCategory";
 import SummaryContext from "../context/summary/summaryContext";
+import PreviousTransactionsModal from "../components/transaction/PreviousTransactionsModal";
 
 const HomePage = () => {
    //Local State
@@ -42,7 +43,10 @@ const HomePage = () => {
    const [transaction, setTransaction] = useState(null);
    const [categoryType, setCategoryType] = useState(false);
    const [category, setCategory] = useState(null);
-   const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown visibility
+   const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown v
+   const [showPrevTransactionsModal, setShowPrevTransactionsModal] = useState(false);
+   const [currentTransactionIndex, setCurrentTransactionIndex] = useState(0);
+
 
    const initalFetchRef = useRef(false);
 
@@ -51,6 +55,7 @@ const HomePage = () => {
       syncTransactions,
       fetchTransactions,
       transactions,
+      prevMonthTransactions,
       loading: transactionsLoading,
       setLoading: setTransactionLoading,
    } = useContext(transactionContext);
@@ -279,6 +284,17 @@ const HomePage = () => {
       getAuthUser();
    }, []);
 
+
+   // Assign Categories for Previous Month Non-Allocated Trasnactions
+   useEffect(() => {
+
+      if(prevMonthTransactions && prevMonthTransactions.length > 0) {
+         setShowPrevTransactionsModal(true);
+         setCurrentTransactionIndex(0);
+      }
+
+   }, [prevMonthTransactions])
+
    //Trigger Fetching of Transactions When Accounts loaded into Context
    useEffect(() => {
       if (accounts && accounts.length > 0) {
@@ -414,6 +430,22 @@ const HomePage = () => {
                   categoryType={categoryType}
                />
             </div>
+         )}
+         {showPrevTransactionsModal && 
+            prevMonthTransactions.length > 0 &&
+            currentTransactionIndex < prevMonthTransactions.length && (
+               <PreviousTransactionsModal
+                  transactions={prevMonthTransactions}
+                  currentIndex={currentTransactionIndex}
+                  onClose={() => setShowPrevTransactionsModal(false)}
+                  onTransactionComplete={() => {
+                     if (currentTransactionIndex + 1 < prevMonthTransactions.length) {
+                        setCurrentTransactionIndex((prev) => prev + 1);
+                     } else {
+                        setShowPrevTransactionsModal(false);
+                     }
+                  }}
+               />
          )}
          {showRenameCategoryModal && (
             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">

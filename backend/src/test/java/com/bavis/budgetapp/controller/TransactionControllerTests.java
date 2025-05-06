@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -78,8 +79,11 @@ public class TransactionControllerTests {
 
     private SyncTransactionsDto syncTransactionsDto;
 
+    private Transaction transactionThree;
+
     @BeforeEach
     void setup() {
+        LocalDate date = LocalDate.now();
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
@@ -130,10 +134,23 @@ public class TransactionControllerTests {
                 .logoUrl("https://wegmans-logo.com")
                 .build();
 
+        int currentMonth = date.getMonthValue();
+        int currentYear = date.getYear();
+        transactionThree = Transaction.builder()
+                .transactionId("54321EDCBA")
+                .date(LocalDate.of(currentYear, currentMonth - 1, 19)) // previous month transaction
+                .amount(2000.0)
+                .account(accountTwo)
+                .category(null) //TODO: update this to be a category when we intelligently assign Category in future
+                .name("Target")
+                .logoUrl("https://target-logo.com")
+                .build();
+
         validTransactions = List.of(transactionOne, transactionTwo);
 
         syncTransactionsDto = SyncTransactionsDto.builder()
                 .allModifiedOrAddedTransactions(validTransactions)
+                .previousMonthTransactions(Collections.singletonList(transactionThree))
                 .removedTransactionIds(List.of("1", "2", "3"))
                 .build();
     }
@@ -172,6 +189,12 @@ public class TransactionControllerTests {
                 .andExpect(jsonPath("$.allModifiedOrAddedTransactions[1].category").value(transactionTwo.getCategory()))
                 .andExpect(jsonPath("$.allModifiedOrAddedTransactions[1].logoUrl").value(transactionTwo.getLogoUrl()))
                 .andExpect(jsonPath("$.allModifiedOrAddedTransactions[1].name").value(transactionTwo.getName()))
+                .andExpect(jsonPath("$.previousMonthTransactions[0].transactionId").value(transactionThree.getTransactionId()))
+                .andExpect(jsonPath("$.previousMonthTransactions[0].date").value(transactionThree.getDate().toString()))
+                .andExpect(jsonPath("$.previousMonthTransactions[0].amount").value(transactionThree.getAmount()))
+                .andExpect(jsonPath("$.previousMonthTransactions[0].name").value(transactionThree.getName()))
+                .andExpect(jsonPath("$.previousMonthTransactions[0].category").value(transactionThree.getCategory()))
+                .andExpect(jsonPath("$.previousMonthTransactions[0].logoUrl").value(transactionThree.getLogoUrl()))
                 .andExpect(jsonPath("$.removedTransactionIds[0]").value("1"))
                 .andExpect(jsonPath("$.removedTransactionIds[1]").value("2"))
                 .andExpect(jsonPath("$.removedTransactionIds[2]").value("3"));

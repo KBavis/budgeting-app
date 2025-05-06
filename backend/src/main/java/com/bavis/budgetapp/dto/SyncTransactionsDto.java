@@ -14,5 +14,6 @@ import java.util.List;
 @Builder
 public class SyncTransactionsDto {
     private List<Transaction> allModifiedOrAddedTransactions;
+    private List<Transaction> previousMonthTransactions;
     private List<String> removedTransactionIds;
 }

@@ -3,6 +3,7 @@
  */
 export default {
    transactions: [],
+   prevMonthTransactions: [],
    loading: false,
    error: null,
 };

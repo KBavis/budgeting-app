@@ -55,6 +55,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
         List<String> allRemovedTransactionIds = new ArrayList<>();
+        List<Transaction> previousMonthTransactions = new ArrayList<>();
 
         boolean hasMore;
         boolean updateOriginalCursor;
@@ -87,6 +88,12 @@ public class TransactionServiceImpl implements TransactionService {
 
                     //Collect Modified Transactions
                     allModifiedOrAddedTransactions.addAll(mapModifiedTransactions(syncResponseDto.getModified(), account));
+
+                    //Account for Previous Months Transactions
+                    List<PlaidTransactionDto> allPlaidTransactions = new ArrayList<>();
+                    allPlaidTransactions.addAll(syncResponseDto.getModified());
+                    allPlaidTransactions.addAll(syncResponseDto.getAdded());
+                    previousMonthTransactions.addAll(mapPreviousMonthTransactions(allPlaidTransactions, account, previousMonthTransactions));
 
                     //Collect Removed TransactionIds
                     List<String> removedTransactionIds = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
@@ -122,13 +129,15 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         //Persist updates
-        _transactionRepository.saveAllAndFlush(allModifiedOrAddedTransactions);
-        _transactionRepository.deleteAllById(allRemovedTransactionIds);
+        if(!allModifiedOrAddedTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(allModifiedOrAddedTransactions);
+        if(!previousMonthTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(previousMonthTransactions);
+        if(!allRemovedTransactionIds.isEmpty()) _transactionRepository.deleteAllById(allRemovedTransactionIds);
 
         //Return DTO
         return SyncTransactionsDto.builder()
                 .allModifiedOrAddedTransactions(allModifiedOrAddedTransactions)
                 .removedTransactionIds(allRemovedTransactionIds)
+                .previousMonthTransactions(previousMonthTransactions)
                 .build();
     }
 
@@ -381,6 +390,39 @@ public class TransactionServiceImpl implements TransactionService {
 
         log.info("Modified Transaction entities for Account {} to be persisted: [{}]", account.getAccountId(), modifiedTransactionEntities);
         return modifiedTransactionEntities;
+    }
+
+
+    /***
+     * Map modified & added PlaidTransaction to Transaction entities.
+     * This is being done so users can correctly allocate Transactions to respective Categories for previous month & re-run Budget Performance logic
+     *
+     * @param allModifiedAndAddedPlaidTransactions
+     *         - all modified or added Plaid Transactions
+     * @param account
+     *         - account these Transactions are corresponding to
+     * @return
+     *          - Transaction entities to persist and return
+     */
+    private List<Transaction> mapPreviousMonthTransactions(List<PlaidTransactionDto> allModifiedAndAddedPlaidTransactions, Account account, List<Transaction> previousMonthTransactions) {
+        List<Transaction> prevMonthTransactionEntities = Optional.ofNullable(allModifiedAndAddedPlaidTransactions).stream().flatMap(List::stream)
+                .map(_transactionMapper::toEntity)
+                .peek(transaction -> {
+                    //TODO: Intelligently assign CategoryType & Category in future
+                    transaction.setCategory(null);
+                    transaction.setAccount(account);
+                })
+                //TODO: Make these filters a separate filter class
+                .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
+                .filter(transaction -> GeneralUtil.isDateInPreviousMonth(transaction.getDate()))
+                .filter(transaction -> previousMonthTransactions.stream() // filter out any previously accounted for transactions
+                        .map(Transaction::getTransactionId)
+                        .noneMatch(id -> id.equals(transaction.getTransactionId())))
+                .toList();
+
+
+        log.info("Previous month Transactions for Account {} to be persisted: [{}]", account.getAccountId(), prevMonthTransactionEntities);
+        return prevMonthTransactionEntities;
     }
 
 
