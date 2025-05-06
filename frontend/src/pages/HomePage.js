@@ -431,7 +431,9 @@ const HomePage = () => {
                />
             </div>
          )}
-         {showPrevTransactionsModal && (
+         {showPrevTransactionsModal && 
+            prevMonthTransactions.length > 0 &&
+            currentTransactionIndex < prevMonthTransactions.length && (
                <PreviousTransactionsModal
                   transactions={prevMonthTransactions}
                   currentIndex={currentTransactionIndex}
