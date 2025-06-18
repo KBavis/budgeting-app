@@ -1,9 +1,11 @@
 package com.bavis.budgetapp.filter;
 
 import com.bavis.budgetapp.dao.TransactionRepository;
+import com.bavis.budgetapp.dto.PlaidTransactionDto;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.util.GeneralUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -88,6 +90,32 @@ public class TransactionFilters {
    public Predicate<Transaction> addedTransactionFilters() {
        return HAS_POSITIVE_AMOUNT
                .and(IS_CURRENT_MONTH);
+   }
+
+
+    /**
+     * Filtering to account for pending/posted transactions that a user may have already updated
+     */
+   public Predicate<PlaidTransactionDto> isPendingAndUserModified() {
+        return plaidTransactionDto -> {
+            String pendingTransactionId = plaidTransactionDto.getPending_transaction_id();
+
+            // if the transaction doesn't corresponding to pending transaction, then we should not filter out
+            if (StringUtils.isEmpty(pendingTransactionId)) {
+                return true;
+            }
+
+            // check if we have modified the transaction
+            Transaction persistedTransaction;
+            try {
+                persistedTransaction = transactionService.readById(pendingTransactionId);
+            } catch (RuntimeException e) {
+                return true; //transaction isn't persisted, so we should not filter out
+            }
+
+            // if the transaction was modified by user (i.e amount updated, assigned to category, etc), filter out
+            return !persistedTransaction.isUpdatedByUser();
+        };
    }
 
 }

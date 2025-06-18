@@ -345,6 +345,7 @@ public class TransactionServiceImpl implements TransactionService {
     private List<Transaction> mapAddedTransactions(List<PlaidTransactionDto> addedPlaidTransactions, Account account) {
 
         List<Transaction> addedTransactionEntities = Optional.ofNullable(addedPlaidTransactions).stream().flatMap(List::stream)
+                .filter(_transactionFilters.isPendingAndUserModified()) //filter out plaid transaction
                 .map(_transactionMapper::toEntity)
                 .peek(transaction -> {
                     //TODO: Intelligently assign CategoryType & Category in future
