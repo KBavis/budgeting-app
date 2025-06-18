@@ -96,7 +96,7 @@ public class TransactionFilters {
     /**
      * Filtering to account for pending/posted transactions that a user may have already updated
      */
-   public Predicate<PlaidTransactionDto> isPendingAndUserModified() {
+   public Predicate<PlaidTransactionDto> isPendingAndUserModified(Set<String> pendingTransactionIds) {
         return plaidTransactionDto -> {
             String pendingTransactionId = plaidTransactionDto.getPending_transaction_id();
 
@@ -113,8 +113,13 @@ public class TransactionFilters {
                 return true; //transaction isn't persisted, so we should not filter out
             }
 
-            // if the transaction was modified by user (i.e amount updated, assigned to category, etc), filter out
-            return !persistedTransaction.isUpdatedByUser();
+            // filter out transaction if it was updated by user
+            if (persistedTransaction.isUpdatedByUser()){
+                // add transaction ID in order to account for this in removedTransactions filter later on
+                pendingTransactionIds.add(pendingTransactionId);
+                return false;
+            }
+            return true;
         };
    }
 
