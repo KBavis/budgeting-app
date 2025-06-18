@@ -23,6 +23,8 @@ public class PlaidTransactionDto {
     private String account_id;
 
     private String transaction_id;
+    private String pending_transaction_id;
+    private boolean pending;
 
     private double amount;
 
