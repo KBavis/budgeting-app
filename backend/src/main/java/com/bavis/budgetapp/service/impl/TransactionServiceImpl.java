@@ -334,8 +334,9 @@ public class TransactionServiceImpl implements TransactionService {
         //Fetch Transaction, or Throw Exception if Not Found
         Transaction transaction = readById(transactionId);
 
-        //Delete
-        _transactionRepository.delete(transaction);
+        // soft delete the transaction
+        transaction.setDeleted(true);
+        _transactionRepository.save(transaction);
     }
 
     @Override
