@@ -38,6 +38,8 @@ public class TransactionFilters {
     private static final Predicate<Transaction> IS_PREVIOUS_MONTH =
             transaction -> GeneralUtil.isDateInPreviousMonth(transaction.getDate());
 
+    private static final Predicate<Transaction> IS_NOT_DELETED =
+            transaction -> !transaction.isDeleted();
 
     private Predicate<Transaction> alreadyExists() {
         return transaction -> transactionRepository.existsById(transaction.getTransactionId());
@@ -71,6 +73,7 @@ public class TransactionFilters {
     public Predicate<Transaction> prevMonthTransactionFilters(List<Transaction> previousMonthTransactions) {
         return HAS_POSITIVE_AMOUNT
                 .and(IS_PREVIOUS_MONTH)
+                .and(IS_NOT_DELETED)
                 .and(notAlreadyAccountedFor(previousMonthTransactions));
     }
 
@@ -80,6 +83,7 @@ public class TransactionFilters {
    public Predicate<Transaction> modifiedTransactionFilters() {
         return HAS_POSITIVE_AMOUNT
                 .and(IS_CURRENT_MONTH)
+                .and(IS_NOT_DELETED)
                 .and(alreadyExists())
                 .and(alreadyExistsAndUpdatedByUser());
    }
