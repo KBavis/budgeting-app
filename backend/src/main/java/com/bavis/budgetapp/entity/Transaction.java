@@ -28,6 +28,9 @@ public class Transaction {
 	private LocalDate date;
 	private String logoUrl;
 
+	@Column(name = "is_deleted", columnDefinition = "boolean default false")
+	private boolean isDeleted;
+
 	@Column(name = "updated_by_user", columnDefinition = "boolean default false")
 	private boolean updatedByUser;
 
