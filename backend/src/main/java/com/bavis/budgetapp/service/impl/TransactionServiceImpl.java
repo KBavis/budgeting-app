@@ -333,6 +333,10 @@ public class TransactionServiceImpl implements TransactionService {
         //Fetch Transaction, or Throw Exception if Not Found
         Transaction transaction = readById(transactionId);
 
+        // soft delete the transaction
+        transaction.setDeleted(true);
+        _transactionRepository.save(transaction);
+
         //Delete
         _transactionRepository.delete(transaction);
     }
