@@ -61,6 +61,8 @@ public class TransactionServiceImpl implements TransactionService {
         List<String> allRemovedTransactionIds = new ArrayList<>();
         List<Transaction> previousMonthTransactions = new ArrayList<>();
 
+        Set<String> pendingTransactionIds = new HashSet<>();
+
         boolean hasMore;
         boolean updateOriginalCursor;
         String accessToken;
@@ -88,7 +90,7 @@ public class TransactionServiceImpl implements TransactionService {
                     log.info("PlaidTransactionSyncResponseDto for Account ID {} : [{}]", accountId, syncResponseDto);
 
                     //Collect Added Transactions
-                    allModifiedOrAddedTransactions.addAll(mapAddedTransactions(syncResponseDto.getAdded(), account));
+                    allModifiedOrAddedTransactions.addAll(mapAddedTransactions(syncResponseDto.getAdded(), account, pendingTransactionIds));
 
                     //Collect Modified Transactions
                     allModifiedOrAddedTransactions.addAll(mapModifiedTransactions(syncResponseDto.getModified(), account));
@@ -135,7 +137,15 @@ public class TransactionServiceImpl implements TransactionService {
         //Persist updates
         if(!allModifiedOrAddedTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(allModifiedOrAddedTransactions);
         if(!previousMonthTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(previousMonthTransactions);
-        if(!allRemovedTransactionIds.isEmpty()) _transactionRepository.deleteAllById(allRemovedTransactionIds);
+        if(!allRemovedTransactionIds.isEmpty()) {
+
+            //filter out transaction ids that correspond to user modified transactions (Plaid will remove previously pending transactions that are now finalized, but we don't want the user to need to re-allocate/assign transactions each time)
+            List<String> filteredTransactionIds = allRemovedTransactionIds.stream()
+                    .filter(transactionId -> !pendingTransactionIds.contains(transactionId))
+                    .toList();
+
+            if(!filteredTransactionIds.isEmpty())  _transactionRepository.deleteAllById(filteredTransactionIds);
+        }
 
         //Return DTO
         return SyncTransactionsDto.builder()
@@ -344,7 +354,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @return
      *          - Transaction entities to be persisted
      */
-    private List<Transaction> mapAddedTransactions(List<PlaidTransactionDto> addedPlaidTransactions, Account account) {
+    private List<Transaction> mapAddedTransactions(List<PlaidTransactionDto> addedPlaidTransactions, Account account, Set<String> pendingTransactionIds) {
 
         List<Transaction> addedTransactionEntities = Optional.ofNullable(addedPlaidTransactions).stream().flatMap(List::stream)
                 .filter(_transactionFilters.isPendingAndUserModified(pendingTransactionIds)) //filter out plaid transactions that have been modfiied by user
