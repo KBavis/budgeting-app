@@ -336,9 +336,6 @@ public class TransactionServiceImpl implements TransactionService {
         // soft delete the transaction
         transaction.setDeleted(true);
         _transactionRepository.save(transaction);
-
-        //Delete
-        _transactionRepository.delete(transaction);
     }
 
     @Override
