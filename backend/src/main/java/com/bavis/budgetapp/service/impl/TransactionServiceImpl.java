@@ -395,8 +395,8 @@ public class TransactionServiceImpl implements TransactionService {
                 .map(_transactionMapper::toEntity)
                 .filter(_transactionFilters.modifiedTransactionFilters())
                 .peek(transaction -> {
-                    //TODO: Intelligently assign CategoryType & Category in future
-                    transaction.setCategory(null);
+                    Transaction persistedTransaction = readById(transaction.getTransactionId());
+                    transaction.setCategory(persistedTransaction.getCategory());  // set category to modified transactions current category
                     transaction.setAccount(account);
                 })
                 .toList();
