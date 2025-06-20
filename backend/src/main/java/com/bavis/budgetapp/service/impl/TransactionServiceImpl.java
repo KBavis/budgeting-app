@@ -4,9 +4,9 @@ import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
+import com.bavis.budgetapp.filter.TransactionFilters;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.TransactionService;
-import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -45,6 +47,8 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository _transactionRepository;
 
     private final TransactionMapper _transactionMapper;
+
+    private final TransactionFilters _transactionFilters;
 
     @Lazy
     private final CategoryServiceImpl categoryService;
@@ -343,15 +347,14 @@ public class TransactionServiceImpl implements TransactionService {
     private List<Transaction> mapAddedTransactions(List<PlaidTransactionDto> addedPlaidTransactions, Account account) {
 
         List<Transaction> addedTransactionEntities = Optional.ofNullable(addedPlaidTransactions).stream().flatMap(List::stream)
+                .filter(_transactionFilters.isPendingAndUserModified(pendingTransactionIds)) //filter out plaid transactions that have been modfiied by user
                 .map(_transactionMapper::toEntity)
                 .peek(transaction -> {
                     //TODO: Intelligently assign CategoryType & Category in future
                     transaction.setCategory(null);
                     transaction.setAccount(account);
                 })
-                //TODO: Make these filters a separate filter class
-                .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
-                .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate()))
+                .filter(_transactionFilters.addedTransactionFilters())
                 .toList();
 
         log.info("Added Transaction entities for Account {} to be persisted: [{}]", account.getAccountId(), addedTransactionEntities);
@@ -376,11 +379,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         List<Transaction> modifiedTransactionEntities = Optional.ofNullable(modifiedPlaidTransactions).stream().flatMap(List::stream)
                 .map(_transactionMapper::toEntity)
-                //TODO: make these two attributes a separate filter class, and utilize this as well as the filter class created for amount/date
-                .filter(transaction -> _transactionRepository.existsById(transaction.getTransactionId()))
-                .filter(transaction -> !_transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(transaction.getTransactionId()))
-                .filter(transaction -> transaction.getAmount() > 0)
-                .filter(transaction -> GeneralUtil.isDateInCurrentMonth(transaction.getDate()))
+                .filter(_transactionFilters.modifiedTransactionFilters())
                 .peek(transaction -> {
                     //TODO: Intelligently assign CategoryType & Category in future
                     transaction.setCategory(null);
@@ -412,12 +411,7 @@ public class TransactionServiceImpl implements TransactionService {
                     transaction.setCategory(null);
                     transaction.setAccount(account);
                 })
-                //TODO: Make these filters a separate filter class
-                .filter(transaction -> transaction.getAmount() > 0) //filter out transaction that have negative amounts
-                .filter(transaction -> GeneralUtil.isDateInPreviousMonth(transaction.getDate()))
-                .filter(transaction -> previousMonthTransactions.stream() // filter out any previously accounted for transactions
-                        .map(Transaction::getTransactionId)
-                        .noneMatch(id -> id.equals(transaction.getTransactionId())))
+                .filter(_transactionFilters.prevMonthTransactionFilters(previousMonthTransactions))
                 .toList();
 
 
