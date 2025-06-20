@@ -137,10 +137,12 @@ public class TransactionServiceImpl implements TransactionService {
         //Persist updates
         if(!allModifiedOrAddedTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(allModifiedOrAddedTransactions);
         if(!previousMonthTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(previousMonthTransactions);
+
+        List<String> filteredTransactionIds = new ArrayList<>();
         if(!allRemovedTransactionIds.isEmpty()) {
 
             //filter out transaction ids that correspond to user modified transactions (Plaid will remove previously pending transactions that are now finalized, but we don't want the user to need to re-allocate/assign transactions each time)
-            List<String> filteredTransactionIds = allRemovedTransactionIds.stream()
+            filteredTransactionIds = allRemovedTransactionIds.stream()
                     .filter(transactionId -> !pendingTransactionIds.contains(transactionId))
                     .toList();
 
@@ -150,7 +152,7 @@ public class TransactionServiceImpl implements TransactionService {
         //Return DTO
         return SyncTransactionsDto.builder()
                 .allModifiedOrAddedTransactions(allModifiedOrAddedTransactions)
-                .removedTransactionIds(allRemovedTransactionIds)
+                .removedTransactionIds(filteredTransactionIds)
                 .previousMonthTransactions(previousMonthTransactions)
                 .build();
     }
