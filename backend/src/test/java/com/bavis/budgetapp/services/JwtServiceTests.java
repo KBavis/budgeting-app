@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.jwt;
+package com.bavis.budgetapp.services;
 
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
