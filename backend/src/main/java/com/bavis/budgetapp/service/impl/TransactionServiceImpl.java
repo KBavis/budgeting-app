@@ -135,8 +135,17 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         //Persist updates
+        if(!previousMonthTransactions.isEmpty()) {
+            // save previous month transactions
+            _transactionRepository.saveAllAndFlush(previousMonthTransactions);
+
+            // filter out previous month transactions from all added/modified
+            Set<String> previousMonthTransactionIds = previousMonthTransactions.stream().map(Transaction::getTransactionId).collect(Collectors.toSet());
+            allModifiedOrAddedTransactions = allModifiedOrAddedTransactions.stream()
+                    .filter(t -> !previousMonthTransactionIds.contains(t.getTransactionId()))
+                    .toList();
+        }
         if(!allModifiedOrAddedTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(allModifiedOrAddedTransactions);
-        if(!previousMonthTransactions.isEmpty()) _transactionRepository.saveAllAndFlush(previousMonthTransactions);
 
         List<String> filteredTransactionIds = new ArrayList<>();
         if(!allRemovedTransactionIds.isEmpty()) {
