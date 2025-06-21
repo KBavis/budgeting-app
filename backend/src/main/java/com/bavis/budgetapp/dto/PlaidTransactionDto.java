@@ -37,6 +37,9 @@ public class PlaidTransactionDto {
 
     private PersonalFinanceCategoryDto personal_finance_category;
 
+    private String pending_transaction_id;
+    private boolean pending;
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

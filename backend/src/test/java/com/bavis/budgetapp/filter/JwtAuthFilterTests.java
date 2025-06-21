@@ -1,9 +1,8 @@
-package com.bavis.budgetapp.jwt;
+package com.bavis.budgetapp.filter;
 
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bavis.budgetapp.constants.Role;
-import com.bavis.budgetapp.filter.JwtAuthenticationFilter;
 import com.bavis.budgetapp.TestHelper;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.JwtService;
