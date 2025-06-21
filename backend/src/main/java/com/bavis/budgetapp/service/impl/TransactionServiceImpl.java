@@ -358,7 +358,6 @@ public class TransactionServiceImpl implements TransactionService {
      *          - Transaction entities to be persisted
      */
     private List<Transaction> mapAddedTransactions(List<PlaidTransactionDto> addedPlaidTransactions, Account account, Set<String> pendingTransactionIds) {
-
         List<Transaction> addedTransactionEntities = Optional.ofNullable(addedPlaidTransactions).stream().flatMap(List::stream)
                 .filter(_transactionFilters.isPendingAndUserModified(pendingTransactionIds)) //filter out plaid transactions that have been modfiied by user
                 .map(_transactionMapper::toEntity)
@@ -389,7 +388,6 @@ public class TransactionServiceImpl implements TransactionService {
      *          - Transaction entities to be persisted
      */
     private List<Transaction> mapModifiedTransactions(List<PlaidTransactionDto> modifiedPlaidTransactions, Account account) {
-
         List<Transaction> modifiedTransactionEntities = Optional.ofNullable(modifiedPlaidTransactions).stream().flatMap(List::stream)
                 .map(_transactionMapper::toEntity)
                 .filter(_transactionFilters.modifiedTransactionFilters())
