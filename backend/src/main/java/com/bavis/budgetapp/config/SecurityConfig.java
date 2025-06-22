@@ -2,6 +2,7 @@ package com.bavis.budgetapp.config;
 
 import com.bavis.budgetapp.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -23,6 +24,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
@@ -64,16 +68,11 @@ public class SecurityConfig {
      */
     @Bean
     public WebMvcConfigurer corsConfigurer() {
-
-        //TODO: Configure these URLs in our application-yaml file
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(
-                                "http://localhost:3000",
-                                "https://budget-app-frontend-6cfcivaeda-pd.a.run.app" //google cloud run
-                        )
+                        .allowedOrigins(allowedOrigins)
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(true)
