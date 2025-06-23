@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   frontend:
-    image: baviske/budget-app-frontend:latest
+    image: baviske/budget-app-frontend:${FRONTEND_VERSION}
     container_name: frontend-app
     ports:
       - "80:80"
@@ -22,7 +22,7 @@ services:
           memory: 128M
 
   backend:
-    image: baviske/budget-app-backend:latest
+    image: baviske/budget-app-backend:${BACKEND_VERSION}
     container_name: backend-app
     ports:
       - "8080:8080"
