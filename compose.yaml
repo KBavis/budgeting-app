@@ -50,10 +50,3 @@ networks:
 volumes:
   app-data:
     driver: local
-   
-      
-  
-	    
-		
-
-
