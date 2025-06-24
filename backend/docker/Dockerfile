@@ -14,9 +14,6 @@ ARG VERSION
 # create non-root user
 RUN addgroup -S spring && adduser -S spring -G spring
 
-# install essential packages
-RUN apk add --no-cache curl
-
 WORKDIR /app
 
 # copy extracted layers in optimal order
@@ -40,10 +37,5 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -Djava.security.egd=file:/dev/./urandom \
     -Dspring.jmx.enabled=false"
 
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-
-# Start the application
-CMD ["sh", "-c", "java $JAVA_OPTS org.springframework.boot.loader.JarLauncher"]
+# start the application
+CMD ["sh", "-c", "java $JAVA_OPTS -cp /app com.bavis.budgetapp.BudgetAppApplication"]
