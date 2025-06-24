@@ -38,4 +38,4 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -Dspring.jmx.enabled=false"
 
 # start the application
-CMD ["sh", "-c", "java $JAVA_OPTS -cp /app com.bavis.budgetapp.BudgetAppApplication"]
+CMD ["sh", "-c", "java $JAVA_OPTS -cp '/app/*:/app' com.bavis.budgetapp.BudgetAppApplication"]
