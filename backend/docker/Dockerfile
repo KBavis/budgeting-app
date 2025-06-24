@@ -12,14 +12,10 @@ FROM eclipse-temurin:17-jre-alpine
 ARG VERSION
 
 # create non-root user
-RUN groupadd -r spring && useradd -r -g spring spring
+RUN addgroup -S spring && adduser -S spring -G spring
 
 # install essential packages
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    curl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 
 WORKDIR /app
 
@@ -50,4 +46,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
 
 
 # Start the application
-CMD java $JAVA_OPTS org.springframework.boot.loader.JarLauncher
+CMD ["sh", "-c", "java $JAVA_OPTS org.springframework.boot.loader.JarLauncher"]
