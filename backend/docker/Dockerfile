@@ -1,5 +1,5 @@
 # build stage
-FROM openjdk:17-jdk-slim as builder
+FROM openjdk:17-jdk-slim AS builder
 ARG VERSION
 WORKDIR /app
 COPY build/libs/budget-app-${VERSION}.jar budget-app-${VERSION}.jar
@@ -8,7 +8,7 @@ COPY build/libs/budget-app-${VERSION}.jar budget-app-${VERSION}.jar
 RUN java -Djarmode=layertools -jar budget-app-${VERSION}.jar extract
 
 # production stage
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 ARG VERSION
 
 # create non-root user
