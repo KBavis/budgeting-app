@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -94,19 +95,6 @@ public class AccountServiceTests {
     }
 
     @Test
-    void testDelete_CallsTransactionService() {
-        //Mock
-        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
-        doNothing().when(plaidService).removeAccount(accessToken);
-
-        //Act
-        accountService.delete(accountId);
-
-        //Verify
-        Mockito.verify(transactionService, times(1)).removeAccountTransactions(accountId);
-    }
-
-    @Test
     void testDelete_CallsPlaidService() {
         //Mock
         when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
@@ -120,7 +108,9 @@ public class AccountServiceTests {
     }
 
     @Test
-    void testDelete_RemovesFromDb() {
+    void testDelete_softDeletesAccount() {
+        ArgumentCaptor<Account> argumentCaptor = ArgumentCaptor.forClass(Account.class);
+
         //Mock
         when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
         doNothing().when(plaidService).removeAccount(accessToken);
@@ -129,7 +119,29 @@ public class AccountServiceTests {
         accountService.delete(accountId);
 
         //Verify
-        Mockito.verify(accountRepository, times(1)).delete(expectedAccount);
+        Mockito.verify(accountRepository, times(1)).save(argumentCaptor.capture());
+
+        Account savedAccount = argumentCaptor.getValue();
+        assertTrue(savedAccount.isDeleted());
+    }
+
+    @Test
+    void testDelete_plaidServicException_throwsException_nonRetry() {
+        doThrow(new PlaidServiceException("Random exception")).when(plaidService).removeAccount(any());
+        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+
+        PlaidServiceException e = assertThrows(PlaidServiceException.class, () -> {
+            accountService.delete(accountId);
+        });
+        assertNotNull(e);
+    }
+
+    @Test
+    void testDelete_plaidServicException_skipsThrowingException_retry() {
+        doThrow(new PlaidServiceException("The Item you requested cannot be found")).when(plaidService).removeAccount(any());
+        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+
+        assertDoesNotThrow(() -> accountService.delete(accountId));
     }
 
     @Test
@@ -144,36 +156,6 @@ public class AccountServiceTests {
         //Verify
         Mockito.verify(userService, times(0)).readById(any(Long.class));
     }
-
-
-    @Test
-    void testDelete_ValidUserONAccount_AccountsUpdated() {
-        //Arrange
-        Account remainingAccount = new Account();
-        long userId = 10L;
-        User user = new User();
-        user.setUserId(userId);
-        user.setAccounts(List.of(remainingAccount, expectedAccount));
-        expectedAccount.setUser(user); //assign user to account to delete
-
-        //Mock
-        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
-        when(userService.readById(userId)).thenReturn(user);
-        doNothing().when(plaidService).removeAccount(accessToken);
-
-        //Act
-        accountService.delete(accountId);
-
-        //Verify
-        Mockito.verify(userService, times(1)).readById(any(Long.class));
-
-        //Assert
-        assertTrue(user.getAccounts().contains(remainingAccount));
-        assertFalse(user.getAccounts().contains(expectedAccount));
-    }
-
-
-
 
     /**
      * Validate that connect account works successfully

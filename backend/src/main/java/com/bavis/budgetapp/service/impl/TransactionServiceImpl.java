@@ -171,18 +171,22 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("Attempting to read all Transaction entities corresponding to authenticated user's added Accounts and the current month");
         User currentAuthUser = _userService.getCurrentAuthUser();
         LocalDate currentDate = LocalDate.now();
-        List<Account> accounts = currentAuthUser.getAccounts();
+        List<Account> accounts = Optional.ofNullable(currentAuthUser.getAccounts())
+                .orElseGet(List::of)
+                .stream()
+                .filter(account -> account != null && !account.isDeleted())
+                .toList();
         List<Category> categories = currentAuthUser.getCategories();
         List<Transaction> allUserTransactions = new ArrayList<>(); //transactions to return
 
         //Validate User Has Accounts To Fetch Transactions For
-        if(accounts == null && categories == null) {
+        if(accounts.isEmpty() && categories == null) {
             return new ArrayList<>();
         }
 
 
         //Fetch All Transactions associated with User Accounts if user has added Accounts
-        if(accounts != null) {
+        if(!accounts.isEmpty()) {
             List<String> accountIds = accounts.stream()
                     .map(Account::getAccountId)
                     .collect(Collectors.toList());
