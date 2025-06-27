@@ -171,8 +171,10 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("Attempting to read all Transaction entities corresponding to authenticated user's added Accounts and the current month");
         User currentAuthUser = _userService.getCurrentAuthUser();
         LocalDate currentDate = LocalDate.now();
-        List<Account> accounts = currentAuthUser.getAccounts().stream()
-                .filter(account -> !account.isDeleted())
+        List<Account> accounts = Optional.ofNullable(currentAuthUser.getAccounts())
+                .orElseGet(List::of)
+                .stream()
+                .filter(account -> account != null && !account.isDeleted())
                 .toList();
         List<Category> categories = currentAuthUser.getCategories();
         List<Transaction> allUserTransactions = new ArrayList<>(); //transactions to return
