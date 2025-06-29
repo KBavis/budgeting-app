@@ -17,9 +17,13 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
-        reservations:
           memory: 128M
+        reservations:
+          memory: 64M
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
 
   backend:
     image: baviske/budget-app-backend:${BACKEND_VERSION}
@@ -39,9 +43,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 320M
         reservations:
-          memory: 256M
+          memory: 192M
+    tempfs:
+      - /tmp
 
 networks:
   app-network:
