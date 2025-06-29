@@ -8,7 +8,6 @@ services:
       - "80:80"
     environment:
       - NODE_ENV=production
-      - REACT_APP_API_URL=http://${SERVER_IP}:8080
     depends_on:
       - backend
     restart: unless-stopped
