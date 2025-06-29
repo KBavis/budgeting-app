@@ -44,4 +44,7 @@ public class Account {
 	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
 	@JoinColumn(name = "connectionId", referencedColumnName = "connectionId")
 	private Connection connection;
+
+	@Column(name = "is_deleted", columnDefinition = "boolean default false")
+	private boolean isDeleted;
 }

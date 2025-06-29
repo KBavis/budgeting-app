@@ -1,5 +1,9 @@
 # build react application
-FROM node:14-alpine as build
+FROM node:22.1.0-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json* ./
+
+RUN npm ci --include=dev
 
 WORKDIR /app
 COPY package.json package-lock.json* ./
@@ -10,7 +14,7 @@ RUN npm run build
 # production stage
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
-COPY ../nginx/nginx.config /etc/nginx/nginx.conf 
+COPY nginx/nginx.conf /etc/nginx/nginx.conf 
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

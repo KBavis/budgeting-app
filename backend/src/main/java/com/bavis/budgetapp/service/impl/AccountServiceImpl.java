@@ -119,30 +119,24 @@ public class AccountServiceImpl implements AccountService{
 	@Override
 	public void delete(String accountId) {
 		log.info("Attempting to delete account with ID {}", accountId);
+
 		//Fetch Corresponding Account
 		Account accountToDelete = read(accountId);
 		Connection connection = accountToDelete.getConnection();
 		String accessToken = connection.getAccessToken();
 
 		//Remove Via Plaid Service
-		_plaidService.removeAccount(accessToken);
-
-		//Update corresponding User entity to no longer reference deleted account
-		if(accountToDelete.getUser() != null) {
-			long userId = accountToDelete.getUser().getUserId();
-			User user = _userService.readById(userId);
-			List<Account> userAccounts = user.getAccounts() == null ? new ArrayList<>() : new ArrayList<>(user.getAccounts()); //empty list or existing list
-
-			userAccounts.remove(accountToDelete);
-
-			user.setAccounts(userAccounts);
+		try{
+			_plaidService.removeAccount(accessToken);
+		} catch (PlaidServiceException e) {
+			// only throw exception if it's not a retry deletion (aka Plaid Item is deleted, but our Account is not)
+			if (!e.getMessage().contains("The Item you requested cannot be found")) {
+				throw e;
+			}
 		}
 
-		_transactionService.removeAccountTransactions(accountId);
-
-
-		//Remove Account & corresponding Connection entity
-		_accountRepository.delete(accountToDelete);
+		accountToDelete.setDeleted(true);
+		_accountRepository.save(accountToDelete);
 	}
 
 	//TODO: Implement
@@ -163,6 +157,7 @@ public class AccountServiceImpl implements AccountService{
 		log.info("Attempting to read all accounts associated with current authenticated user");
 		User currentAuthUser = _userService.getCurrentAuthUser();
         return _accountRepository.findByUserUserId(currentAuthUser.getUserId()).stream()
+				.filter(account -> !account.isDeleted())
 				.map(_accountMapper::toDTO)
 				.toList();
 	}
