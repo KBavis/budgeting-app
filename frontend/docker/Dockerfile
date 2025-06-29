@@ -5,9 +5,6 @@ COPY package.json package-lock.json* ./
 
 RUN npm ci --include=dev
 
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci --only-production
 COPY . .
 RUN npm run build
 
