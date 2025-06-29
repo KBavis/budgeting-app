@@ -72,23 +72,5 @@ pipeline {
             }
         }
 
-        stage('Deploy Backend Docker Image to Cloud Run') {
-            steps {
-                withCredentials([file(credentialsId: 'budgetapp-google-cloud-credentials', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                      bat 'gcloud auth activate-service-account --key-file %GOOGLE_APPLICATION_CREDENTIALS%'
-                      script {
-                        def version = env.VERSION
-                        def baseVersion = env.BASE_VERSION
-                        def imageUrl = "docker.io/baviske/budget-app-backend:${version}"
-                        def serviceName = "budget-app-backend"
-                        def region = "northamerica-northeast2"
-                        def projectId = "budget-application-421004"
-                        bat "gcloud run deploy ${serviceName} --image ${imageUrl} --region ${region} --platform managed --allow-unauthenticated --set-env-vars VERSION=${baseVersion} --project ${projectId}"
-                        bat 'echo backend docker image deployed to google cloud run'
-                      }
-                }
-            }
-        }
-
     }
 }
