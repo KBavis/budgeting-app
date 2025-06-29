@@ -46,7 +46,7 @@ services:
           memory: 320M
         reservations:
           memory: 192M
-    tempfs:
+    tmpfs:
       - /tmp
 
 networks:
