@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/KBavis/budgeting-app']])
+                checkout scmGit(branches: [[name: '*/feat/MoveFromGCloudToSelfHosting']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/KBavis/budgeting-app']])
             }
         }
 
@@ -46,21 +46,5 @@ pipeline {
             }
         }
 
-        stage('Deploy Frontend Docker Image to Cloud Run') {
-            steps {
-                withCredentials([file(credentialsId: 'budgetapp-google-cloud-credentials', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                      bat 'gcloud auth activate-service-account --key-file %GOOGLE_APPLICATION_CREDENTIALS%'
-                      script {
-                        def version = env.VERSION
-                        def imageUrl = "docker.io/baviske/budget-app-frontend:${version}"
-                        def serviceName = "budget-app-frontend"
-                        def region = "northamerica-northeast2"
-                        def projectId = "budget-application-421004"
-                        bat "gcloud run deploy ${serviceName} --image ${imageUrl} --region ${region} --platform managed --allow-unauthenticated --set-env-vars VERSION=${version} --project ${projectId}"
-                        bat 'echo frontend docker image deployed to google cloud run succesfully'
-                      }
-                }
-            }
-        }
     }
 }
