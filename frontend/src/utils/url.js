@@ -1,5 +1,5 @@
 const apiUrl = 
-    process.env.NODE_ENV === "production" ? "http://66.228.45.138:8080" : 
+    process.env.NODE_ENV === "production" ? "https://bavisbudgeting.com" : 
     "http://localhost:8080"
 
 
