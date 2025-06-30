@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: baviske/budget-app-frontend:${FRONTEND_VERSION}
+    container_name: frontend-app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+
+  backend:
+    image: baviske/budget-app-backend:${BACKEND_VERSION}
+    container_name: backend-app
+    ports:
+      - "8080:8080"
+    environment:
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+      - PLAID_CLIENT_ID=${PLAID_CLIENT_ID}
+      - PLAID_SECRET=${PLAID_SECRET}
+      - PLAID_ENV=production
+      - PLAID_API_BASE_URL=https://production.plaid.com
+    restart: unless-stopped
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 320M
+        reservations:
+          memory: 192M
+    tmpfs:
+      - /tmp
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  app-data:
+    driver: local

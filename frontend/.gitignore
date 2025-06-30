@@ -8,9 +8,6 @@
 # testing
 /coverage
 
-#utils
-src/utils/url.js
-
 # production
 /build
 
