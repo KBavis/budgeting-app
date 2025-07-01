@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scmGit(branches: [[name: '*/feat/MoveFromGCloudToSelfHosting']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/KBavis/budgeting-app']])
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/KBavis/budgeting-app']])
             }
         }
 
