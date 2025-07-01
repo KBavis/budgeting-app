@@ -22,10 +22,14 @@ EXPOSE 8080
 
 # optimize jvm settings to reduce memory usage
 ENV JAVA_OPTS="-XX:+UseContainerSupport \
-    -XX:MaxRAMPercentage=75.0 \
+    -XX:MaxRAMPercentage=80.0 \
     -XX:+UseG1GC \
     -XX:+UseStringDeduplication \
     -XX:+OptimizeStringConcat \
+    -XX:MinHeapFreeRatio=5 \
+    -XX:MaxHeapFreeRatio=10 \
+    -XX:GCTimeRatio=4 \
+    -XX:AdaptiveSizePolicyWeight=90 \
     -Djava.security.egd=file:/dev/./urandom \
     -Dspring.jmx.enabled=false"
 

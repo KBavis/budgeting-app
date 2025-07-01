@@ -46,19 +46,24 @@ pipeline {
             }
         }
 
-        stage('Deploy Frontend Docker Image to Cloud Run') {
+        stage('Deploy To Server') {
             steps {
-                withCredentials([file(credentialsId: 'budgetapp-google-cloud-credentials', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                      bat 'gcloud auth activate-service-account --key-file %GOOGLE_APPLICATION_CREDENTIALS%'
-                      script {
-                        def version = env.VERSION
-                        def imageUrl = "docker.io/baviske/budget-app-frontend:${version}"
-                        def serviceName = "budget-app-frontend"
-                        def region = "northamerica-northeast2"
-                        def projectId = "budget-application-421004"
-                        bat "gcloud run deploy ${serviceName} --image ${imageUrl} --region ${region} --platform managed --allow-unauthenticated --set-env-vars VERSION=${version} --project ${projectId}"
-                        bat 'echo frontend docker image deployed to google cloud run succesfully'
-                      }
+                script {
+                    withCredentials([
+                        string(credentialsId: 'server-ip', variable: 'SERVER_IP'),
+                        sshUserPrivateKey(credentialsId: 'deploy-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
+                    ]) {
+                        bat '''
+                            REM fix ssh key permissions (jenkins running on windows service account issue)
+                            powershell -Command "$acl = Get-Acl '%SSH_KEY%'; $acl.SetAccessRuleProtection($true, $false); $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }; $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('NT AUTHORITY\\SYSTEM', 'FullControl', 'Allow'); $acl.SetAccessRule($rule); Set-Acl '%SSH_KEY%' $acl"
+                            
+                            REM copy latest application configs 
+                            scp -i "%SSH_KEY%" -o StrictHostKeyChecking=no compose.yaml %SSH_USER%@%SERVER_IP%:/home/deployuser
+
+                            REM ssh to update version and restart containers
+                            ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@%SERVER_IP% "cd /home/deployuser && docker-compose down && sed -i 's/^FRONTEND_VERSION=.*/FRONTEND_VERSION=%VERSION%/' .env && docker-compose up -d"
+                        '''
+                    }
                 }
             }
         }
