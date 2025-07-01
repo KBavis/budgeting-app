@@ -54,22 +54,9 @@ pipeline {
                         sshUserPrivateKey(credentialsId: 'deploy-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
                     ]) {
                         bat '''
-                            # copy latest 
-                            scp -i $env:SSH_KEY compose.yaml $env:SSH_USER@$env:SERVER_IP:/home/deployuser
+                            scp -i "%SSH_KEY%" -o StrictHostKeyChecking=no compose.yaml %SSH_USER%@%SERVER_IP%:/home/deployuser
 
-                            # ssh to update version and restart containers
-                            ssh -i $env:SSH_KEY $env:SSH_USER@$env:SERVER_IP "
-                                cd /home/deployuser
-
-                                # stop docker containers 
-                                docker-compose down 
-                                
-                                # update FRONTEND_VERSION in .env file 
-                                sed -i 's/^FRONTEND_VERSION=.*/FRONTEND_VERSION=$env:VERSION/' .env
-
-                                # start docker containers 
-                                docker-compose up -d 
-                            "
+                            ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@%SERVER_IP% "cd /home/deployuser && docker-compose down && sed -i 's/^FRONTEND_VERSION=.*/FRONTEND_VERSION=%VERSION%/' .env && docker-compose up -d"
                         '''
                     }
                 }
