@@ -53,7 +53,7 @@ pipeline {
                         string(credentialsId: 'server-ip', variable: 'SERVER_IP'),
                         sshUserPrivateKey(credentialsId: 'deploy-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
                     ]) {
-                        powershell '''
+                        bat '''
                             # copy latest 
                             scp -i $env:SSH_KEY compose.yaml $env:SSH_USER@$env:SERVER_IP:/home/deployuser
 
