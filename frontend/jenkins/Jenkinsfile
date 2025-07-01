@@ -46,5 +46,18 @@ pipeline {
             }
         }
 
+        stage('Deploy To Server') {
+            steps {
+                dir('frontend') {
+                    script {
+                        withCredentials([string(credentialsId: 'server-ip', variable: 'SERVER_IP')]) {
+                            powershell '''
+                                bash deploy.sh $env:SERVER_IP $env:VERSION
+                            '''
+                        }
+                    }
+                }
+            }
+        }
     }
 }
