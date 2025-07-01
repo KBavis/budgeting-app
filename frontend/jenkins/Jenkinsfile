@@ -56,7 +56,7 @@ pipeline {
                         ]) {
                             powershell '''
                                 # copy latest 
-                                scp -i $env:SSH_KEY compose.yaml @env:SSH_USER@$env:SERVER_IP:/home/deployuser
+                                scp -i $env:SSH_KEY compose.yaml $env:SSH_USER@$env:SERVER_IP:/home/deployuser
 
                                 # ssh to update version and restart containers
                                 ssh -i $env:SSH_KEY $env:SSH_USER@$env:SERVER_IP "
