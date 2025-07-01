@@ -49,15 +49,14 @@ pipeline {
         stage('Deploy To Server') {
             steps {
                 script {
-                    withCredentials([
-                        string(credentialsId: 'server-ip', variable: 'SERVER_IP'),
-                        sshUserPrivateKey(credentialsId: 'deploy-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
-                    ]) {
-                        bat '''
-                            scp -i "%SSH_KEY%" -o StrictHostKeyChecking=no compose.yaml %SSH_USER%@%SERVER_IP%:/home/deployuser
+                    withCredentials([string(credentialsId: 'server-ip', variable: 'SERVER_IP')]) {
+                        sshagent(['deploy-ssh-key']) {
+                            bat '''
+                                scp -o StrictHostKeyChecking=no compose.yaml deployuser@%SERVER_IP%:/home/deployuser
 
-                            ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@%SERVER_IP% "cd /home/deployuser && docker-compose down && sed -i 's/^FRONTEND_VERSION=.*/FRONTEND_VERSION=%VERSION%/' .env && docker-compose up -d"
-                        '''
+                                ssh -o StrictHostKeyChecking=no deployuser@%SERVER_IP% "cd /home/deployuser && docker-compose down && sed -i 's/^FRONTEND_VERSION=.*/FRONTEND_VERSION=%VERSION%/' .env && docker-compose up -d"
+                            '''
+                        }
                     }
                 }
             }
