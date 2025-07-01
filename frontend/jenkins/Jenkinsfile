@@ -55,7 +55,7 @@ pipeline {
                     ]) {
                         bat '''
                             REM Fix SSH key permissions
-                            icacls "%SSH_KEY%" /inheritance:r /grant "%USERNAME%:(R)"
+                            powershell -Command "$acl = Get-Acl '%SSH_KEY%'; $acl.SetAccessRuleProtection($true, $false); $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }; $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('NT AUTHORITY\\SYSTEM', 'FullControl', 'Allow'); $acl.SetAccessRule($rule); Set-Acl '%SSH_KEY%' $acl"
                             
                             REM copy latest 
                             scp -i "%SSH_KEY%" -o StrictHostKeyChecking=no compose.yaml %SSH_USER%@%SERVER_IP%:/home/deployuser
