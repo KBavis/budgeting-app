@@ -50,13 +50,16 @@ pipeline {
             steps {
                 dir('frontend') {
                     script {
-                        withCredentials([string(credentialsId: 'server-ip', variable: 'SERVER_IP')]) {
+                        withCredentials([
+                            string(credentialsId: 'server-ip', variable: 'SERVER_IP'),
+                            sshUserPrivateKey(credentialsId: 'deploy-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
+                        ]) {
                             powershell '''
                                 # copy latest 
-                                scp compose.yaml deployuser@$env:SERVER_IP:/home/deployuser
+                                scp -i $env:SSH_KEY compose.yaml @env:SSH_USER@$env:SERVER_IP:/home/deployuser
 
-                                # ssh 
-                                ssh deployuser@$env:SERVER_IP "
+                                # ssh to update version and restart containers
+                                ssh -i $env:SSH_KEY $env:SSH_USER@$env:SERVER_IP "
                                     cd /home/deployuser
 
                                     # stop docker containers 
