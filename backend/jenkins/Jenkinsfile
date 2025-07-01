@@ -80,7 +80,7 @@ pipeline {
                         sshUserPrivateKey(credentialsId: 'deploy-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
                     ]) {
                         bat '''
-                            REM fix ssh key permssions (jenkins running on windows service account issue)
+                            REM fix ssh key permissions (jenkins running on windows service account issue)
                             powershell -Command "$acl = Get-Acl '%SSH_KEY%'; $acl.SetAccessRuleProtection($true, $false); $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }; $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('NT AUTHORITY\\SYSTEM', 'FullControl', 'Allow'); $acl.SetAccessRule($rule); Set-Acl '%SSH_KEY%' $acl"
 
                             REM copy latest application configs
