@@ -52,7 +52,22 @@ pipeline {
                     script {
                         withCredentials([string(credentialsId: 'server-ip', variable: 'SERVER_IP')]) {
                             powershell '''
-                                bash deploy.sh $env:SERVER_IP $env:VERSION
+                                # copy latest 
+                                scp compose.yaml deployuser@$env:SERVER_IP:/home/deployuser
+
+                                # ssh 
+                                ssh deployuser@$env:SERVER_IP "
+                                    cd /home/deployuser
+
+                                    # stop docker containers 
+                                    docker-compose down 
+                                    
+                                    # update FRONTEND_VERSION in .env file 
+                                    sed -i 's/^FRONTEND_VERSION=.*/FRONTEND_VERSION=$env:VERSION/' .env
+
+                                    # start docker containers 
+                                    docker-compose up -d 
+                                "
                             '''
                         }
                     }
