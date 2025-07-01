@@ -72,5 +72,27 @@ pipeline {
             }
         }
 
+        stage('Deploy To Server') {
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'server-ip', variable: 'SERVER_IP'),
+                        sshUserPrivateKey(credentialsId: 'deploy-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
+                    ]) {
+                        bat '''
+                            REM fix ssh key permssions (jenkins running on windows service account issue)
+                            powershell -Command "$acl = Get-Acl '%SSH_KEY%'; $acl.SetAccessRuleProtection($true, $false); $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }; $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('NT AUTHORITY\\SYSTEM', 'FullControl', 'Allow'); $acl.SetAccessRule($rule); Set-Acl '%SSH_KEY%' $acl"
+
+                            REM copy latest application configs
+                            scp -i "%SSH_KEY%" -o StrictHostKeyChecking=no compose.yaml %SSH_USER%@%SERVER_IP%:/home/deployuser
+
+                            REM ssh to update version and restart containers
+                            ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@%SERVER_IP% "cd /home/deployuser && docker-compose down && sed -i 's/^BACKEND_VERSION=.*/BACKEND_VERSION=%VERSION%/' .env && docker-compose up -d"
+                        '''
+                    }
+                }
+            }
+        }
+
     }
 }
