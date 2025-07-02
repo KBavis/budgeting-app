@@ -23,8 +23,9 @@ const PreviousTransactionsModal = ({
   const [editedName, setEditedName] = useState(transaction.name);
   const [editedAmount, setEditedAmount] = useState(transaction.amount);
   
-  // Local transaction state to reflect changes
-  const [currentTransaction, setCurrentTransaction] = useState(transaction);
+  // Local display state (only for UI display, not for API calls)
+  const [displayName, setDisplayName] = useState(transaction.name);
+  const [displayAmount, setDisplayAmount] = useState(transaction.amount);
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
@@ -32,7 +33,7 @@ const PreviousTransactionsModal = ({
   };
 
   const handleConfirm = () => {
-    updateCategory(currentTransaction.transactionId, selectedCategory.categoryId, true);
+    updateCategory(transaction.transactionId, selectedCategory.categoryId, true);
     setAlert("Category assigned successfully", "success");
     setSelectedCategory(null);
     setConfirmationVisible(false);
@@ -45,7 +46,7 @@ const PreviousTransactionsModal = ({
 
   const handleNameCancel = () => {
     setIsEditingName(false);
-    setEditedName(currentTransaction.name);
+    setEditedName(displayName);
   };
 
   const handleNameConfirm = () => {
@@ -54,8 +55,8 @@ const PreviousTransactionsModal = ({
       return;
     }
     
-    renameTransaction(currentTransaction.transactionId, editedName);
-    setCurrentTransaction({ ...currentTransaction, name: editedName });
+    renameTransaction(transaction.transactionId, editedName);
+    setDisplayName(editedName);
     setIsEditingName(false);
     setAlert("Transaction name updated successfully", "success");
   };
@@ -66,7 +67,7 @@ const PreviousTransactionsModal = ({
 
   const handleAmountCancel = () => {
     setIsEditingAmount(false);
-    setEditedAmount(currentTransaction.amount);
+    setEditedAmount(displayAmount);
   };
 
   const handleAmountConfirm = () => {
@@ -82,15 +83,15 @@ const PreviousTransactionsModal = ({
       return;
     }
 
-    reduceTransactionAmount(currentTransaction.transactionId, reducedAmountFloat);
-    setCurrentTransaction({ ...currentTransaction, amount: editedAmount });
+    reduceTransactionAmount(transaction.transactionId, reducedAmountFloat);
+    setDisplayAmount(editedAmount);
     setIsEditingAmount(false);
     setAlert("Transaction amount updated successfully", "success");
   };
 
   const handleSkipTransaction = () => {
     if (window.confirm("Are you sure you want to skip this transaction? It will be deleted and not assigned to any category.")) {
-      deleteTransaction(currentTransaction.transactionId);
+      deleteTransaction(transaction.transactionId);
       onTransactionComplete();
     }
   };
@@ -114,7 +115,7 @@ const PreviousTransactionsModal = ({
           <div className="flex items-center mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
             <img
               src={
-                currentTransaction.logoUrl ||
+                transaction.logoUrl ||
                 "https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
               }
               alt="Logo"
@@ -148,7 +149,7 @@ const PreviousTransactionsModal = ({
                   </div>
                 ) : (
                   <div className="flex items-center flex-1">
-                    <p className="font-bold text-lg flex-1">{currentTransaction.name}</p>
+                    <p className="font-bold text-lg flex-1">{displayName}</p>
                     <button
                       onClick={handleNameEdit}
                       className="ml-2 text-indigo-600 hover:text-indigo-800"
@@ -188,7 +189,7 @@ const PreviousTransactionsModal = ({
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    <p className="text-gray-600 font-semibold">${currentTransaction.amount}</p>
+                    <p className="text-gray-600 font-semibold">${displayAmount}</p>
                     <button
                       onClick={handleAmountEdit}
                       className="ml-2 text-indigo-600 hover:text-indigo-800"
@@ -201,7 +202,7 @@ const PreviousTransactionsModal = ({
               </div>
               
               <p className="text-sm text-gray-400">
-                {new Date(currentTransaction.date).toLocaleDateString()}
+                {new Date(transaction.date).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -230,7 +231,7 @@ const PreviousTransactionsModal = ({
               <p>
                 Confirm assigning{" "}
                 <span className="font-bold text-indigo-600">
-                  {currentTransaction.name}
+                  {displayName}
                 </span>{" "}
                 to{" "}
                 <span className="font-bold text-indigo-600">
