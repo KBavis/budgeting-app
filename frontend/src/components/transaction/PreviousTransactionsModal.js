@@ -3,13 +3,8 @@ import categoryTypeContext from "../../context/category/types/categoryTypeContex
 import AlertContext from "../../context/alert/alertContext";
 import transactionContext from "../../context/transaction/transactionContext";
 
-const PreviousTransactionsModal = ({
-  transactions,
-  currentIndex,
-  onClose,
-  onTransactionComplete,
-}) => {
-  const transaction = transactions[currentIndex];
+const PreviousTransactionsModal = ({ transactions, onClose, onTransactionComplete }) => {
+  const transaction = transactions[0];
   const { categoryTypes } = useContext(categoryTypeContext);
   const { setAlert } = useContext(AlertContext);
   const { updateCategory, renameTransaction, reduceTransactionAmount, deleteTransaction } = useContext(transactionContext);
