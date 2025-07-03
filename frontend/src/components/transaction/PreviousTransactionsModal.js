@@ -27,6 +27,17 @@ const PreviousTransactionsModal = ({
   const [displayName, setDisplayName] = useState(transaction.name);
   const [displayAmount, setDisplayAmount] = useState(transaction.amount);
 
+  useEffect(() => {
+    if (transaction) {
+      setEditedName(transaction.name);
+      setEditedAmount(transaction.amount);
+      setDisplayName(transaction.name);
+      setDisplayAmount(transaction.amount);
+      setIsEditingName(false);
+      setIsEditingAmount(false);
+    }
+  }, [transaction]);
+
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     setConfirmationVisible(true);
