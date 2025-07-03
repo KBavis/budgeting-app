@@ -46,6 +46,7 @@ const HomePage = () => {
    const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown v
    const [showPrevTransactionsModal, setShowPrevTransactionsModal] = useState(false);
    const [currentTransactionIndex, setCurrentTransactionIndex] = useState(0);
+   const [modalPrevMonthTransactions, setModalPrevMonthTransactions] = useState([]);
 
 
    const initalFetchRef = useRef(false);
@@ -289,6 +290,7 @@ const HomePage = () => {
    useEffect(() => {
 
       if(prevMonthTransactions && prevMonthTransactions.length > 0) {
+         setModalPrevMonthTransactions([...prevMonthTransactions]) // create copy to iterate through
          setShowPrevTransactionsModal(true);
          setCurrentTransactionIndex(0);
       }
@@ -432,17 +434,22 @@ const HomePage = () => {
             </div>
          )}
          {showPrevTransactionsModal && 
-            prevMonthTransactions.length > 0 &&
-            currentTransactionIndex < prevMonthTransactions.length && (
+            modalPrevMonthTransactions.length > 0 && (
                <PreviousTransactionsModal
-                  transactions={prevMonthTransactions}
+                  transactions={modalPrevMonthTransactions}
                   currentIndex={currentTransactionIndex}
-                  onClose={() => setShowPrevTransactionsModal(false)}
+                  onClose={() => {
+                     setShowPrevTransactionsModal(false);
+                     setCurrentTransactionIndex(0)
+                     setModalPrevMonthTransactions([])
+                  }}
                   onTransactionComplete={() => {
-                     if (currentTransactionIndex + 1 < prevMonthTransactions.length) {
+                     if (currentTransactionIndex + 1 < modalPrevMonthTransactions.length) {
                         setCurrentTransactionIndex((prev) => prev + 1);
                      } else {
                         setShowPrevTransactionsModal(false);
+                        setCurrentTransactionIndex(0)
+                        setModalPrevMonthTransactions([])
                      }
                   }}
                />
