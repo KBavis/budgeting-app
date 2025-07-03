@@ -73,15 +73,21 @@ export default (state, action) => {
       case DELETE_TRANSACTION_SUCCESS:
          // Ensure state.transactions is not null
          const stateTransactions = state.transactions || [];
+         const statePrevMonthTransactions = state.prevMonthTransactions || [];
 
          //Filter Transactions
          const filtered = stateTransactions.filter(
             (transaction) => transaction.transactionId != action.payload
          );
 
+         const filteredPrevMonth = statePrevMonthTransactions.filter(
+            (transaction) => transaction.transactionId != action.payload
+         );
+
          return {
             ...state,
             transactions: filtered,
+            prevMonthTransactions: filteredPrevMonth,
          };
       case UPDATE_TRANSACTION_CATEGORY:
          const { transactionId, category } = action.payload;
