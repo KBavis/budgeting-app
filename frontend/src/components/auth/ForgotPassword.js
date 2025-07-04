@@ -10,11 +10,11 @@ const ForgotPassword = () => {
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
-            <div className="max-w-md w-full px-6 py-8 bg-white rounded-lg shadow-md">
-               <h1 className="text-3xl font-bold text-center mb-6 text-indigo-900">
+            <div className="max-w-md w-full px-6 py-8 bg-white rounded-lg shadow-md xs:px-4 xs:py-6">
+               <h1 className="text-3xl font-bold text-center mb-6 text-indigo-900 xs:text-2xl">
                   Forgot Password
                </h1>
-               <p className="text-gray-700 text-center mb-6">
+               <p className="text-gray-700 text-center mb-6 xs:text-sm">
                   Don't worry! Enter your email address below and we'll send you
                   a link to reset your password.
                </p>

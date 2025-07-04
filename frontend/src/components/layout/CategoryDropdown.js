@@ -20,7 +20,7 @@ const CategoryDropdown = ({
             as="button"
             className="text-black bg-transparent border-none p-0 m-0"
          >
-            <FaEllipsisV size={20} />
+            <FaEllipsisV size={20} className="xs:w-4 xs:h-4"/>
          </Dropdown.Toggle>
 
          <Dropdown.Menu

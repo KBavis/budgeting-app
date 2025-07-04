@@ -62,18 +62,18 @@ const AdjustBudget = ({
    };
 
    return (
-      <div className="mb-8 p-6 bg-white border-[3px] border-indigo-600 rounded-lg shadow-md relative">
-         <h2 className="text-3xl font-bold mb-4 text-indigo-800">
+      <div className="mb-8 p-6 bg-white border-[3px] border-indigo-600 rounded-lg shadow-md relative xs:p-4">
+         <h2 className="text-3xl font-bold mb-4 text-indigo-800 xs:text-2xl">
             Adjust Budget
          </h2>
-         <div className="p-4 bg-gray-100 rounded-md shadow-md mb-6">
-            <p className="text-lg font-semibold text-gray-700">
+         <div className="p-4 bg-gray-100 rounded-md shadow-md mb-6 xs:p-2">
+            <p className="text-lg font-semibold text-gray-700 xs:text-base">
                Total Amount Available:{" "}
-               <span className={`font-bold ${getAmountColor()} text-xl`}>
+               <span className={`font-bold ${getAmountColor()} text-xl xs:text-lg`}>
                   ${remainingBudget.toFixed(2)}
                </span>
             </p>
-            <p className="mt-4 ">
+            <p className="mt-4 xs:text-sm">
                In case you use less than your allocated budget, the remaining
                amount will be applied to your savings.
             </p>
@@ -101,7 +101,7 @@ const AdjustBudget = ({
                         %
                      </div>
                      <Slider
-                        className="w-3/4"
+                        className="w-full sm:w-3/4"
                         value={category.budgetAllocationPercentage}
                         min={0}
                         max={1}

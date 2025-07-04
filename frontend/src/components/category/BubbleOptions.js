@@ -58,7 +58,7 @@ const BubbleOptions = ({ onSelect, categoryType, selectedCategories }) => {
                <CSSTransition key={option} timeout={300} classNames="fade">
                   <button
                      onClick={() => onSelect(option)}
-                     className="rounded-full bg-indigo-600 text-white font-semibold border-2 border-indigo-600 text-xs px-2 py-2 m-2 shadow-md hover:bg-transparent transition-colors duration-300"
+                     className="rounded-full bg-indigo-600 text-white font-semibold border-2 border-indigo-600 text-xs px-2 py-2 m-2 shadow-md hover:bg-transparent transition-colors duration-300 xs:text-xxs xs:px-1 xs:py-1 xs:m-1"
                   >
                      {option}
                   </button>

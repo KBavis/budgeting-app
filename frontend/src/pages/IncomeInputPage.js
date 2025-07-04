@@ -103,7 +103,7 @@ const IncomeInputPage = () => {
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center">
          <div className="max-w-md text-center">
-            <h1 className="text-4xl font-bold mb-8 text-white">
+            <h1 className="text-4xl font-bold mb-8 text-white xs:text-3xl">
                Enter Your Monthly Income
             </h1>
             <form onSubmit={handleSubmit}>

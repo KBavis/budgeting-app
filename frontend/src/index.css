@@ -32,6 +32,9 @@ button.text-white.bg-transparent.border-none.p-0.m-0:active {
    border: none !important;
    padding: 0 !important;
    transition: background-color 0.5s ease !important;
+   max-width: 100vw !important;
+   max-height: 100vh !important;
+   overflow: auto !important;
 }
 
 .plaid-link-wrapper-class {
@@ -39,6 +42,9 @@ button.text-white.bg-transparent.border-none.p-0.m-0:active {
    padding: 0 !important;
    transition: background-color 0.5s ease !important;
    background: none !important;
+   max-width: 100vw !important;
+   max-height: 100vh !important;
+   overflow: auto !important;
 }
 
 .dropdown-toggle::after {

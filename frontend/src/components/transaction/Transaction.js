@@ -78,7 +78,7 @@ const Transaction = ({
    return (
        <div
            ref={drag}
-           className={`cursor-pointer bg-indigo-900 rounded-lg shadow-md p-2 flex items-center space-x-2 w-full h-16 relative ${
+           className={`cursor-pointer bg-indigo-900 rounded-lg shadow-md p-2 flex items-center space-x-2 w-full h-16 relative xs:h-14 xs:p-1 ${
                isDragging ? "opacity-50" : ""
            }`}
        >
@@ -86,20 +86,20 @@ const Transaction = ({
               <img
                   src={transaction.logoUrl}
                   alt="Transaction Logo"
-                  className="w-10 h-10 rounded-full"
+                  className="w-10 h-10 rounded-full xs:w-8 xs:h-8"
               />
           ) : (
               <img
                   src="https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
-                  className="w-10 h-10 rounded-full"
+                  className="w-10 h-10 rounded-full xs:w-8 xs:h-8"
               />
           )}
           <div className="text-white text-left flex-1">
              <div className="flex justify-between">
-                <p className="text-sm font-bold">{transaction.name}</p>
-                <p className="text-xs font-bold">{formattedDate}</p>
+                <p className="text-sm font-bold xs:text-xs">{transaction.name}</p>
+                <p className="text-xs font-bold xs:text-xxs">{formattedDate}</p>
              </div>
-             <p className="text-xs xl:text-sm">${roundedAmount}</p>
+             <p className="text-xs xl:text-sm xs:text-xxs">${roundedAmount}</p>
           </div>
           {transaction.category && ( // Only display the dropdown if category is not null
               <TransactionDropdown

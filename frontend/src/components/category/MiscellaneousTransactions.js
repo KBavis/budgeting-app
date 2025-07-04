@@ -62,13 +62,13 @@ const MiscellaneousTransactions = () => {
    return miscTransactions && miscTransactions.length > 0 ? (
       <div
          ref={drop}
-         className={`bg-white rounded-lg shadow-md p-4 w-full xl:w-1/2 mt-4 text-center ${
+         className={`bg-white rounded-lg shadow-md p-4 w-full xl:w-1/2 mt-4 text-center xs:p-2 xs:w-11/12 ${
             isOver ? "bg-green-200" : canDrop ? "bg-green-100" : ""
          }`}
       >
-         <h3 className="text-xl font-bold mb-1">Miscellaneous Transactions</h3>
+         <h3 className="text-xl font-bold mb-1 xs:text-lg">Miscellaneous Transactions</h3>
          {miscTransactions.length > 0 && (
-            <p className="mb-5">
+            <p className="mb-5 xs:text-sm">
                Please drag and drop the following Transactions to their
                respective Category.
             </p>

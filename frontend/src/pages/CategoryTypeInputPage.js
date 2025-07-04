@@ -85,7 +85,7 @@ const CategoryTypeInputPage = () => {
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center">
          <div className="max-w-md w-full text-center">
-            <h1 className="text-4xl font-bold mb-8 text-white">
+            <h1 className="text-3xl md:text-4xl font-bold mb-8 text-white xs:text-2xl">
                Set Category Type Allocations
             </h1>
             <div className="flex flex-col items-center">
@@ -98,7 +98,7 @@ const CategoryTypeInputPage = () => {
                ))}
                <button
                   onClick={handleSubmit}
-                  className="font-bold py-3 px-6 rounded text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300"
+                  className="font-bold py-3 px-6 rounded text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 xs:py-2 xs:px-4 xs:text-sm"
                >
                   Submit
                </button>

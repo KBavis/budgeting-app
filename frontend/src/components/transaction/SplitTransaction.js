@@ -82,32 +82,32 @@ const SplitTransactionModal = ({ onClose, transaction }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-[500] backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/3 flex flex-col justify-between max-h-[85%]">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/3 flex flex-col justify-between max-h-[85%] xs:p-4">
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-4 xs:mb-2">
             <div>
-              <h2 className="text-3xl font-extrabold text-indigo-600 text-center mb-2">
+              <h2 className="text-3xl font-extrabold text-indigo-600 text-center mb-2 xs:text-2xl">
                 Split Transaction
               </h2>
-              <p className="text-center text-gray-700">
+              <p className="text-center text-gray-700 xs:text-sm">
                 To split a transaction, please divide it by specifying both the
                 name and amount for each portion. Ensure that the sum of all
                 amounts matches the total amount of the original transaction.
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-center mb-4 pt-2">
+          <div className="flex items-center justify-center mb-4 pt-2 xs:pt-1">
             <img
               src={
                 transaction.logoUrl ||
                 "https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
               }
               alt="Transaction Logo"
-              className="w-8 h-8 rounded-full"
+              className="w-8 h-8 rounded-full xs:w-6 xs:h-6"
             />
-            <div className="ml-2">
-              <p className="font-bold text-lg">{transaction.name}</p>
-              <p className="text-gray-500">${transaction.amount}</p>
+            <div className="ml-2 xs:ml-1">
+              <p className="font-bold text-lg xs:text-base">{transaction.name}</p>
+              <p className="text-gray-500 xs:text-sm">${transaction.amount}</p>
             </div>
           </div>
         </div>
@@ -115,14 +115,14 @@ const SplitTransactionModal = ({ onClose, transaction }) => {
           {splitTransactions.map((split, index) => (
             <div
               key={index}
-              className="mb-4 border border-gray-300 rounded-lg p-3 flex items-center bg-indigo-100 relative"
+              className="mb-4 border border-gray-300 rounded-lg p-3 flex items-center bg-indigo-100 relative xs:p-2"
             >
               {split.removable && (
                 <button
-                  className="absolute top-2 right-2 bg-white border border-gray-500 rounded-full p-1 shadow cursor-pointer hover:scale-105"
+                  className="absolute top-2 right-2 bg-white border border-gray-500 rounded-full p-1 shadow cursor-pointer hover:scale-105 xs:top-1 xs:right-1 xs:p-0.5"
                   onClick={() => handleRemoveSplitTransaction(index)}
                 >
-                  <FaTimes className="text-red-500" />
+                  <FaTimes className="text-red-500 xs:w-3 xs:h-3" />
                 </button>
               )}
               <div className="flex flex-col gap-2 w-full">
@@ -132,17 +132,17 @@ const SplitTransactionModal = ({ onClose, transaction }) => {
                   value={split.name}
                   onChange={(e) => handleInputChange(index, e)}
                   placeholder="Transaction Name"
-                  className="w-full border  px-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
+                  className="w-full border  px-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 xs:text-sm"
                 />
                 <div className="relative flex items-center">
-                  <span className="absolute left-2 text-gray-500">$</span>
+                  <span className="absolute left-2 text-gray-500 xs:text-sm">$</span>
                   <input
                     type="text"
                     name="amount"
                     value={split.amount}
                     onChange={(e) => handleInputChange(index, e)}
                     placeholder="Transaction Amount"
-                    className="w-full border pl-5 pr-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
+                    className="w-full border pl-5 pr-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 xs:text-sm"
                   />
                 </div>
               </div>
@@ -151,20 +151,20 @@ const SplitTransactionModal = ({ onClose, transaction }) => {
         </div>
         <button
           onClick={handleAddSplitTransaction}
-          className="w-10 h-10 mx-auto font-bold mb-4 bg-indigo-600 border-2 border-indigo-600 text-white rounded-full flex items-center justify-center duration-500 hover:text-indigo-600 hover:bg-transparent"
+          className="w-10 h-10 mx-auto font-bold mb-4 bg-indigo-600 border-2 border-indigo-600 text-white rounded-full flex items-center justify-center duration-500 hover:text-indigo-600 hover:bg-transparent xs:w-8 xs:h-8 xs:text-sm"
         >
-          <FaPlus />
+          <FaPlus className="xs:w-4 xs:h-4"/>
         </button>
-        <div className="flex justify-between mt-4">
+        <div className="flex justify-between mt-4 xs:mt-2">
           <button
             onClick={onClose}
-            className="modal-button-cancel px-4 py-2 mr-2 text-white bg-red-500 rounded hover:bg-red-600"
+            className="modal-button-cancel px-4 py-2 mr-2 text-white bg-red-500 rounded hover:bg-red-600 xs:px-3 xs:py-1 xs:text-sm"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="modal-button-confirm px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+            className="modal-button-confirm px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600 xs:px-3 xs:py-1 xs:text-sm"
           >
             Confirm
           </button>

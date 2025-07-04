@@ -36,17 +36,17 @@ const AddTransaction = ({ onClose }) => {
 
    return (
       <div className="fixed inset-0 flex items-center justify-center z-40 backdrop-blur-sm overflow-y-auto">
-         <div className="bg-white p-8 rounded shadow-lg w-1/4 flex flex-col justify-between">
-            <div className="flex justify-between items-center mb-4">
+         <div className="bg-white p-8 rounded shadow-lg w-1/4 flex flex-col justify-between xs:w-11/12 xs:p-4">
+            <div className="flex justify-between items-center mb-4 xs:mb-2">
                <div>
-                  <h2 className="text-3xl font-extrabold text-indigo-600 text-center flex-grow mb-2">
+                  <h2 className="text-3xl font-extrabold text-indigo-600 text-center flex-grow mb-2 xs:text-2xl">
                      Add Transaction
                   </h2>
-                  <p className="text-center">
+                  <p className="text-center xs:text-sm">
                      Please fill out the following information to create a
                      Transaction indepdent of any financial institution.
                   </p>
-                  <p className="font-bold text-sm text-center mx-10">
+                  <p className="font-bold text-sm text-center mx-10 xs:text-xs xs:mx-2">
                      Note: You must assign this added Transaction to an
                      associated Category prior to logging out!
                   </p>

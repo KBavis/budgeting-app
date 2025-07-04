@@ -170,12 +170,12 @@ const CategoryTypePage = ({ categoryType }) => {
    return (
        <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
           <FaArrowLeft
-              className="text-3xl text-white ml-5 mt-5 hover:scale-105 hover:text-gray-200 cursor-pointer z-[500]"
+              className="text-3xl text-white ml-5 mt-5 hover:scale-105 hover:text-gray-200 cursor-pointer z-[500] xs:text-2xl xs:ml-3 xs:mt-3"
               onClick={handleBackClick}
           />
           <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
-             <div className="max-w-md text-center mb-8">
-                <h2 className="text-4xl md:text-5xl font-bold text-white">
+             <div className="max-w-full md:max-w-md text-center mb-8 xs:mb-4">
+                <h2 className="text-4xl md:text-5xl font-bold text-white xs:text-3xl">
                    Explore your{" "}
                    <span className="text-indigo-600"> {categoryType} </span>
                 </h2>
@@ -184,7 +184,7 @@ const CategoryTypePage = ({ categoryType }) => {
                     placeholder="Filter categories..."
                     value={filterQuery}
                     onChange={(e) => setFilterQuery(e.target.value)}
-                    className="mt-4 p-2 w-full rounded-md text-black"
+                    className="mt-4 p-2 w-full rounded-md text-black xs:mt-2 xs:p-1 xs:text-sm"
                 />
              </div>
              <div

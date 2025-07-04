@@ -17,7 +17,7 @@ const Alerts = () => {
                      alert.type === "danger"
                         ? "bg-red-500 text-white"
                         : "bg-green-500 text-white"
-                  }`}
+                  } xs:top-2 xs:right-2 xs:py-2 xs:px-4 xs:text-sm`}
                >
                   <i
                      className={`fas fa-info-circle mr-4 ${

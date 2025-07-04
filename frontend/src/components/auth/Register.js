@@ -81,8 +81,8 @@ const Register = () => {
                <Loading />
             </div>
          ) : (
-            <div className="max-w-md w-full px-6 py-8 bg-white rounded-lg shadow-md relative">
-               <h1 className="text-3xl font-bold text-center mb-6 text-indigo-900">
+            <div className="max-w-md w-full px-6 py-8 bg-white rounded-lg shadow-md relative xs:px-4 xs:py-6">
+               <h1 className="text-3xl font-bold text-center mb-6 text-indigo-900 xs:text-2xl">
                   Register
                </h1>
                <form className="flex flex-col" onSubmit={onSubmit}>
@@ -135,7 +135,7 @@ const Register = () => {
                         </label>
                         <div className="relative ml-2 group">
                            <i className="fa-solid fa-circle-info text-indigo-600 hover:text-indigo-500 cursor-pointer duration-75"></i>{" "}
-                           <div className="absolute z-10 hidden group-hover:block w-72 right-0 mt-2 px-4 py-2 text-sm bg-white rounded-lg shadow-lg border border-gray-200 whitespace-normal">
+                           <div className="absolute z-10 hidden group-hover:block w-64 md:w-72 right-0 mt-2 px-4 py-2 text-sm bg-white rounded-lg shadow-lg border border-gray-200 whitespace-normal">
                               <p className="mb-2 font-bold">
                                  Password Requirements:
                               </p>
