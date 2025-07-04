@@ -79,7 +79,7 @@ const BudgetSummaryPage = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
             <FaArrowLeft
-                className="text-3xl text-white ml-5 mt-5 hover:scale-105 hover:text-gray-200 cursor-pointer z-[500]"
+                className="text-3xl text-white ml-5 mt-5 hover:scale-105 hover:text-gray-200 cursor-pointer z-[500] xs:text-2xl xs:ml-3 xs:mt-3"
                 onClick={handleBackClick}
             />
             <div className="flex flex-col items-center px-8 md:px-12 h-full">
@@ -91,12 +91,12 @@ const BudgetSummaryPage = () => {
                     </div>
                 )}
                 <div className="flex justify-center items-center w-full h-1/5 mt-5 mb-8">
-                    <div className="grid grid-cols-2 gap-4 w-2/5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-2/5 xs:w-4/5">
                         {currentSummaries.map((summary, index) => (
                             <button
                                 key={index}
                                 className={`cursor-pointer text-white font-bold bg-indigo-900 rounded-lg shadow-md p-2 flex items-center justify-center space-x-2 w-full h-12 hover:bg-transparent hover:border hover:border-white hover:duration-500
-                                    ${selectedSummary === summary ? 'border-2 border-white' : ''}`}
+                                    ${selectedSummary === summary ? 'border-2 border-white' : ''} xs:text-sm xs:h-10`}
                                 onClick={() => handleMonthYearClick(summary)}
                             >
                                 {summary.id.monthYear.month} {summary.id.monthYear.year}
@@ -104,11 +104,11 @@ const BudgetSummaryPage = () => {
                         ))}
                     </div>
                 </div>
-                <div className="flex justify-between w-2/5 mb-8">
+                <div className="flex justify-between w-2/5 mb-8 xs:w-4/5">
                     <div className="flex">
                         {currentPage > 1 && (
                             <FaArrowLeft
-                                className="text-2xl text-white cursor-pointer hover:scale-105 hover:text-gray-200"
+                                className="text-2xl text-white cursor-pointer hover:scale-105 hover:text-gray-200 xs:text-xl"
                                 onClick={prevPage}
                             />
                         )}
@@ -116,7 +116,7 @@ const BudgetSummaryPage = () => {
                     <div className="flex">
                         {currentPage < Math.ceil(summaries.length / itemsPerPage) && (
                             <FaArrowRight
-                                className="text-2xl text-white cursor-pointer hover:scale-105 hover:text-gray-200"
+                                className="text-2xl text-white cursor-pointer hover:scale-105 hover:text-gray-200 xs:text-xl"
                                 onClick={nextPage}
                             />
                         )}

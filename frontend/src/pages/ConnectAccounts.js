@@ -77,11 +77,11 @@ const ConnectAccounts = () => {
    return (
       <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center">
          <div className="max-w-md text-center">
-            <h1 className="text-4xl font-bold mb-4 text-white">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white xs:text-2xl">
                Connect Your Accounts
             </h1>
             {!accountAdded && (
-               <p className="text-lg mb-8 text-gray-400">
+               <p className="text-base md:text-lg mb-8 text-gray-400">
                   To get started, please connect your financial accounts using
                   Plaid.
                </p>
@@ -92,7 +92,7 @@ const ConnectAccounts = () => {
                onExit={handleOnExit}
                className="plaid-link-wrapper"
             >
-               <div className="font-bold py-3 px-5 rounded text-white bg-indigo-600 hover:bg-indigo-700">
+               <div className="font-bold py-3 px-5 rounded text-white bg-indigo-600 hover:bg-indigo-700 xs:py-2 xs:px-4 xs:text-sm">
                   {accountAdded ? "Add Another Account" : "Connect Accounts"}
                </div>
             </PlaidLink>

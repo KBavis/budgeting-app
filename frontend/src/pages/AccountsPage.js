@@ -137,7 +137,7 @@ const AccountsPage = () => {
     return accounts && (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
             <FaArrowLeft
-                className="text-4xl text-white ml-5 mt-5 hover:scale-110 hover:text-gray-200 cursor-pointer z-[500]"
+                className="text-4xl text-white ml-5 mt-5 hover:scale-110 hover:text-gray-200 cursor-pointer z-[500] xs:text-3xl xs:ml-3 xs:mt-3"
                 onClick={handleBackClick}
             />
             <div className="flex flex-col items-center px-8 md:px-12 h-full">
@@ -151,7 +151,7 @@ const AccountsPage = () => {
                     onExit={handleOnExit}
                     className="plaid-link-wrapper-class mb-10"
                 >
-                    {<button className="bg-indigo-600 text-white rounded-3/4 px-6 py-3 text-xl font-bold rounded-full border-indigo-600 border-2 hover:bg-transparent hover:duration-500">
+                    {<button className="bg-indigo-600 text-white rounded-3/4 px-6 py-3 text-xl font-bold rounded-full border-indigo-600 border-2 hover:bg-transparent hover:duration-500 xs:px-4 xs:py-2 xs:text-base">
                         Add Account
                     </button>}
                 </PlaidLink>

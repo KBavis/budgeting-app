@@ -128,28 +128,26 @@ const Category = ({
    return (
       <div
          ref={drop}
-         className={`bg-gray-200 rounded-lg shadow-md p-4 relative ${
-            isOver ? " bg-indigo-200" : canDrop ? " bg-indigo-100" : ""
-         }`}
+         className={`bg-gray-200 rounded-lg shadow-md p-4 relative ${isOver ? " bg-indigo-200" : canDrop ? " bg-indigo-100" : ""} xs:p-2`}
          style={{ width: "90%" }}
       >
-         <div className="absolute top-4 right-4">
+         <div className="absolute top-4 right-4 xs:top-2 xs:right-2">
             <CategoryDropdown
                handleDeleteCategory={handleDeleteCategory}
                handleRenameCategory={handleRenameCategory}
                handleUpdateAllocations={handleUpdateAllocations}
             />
          </div>
-         <h4 className="text-xl font-bold mb-2 text-gray-800">
+         <h4 className="text-xl font-bold mb-2 text-gray-800 xs:text-lg">
             {category.name}
          </h4>
-         <div className="mb-2 text-sm font-semibold text-gray-600">
+         <div className="mb-2 text-sm font-semibold text-gray-600 xs:text-xs">
             <p>Allocated Budget: ${budgetAllocation}</p>
             <p>Total Spent: ${totalAmountSpent}</p>
          </div>
-         <div className="w-full bg-gray-300 rounded-full h-4 mb-4">
+         <div className="w-full bg-gray-300 rounded-full h-4 mb-4 xs:h-3">
             <div
-               className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()}`}
+               className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()} xs:h-3`}
                style={{ width: `${budgetUsage > 100 ? 100 : budgetUsage}%` }}
             ></div>
          </div>

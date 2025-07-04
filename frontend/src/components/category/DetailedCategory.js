@@ -92,27 +92,27 @@ const DetailedCategory = ({
    );
 
    return (
-       <div className="relative bg-white rounded-lg shadow-md p-6 mx-4 w-full lg:w-2/3">
-          <div className="absolute top-4 right-4">
+       <div className="relative bg-white rounded-lg shadow-md p-6 mx-4 w-full lg:w-2/3 xs:p-3 xs:mx-2">
+          <div className="absolute top-4 right-4 xs:top-2 xs:right-2">
              <CategoryDropdown
                  handleDeleteCategory={handleDeleteCategory}
                  handleRenameCategory={handleRenameCategory}
                  handleUpdateAllocations={handleUpdateAllocations}
              />
           </div>
-          <h3 className="text-2xl font-bold mb-2 text-center">
+          <h3 className="text-2xl font-bold mb-2 text-center xs:text-xl">
              {category.name}
           </h3>
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-8 xs:mb-4">
              <input
                  type="text"
                  placeholder="Filter transactions..."
                  value={filterQuery}
                  onChange={(e) => setFilterQuery(e.target.value)}
-                 className="p-2 w-full md:w-1/4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                 className="p-2 w-full md:w-1/4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 xs:p-1 xs:text-sm"
              />
           </div>
-          <div className="text-center mb-2 font-semibold text-xl">
+          <div className="text-center mb-2 font-semibold text-xl xs:text-base">
              Spent{" "}
              <span className={`font-extrabold ${getProgressTextColor()}`}>
                 {" "}
@@ -130,7 +130,7 @@ const DetailedCategory = ({
                  style={{width: `${budgetUsage > 100 ? 100 : budgetUsage}%`}}
              ></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-h-64 overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-h-64 overflow-y-auto xs:grid-cols-1">
              {filterTransactionsByQuery.length > 0 ? (
                  filterTransactionsByQuery.map((transaction) => (
                      <DetailedCategoryTransaction
@@ -143,12 +143,12 @@ const DetailedCategory = ({
                      />
                  ))
              ) : (
-                 <div className="col-span-full text-center text-gray-500 py-4">
+                 <div className="col-span-full text-center text-gray-500 py-4 xs:text-sm">
                     No transactions found.
                  </div>
              )}
-          </div>
 
+          </div>
        </div>
    );
 

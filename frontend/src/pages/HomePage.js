@@ -322,7 +322,7 @@ const HomePage = () => {
    ]);
 
    return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 relative pt-6">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 relative">
          {/* Drop Down For Adding Transaction/Accounts/Categories */}
          <DropdownMenu
             dropdownVisible={dropdownVisible}
@@ -333,22 +333,22 @@ const HomePage = () => {
          />
 
          {/* Main Content */}
-         <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
-            <div className="max-w-md text-center mb-16 mt-8 xxl:mt-4">
-               <h1 className="text-2xl font-bold mb-4 text-white">
+         <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12 pt-[10px] md:pt-0">
+            <div className="max-w-md text-center mb-16 mt-48 xxl:mt-4 xs:mt-10 xs:mb-8">
+               <h1 className="text-xl md:text-2xl font-bold mb-4 text-white">
                   Welcome <span className="text-indigo-500">{name}</span>
                </h1>
-               <h2 className="text-4xl mb-3 font-bold text-white">
+               <h2 className="text-3xl md:text-4xl mb-3 font-bold text-white">
                   Let's Start Budgeting
                </h2>
                <button
-                  className="bg-indigo-600 border-2 border-indigo-600 md:text-base hover:bg-transparent duration-1000 text-white font-bold py-2 px-4 rounded mt-4"
+                  className="bg-indigo-600 border-2 border-indigo-600 md:text-base hover:bg-transparent duration-1000 text-white font-bold py-2 px-4 rounded mt-4 xs:text-sm xs:py-1 xs:px-2"
                   onClick={fetchUpdatedTransactions}
                >
                   Sync Transactions
                </button>
             </div>
-            <div className="flex justify-center space-x-4 w-full mb-5">
+            <div className="flex flex-col md:flex-row justify-center md:space-x-4 space-y-20 md:space-y-0 w-11/12 md:w-full mb-5">
                {!loading ? (
                   categoryTypes.map((categoryType) => (
                      <CategoryType

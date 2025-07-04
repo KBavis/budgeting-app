@@ -19,9 +19,9 @@ const Navbar = () => {
   return (
     user &&
     transactions && (
-      <nav className="absolute top-0 right-0 w-full py-8 z-[100]">
+      <nav className="w-full py-8 z-[100]">
         <div className="container mx-auto">
-          <ul className="flex justify-end space-x-12 text-sm">
+          <ul className="flex justify-center md:justify-end space-x-12 text-sm xs:space-x-4 xs:text-xs">
             <li>
               <Link
                 to="/accounts"

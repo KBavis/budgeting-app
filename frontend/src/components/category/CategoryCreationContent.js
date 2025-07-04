@@ -190,7 +190,7 @@ const CategoryCreationContent = ({ categoryType }) => {
          />
          <button
             onClick={handleSubmit}
-            className="font-bold py-3 px-6 rounded text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300"
+            className="font-bold py-3 px-6 rounded text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 xs:py-2 xs:px-4 xs:text-sm"
          >
             Submit
          </button>

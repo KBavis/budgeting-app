@@ -78,11 +78,11 @@ const BudgetOverview = ({ overview }) => {
    };
 
    return (
-      <div className="relative bg-white rounded-lg shadow-md p-6 mx-4 w-full lg:w-2/3 mb-14">
-         <h3 className="text-2xl font-bold mb-5 text-center">
+      <div className="relative bg-white rounded-lg shadow-md p-6 mx-4 w-full lg:w-2/3 mb-14 xs:p-3 xs:mx-2 xs:mb-8">
+         <h3 className="text-2xl font-bold mb-5 text-center xs:text-xl xs:mb-3">
             {convertToNormalCase(overviewType)} Overview
          </h3>
-         <div className="text-center mb-2 font-semibold text-xl ">
+         <div className="text-center mb-2 font-semibold text-xl xs:text-base">
             Spent{" "}
             <span className={`font-extrabold ${getSpentColor()}`}>
                ${totalSpent.toFixed(2)}
@@ -93,9 +93,9 @@ const BudgetOverview = ({ overview }) => {
                ${totalAmountAllocated.toFixed(2)}
             </span>
          </div>
-         <div className="w-full bg-gray-300 rounded-full h-4 mb-4">
+         <div className="w-full bg-gray-300 rounded-full h-4 mb-4 xs:h-3 xs:mb-2">
             <div
-               className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()}`}
+               className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()} xs:h-3`}
                style={{
                   width: `${
                      totalPercentUtilized * 100 > 100
@@ -105,13 +105,13 @@ const BudgetOverview = ({ overview }) => {
                }}
             ></div>
          </div>
-         <div className="text-center font-semibold text-lg mb-4">
+         <div className="text-center font-semibold text-lg mb-4 xs:text-base xs:mb-2">
             Budget Utilization:{" "}
             <span className="font-bold">
                {(totalPercentUtilized * 100).toFixed(2)}%
             </span>
          </div>
-         <div className="text-center font-semibold text-lg mb-4">
+         <div className="text-center font-semibold text-lg mb-4 xs:text-base xs:mb-2">
             Amount {getOverUnderText(savedAmountAttributesTotal)} Budget:{" "}
             <span
                className={`font-bold ${getTextColor(
@@ -121,7 +121,7 @@ const BudgetOverview = ({ overview }) => {
                ${Math.abs(savedAmountAttributesTotal).toFixed(2)}
             </span>
          </div>
-         <div className="text-center font-semibold text-lg mb-4">
+         <div className="text-center font-semibold text-lg mb-4 xs:text-base xs:mb-2">
             Total Amount Saved:{" "}
             <span className={`font-bold ${getTextColor(totalAmountSaved)}`}>
                ${totalAmountSaved.toFixed(2)}
