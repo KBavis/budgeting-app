@@ -333,7 +333,7 @@ const HomePage = () => {
          />
 
          {/* Main Content */}
-         <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12 pt-[10px] md:pt-0">
+         <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12 pt-16">
             <div className="max-w-md text-center mb-16 mt-48 xxl:mt-4 xs:mt-10 xs:mb-8">
                <h1 className="text-xl md:text-2xl font-bold mb-4 text-white">
                   Welcome <span className="text-indigo-500">{name}</span>

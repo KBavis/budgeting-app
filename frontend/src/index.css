@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+  height: 100%;
+}
+
 /* Styling for Dropdown Button On DetailedCategoryTransactions */
 button.text-white.bg-transparent.border-none.p-0.m-0 {
    background: none;

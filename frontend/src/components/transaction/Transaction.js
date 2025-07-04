@@ -86,20 +86,20 @@ const Transaction = ({
               <img
                   src={transaction.logoUrl}
                   alt="Transaction Logo"
-                  className="w-10 h-10 rounded-full xs:w-8 xs:h-8"
+                  className="w-10 h-10 rounded-full xs:w-8 xs:h-8 flex-shrink-0"
               />
           ) : (
               <img
                   src="https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
-                  className="w-10 h-10 rounded-full xs:w-8 xs:h-8"
+                  className="w-10 h-10 rounded-full xs:w-8 xs:h-8 flex-shrink-0"
               />
           )}
-          <div className="text-white text-left flex-1">
-             <div className="flex justify-between">
-                <p className="text-sm font-bold xs:text-xs">{transaction.name}</p>
-                <p className="text-xs font-bold xs:text-xxs">{formattedDate}</p>
+          <div className="text-white text-left flex-1 min-w-0">
+             <div className="flex justify-between items-center">
+                <p className="text-sm font-bold xs:text-xs sm:text-sm truncate">{transaction.name}</p>
+                <p className="text-xs font-bold xs:text-xxs sm:text-xs flex-shrink-0 ml-2">{formattedDate}</p>
              </div>
-             <p className="text-xs xl:text-sm xs:text-xxs">${roundedAmount}</p>
+             <p className="text-xs xl:text-sm xs:text-xxs sm:text-xs">${roundedAmount}</p>
           </div>
           {transaction.category && ( // Only display the dropdown if category is not null
               <TransactionDropdown
