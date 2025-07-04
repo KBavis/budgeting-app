@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AuthState from "./context/auth/AuthState";
 import LoginRegisterPage from "./pages/LoginRegisterPage";
@@ -15,7 +15,6 @@ import IncomeState from "./context/income/IncomeState";
 import CategoryTypeInputPage from "./pages/CategoryTypeInputPage";
 import CategoryTypeState from "./context/category/types/CategoryTypeState";
 import CategoryState from "./context/category/CategoryState";
-import CategoryCreationPage from "./pages/CategoryCreationPage";
 import TransactionState from "./context/transaction/TransactionState";
 import CategoryTypePage from "./pages/CategoryTypePage";
 import AccountsPage from "./pages/AccountsPage";
@@ -24,11 +23,26 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import Navbar from "./components/layout/Navbar";
 import BudgetSummaryPage from "./pages/BudgetSummaryPage";
 import SummaryState from "./context/summary/SummaryState";
+import CategoryCreationPage from "./pages/CategoryCreationPage";
 
 /**
  *  Main Application File
  */
 function App() {
+   const [isInitialRender, setIsInitialRender] = useState(true);
+
+   useEffect(() => {
+      const timer = setTimeout(() => {
+         setIsInitialRender(false);
+      }, 1);
+
+      return () => clearTimeout(timer);
+   }, []);
+
+   if (isInitialRender) {
+      return null; // Or a loading spinner
+   }
+
    return (
       <AlertState>
          <AuthState>
