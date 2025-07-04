@@ -19,13 +19,13 @@ const Navbar = () => {
   return (
     user &&
     transactions && (
-      <nav className="w-full py-8 z-[100]">
-        <div className="container mx-auto">
-          <ul className="flex justify-center md:justify-end space-x-12 text-sm xs:space-x-4 xs:text-xs">
+      <nav className="fixed w-full z-10 top-0 py-4">
+        <div className="container mx-auto flex justify-end">
+          <ul className="flex space-x-6">
             <li>
               <Link
                 to="/accounts"
-                className="text-white font-bold duration-500 hover:text-indigo-400"
+                className="text-white text-sm font-bold hover:text-indigo-400"
               >
                 Accounts
               </Link>
@@ -33,7 +33,7 @@ const Navbar = () => {
             <li>
               <Link
                 to="/budget/summary"
-                className="text-white font-bold duration-500 hover:text-indigo-400"
+                className="text-white text-sm font-bold hover:text-indigo-400"
               >
                 Budget Summary
               </Link>
@@ -41,7 +41,7 @@ const Navbar = () => {
             <li>
               <button
                 onClick={handleLogout}
-                className="text-white font-bold duration-500 hover:text-indigo-400"
+                className="text-white text-sm font-bold hover:text-indigo-400"
               >
                 Logout
               </button>
