@@ -45,7 +45,7 @@ const HomePage = () => {
    const [category, setCategory] = useState(null);
    const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown v
    const [showPrevTransactionsModal, setShowPrevTransactionsModal] = useState(false);
-   const [currentTransactionIndex, setCurrentTransactionIndex] = useState(0);
+   const [modalPrevMonthTransactions, setModalPrevMonthTransactions] = useState([]);
 
 
    const initalFetchRef = useRef(false);
@@ -289,8 +289,8 @@ const HomePage = () => {
    useEffect(() => {
 
       if(prevMonthTransactions && prevMonthTransactions.length > 0) {
+         setModalPrevMonthTransactions([...prevMonthTransactions]) // create copy to iterate through
          setShowPrevTransactionsModal(true);
-         setCurrentTransactionIndex(0);
       }
 
    }, [prevMonthTransactions])
@@ -432,16 +432,20 @@ const HomePage = () => {
             </div>
          )}
          {showPrevTransactionsModal && 
-            prevMonthTransactions.length > 0 &&
-            currentTransactionIndex < prevMonthTransactions.length && (
+            modalPrevMonthTransactions.length > 0 && (
                <PreviousTransactionsModal
-                  transactions={prevMonthTransactions}
-                  currentIndex={currentTransactionIndex}
-                  onClose={() => setShowPrevTransactionsModal(false)}
+                  transactions={modalPrevMonthTransactions}
+                  onClose={() => {
+                     setShowPrevTransactionsModal(false);
+                     setModalPrevMonthTransactions([])
+                  }}
                   onTransactionComplete={() => {
-                     if (currentTransactionIndex + 1 < prevMonthTransactions.length) {
-                        setCurrentTransactionIndex((prev) => prev + 1);
-                     } else {
+                     // Remove the first transaction from the list and update the state
+                     const updatedTransactions = modalPrevMonthTransactions.slice(1);
+                     setModalPrevMonthTransactions(updatedTransactions);
+
+                     // If no more transactions, close the modal
+                     if (updatedTransactions.length === 0) {
                         setShowPrevTransactionsModal(false);
                      }
                   }}
