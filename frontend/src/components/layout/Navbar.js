@@ -55,7 +55,7 @@ const Navbar = () => {
                 to="/budget/summary"
                 className="text-white text-base font-bold hover:text-indigo-400 xs:text-sm"
               >
-                Budget Summary
+                History
               </Link>
             </li>
             <li>
