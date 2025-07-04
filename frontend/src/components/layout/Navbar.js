@@ -19,7 +19,7 @@ const Navbar = () => {
   return (
     user &&
     transactions && (
-      <nav className="fixed w-full z-10 top-0 py-4">
+      <nav className="w-full z-10 py-4">
         <div className="container mx-auto flex justify-end">
           <ul className="flex space-x-6">
             <li>
@@ -33,7 +33,7 @@ const Navbar = () => {
             <li>
               <Link
                 to="/budget/summary"
-                className="text-white text-sm font-bold hover:text-indigo-400"
+                className="text-white text-sm font-bold hover:text-indigo-400 xs:text-xxs"
               >
                 Budget Summary
               </Link>

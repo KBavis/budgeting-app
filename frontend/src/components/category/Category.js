@@ -138,7 +138,7 @@ const Category = ({
                handleUpdateAllocations={handleUpdateAllocations}
             />
          </div>
-         <h4 className="text-xl font-bold mb-2 text-gray-800 xs:text-lg">
+         <h4 className="text-xl font-bold mb-2 text-gray-800 xs:text-lg truncate">
             {category.name}
          </h4>
          <div className="mb-2 text-sm font-semibold text-gray-600 xs:text-xs">

@@ -116,7 +116,7 @@ const CategoryType = ({
    };
 
    return (
-      <div className="relative bg-white rounded-lg shadow-md px-4 pb-4 w-11/12 md:w-full h-[400px] overflow-y-auto hover:duration-100 xxl:h-[650px] xs:h-[350px] xs:px-2 xs:pb-2">
+      <div className="relative bg-white rounded-lg shadow-md px-4 pb-4 w-11/12 md:w-full h-[400px] overflow-y-auto overflow-x-hidden hover:duration-100 xxl:h-[650px] xs:h-[350px] xs:px-2 xs:pb-2">
          <div className="sticky top-0 z-20 bg-white pb-2 xs:pb-1">
             <div className="flex justify-between items-center">
                <div></div> {/* Placeholder to balance the flex alignment */}
