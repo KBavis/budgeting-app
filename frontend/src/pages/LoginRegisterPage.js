@@ -20,7 +20,7 @@ const LoginRegisterPage = () => {
          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12">
             <div className="max-w-md text-center">
                <h1 className="flex flex-col text-2xl md:text-6xl font-bold mb-8 text-white xs:text-xl">
-                  <span>Bavis</span> 
+                  <span className="text-5xl md:text-6xl xs:text-4xl">Bavis</span> 
                   <span className="text-7xl xs:text-5xl">Budgeting</span>
                </h1>
                <p className="text-lg md:text-xl mb-8 text-gray-400 italic">
