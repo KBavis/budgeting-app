@@ -20,6 +20,7 @@ import UpdateAllocationsModal from "../components/category/UpdateAllocationsModa
 import RenameCategory from "../components/category/RenameCategory";
 import SummaryContext from "../context/summary/summaryContext";
 import PreviousTransactionsModal from "../components/transaction/PreviousTransactionsModal";
+import TransactionSwiper from "../components/swiping/TransactionSwiper";
 
 const HomePage = () => {
    //Local State
@@ -46,6 +47,9 @@ const HomePage = () => {
    const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown v
    const [showPrevTransactionsModal, setShowPrevTransactionsModal] = useState(false);
    const [modalPrevMonthTransactions, setModalPrevMonthTransactions] = useState([]);
+   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+   const [showTransactionSwiper, setShowTransactionSwiper] = useState(null);
+   const [transactionsToAssign, setTransactionsToAssign] = useState([]);
 
 
    const initalFetchRef = useRef(false);
@@ -321,6 +325,28 @@ const HomePage = () => {
       summariesLoading,
    ]);
 
+   useEffect(() => {
+      const handleResize = () => {
+          setIsMobile(window.innerWidth < 768);
+      };
+      window.addEventListener('resize', handleResize);
+      return () => {
+          window.removeEventListener('resize', handleResize);
+      };
+  }, []);
+
+  useEffect(() => {
+      if (isMobile) {
+          const unassigned = transactions.filter(t => !t.category || t.category.name === 'Miscellaneous');
+          setTransactionsToAssign(unassigned);
+          if (unassigned.length > 0 && showTransactionSwiper === null) {
+              setShowTransactionSwiper(true);
+          }
+      }
+  }, [transactions, isMobile, showTransactionSwiper]);
+
+  
+
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 relative">
          {/* Drop Down For Adding Transaction/Accounts/Categories */}
@@ -331,6 +357,16 @@ const HomePage = () => {
             handleShowAddCategoryModal={handleShowAddCategoryModal}
             user={user} // Pass the user prop
          />
+         {isMobile && transactionsToAssign.length > 0 && !showTransactionSwiper && (
+            <div className="absolute top-20 right-5">
+               <button
+                  className="bg-green-500 border-2 border-green-500 text-xs hover:bg-transparent duration-1000 text-white font-bold py-1 px-2 rounded"
+                  onClick={() => setShowTransactionSwiper(true)}
+               >
+                  Continue Categorization
+               </button>
+            </div>
+         )}
 
          {/* Main Content */}
          <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12 pt-24">
@@ -378,7 +414,7 @@ const HomePage = () => {
                   <Loading />
                )}
             </div>
-            <MiscellaneousTransactions />
+            {!isMobile && <MiscellaneousTransactions />}
          </div>
          {/* Modals */}
          {showSplitTransactionModal && ( // Render modal if showModal is true and selectedCategoryType is not null
@@ -459,8 +495,17 @@ const HomePage = () => {
                />
             </div>
          )}
+         {showTransactionSwiper && (
+            <TransactionSwiper
+                transactions={transactionsToAssign}
+                categories={categories}
+                categoryTypes={categoryTypes}
+                onClose={() => setShowTransactionSwiper(false)}
+            />
+         )}
       </div>
    );
 };
 
 export default HomePage;
+
