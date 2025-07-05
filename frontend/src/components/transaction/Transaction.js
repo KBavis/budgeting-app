@@ -108,6 +108,7 @@ const Transaction = ({
                   handleReassignTransaction={handleReassignTransaction}
                   handleRenameTransaction={handleRenameTransaction}
                   handleReduceTransaction={handleReduceTransaction}
+                  className="ml-auto flex-shrink-0"
               />
           )}
        </div>

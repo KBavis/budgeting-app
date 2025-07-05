@@ -27,7 +27,6 @@ button.text-white.bg-transparent.border-none.p-0.m-0:active {
 
 /* Ensure Bootstrapped Dropdown Is Fixed  */
 .custom-dropdown-menu {
-   position: fixed !important;
    z-index: 2000;
 }
 

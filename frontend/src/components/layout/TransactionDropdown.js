@@ -9,6 +9,7 @@ const TransactionDropdown = ({
    handleReassignTransaction,
    handleRenameTransaction,
    handleReduceTransaction,
+   className,
 }) => {
    const [dropdownVisible, setDropdownVisible] = useState(false);
 
@@ -17,7 +18,7 @@ const TransactionDropdown = ({
    };
 
    return (
-      <Dropdown show={dropdownVisible} onToggle={handleDropdownToggle}>
+      <Dropdown show={dropdownVisible} onToggle={handleDropdownToggle} className={className}>
          <Dropdown.Toggle
             as="button"
             className="text-white bg-transparent border-none p-0 m-0"
