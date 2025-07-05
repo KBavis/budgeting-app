@@ -184,7 +184,7 @@ const CategoryTypePage = ({ categoryType }) => {
                     placeholder="Filter categories..."
                     value={filterQuery}
                     onChange={(e) => setFilterQuery(e.target.value)}
-                    className="mt-4 p-2 w-full rounded-md text-black xs:mt-2 xs:p-1 xs:text-sm"
+                    className="mt-4 p-2 w-full mb-5 rounded-md text-black xs:mt-2 xs:p-1 xs:text-sm"
                 />
              </div>
              <div
