@@ -128,8 +128,7 @@ const Category = ({
    return (
       <div
          ref={drop}
-         className={`bg-gray-200 rounded-lg shadow-md p-4 relative ${isOver ? " bg-indigo-200" : canDrop ? " bg-indigo-100" : ""} xs:p-2`}
-         style={{ width: "90%" }}
+         className={`bg-gray-200 rounded-lg shadow-md p-4 relative w-full py-4 ${isOver ? " bg-indigo-200" : canDrop ? " bg-indigo-100" : ""} xs:p-2 xs:w-11/12 xs:py-6`}
       >
          <div className="absolute top-4 right-4 xs:top-2 xs:right-2">
             <CategoryDropdown
