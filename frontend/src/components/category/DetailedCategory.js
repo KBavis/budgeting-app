@@ -130,7 +130,7 @@ const DetailedCategory = ({
                  style={{width: `${budgetUsage > 100 ? 100 : budgetUsage}%`}}
              ></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-h-64 overflow-y-auto xs:grid-cols-2 xs:gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 max-h-64 overflow-y-auto xs:grid-cols-1 xs:gap-1">
              {filterTransactionsByQuery.length > 0 ? (
                  filterTransactionsByQuery.map((transaction) => (
                      <DetailedCategoryTransaction

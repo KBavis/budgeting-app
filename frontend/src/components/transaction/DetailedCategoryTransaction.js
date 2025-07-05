@@ -37,7 +37,7 @@ const DetailedCategoryTransaction = ({
    const formattedDate = new Date(transaction.date).toLocaleDateString("en-US");
 
    return (
-       <div className="bg-indigo-900 rounded-lg p-3 shadow-md flex items-center justify-between mb-3 xs:p-2 xs:min-h-[80px]">
+       <div className="bg-indigo-900 rounded-lg p-1 shadow-md flex items-center justify-between mb-0.5 xs:p-0.5">
           <div className="flex items-center space-x-2 flex-grow overflow-hidden">
              {transaction.logoUrl ? (
                  <img
