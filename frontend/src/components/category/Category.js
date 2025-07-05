@@ -130,16 +130,17 @@ const Category = ({
          ref={drop}
          className={`bg-gray-200 rounded-lg shadow-md p-4 relative w-full py-4 ${isOver ? " bg-indigo-200" : canDrop ? " bg-indigo-100" : ""} xs:p-2 xs:w-11/12 xs:py-6`}
       >
-         <div className="absolute top-4 right-4 xs:top-2 xs:right-2">
+         <div className="flex justify-between items-center mb-2">
+            <h4 className="text-xl font-bold text-gray-800 xs:text-lg truncate flex-grow">
+               {category.name}
+            </h4>
             <CategoryDropdown
                handleDeleteCategory={handleDeleteCategory}
                handleRenameCategory={handleRenameCategory}
                handleUpdateAllocations={handleUpdateAllocations}
+               className="ml-auto flex-shrink-0"
             />
          </div>
-         <h4 className="text-xl font-bold mb-2 text-gray-800 xs:text-lg truncate">
-            {category.name}
-         </h4>
          <div className="mb-2 text-sm font-semibold text-gray-600 xs:text-xs">
             <p>Allocated Budget: ${budgetAllocation}</p>
             <p>Total Spent: ${totalAmountSpent}</p>

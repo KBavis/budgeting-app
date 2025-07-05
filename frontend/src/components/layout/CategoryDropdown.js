@@ -7,6 +7,7 @@ const CategoryDropdown = ({
    handleDeleteCategory,
    handleRenameCategory,
    handleUpdateAllocations,
+   className,
 }) => {
    const [dropdownVisible, setDropdownVisible] = useState(false);
 
@@ -15,7 +16,7 @@ const CategoryDropdown = ({
    };
 
    return (
-      <Dropdown show={dropdownVisible} onToggle={handleDropdownToggle}>
+      <Dropdown show={dropdownVisible} onToggle={handleDropdownToggle} className={className}>
          <Dropdown.Toggle
             as="button"
             className="text-black bg-transparent border-none p-0 m-0"
@@ -25,7 +26,7 @@ const CategoryDropdown = ({
 
          <Dropdown.Menu
             align="end"
-            className="bg-white text-black text-sm absolute text-center custom-dropdown-menu"
+            className="bg-white text-black text-sm text-center custom-dropdown-menu"
          >
             <Dropdown.Item
                className="dropdown-item font-semibold"
