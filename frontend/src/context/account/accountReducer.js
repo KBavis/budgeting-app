@@ -6,6 +6,7 @@ import {
    ACCOUNT_FAILED_DELETED,
    CLEAR_ERRORS,
    SET_LOADING, REMOVE_ACCOUNT_SUCCESS, REMOVE_ACCOUNT_FAILURE,
+   UPDATE_ACCOUNT_BALANCE,
 } from "./types";
 
 /**
@@ -13,6 +14,21 @@ import {
  */
 export default (state, action) => {
    switch (action.type) {
+      case UPDATE_ACCOUNT_BALANCE:
+         return {
+            ...state,
+            accounts: state.accounts ? 
+               state.accounts.map(account => {
+                  const updatedAccount = action.payload.find(
+                     updated => updated.accountId === account.accountId
+                  );
+
+                  return updatedAccount 
+                     ? { ...account, balance: updatedAccount.balance} 
+                     : account
+               })
+            : []
+         };
       case ACCOUNT_CREATED:
          return {
             ...state,

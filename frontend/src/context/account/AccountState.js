@@ -10,6 +10,7 @@ import {
    ACCOUNTS_FETCH_FAILED,
    CLEAR_ERRORS,
    SET_LOADING, REMOVE_ACCOUNT_FAILURE, REMOVE_ACCOUNT_SUCCESS,
+   UPDATE_ACCOUNT_BALANCE
 } from "./types";
 import setAuthToken from "../../utils/setAuthToken";
 import AccountContext from "./accountContext";
@@ -112,6 +113,20 @@ const AccountState = (props) => {
       }
    }
 
+
+   /**
+    * Functionality to update acocunts with most recent balances retrieved during Sync Transactions flow
+    * 
+    * @param accounts 
+    *       - list of account DTOs with potential balance updates
+    */
+   const updateAccountBalance = async (accounts) => {
+         dispatch({
+            type: UPDATE_ACCOUNT_BALANCE, 
+            payload: accounts
+         })
+   }
+
    return (
       <AccountContext.Provider
          value={{
@@ -122,7 +137,8 @@ const AccountState = (props) => {
             clearErrors,
             fetchAccounts,
             setLoading,
-            removeAccount
+            removeAccount,
+            updateAccountBalance
          }}
       >
          {props.children}
