@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class SyncTransactionsDto {
+    private List<AccountDto> updatedAccounts;
     private List<Transaction> allModifiedOrAddedTransactions;
     private List<Transaction> previousMonthTransactions;
     private List<String> removedTransactionIds;
