@@ -5,6 +5,7 @@ import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.filter.TransactionFilters;
+import com.bavis.budgetapp.mapper.AccountMapperImpl;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.impl.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +49,9 @@ public class TransactionServiceTests {
 
     @Mock
     private TransactionMapper transactionMapper;
+
+    @Mock
+    private AccountMapperImpl accountMapper;
 
     @Mock
     private CategoryServiceImpl categoryService;
@@ -261,9 +265,21 @@ public class TransactionServiceTests {
         configureSyncTransactionMocks_addedModified();
         when(accountService.read(accountIdOne)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        when(accountService.updateBalance(any(), any())).thenAnswer(invocationOnMock -> {
+            Account account = invocationOnMock.getArgument(1);
+            account.setBalance(2046.00);
+            return account;
+        });
+        AccountDto dto = new AccountDto();
+        dto.setBalance(2046.00);
+        when(accountMapper.toDTO(any(Account.class))).thenReturn(dto);
 
         // act
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
+
+        // assert
+        assertNotNull(syncTransactionsDto.getUpdatedAccounts());
+        assertEquals(2046.00, syncTransactionsDto.getUpdatedAccounts().get(0).getBalance());
 
         // verify
         verify(accountService, times(1)).updateBalance(plaidAccountDtos, accountOne);
