@@ -47,9 +47,14 @@ public class Transaction {
 	@AllArgsConstructor
 	public static class PersonalFinanceCategory {
 		@Enumerated(EnumType.STRING)
+		@Column(name = "plaid_confidence_level")
 		private PlaidConfidenceLevel plaidConfidenceLevel;
+
+		@Column(name = "plaid_primary_category")
 		@Enumerated(EnumType.STRING)
 		private PlaidPrimaryCategory primaryCategory;
+
+		@Column(name = "plaid_detailed_category")
 		@Enumerated(EnumType.STRING)
 		private PlaidDetailedCategory detailedCategory;
 	}
