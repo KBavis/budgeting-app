@@ -119,7 +119,7 @@ public class TransactionServiceImpl implements TransactionService {
 
                     // Update relevant Account with up-to-date balance information
                     if(syncResponseDto.getAccounts() != null) {
-                        account = _accountService.updateBalance(syncResponseDto.getAccounts().getFirst(), account);
+                        account = _accountService.updateBalance(syncResponseDto.getAccounts(), account);
                     }
 
                     //Determine if Plaid has more Transactions to sync for current Account
