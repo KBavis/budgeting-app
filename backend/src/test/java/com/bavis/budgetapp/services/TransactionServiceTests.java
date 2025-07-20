@@ -238,7 +238,7 @@ public class TransactionServiceTests {
 
         PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
                 .accountId(accountIdOne)
-                .balances(Collections.singletonList(balance))
+                .balances(balance)
                 .build();
         List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
         ArrayList<String> accountIds = new ArrayList<>(Collections.singletonList(accountIdOne));

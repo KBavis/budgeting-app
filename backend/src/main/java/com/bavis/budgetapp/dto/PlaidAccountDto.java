@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -25,5 +24,5 @@ public class PlaidAccountDto {
 
     @JsonProperty("account_id")
     private String accountId;
-    private List<Balance> balances;
+    private Balance balances;
 }

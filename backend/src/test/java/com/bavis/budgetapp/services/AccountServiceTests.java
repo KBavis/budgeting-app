@@ -332,7 +332,7 @@ public class AccountServiceTests {
 
         PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
                 .accountId(accountId)
-                .balances(Collections.singletonList(balance))
+                .balances(balance)
                 .build();
         List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
 
@@ -379,7 +379,7 @@ public class AccountServiceTests {
 
         PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
                 .accountId(accountId)
-                .balances(Collections.singletonList(balance))
+                .balances(balance)
                 .build();
         List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
 

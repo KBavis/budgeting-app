@@ -142,18 +142,16 @@ public class AccountServiceImpl implements AccountService{
 	}
 
 	@Override
-	public Account updateBalance(List<PlaidAccountDto> plaidAccounts, Account account) {
+	public Account  updateBalance(List<PlaidAccountDto> plaidAccounts, Account account) {
         plaidAccounts.stream()
 				.filter(plaidAccountDto -> account.getAccountId().equals(plaidAccountDto.getAccountId()))
 				.findFirst()
-				.flatMap(plaidAccountDto -> plaidAccountDto.getBalances().stream()
-						.filter(Objects::nonNull)
-						.map(PlaidAccountDto.Balance::getCurrent)
-						.filter(Objects::nonNull)
-						.findFirst()
-				)
+				.map(PlaidAccountDto::getBalances)
+				.map(PlaidAccountDto.Balance::getCurrent)
 				.map(BigDecimal::doubleValue)
 				.ifPresent(account::setBalance);
+
+		log.info("Updating Account {} with its most recent balance of ${}", account.getAccountId(), account.getBalance());
 		return _accountRepository.save(account);
     }
 
