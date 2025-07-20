@@ -2,6 +2,7 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dto.AccountDto;
 import com.bavis.budgetapp.constants.ConnectionStatus;
+import com.bavis.budgetapp.dto.PlaidAccountDto;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
@@ -22,9 +23,10 @@ import com.bavis.budgetapp.dao.AccountRepository;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.service.AccountService;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Kellen Bavis
@@ -139,11 +141,16 @@ public class AccountServiceImpl implements AccountService{
 		_accountRepository.save(accountToDelete);
 	}
 
-	//TODO: Implement
 	@Override
-	public Account update(Account account, Long accountId) {
-		return null;
-	}
+	public Account updateBalance(PlaidAccountDto plaidAccount, Account account) {
+        plaidAccount.getBalances().stream()
+                .filter(Objects::nonNull)
+                .map(PlaidAccountDto.Balance::getCurrent)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .map(BigDecimal::doubleValue).ifPresent(account::setBalance);
+		return _accountRepository.save(account);
+    }
 
 	@Override
 	public Account read(String accountId) throws RuntimeException{

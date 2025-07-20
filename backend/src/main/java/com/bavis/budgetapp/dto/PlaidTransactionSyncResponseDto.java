@@ -17,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlaidTransactionSyncResponseDto {
+    private List<PlaidAccountDto> accounts;
     private List<PlaidTransactionDto> added;
     private List<PlaidTransactionDto> modified;
     private List<PlaidTransactionDto> removed;
