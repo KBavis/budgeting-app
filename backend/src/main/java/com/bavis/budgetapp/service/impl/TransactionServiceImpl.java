@@ -5,6 +5,7 @@ import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.filter.TransactionFilters;
+import com.bavis.budgetapp.mapper.AccountMapperImpl;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.TransactionService;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,8 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionFilters _transactionFilters;
 
+    private final AccountMapperImpl _accountMapper;
+
     @Lazy
     private final CategoryServiceImpl categoryService;
 
@@ -60,6 +63,7 @@ public class TransactionServiceImpl implements TransactionService {
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
         List<String> allRemovedTransactionIds = new ArrayList<>();
         List<Transaction> previousMonthTransactions = new ArrayList<>();
+        List<AccountDto> updatedAccounts = new ArrayList<>();
 
         Set<String> pendingTransactionIds = new HashSet<>();
 
@@ -117,6 +121,13 @@ public class TransactionServiceImpl implements TransactionService {
 
                     }
 
+                    // Update relevant Account with up-to-date balance information
+                    if(syncResponseDto.getAccounts() != null) {
+                        account = _accountService.updateBalance(syncResponseDto.getAccounts(), account);
+
+                        updatedAccounts.add(_accountMapper.toDTO(account));
+                    }
+
                     //Determine if Plaid has more Transactions to sync for current Account
                     hasMore = syncResponseDto.isHas_more();
                 }
@@ -163,6 +174,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .allModifiedOrAddedTransactions(allModifiedOrAddedTransactions)
                 .removedTransactionIds(filteredTransactionIds)
                 .previousMonthTransactions(previousMonthTransactions)
+                .updatedAccounts(updatedAccounts)
                 .build();
     }
 

@@ -5,6 +5,7 @@ import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.filter.TransactionFilters;
+import com.bavis.budgetapp.mapper.AccountMapperImpl;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.impl.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Predicate;
@@ -47,6 +49,9 @@ public class TransactionServiceTests {
 
     @Mock
     private TransactionMapper transactionMapper;
+
+    @Mock
+    private AccountMapperImpl accountMapper;
 
     @Mock
     private CategoryServiceImpl categoryService;
@@ -216,6 +221,68 @@ public class TransactionServiceTests {
 
         // verify
         verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
+    }
+
+    @Test
+    void testSyncTransactions_updatesAccountBalances() {
+        // arrange
+        String accountIdOne = "12345XYZ";
+        Connection accountConnectionOne = Connection.builder()
+                .connectionId(5L)
+                .accessToken(accessToken)
+                .previousCursor(previousCursor)
+                .build();
+        Account accountOne = Account.builder()
+                .accountId(accountIdOne)
+                .connection(accountConnectionOne)
+                .build();
+        PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
+        balance.setAvailable(BigDecimal.valueOf(1000.00));
+        balance.setCurrent(BigDecimal.valueOf(2046.00));
+
+        PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
+                .accountId(accountIdOne)
+                .balances(balance)
+                .build();
+        List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
+        ArrayList<String> accountIds = new ArrayList<>(Collections.singletonList(accountIdOne));
+        AccountsDto accountsDto = AccountsDto.builder()
+                .accounts(accountIds)
+                .build();
+        // set up added transactions for Plaid Service response
+        addedTransactions = Collections.singletonList(plaidTransactionDtoOne);
+        modifiedTransactions = Collections.singletonList(plaidTransactionDtoTwo);
+        syncResponseDto = PlaidTransactionSyncResponseDto.builder()
+                .accounts(plaidAccountDtos)
+                .added(addedTransactions)
+                .modified(modifiedTransactions)
+                .removed(new ArrayList<>())
+                .next_cursor(nextCursor)
+                .has_more(false)
+                .build();
+
+        // mocks
+        configureSyncTransactionMocks_addedModified();
+        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        when(accountService.updateBalance(any(), any())).thenAnswer(invocationOnMock -> {
+            Account account = invocationOnMock.getArgument(1);
+            account.setBalance(2046.00);
+            return account;
+        });
+        AccountDto dto = new AccountDto();
+        dto.setBalance(2046.00);
+        when(accountMapper.toDTO(any(Account.class))).thenReturn(dto);
+
+        // act
+        SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
+
+        // assert
+        assertNotNull(syncTransactionsDto.getUpdatedAccounts());
+        assertEquals(2046.00, syncTransactionsDto.getUpdatedAccounts().get(0).getBalance());
+
+        // verify
+        verify(accountService, times(1)).updateBalance(plaidAccountDtos, accountOne);
     }
 
     @Test

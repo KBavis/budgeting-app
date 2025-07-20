@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.PlaidAccountDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.exception.AccountConnectionException;
@@ -38,13 +39,13 @@ public interface AccountService {
 	 * Functionality to update an existing user Account
 	 *
 	 * @param account
-	 * 			- Account with updated attributes
-	 * @param accountId
-	 * 			- Account ID corresponding to Account needing updates
+	 * 			- persisted account to update
+	 * @param plaidAccounts
+	 * 			- plaid APIs accounts
 	 * @return
 	 * 			- Updated Account
 	 */
-	Account update(Account account, Long accountId);
+	Account updateBalance(List<PlaidAccountDto> plaidAccounts, Account account);
 
 	/**
 	 *  Functionality to fetch a specific Account
