@@ -49,7 +49,7 @@ public class PlaidServiceImpl implements PlaidService{
                 .products(new String[]{"transactions"})
                 .build();
 
-        log.info("Fetching Link Token for User with ID {} with following LinkTokenRequest: [{}]", userId, linkTokenRequestDto);
+        log.info("Fetching Link Token for User with ID {}", userId);
 
         //Validate & Handle FeignClientException
         ResponseEntity<LinkTokenResponseDto> responseEntity;
@@ -123,7 +123,7 @@ public class PlaidServiceImpl implements PlaidService{
                 .secretKey(_plaidConfig.getSecretKey())
                 .build();
 
-        log.info("Exchanging Plaid API Public Token [{}] for Access Token via the following ExchangeTokenRequest: [{}]", publicToken, exchangeTokenRequestDto);
+        log.info("Exchanging Plaid API Public Token [{}]", publicToken);
 
         //Validate & Handle Feign Client Exceptions
         ResponseEntity<AccessTokenResponseDto> responseEntity;
@@ -166,7 +166,7 @@ public class PlaidServiceImpl implements PlaidService{
                 .secret(_plaidConfig.getSecretKey())
                 .build();
 
-        log.info("Retrieving Account Balance via Plaid API for Account with ID {} and the following RetrieveBalanceRequest : [{}]", accountId, retrieveBalanceRequestDto);
+        log.info("Retrieving Account Balance via Plaid API for Account with ID {}]", accountId);
 
         //Catch any FeignClientExceptions & Handle Properly
         ResponseEntity<String> responseEntity;
@@ -217,7 +217,6 @@ public class PlaidServiceImpl implements PlaidService{
         //Sync Transactions via Plaid API
         ResponseEntity<PlaidTransactionSyncResponseDto> responseEntity;
         try{
-            log.info("PlaidTransactionSyncRequestDto: [{}]", syncRequestDto);
             responseEntity = _plaidClient.syncTransactions(syncRequestDto);
         } catch (FeignClientException e){
             log.error("An error occurred while attempting to Sync Transactions via Plaid API: [{}]", e.getMessage());
