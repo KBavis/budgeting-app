@@ -40,12 +40,12 @@ public interface AccountService {
 	 *
 	 * @param account
 	 * 			- persisted account to update
-	 * @param plaidAccount
-	 * 			- plaid APIs account
+	 * @param plaidAccounts
+	 * 			- plaid APIs accounts
 	 * @return
 	 * 			- Updated Account
 	 */
-	Account updateBalance(PlaidAccountDto plaidAccount, Account account);
+	Account updateBalance(List<PlaidAccountDto> plaidAccounts, Account account);
 
 	/**
 	 *  Functionality to fetch a specific Account
