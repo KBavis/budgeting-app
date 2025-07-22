@@ -18,6 +18,7 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -64,7 +65,7 @@ public class TransactionServiceTests {
     PlaidTransactionDto.PersonalFinanceCategoryDto personalFinanceCategoryDto;
     String nextCursor;
     String previousCursor;
-    LocalDate date;
+    LocalDateTime date;
     String accountId;
     String accessToken;
     PlaidTransactionDto plaidTransactionDtoOne;
@@ -83,7 +84,7 @@ public class TransactionServiceTests {
     void setup() {
         nextCursor = "next-cursor";
         previousCursor = "previous-cursor";
-        date = LocalDate.now();
+        date = LocalDateTime.now();
         accountId = "account-id";
         accessToken = "access-token";
 
@@ -1260,7 +1261,7 @@ public class TransactionServiceTests {
                     .transactionId(dto.getTransaction_id())
                     .name(dto.getCounterparties().get(0).getName())
                     .amount(dto.getAmount())
-                    .date(dto.getDatetime())
+                    .date(dto.getDate())
                     .logoUrl(dto.getCounterparties().get(0).getLogo_url())
                     .account(null)
                     .category(null)
@@ -1284,7 +1285,7 @@ public class TransactionServiceTests {
                     .transactionId(dto.getTransaction_id())
                     .name(dto.getCounterparties().get(0).getName())
                     .amount(dto.getAmount())
-                    .date(dto.getDatetime())
+                    .date(dto.getDate())
                     .logoUrl(dto.getCounterparties().get(0).getLogo_url())
                     .account(null)
                     .category(null)
@@ -1344,7 +1345,7 @@ public class TransactionServiceTests {
                     .transactionId(dto.getTransaction_id())
                     .name(dto.getCounterparties().get(0).getName())
                     .amount(dto.getAmount())
-                    .date(dto.getDatetime())
+                    .date(dto.getDate())
                     .logoUrl(dto.getCounterparties().get(0).getLogo_url())
                     .account(null)
                     .category(null)

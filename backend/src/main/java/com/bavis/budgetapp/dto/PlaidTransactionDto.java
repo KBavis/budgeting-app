@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -26,12 +26,13 @@ public class PlaidTransactionDto {
 
     private double amount;
 
-    //Ensure we fetch a date corresponding to transaction
-    private LocalDate datetime;
+    @JsonProperty("datetime")
+    private LocalDateTime datetime;
 
-    private Date authorized_date;
+    private LocalDate authorized_date;
 
-    private Date date;
+    @JsonProperty("date")
+    private LocalDate date;
 
     private List<CounterpartyDto> counterparties;
 
