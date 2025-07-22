@@ -3,13 +3,13 @@ package com.bavis.budgetapp.mapper;
 import com.bavis.budgetapp.dto.PlaidTransactionDto;
 import com.bavis.budgetapp.dto.TransactionDto;
 import com.bavis.budgetapp.entity.Transaction;
+import com.bavis.budgetapp.model.PlaidConfidenceLevel;
+import com.bavis.budgetapp.model.PlaidDetailedCategory;
+import com.bavis.budgetapp.model.PlaidPrimaryCategory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -32,7 +32,11 @@ public interface TransactionMapper {
     @Mapping(target = "logoUrl", expression = "java(getFirstCounterpartyLogoUrl(dto.getCounterparties()))")
     @Mapping(target = "transactionId", source = "transaction_id")
     @Mapping(target = "amount", source = "amount")
-    @Mapping(target = "date", expression = "java(getDate(dto))")
+    @Mapping(target = "date", source = "date")
+    @Mapping(target = "dateTime", source = "datetime")
+    @Mapping(target = "location", source = "location")
+    @Mapping(target = "merchantName", source = "merchantName")
+    @Mapping(target = "personalFinanceCategory", expression=  "java(mapPersonalFinanceCategory(dto.getPersonal_finance_category()))")
     @Mapping(target = "account", ignore = true)
     @Mapping(target = "category", ignore = true)
     Transaction toEntity(PlaidTransactionDto dto);
@@ -87,24 +91,45 @@ public interface TransactionMapper {
         return null;
     }
 
+
     /**
-     * Function to fetch PlaidTransactionDto's relevant Transaction Date
+     * Map Personal Finance Category in DTO to Entitiy
      *
      * @param dto
-     *          - PlaidTransactionDto to fetch relevant date for
+     *          - dto to be mapped
      * @return
-     *          - relevant LocalDate to be set as Transaction entity date
+     *          - mapped personal finance category
      */
-    default LocalDate getDate(PlaidTransactionDto dto) {
-        if(dto.getDatetime() != null) return dto.getDatetime();
+    default Transaction.PersonalFinanceCategory mapPersonalFinanceCategory(PlaidTransactionDto.PersonalFinanceCategoryDto dto) {
+        if (dto == null) return  null;
 
-        //Convert Date to LocalDate
-        Date dateObject = dto.getDate() != null ? dto.getDate() : dto.getAuthorized_date();
-        if(dateObject != null) {
-            return dateObject.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        Transaction.PersonalFinanceCategory personalFinanceCategory = new Transaction.PersonalFinanceCategory();
+
+        try {
+            personalFinanceCategory.setPlaidConfidenceLevel(
+                    dto.getConfidence_level() != null ? PlaidConfidenceLevel.valueOf(dto.getConfidence_level().toUpperCase()) : null
+            );
+        } catch (IllegalArgumentException e) {
+            personalFinanceCategory.setPlaidConfidenceLevel(null);
         }
-        return null;
-    }
 
+        try {
+            personalFinanceCategory.setPrimaryCategory(
+                    dto.getPrimary() != null ? PlaidPrimaryCategory.valueOf(dto.getPrimary().toUpperCase()) : null
+            );
+        } catch (IllegalArgumentException e) {
+            personalFinanceCategory.setPrimaryCategory(null);
+        }
+
+        try {
+            personalFinanceCategory.setDetailedCategory(
+                    dto.getDetailed() != null ? PlaidDetailedCategory.valueOf(dto.getDetailed().toUpperCase()) : null
+            );
+        } catch (IllegalArgumentException e) {
+            personalFinanceCategory.setDetailedCategory(null);
+        }
+
+        return personalFinanceCategory;
+    }
 
 }
