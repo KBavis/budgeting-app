@@ -38,8 +38,14 @@ public class PlaidTransactionDto {
 
     private PersonalFinanceCategoryDto personal_finance_category;
 
+    private Location location;
+
     private String pending_transaction_id;
     private boolean pending;
+
+    @JsonProperty("merchant_name")
+    private String merchantName;
+
 
     @Data
     @NoArgsConstructor
@@ -58,5 +64,20 @@ public class PlaidTransactionDto {
         private String confidence_level;
         private String detailed;
         private String primary;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Location {
+        private String address;
+        private String city;
+        private String region;
+        @JsonProperty("postal_code")
+        private String postalCode;
+        private String country;
+        private String lat; //latitude
+        private String lon; //longitude
     }
 }
