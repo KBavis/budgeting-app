@@ -81,7 +81,12 @@ public class Transaction {
 	@Embedded
 	private PersonalFinanceCategory personalFinanceCategory;
 
-
+	/**
+	 * Suggested category based on Model prediction
+	 */
+	@ManyToOne
+	@JoinColumn(name = "suggestedCategoryId", referencedColumnName = "categoryId")
+	private Category suggestedCategory;
 
 	/**
 	 * Many Transactions To One Account
