@@ -18,6 +18,12 @@ import json
 from datetime import datetime
 
 def main(user_id):
+    """
+    Retrieve user transactions, preprocess data, and train/evalute users personal neural network 
+
+    Args:
+        user_id (long): user ID 
+    """
     
     # fetch user transactions
     transactions = fetch_user_transactions(user_id) 
@@ -41,6 +47,17 @@ def main(user_id):
 
 
 def optimization_loop(train_data_loader, test_data_loader, model):
+    """
+    Loop through training and testing of our model
+
+    Args:
+        train_data_loader (): 
+        test_data_loader (_type_): _description_
+        model (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -137,6 +154,18 @@ def optimization_loop(train_data_loader, test_data_loader, model):
 
 
 def create_data_loaders(X, y, test_size=0.2, batch_size=32):
+    """
+    Generate relevant training and testing data loaders and encoded labels
+
+    Args:
+        X (pd.Dataframe): inputs
+        y (np.array): outputs
+        test_size (float, optional): testing size. Defaults to 0.2.
+        batch_size (int, optional): batch size. Defaults to 32.
+
+    Returns:
+        _type_: _description_
+    """
 
     le = LabelEncoder()
     y_encoded = le.fit_transform(y)
@@ -166,6 +195,12 @@ def extract_text(X, column):
     return X[column].values
 
 def preprocess(transactions: list):
+    """
+    Preprocess user transactions prior to training
+
+    Args:
+        transactions (list): list of transactions to pre-process
+    """
 
     def get_hour(timestamp):
         if timestamp is None:
@@ -224,6 +259,15 @@ def preprocess(transactions: list):
 
 
 def save_artifacts(model, preprocessor, label_encoder, user_id):
+    """
+    Save relevant training and testing artifacts on server 
+
+    Args:
+        model (nn.Module): neural network model 
+        preprocessor (ColumnTransformer): preprocessor of our columns
+        label_encoder (LabelEncoder): label encoder 
+        user_id (long): user ID
+    """
     
     def get_input_dim(model):
         for layer in model.modules():
@@ -256,6 +300,15 @@ def save_artifacts(model, preprocessor, label_encoder, user_id):
 
 
 def fetch_user_transactions(user_id: int):
+    """
+    Retrieve relevant users transactions from DB
+
+    Args:
+        user_id (int):  user to retrieve transactions for 
+
+    Returns:
+        list: user trnasactions
+    """
     connection = db.connect_db()
     return db.fetch_transactions(user_id, connection)
 
