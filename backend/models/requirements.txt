@@ -1,0 +1,5 @@
+torch
+argparse
+psycopg2
+dotenv
+scikit-learn
