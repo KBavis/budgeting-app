@@ -3,7 +3,10 @@ import argparse
 import db
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import HashingVectorizer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer
+from sklearn.pipeline import Pipeline
+import numpy as np
+import pandas as pd
 
 def main(user_id):
     
@@ -11,13 +14,19 @@ def main(user_id):
     transactions = fetch_user_transactions(user_id) 
 
     # preprocess users transactions
-    X, y = preprocess(transactions)
+    X, y, preprocessor = preprocess(transactions)
 
     # create data loaders 
+
 
     # train/test model 
 
     # save artifacts 
+
+
+def create_data_loaders(X, y, test_size=0.2, batch_size=32):
+    return None
+
 
 def preprocess(transactions: list):
 
@@ -31,6 +40,9 @@ def preprocess(transactions: list):
         if timestamp is None:
             return 0.0  # default to Monday
         return timestamp.weekday() / 6.0  
+    
+    def extract_text(X, column):
+        return X[column].values
 
 
     # extract features and labels
@@ -40,10 +52,10 @@ def preprocess(transactions: list):
         features.append([
             tx.get('amount', 0.0),
             get_hour(tx.get('date_time', None)), 
-            get_day_of_week(tx.get('date_time'), None),
-            tx.get('merchant_name', 'UNKNOWN'),
-            tx.get('plaid_primary_category', 'MISSING'),
-            tx.get('plaid_detailed_category', 'MISSING'),
+            get_day_of_week(tx.get('date_time', None)),
+            tx['merchant'] if 'merchant' in tx and tx['merchant'] else 'UNKNOWN',
+            tx['plaid_primary_category'] if 'plaid_primary_category' in tx and tx['plaid_primary_category'] else 'UNKNOWN',
+            tx['plaid_detailed_category'] if 'plaid_detailed_category' in tx and tx['plaid_detailed_category'] else 'UNKNOWN',
         ])
         labels.append(tx['category_id']) # NOTE: This should never be missing given our query 
 
@@ -51,16 +63,29 @@ def preprocess(transactions: list):
 
     # create column specific processor 
     preprocessor = ColumnTransformer([
-        ('amount_scaler', StandardScaler(), [0]), # scale only the transaction amount 
-        ('time_features', 'passthrough', [1, 2]), # hour/day normalized already 
-        ('merchant_hasher', HashingVectorizer(n_features=100), [3]) # transform to vectors 
-        ('plaid_encoder', OneHotEncoder(handle_unknown='ignore'), [4, 5]), # binary encoding for each unique plaid primary category / detailed category  
+        ('amount_scaler', StandardScaler(), ['amount']), # scale only the transaction amount 
+        ('time_features', 'passthrough', ['hour', 'day']), # hour/day normalized already 
+
+
+        ('merchant_hasher', 
+            Pipeline([
+                ('extractor', FunctionTransformer(extract_text, kw_args={'column': 'merchant'}, validate=False)), # extract text as a single 1D array prior to passing to hasher
+                ('hasher', HashingVectorizer(n_features=100)) # transform to vectors 
+            ]),
+            ['merchant'] 
+        ),
+
+        ('plaid_encoder', OneHotEncoder(handle_unknown='ignore'), ['primary_category', 'detailed_category']), # binary encoding for each unique plaid primary category / detailed category  
     ], remainder='drop')
 
-    return None, None
+    X = pd.DataFrame(features, columns=['amount', 'hour', 'day', 'merchant', 'primary_category', 'detailed_category'])
+    y = np.array(labels)
 
 
-def save_artifacts():
+    return preprocessor.fit_transform(X), y, preprocessor
+
+
+def save_artifacts(model, preprocessor, ):
     return None
 
 
