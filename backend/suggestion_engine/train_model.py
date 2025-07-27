@@ -3,7 +3,7 @@ import argparse
 import db
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import HashingVectorizer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer, LabelEncoder
 from sklearn.model_selection import train_test_split
 from classifer import CategoryPredictor
 from torch.utils.data import DataLoader, TensorDataset
@@ -20,20 +20,22 @@ def main(user_id):
 
     # preprocess users transactions
     X, y, preprocessor = preprocess(transactions)
-    num_classes = len(np.unique(y))
 
     # create data loaders 
-    train_dataloader, test_dataloader = create_data_loaders(X, y)
+    train_dataloader, test_dataloader, label_encoder = create_data_loaders(X, y)
+    num_classes = len(label_encoder.classes_)
 
     # create model 
     model = CategoryPredictor(X.shape[1], num_categories=num_classes)
 
     # train/test model 
-    optimization_loop(train_dataloader, test_dataloader, model)
+    best_model = optimization_loop(train_dataloader, test_dataloader, model)
 
     # save artifacts 
+    print(best_model)
 
-def optimization_loop(train_data_loader, teset_data_loader, model):
+
+def optimization_loop(train_data_loader, test_data_loader, model):
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -45,13 +47,68 @@ def optimization_loop(train_data_loader, teset_data_loader, model):
 
 
     def train_loop():
-        #TODO: Implement me 
-        return
+        """
+        Training loop for our neural network 
+        """
+
+        model.train()
+
+        size = len(train_data_loader)
+        batch_size = train_data_loader.batch_size or 32
+
+        for batch, (X,y) in enumerate(train_data_loader):
+            
+            inputs = X.float()
+            labels = y.long()
+
+            pred = model(inputs)
+            loss = loss_fn(pred, labels)
+
+            # back propagation 
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+            if batch % 10 == 0:
+                current = batch * batch_size
+                print(f"[Train] Batch {batch:03d} - Loss: {loss.item():.4f}  ({current}/{size} samples)")
+
+
 
 
     def test_loop():
-        #TODO: Implement me 
-        return 
+        """
+        Evaluation loop of our model 
+        """
+
+        model.eval()
+        size = len(test_data_loader.dataset)
+        correct = 0 
+        test_loss = 0
+
+        with torch.no_grad():
+            for X, y in test_data_loader:
+                inputs = X.float()
+                labels = y.long()
+                
+                pred = model(inputs)
+                test_loss += loss_fn(pred, labels).item()
+
+                predicted_classes = torch.argmax(pred, dim=1)
+                correct += (predicted_classes == labels).sum().item()
+        
+        avg_loss = test_loss / len(test_data_loader)
+        accuracy = 100 * correct / size
+
+        print("\n[Test Results]")
+        print(f" Accuracy  : {accuracy:.2f}%")
+        print(f" Avg Loss  : {avg_loss:.4f}\n")
+
+        return avg_loss
+
+
+    
+    best_model = model
 
     for training_iteration in range(epochs):
         print(f"Starting Epoch {training_iteration + 1}\n--------------------------")
@@ -60,6 +117,7 @@ def optimization_loop(train_data_loader, teset_data_loader, model):
 
 
         if test_loss < best_test_loss:
+            best_model = model
             best_test_loss = test_loss
             counter = 0
         else:
@@ -68,16 +126,19 @@ def optimization_loop(train_data_loader, teset_data_loader, model):
                 print(f"Test loss plateaued; best loss acheived was {best_test_loss}")
                 break
     
-    return model
+    return best_model
         
     
 
 
 def create_data_loaders(X, y, test_size=0.2, batch_size=32):
 
+    le = LabelEncoder()
+    y_encoded = le.fit_transform(y)
+
     # split data
     X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=test_size, random_state=42
+        X, y_encoded, test_size=test_size, random_state=42
     )
 
     train_dataset = TensorDataset(
@@ -93,7 +154,7 @@ def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
-    return train_loader, test_loader
+    return train_loader, test_loader, le
 
 
 def preprocess(transactions: list):
