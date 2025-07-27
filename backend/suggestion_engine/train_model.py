@@ -57,6 +57,8 @@ def preprocess(transactions: list):
         ('plaid_encoder', OneHotEncoder(handle_unknown='ignore'), [4, 5]), # binary encoding for each unique plaid primary category / detailed category  
     ], remainder='drop')
 
+    return None, None
+
 
 def save_artifacts():
     return None
