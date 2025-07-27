@@ -3,3 +3,5 @@ argparse
 psycopg2
 dotenv
 scikit-learn
+numpy
+pandas
