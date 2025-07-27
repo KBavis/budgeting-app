@@ -12,6 +12,10 @@ from torch import nn
 from sklearn.pipeline import Pipeline
 import numpy as np
 import pandas as pd
+import os
+import joblib
+import json
+from datetime import datetime
 
 def main(user_id):
     
@@ -32,7 +36,8 @@ def main(user_id):
     best_model = optimization_loop(train_dataloader, test_dataloader, model)
 
     # save artifacts 
-    print(best_model)
+    save_artifacts(best_model, preprocessor, label_encoder, user_id)
+
 
 
 def optimization_loop(train_data_loader, test_data_loader, model):
@@ -157,6 +162,9 @@ def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     return train_loader, test_loader, le
 
 
+def extract_text(X, column):
+    return X[column].values
+
 def preprocess(transactions: list):
 
     def get_hour(timestamp):
@@ -170,8 +178,6 @@ def preprocess(transactions: list):
             return 0.0  # default to Monday
         return timestamp.weekday() / 6.0  
     
-    def extract_text(X, column):
-        return X[column].values
 
 
     # extract features and labels
@@ -214,8 +220,39 @@ def preprocess(transactions: list):
     return preprocessor.fit_transform(X), y, preprocessor
 
 
-def save_artifacts(model, preprocessor, ):
-    return None
+
+
+
+def save_artifacts(model, preprocessor, label_encoder, user_id):
+    
+    def get_input_dim(model):
+        for layer in model.modules():
+            if isinstance(layer, nn.Linear):
+                return layer.in_features
+        raise AttributeError("No nn.Linear layer found in the model")
+    
+
+    dir = f"../models/{user_id}"
+    os.makedirs(dir, exist_ok=True)
+    os.chdir(dir)
+
+    # save model 
+    torch.save(model.state_dict(), "model_weights.pth")
+
+    # save preprocesing pipeline 
+    joblib.dump(preprocessor, "preprocessor.joblib")
+
+    # save label encoder 
+    joblib.dump(label_encoder, "label_encoder.joblib")
+
+    # save meta data 
+    metadata = {
+        'trained_at': datetime.now().isoformat(),
+        'num_classes': len(label_encoder.classes_),
+        'input_dim': get_input_dim(model)
+    }
+    with open("metadata.json", "w") as f:
+        json.dump(metadata, f)
 
 
 def fetch_user_transactions(user_id: int):
