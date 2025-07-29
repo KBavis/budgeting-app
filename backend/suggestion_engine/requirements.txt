@@ -1,7 +1,8 @@
 torch
 argparse
-psycopg2
+psycopg2-binary
 dotenv
 scikit-learn
 numpy
 pandas
+fastapi
