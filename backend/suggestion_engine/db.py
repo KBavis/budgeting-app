@@ -8,7 +8,7 @@ def fetch_transactions(user_id, connection):
         SELECT category_id, amount, date_time, merchant_name, plaid_detailed_category, plaid_primary_category
         FROM transaction 
         WHERE account_id IN (SELECT account_id FROM account WHERE user_id = %s)
-        AND category_id IS NOT NULL AND logo_url NOT LIKE '%venmo%'
+        AND category_id IS NOT NULL AND logo_url NOT LIKE '%%venmo%%'
     """
 
     try:
