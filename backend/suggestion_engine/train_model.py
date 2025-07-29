@@ -27,6 +27,7 @@ def main(user_id):
     
     # fetch user transactions
     transactions = fetch_user_transactions(user_id) 
+    print(f"Successfully retrieved {len(transactions)} user transactions to train model on")
 
     # preprocess users transactions
     X, y, preprocessor = preprocess(transactions)
@@ -75,7 +76,7 @@ def optimization_loop(train_data_loader, test_data_loader, model):
 
         model.train()
 
-        size = len(train_data_loader)
+        total_samples = len(train_data_loader.dataset)
         batch_size = train_data_loader.batch_size or 32
 
         for batch, (X,y) in enumerate(train_data_loader):
@@ -93,7 +94,7 @@ def optimization_loop(train_data_loader, test_data_loader, model):
 
             if batch % 10 == 0:
                 current = batch * batch_size
-                print(f"[Train] Batch {batch:03d} - Loss: {loss.item():.4f}  ({current}/{size} samples)")
+                print(f"[Train] Batch {batch:03d} - Loss: {loss.item():.4f}  ({current}/{total_samples} samples)")
 
 
 
@@ -279,6 +280,8 @@ def save_artifacts(model, preprocessor, label_encoder, user_id):
     dir = f"../models/{user_id}"
     os.makedirs(dir, exist_ok=True)
     os.chdir(dir)
+
+    print(f"Attempting to save relevant training/testing artifacts in {os.getcwd()}")
 
     # save model 
     torch.save(model.state_dict(), "model_weights.pth")
