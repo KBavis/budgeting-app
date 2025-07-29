@@ -277,7 +277,7 @@ def save_artifacts(model, preprocessor, label_encoder, user_id):
         raise AttributeError("No nn.Linear layer found in the model")
     
 
-    dir = f"../models/{user_id}"
+    dir = f"../artifacts/{user_id}"
     os.makedirs(dir, exist_ok=True)
     os.chdir(dir)
 
