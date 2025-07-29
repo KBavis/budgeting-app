@@ -3,11 +3,12 @@ from psycopg2 import connect
 
 def fetch_transactions(user_id, connection): 
 
+    #TODO: Remove null check on plaid primary category once able to retrieve description for venmo transactions 
     query = """
         SELECT category_id, amount, date_time, merchant_name, plaid_detailed_category, plaid_primary_category
         FROM transaction 
         WHERE account_id IN (SELECT account_id FROM account WHERE user_id = %s)
-        AND category_id IS NOT NULL
+        AND category_id IS NOT NULL AND plaid_primary_category IS NOT NULL
     """
 
     try:
