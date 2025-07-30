@@ -1,11 +1,11 @@
 from dotenv import load_dotenv
 import argparse
-import db
+from suggestion_engine import db
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer, LabelEncoder
 from sklearn.model_selection import train_test_split
-from classifer import CategoryPredictor
+from suggestion_engine.models.classifer import CategoryPredictor
 from torch.utils.data import DataLoader, TensorDataset
 import torch
 from torch import nn
@@ -22,7 +22,7 @@ def main(user_id):
     Retrieve user transactions, preprocess data, and train/evalute users personal neural network 
 
     Args:
-        user_id (long): user ID 
+        user_id (int): user ID 
     """
     
     # fetch user transactions
@@ -277,7 +277,7 @@ def save_artifacts(model, preprocessor, label_encoder, user_id):
         raise AttributeError("No nn.Linear layer found in the model")
     
 
-    dir = f"../artifacts/{user_id}"
+    dir = f"suggestion_engine/artifacts/{user_id}"
     os.makedirs(dir, exist_ok=True)
     os.chdir(dir)
 
