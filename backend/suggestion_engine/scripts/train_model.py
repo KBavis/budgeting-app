@@ -228,7 +228,7 @@ def preprocess(transactions: list):
             tx['plaid_primary_category'] if 'plaid_primary_category' in tx and tx['plaid_primary_category'] else 'UNKNOWN',
             tx['plaid_detailed_category'] if 'plaid_detailed_category' in tx and tx['plaid_detailed_category'] else 'UNKNOWN',
         ])
-        labels.append(tx['category_id']) # NOTE: This should never be missing given our query 
+        labels.append(tx.get('category_id'), None)
 
     
 
