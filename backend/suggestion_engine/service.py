@@ -12,11 +12,11 @@ app = FastAPI()
 
 
 class TransactionMetadata(BaseModel):
-    merchant_name: str
+    merchant: str
     amount: float 
     date_time: datetime
-    detailed: str 
-    primary: str
+    plaid_detailed_category: str 
+    plaid_primary_primary: str
 
 class CategorySuggestionRequest(BaseModel):
     user_id: int
