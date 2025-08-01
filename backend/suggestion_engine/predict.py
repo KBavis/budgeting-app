@@ -5,9 +5,6 @@ from suggestion_engine import data
 import joblib
 import pandas as pd
 
-def extract_text(X, column):
-    return X[column].values
-
 def predict_category(user_id, transaction, nn):
     print(f"Attempting to predict the Category for the following Transaction metadata: {transaction}")
 
