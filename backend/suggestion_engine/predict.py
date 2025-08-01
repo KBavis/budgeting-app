@@ -14,7 +14,7 @@ def predict_category(user_id, transaction, nn):
     df = pd.DataFrame(features, columns=['amount', 'hour', 'day', 'merchant', 'primary_category', 'detailed_category'])
 
     # load preprocessor & invoke
-    preprocesor = joblib.load(f'artifacts/{user_id}/preprocessor.joblib')
+    preprocesor = joblib.load(f'/suggestion_engine/artifacts/{user_id}/preprocessor.joblib')
     Xs = preprocesor.transform(df)
 
     # convert to tensor 
