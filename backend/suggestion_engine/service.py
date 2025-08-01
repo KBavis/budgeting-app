@@ -3,9 +3,9 @@ from pydantic import BaseModel
 from datetime import datetime
 from pathlib import Path
 import torch
-from classifer import CategoryPredictor
-from context_mapper import ContextMapper
-import predict
+from suggestion_engine.models.classifer import CategoryPredictor
+from suggestion_engine.models.context_mapper import ContextMapper
+from suggestion_engine import predict
 
 
 app = FastAPI()
