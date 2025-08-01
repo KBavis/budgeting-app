@@ -11,7 +11,7 @@ def predict_category(user_id, transaction, nn):
 
     # prepare input data 
     txs = [transaction.dict()]
-    features = data.prepare_input(txs)
+    features, _ = data.prepare_input(txs)
     df = pd.DataFrame(features, columns=['amount', 'hour', 'day', 'merchant', 'primary_category', 'detailed_category'])
 
     # load preprocessor & invoke
