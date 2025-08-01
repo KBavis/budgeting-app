@@ -1,7 +1,7 @@
 
 class UncategorizedSuggestion:
 
-    def __init__(self, reasons: list):
+    def __init__(self, reasons: list = []):
         self.reasons = reasons # list of reasons as to why the transaction is uncategorized 
 
     def to_dict(self):
