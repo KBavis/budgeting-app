@@ -14,6 +14,8 @@ def predict_category(transaction, nn):
     txs = [transaction.dict()]
     Xs, _, _ = data.preprocess(txs)
 
+    print(type(Xs))
+
     # convert to tensor 
     tensor = torch.from_numpy(Xs.to_numpy()).float()
 

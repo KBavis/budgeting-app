@@ -44,6 +44,8 @@ def preprocess(transactions: list):
         ])
         labels.append(tx.get('category_id', None))
 
+    print(features)
+
     
 
     # create column specific processor 
