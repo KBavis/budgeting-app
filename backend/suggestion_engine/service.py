@@ -27,7 +27,7 @@ class CategorySuggestionRequest(BaseModel):
 def category_suggestion(request: CategorySuggestionRequest):
 
     user_id = request.user_id
-    file_path_str = f"../artifacts/{user_id}/model_weights.pth"
+    file_path_str = f"artifacts/{user_id}/model_weights.pth"
     path = Path(file_path_str)
 
     if path.is_file():
