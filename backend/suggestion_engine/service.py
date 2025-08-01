@@ -16,7 +16,7 @@ class TransactionMetadata(BaseModel):
     amount: float 
     date_time: datetime
     plaid_detailed_category: str 
-    plaid_primary_primary: str
+    plaid_primary_category: str
 
 class CategorySuggestionRequest(BaseModel):
     user_id: int
