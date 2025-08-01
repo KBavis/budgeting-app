@@ -9,13 +9,7 @@ def extract_text(X, column):
     return X[column].values
 
 
-def preprocess(transactions: list):
-    """
-    Preprocess user transactions prior to training
-
-    Args:
-        transactions (list): list of transactions to pre-process
-    """
+def prepare_input(transactions: list):
 
     def get_hour(timestamp):
         if timestamp is None:
@@ -29,8 +23,6 @@ def preprocess(transactions: list):
         return timestamp.weekday() / 6.0  
     
 
-
-    # extract features and labels
     features = []
     labels = []
     for tx in transactions:
@@ -43,6 +35,25 @@ def preprocess(transactions: list):
             tx['plaid_detailed_category'] if 'plaid_detailed_category' in tx and tx['plaid_detailed_category'] else 'UNKNOWN',
         ])
         labels.append(tx.get('category_id', None))
+    
+
+    return features, labels
+
+
+
+def preprocess(transactions: list):
+    """
+    Preprocess user transactions prior to training
+
+    Args:
+        transactions (list): list of transactions to pre-process
+    """
+    
+
+
+    # extract features and labels
+    features, labels = prepare_input(transactions)
+
 
     # create column specific processor 
     preprocessor = ColumnTransformer([

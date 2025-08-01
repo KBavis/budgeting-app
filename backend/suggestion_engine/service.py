@@ -41,7 +41,7 @@ def category_suggestion(request: CategorySuggestionRequest):
 
         nn = CategoryPredictor(data['input_dim'], data['num_classes'])
         nn.load_state_dict(torch.load(file_path_str, weights_only=True))
-        suggestion = predict.predict_category(request.transaction, nn)
+        suggestion = predict.predict_category(user_id, request.transaction, nn)
     else:
         print(f"User {user_id} has no corresponding Personal model; utilizing Context Mapper for prediction")
         mapper = ContextMapper(user_id)
