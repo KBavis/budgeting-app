@@ -4,6 +4,7 @@ from suggestion_engine.outcomes.uncategorized_suggestion import UncategorizedSug
 from suggestion_engine import data
 import joblib
 import pandas as pd
+from suggestion_engine.data import extract_text
 
 
 def predict_category(user_id, transaction, nn):
