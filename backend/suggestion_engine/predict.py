@@ -12,12 +12,10 @@ def predict_category(transaction, nn):
     # preprocess data 
     # TODO: move preprocessing function to seperate module 
     txs = [transaction.dict()]
-    Xs, _, _ = data.preprocess(txs)
-
-    print(type(Xs))
+    X, _, _ = data.preprocess(txs)
 
     # convert to tensor 
-    tensor = torch.from_numpy(Xs.to_numpy()).float()
+    tensor = torch.from_numpy(X).float()
 
     with torch.no_grad():
         pred = nn(tensor)
