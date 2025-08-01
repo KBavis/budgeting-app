@@ -4,24 +4,11 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransfo
 from sklearn.pipeline import Pipeline
 import pandas as pd
 import numpy as np
-
-def extract_text(X, column):
-    return X[column].values
+from suggestion_engine.utils import get_day_of_week, get_hour, extract_text
 
 
 def prepare_input(transactions: list):
 
-    def get_hour(timestamp):
-        if timestamp is None:
-            return 0.0  # default midnight
-        return timestamp.hour / 24.0
-
-
-    def get_day_of_week(timestamp):
-        if timestamp is None:
-            return 0.0  # default to Monday
-        return timestamp.weekday() / 6.0  
-    
 
     features = []
     labels = []
