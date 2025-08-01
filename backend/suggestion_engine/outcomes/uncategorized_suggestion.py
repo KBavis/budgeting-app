@@ -2,8 +2,7 @@ from pydantic import BaseModel
 
 class UncategorizedSuggestion(BaseModel):
 
-    def __init__(self, reasons: list = []):
-        self.reasons = reasons # list of reasons as to why the transaction is uncategorized 
+    reasons: list = [] 
 
     def to_dict(self):
         return {

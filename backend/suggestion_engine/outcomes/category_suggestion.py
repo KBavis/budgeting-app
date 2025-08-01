@@ -2,11 +2,10 @@ from pydantic import BaseModel
 
 class CategorySuggestion(BaseModel):
 
-    def __init__(self, category_id: int, confidence: float, source: str, reason: str = ""):
-        self.category_id = category_id
-        self.confidence = confidence
-        self.source = source
-        self.reasoning = reason
+    category_id: int
+    confidence: float
+    source: str
+    reasoning: str = "" 
     
 
     def to_dict(self):
