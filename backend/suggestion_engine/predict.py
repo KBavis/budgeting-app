@@ -24,8 +24,8 @@ def predict_category(user_id, transaction, nn):
     with torch.no_grad():
         pred = nn(tensor)
 
-    print(tensor)
-    print(pred)
+    predicted_classes = torch.argmax(pred, dim=1)
+    print(predicted_classes)
 
     
 
