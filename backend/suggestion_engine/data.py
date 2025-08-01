@@ -2,6 +2,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer
 from sklearn.pipeline import Pipeline
+import pandas as pd
 
 def extract_text(X, column):
     return X[column].values
