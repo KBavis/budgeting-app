@@ -1,18 +1,24 @@
 package com.bavis.budgetapp.services;
 
+import com.bavis.budgetapp.clients.SuggestionEngineClient;
 import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.filter.TransactionFilters;
 import com.bavis.budgetapp.mapper.TransactionMapper;
+import com.bavis.budgetapp.model.PlaidConfidenceLevel;
+import com.bavis.budgetapp.model.PlaidDetailedCategory;
+import com.bavis.budgetapp.model.PlaidPrimaryCategory;
 import com.bavis.budgetapp.service.impl.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.test.context.ActiveProfiles;
@@ -55,6 +61,10 @@ public class TransactionServiceTests {
     @Mock
     private TransactionFilters transactionFilters;
 
+    @Mock
+    private SuggestionEngineClient suggestionEngineClient;
+
+    @Spy
     @InjectMocks
     private TransactionServiceImpl transactionService;
 
@@ -204,6 +214,7 @@ public class TransactionServiceTests {
         configureSyncTransactionMocks_addedModified();
         when(accountService.read(accountIdOne)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        doNothing().when(transactionService).predictCategories(any(), any());
 
         // act
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
@@ -340,6 +351,7 @@ public class TransactionServiceTests {
         configureSyncTransactionMocks_addedModified();
         when(accountService.read(accountIdOne)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(transaction));
+        doNothing().when(transactionService).predictCategories(any(), any());
 
         // act
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
@@ -352,6 +364,57 @@ public class TransactionServiceTests {
 
         // verify
         verify(transactionRepository, times(1)).saveAllAndFlush(anyList());
+    }
+
+    @Test
+    void testSyncTransactions_invokesPredictionFlow() {
+        // arrange
+        String accountIdOne = "12345XYZ";
+        Connection accountConnectionOne = Connection.builder()
+                .connectionId(5L)
+                .accessToken(accessToken)
+                .previousCursor(previousCursor)
+                .build();
+        Account accountOne = Account.builder()
+                .accountId(accountIdOne)
+                .connection(accountConnectionOne)
+                .build();
+        Category transactionCategory = Category.builder().categoryId(1L).build();
+        ArrayList<String> accountIds = new ArrayList<>(Collections.singletonList(accountIdOne));
+        AccountsDto accountsDto = AccountsDto.builder()
+                .accounts(accountIds)
+                .build();
+        Transaction transaction = new Transaction();
+        transaction.setTransactionId("123");
+        transaction.setCategory(transactionCategory);
+
+        // set up added transactions for Plaid Service response
+        modifiedTransactions = Collections.singletonList(plaidTransactionDtoTwo);
+        syncResponseDto = PlaidTransactionSyncResponseDto.builder()
+                .added(new ArrayList<>())
+                .modified(modifiedTransactions)
+                .removed(new ArrayList<>())
+                .next_cursor(nextCursor)
+                .has_more(false)
+                .build();
+
+        // mocks
+        configureSyncTransactionMocks_addedModified();
+        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(transactionRepository.findById(any())).thenReturn(Optional.of(transaction));
+        doNothing().when(transactionService).predictCategories(any(), any());
+
+        // act
+        SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
+
+
+        // assert
+        assertNotNull(syncTransactionsDto.getAllModifiedOrAddedTransactions());
+        assertEquals(1, syncTransactionsDto.getAllModifiedOrAddedTransactions().size());
+        assertEquals(transactionCategory, syncTransactionsDto.getAllModifiedOrAddedTransactions().get(0).getCategory());
+
+        // verify
+        verify(transactionService, times(2)).predictCategories(any(), any()); //predicts added/modified and prev month transactions
     }
 
     @Test
@@ -387,6 +450,9 @@ public class TransactionServiceTests {
         configureSyncTransactionMocks_prevMonth();
         when(accountService.read(accountIdOne)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        doNothing().when(transactionService).predictCategories(any(), any());
+
+
 
         // act
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
@@ -440,6 +506,7 @@ public class TransactionServiceTests {
         configureSyncTransactionMocks_addedModified();
         when(accountService.read(accountIdOne)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        doNothing().when(transactionService).predictCategories(any(), any());
 
         // act
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
@@ -498,6 +565,7 @@ public class TransactionServiceTests {
         // Mocks
         when(accountService.read(accountIdOne)).thenReturn(accountOne);
         configureSyncTransactions_multiplePagesMocks(page1Response, page2Response);
+        doNothing().when(transactionService).predictCategories(any(), any());
 
         // act
         SyncTransactionsDto result = transactionService.syncTransactions(accountsDto);
@@ -1251,6 +1319,67 @@ public class TransactionServiceTests {
 
         //Verify
         verify(transactionRepository, times(1)).deleteByAccountAccountId(accountId);
+    }
+
+    @Test
+    void testPredictCategories_updatesSuggestedCategory() throws JsonProcessingException {
+        Transaction transaction = Transaction.builder()
+                .amount(1000.00)
+                .dateTime(LocalDateTime.now())
+                .personalFinanceCategory(
+                        new Transaction.PersonalFinanceCategory(
+                                PlaidConfidenceLevel.HIGH,
+                                PlaidPrimaryCategory.FOOD_AND_DRINK,
+                                PlaidDetailedCategory.FOOD_AND_DRINK_COFFEE
+                        )
+                )
+                .merchantName("Dunkin'")
+                .build();
+        List<Transaction> transactions = List.of(transaction);
+        Category category = new Category();
+
+        // mocks
+        when(suggestionEngineClient.predictCategory(any())).thenReturn(1L);
+        when(categoryService.read(1L)).thenReturn(category);
+
+        // act
+        transactionService.predictCategories(transactions, 1L);
+
+        // verify
+        verify(suggestionEngineClient, times(1)).predictCategory(any());
+
+        // assert
+        assertEquals(transaction.getSuggestedCategory(), category);
+    }
+
+    @Test
+    void testPredictCategories_handlesNullCategory() throws JsonProcessingException {
+        Transaction transaction = Transaction.builder()
+                .amount(1000.00)
+                .dateTime(LocalDateTime.now())
+                .personalFinanceCategory(
+                        new Transaction.PersonalFinanceCategory(
+                                PlaidConfidenceLevel.HIGH,
+                                PlaidPrimaryCategory.FOOD_AND_DRINK,
+                                PlaidDetailedCategory.FOOD_AND_DRINK_COFFEE
+                        )
+                )
+                .merchantName("Dunkin'")
+                .build();
+        List<Transaction> transactions = List.of(transaction);
+        Category category = new Category();
+
+        // mocks
+        when(suggestionEngineClient.predictCategory(any())).thenReturn(null);
+
+        // act
+        transactionService.predictCategories(transactions, 1L);
+
+        // verify
+        verify(suggestionEngineClient, times(1)).predictCategory(any());
+
+        // assert
+        assertNull(transaction.getSuggestedCategory());
     }
 
     private void configureSyncTransactionMocks_addedModified() {
