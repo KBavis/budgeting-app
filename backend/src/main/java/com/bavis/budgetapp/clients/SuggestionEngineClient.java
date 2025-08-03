@@ -73,7 +73,7 @@ public class SuggestionEngineClient {
                 UncategorizedSuggestionResponse uncategorizedResponse = mapper.readValue(json, UncategorizedSuggestionResponse.class);
 
                 //TODO: figure out better way to handle this
-                log.info("Failed to cateogrize Transaction: {}\nReasons: {}\nSuggested Actions: {}", request.getTransactionMetadata(), uncategorizedResponse.getReasons(), uncategorizedResponse.getSuggestedActions());
+                log.info("Failed to categorize Transaction: {}\nReasons: {}\nSuggested Actions: {}", request.getTransactionMetadata(), uncategorizedResponse.getReasons(), uncategorizedResponse.getSuggestedActions());
                 return null;
             }
 
