@@ -35,7 +35,6 @@ def predict_category(user_id, transaction, nn):
 
     predicted_classes = torch.argmax(pred, dim=1)
     category_id = encoded_map[predicted_classes.item()]
-    print(category_id)
     
 
     # TODO: Determine confidence level and return UncategorizedSuggestion if confidence is too low after making prediction via neural network

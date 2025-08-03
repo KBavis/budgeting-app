@@ -6,6 +6,7 @@ import torch
 from suggestion_engine.models.classifer import CategoryPredictor
 from suggestion_engine.models.context_mapper import ContextMapper
 from suggestion_engine import predict
+from suggestion_engine.outcomes.uncategorized_suggestion import UncategorizedSuggestion
 import json
 
 
@@ -31,6 +32,10 @@ def category_suggestion(request: CategorySuggestionRequest):
     file_path_str = f"suggestion_engine/artifacts/{user_id}/model_weights.pth"
     meta_data_path_str = f"suggestion_engine/artifacts/{user_id}/metadata.json"
     path = Path(file_path_str)
+
+    #TODO: Add ability to retrieve Venmo descriptions and backfill exisitng transactions with additional meta data
+    if request.transaction.merchant == 'Venmo':
+        return UncategorizedSuggestion(reasons=['Unable to currently make accurate predictions for Venmo Transactions'])
 
     if path.is_file():
         print(f"User {user_id} has a corresponding Personal model; utilizing model for prediction")
