@@ -5,6 +5,8 @@ import com.bavis.budgetapp.dto.CategorySuggestionResponse;
 import com.bavis.budgetapp.dto.UncategorizedSuggestionResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.log4j.Log4j2;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -26,7 +28,9 @@ public class SuggestionEngineClient {
 
     public SuggestionEngineClient() {
         this.client = new OkHttpClient();
-        this.mapper = new ObjectMapper();
+        this.mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     /**
