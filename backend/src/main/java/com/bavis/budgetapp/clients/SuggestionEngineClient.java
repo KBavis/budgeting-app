@@ -23,7 +23,7 @@ public class SuggestionEngineClient {
     private final OkHttpClient client;
     private final ObjectMapper mapper;
 
-    @Value("${suggestion-engine.base-url")
+    @Value("${suggestion-engine.base-url}")
     private String baseUrl;
 
     public SuggestionEngineClient() {
