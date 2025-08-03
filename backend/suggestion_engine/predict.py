@@ -6,7 +6,7 @@ import joblib
 import pandas as pd
 
 
-def predict_category(user_id, transaction, nn):
+def predict_category(user_id, transaction, nn, confidence):
     print(f"Attempting to predict the Category for the following Transaction metadata: {transaction}")
 
     # load joblibs from training
@@ -38,5 +38,5 @@ def predict_category(user_id, transaction, nn):
     
 
     # TODO: Determine confidence level and return UncategorizedSuggestion if confidence is too low after making prediction via neural network
-    return CategorySuggestion(category_id=category_id, confidence=65.50, source="PersonalModel")
+    return CategorySuggestion(category_id=category_id, confidence=confidence, source="PersonalModel")
     
