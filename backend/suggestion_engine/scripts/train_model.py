@@ -38,10 +38,10 @@ def main(user_id):
     model = CategoryPredictor(X.shape[1], num_categories=num_classes)
 
     # train/test model 
-    best_model = optimization_loop(train_dataloader, test_dataloader, model)
+    best_model, best_accuracy = optimization_loop(train_dataloader, test_dataloader, model)
 
     # save artifacts 
-    save_artifacts(best_model, preprocessor, label_encoder, user_id)
+    save_artifacts(best_model, preprocessor, label_encoder, best_accuracy, user_id)
 
 
 
@@ -125,21 +125,23 @@ def optimization_loop(train_data_loader, test_data_loader, model):
         print(f" Accuracy  : {accuracy:.2f}%")
         print(f" Avg Loss  : {avg_loss:.4f}\n")
 
-        return avg_loss
+        return avg_loss, accuracy
 
 
     
     best_model = model
+    best_accuracy = None
 
     for training_iteration in range(epochs):
         print(f"Starting Epoch {training_iteration + 1}\n--------------------------")
         train_loop()
-        test_loss = test_loop()
+        test_loss, test_accuracy = test_loop()
 
 
         if test_loss < best_test_loss:
             best_model = model
             best_test_loss = test_loss
+            best_accuracy = test_accuracy
             counter = 0
         else:
             counter += 1
@@ -147,7 +149,7 @@ def optimization_loop(train_data_loader, test_data_loader, model):
                 print(f"Test loss plateaued; best loss acheived was {best_test_loss}")
                 break
     
-    return best_model
+    return best_model, best_accuracy
         
     
 
@@ -190,7 +192,7 @@ def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     return train_loader, test_loader, le
 
 
-def save_artifacts(model, preprocessor, label_encoder, user_id):
+def save_artifacts(model, preprocessor, label_encoder, best_accuracy, user_id):
     """
     Save relevant training and testing artifacts on server 
 
@@ -198,6 +200,7 @@ def save_artifacts(model, preprocessor, label_encoder, user_id):
         model (nn.Module): neural network model 
         preprocessor (ColumnTransformer): preprocessor of our columns
         label_encoder (LabelEncoder): label encoder 
+        best_accuracy (float): testing accuracy achieved with the model with the best loss
         user_id (long): user ID
     """
     
@@ -227,7 +230,8 @@ def save_artifacts(model, preprocessor, label_encoder, user_id):
     metadata = {
         'trained_at': datetime.now().isoformat(),
         'num_classes': len(label_encoder.classes_),
-        'input_dim': get_input_dim(model)
+        'input_dim': get_input_dim(model),
+        'accuracy': best_accuracy
     }
     with open("metadata.json", "w") as f:
         json.dump(metadata, f)
