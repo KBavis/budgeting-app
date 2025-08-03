@@ -30,6 +30,7 @@ import initialState from "./initialState";
 import TransactionContext from "./transactionContext";
 import setAuthToken from "../../utils/setAuthToken";
 import AlertContext from "../alert/alertContext";
+import accountContext from "../account/accountContext";
 
 /**
  * Transaction State to manage functionality with Transaction entities
@@ -40,6 +41,7 @@ import AlertContext from "../alert/alertContext";
 const TransactionState = (props) => {
    const [state, dispatch] = useReducer(transactionReducer, initialState);
    const { setAlert } = useContext(AlertContext);
+   const { updateAccountBalance } = useContext(accountContext)
 
    /**
     * Functionality to sync transactions with external financial institutions
@@ -69,6 +71,12 @@ const TransactionState = (props) => {
             type: SYNC_TRANSACTIONS_SUCCESS,
             payload: res.data,
          });
+         
+         // update account balances if applicable 
+         if (res.data && res.data.updatedAccounts) {
+            updateAccountBalance(res.data.updatedAccounts)
+         }
+         
       } catch (err) {
          console.error(err);
          dispatch({
