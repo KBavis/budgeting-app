@@ -231,7 +231,7 @@ def save_artifacts(model, preprocessor, label_encoder, best_accuracy, user_id):
         'trained_at': datetime.now().isoformat(),
         'num_classes': len(label_encoder.classes_),
         'input_dim': get_input_dim(model),
-        'accuracy': best_accuracy
+        'accuracy': round(best_accuracy, 2)
     }
     with open("metadata.json", "w") as f:
         json.dump(metadata, f)
