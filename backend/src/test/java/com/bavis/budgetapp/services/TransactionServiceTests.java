@@ -1367,7 +1367,6 @@ public class TransactionServiceTests {
                 .merchantName("Dunkin'")
                 .build();
         List<Transaction> transactions = List.of(transaction);
-        Category category = new Category();
 
         // mocks
         when(suggestionEngineClient.predictCategory(any())).thenReturn(null);
