@@ -285,6 +285,7 @@ public class TransactionServiceTests {
         AccountDto dto = new AccountDto();
         dto.setBalance(2046.00);
         when(accountMapper.toDTO(any(Account.class))).thenReturn(dto);
+        doNothing().when(transactionService).predictCategories(any(), any());
 
         // act
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
