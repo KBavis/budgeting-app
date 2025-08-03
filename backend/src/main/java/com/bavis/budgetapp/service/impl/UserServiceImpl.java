@@ -40,6 +40,17 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
+	public Long getUserIdByAccountIds(List<String> accountIds) {
+		List<Long> userIds = _userRepository.findUserIdByAccountIds(accountIds);
+
+		if (userIds != null && userIds.size() > 1) {
+			throw new UserServiceException("Found multiple user IDs corresponding to account ids");
+		}
+
+		return userIds != null ? userIds.get(0) : null;
+	}
+
+	@Override
 	public List<User> readAll() {
 		return _userRepository.findAll();
 	}
