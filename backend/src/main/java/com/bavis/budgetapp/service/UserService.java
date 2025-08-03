@@ -13,6 +13,8 @@ import java.util.List;
 public interface UserService {
 	User create(User category);
 
+	Long getUserIdByAccountIds(List<String> accountIds);
+
 	User readById(Long id);
 
 	User readByUsername(String username);

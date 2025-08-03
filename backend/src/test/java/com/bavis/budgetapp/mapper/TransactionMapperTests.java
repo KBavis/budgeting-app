@@ -12,8 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,6 +50,7 @@ public class TransactionMapperTests {
                 .detailed(detailed)
                 .build();
 
+        LocalDateTime time = LocalDateTime.now();
         LocalDate date = LocalDate.now();
 
         PlaidTransactionDto plaidTransactionDto = PlaidTransactionDto.builder()
@@ -58,8 +58,8 @@ public class TransactionMapperTests {
                 .counterparties(counterpartyDtoList)
                 .personal_finance_category(personalFinanceCategoryDto)
                 .amount(amount)
-                .datetime(date)
-                .date(null)
+                .datetime(time)
+                .date(date)
                 .authorized_date(null)
                 .account_id(accountId)
                 .build();
@@ -104,19 +104,17 @@ public class TransactionMapperTests {
                 .detailed(detailed)
                 .build();
 
-        LocalDate localDate = null;
-        Date authorizedDate = null;
-        Date date = new Date();
-        LocalDate expectedLocalDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(); //validate converted properly
+        LocalDate localDate = LocalDate.now();
+        LocalDateTime time = LocalDateTime.now();
 
         PlaidTransactionDto plaidTransactionDto = PlaidTransactionDto.builder()
                 .transaction_id(transactionId)
                 .counterparties(counterpartyDtoList)
                 .personal_finance_category(personalFinanceCategoryDto)
                 .amount(amount)
-                .datetime(localDate)
-                .authorized_date(authorizedDate)
-                .date(date)
+                .datetime(time)
+                .authorized_date(localDate)
+                .date(localDate)
                 .account_id(accountId)
                 .build();
 
@@ -128,7 +126,7 @@ public class TransactionMapperTests {
         assertEquals(transactionId, target.getTransactionId());
         assertEquals(counterpartyDto.getName(), target.getName());
         assertEquals(amount, target.getAmount());
-        assertEquals(expectedLocalDate, target.getDate());
+        assertEquals(localDate, target.getDate());
         assertEquals(logoUrl, target.getLogoUrl());
     }
 

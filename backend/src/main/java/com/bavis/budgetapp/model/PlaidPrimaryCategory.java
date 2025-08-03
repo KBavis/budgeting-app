@@ -1,0 +1,29 @@
+package com.bavis.budgetapp.model;
+
+import lombok.Getter;
+
+@Getter
+public enum PlaidPrimaryCategory {
+    INCOME("INCOME"),
+    TRANSFER_IN("TRANSFER_IN"),
+    TRANSFER_OUT("TRANSFER_OUT"),
+    LOAN_PAYMENTS("LOAN_PAYMENTS"),
+    BANK_FEES("BANK_FEES"),
+    ENTERTAINMENT("ENTERTAINMENT"),
+    FOOD_AND_DRINK("FOOD_AND_DRINK"),
+    GENERAL_MERCHANDISE("GENERAL_MERCHANDISE"),
+    HOME_IMPROVEMENT("HOME_IMPROVEMENT"),
+    MEDICAL("MEDICAL"),
+    PERSONAL_CARE("PERSONAL_CARE"),
+    GENERAL_SERVICES("GENERAL_SERVICES"),
+    GOVERNMENT_AND_NON_PROFIT("GOVERNMENT_AND_NON_PROFIT"),
+    TRANSPORTATION("TRANSPORTATION"),
+    TRAVEL("TRAVEL"),
+    RENT_AND_UTILITIES("RENT_AND_UTILITIES");
+
+    private final String value;
+
+    PlaidPrimaryCategory(String value) {
+        this.value = value;
+    }
+}

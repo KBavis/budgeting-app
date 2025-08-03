@@ -538,7 +538,7 @@ public class PlaidServiceTests {
         String secretKey = "secret-key";
         String nextCursor = "next-cursor";
         String previousCursor = "previous-cursor";
-        LocalDate date = LocalDate.now();
+        LocalDateTime date = LocalDateTime.now();
         String accountId = "account-id";
         String accessToken = "access-token";
 

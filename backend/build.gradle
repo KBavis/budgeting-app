@@ -42,11 +42,12 @@ dependencies {
 	implementation 'org.mapstruct:mapstruct:1.5.3.Final'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'com.auth0:java-jwt:4.4.0'
-	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.1.0'
+	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.1.0' //TODO: Consider dropping and using OkHTTP entirely
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310' //used to serialize LocalDate
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'com.squareup.okhttp3:okhttp:5.1.0'
 
 	//Annotations
 	annotationProcessor 'org.projectlombok:lombok'
@@ -58,6 +59,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.projectlombok:lombok'
+	testImplementation("com.squareup.okhttp3:mockwebserver3:5.1.0") // OkHTTP mock web server
 }
 
 tasks.named('test') {

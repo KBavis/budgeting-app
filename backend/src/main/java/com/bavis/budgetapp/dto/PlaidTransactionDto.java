@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -26,19 +26,26 @@ public class PlaidTransactionDto {
 
     private double amount;
 
-    //Ensure we fetch a date corresponding to transaction
-    private LocalDate datetime;
+    @JsonProperty("datetime")
+    private LocalDateTime datetime;
 
-    private Date authorized_date;
+    private LocalDate authorized_date;
 
-    private Date date;
+    @JsonProperty("date")
+    private LocalDate date;
 
     private List<CounterpartyDto> counterparties;
 
     private PersonalFinanceCategoryDto personal_finance_category;
 
+    private Location location;
+
     private String pending_transaction_id;
     private boolean pending;
+
+    @JsonProperty("merchant_name")
+    private String merchantName;
+
 
     @Data
     @NoArgsConstructor
@@ -57,5 +64,20 @@ public class PlaidTransactionDto {
         private String confidence_level;
         private String detailed;
         private String primary;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Location {
+        private String address;
+        private String city;
+        private String region;
+        @JsonProperty("postal_code")
+        private String postalCode;
+        private String country;
+        private String lat; //latitude
+        private String lon; //longitude
     }
 }
