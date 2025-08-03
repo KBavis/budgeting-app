@@ -1,28 +1,26 @@
 from dotenv import load_dotenv
 import argparse
-import db
-from sklearn.compose import ColumnTransformer
-from sklearn.feature_extraction.text import HashingVectorizer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer, LabelEncoder
+from suggestion_engine import db
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from classifer import CategoryPredictor
+from suggestion_engine.models.classifer import CategoryPredictor
 from torch.utils.data import DataLoader, TensorDataset
 import torch
 from torch import nn
-from sklearn.pipeline import Pipeline
 import numpy as np
 import pandas as pd
 import os
 import joblib
 import json
 from datetime import datetime
+from suggestion_engine.data import preprocess
 
 def main(user_id):
     """
     Retrieve user transactions, preprocess data, and train/evalute users personal neural network 
 
     Args:
-        user_id (long): user ID 
+        user_id (int): user ID 
     """
     
     # fetch user transactions
@@ -40,10 +38,10 @@ def main(user_id):
     model = CategoryPredictor(X.shape[1], num_categories=num_classes)
 
     # train/test model 
-    best_model = optimization_loop(train_dataloader, test_dataloader, model)
+    best_model, best_accuracy = optimization_loop(train_dataloader, test_dataloader, model)
 
     # save artifacts 
-    save_artifacts(best_model, preprocessor, label_encoder, user_id)
+    save_artifacts(best_model, preprocessor, label_encoder, best_accuracy, user_id)
 
 
 
@@ -127,21 +125,23 @@ def optimization_loop(train_data_loader, test_data_loader, model):
         print(f" Accuracy  : {accuracy:.2f}%")
         print(f" Avg Loss  : {avg_loss:.4f}\n")
 
-        return avg_loss
+        return avg_loss, accuracy
 
 
     
     best_model = model
+    best_accuracy = None
 
     for training_iteration in range(epochs):
         print(f"Starting Epoch {training_iteration + 1}\n--------------------------")
         train_loop()
-        test_loss = test_loop()
+        test_loss, test_accuracy = test_loop()
 
 
         if test_loss < best_test_loss:
             best_model = model
             best_test_loss = test_loss
+            best_accuracy = test_accuracy
             counter = 0
         else:
             counter += 1
@@ -149,7 +149,7 @@ def optimization_loop(train_data_loader, test_data_loader, model):
                 print(f"Test loss plateaued; best loss acheived was {best_test_loss}")
                 break
     
-    return best_model
+    return best_model, best_accuracy
         
     
 
@@ -192,74 +192,7 @@ def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     return train_loader, test_loader, le
 
 
-def extract_text(X, column):
-    return X[column].values
-
-def preprocess(transactions: list):
-    """
-    Preprocess user transactions prior to training
-
-    Args:
-        transactions (list): list of transactions to pre-process
-    """
-
-    def get_hour(timestamp):
-        if timestamp is None:
-            return 0.0  # default midnight
-        return timestamp.hour / 24.0
-
-
-    def get_day_of_week(timestamp):
-        if timestamp is None:
-            return 0.0  # default to Monday
-        return timestamp.weekday() / 6.0  
-    
-
-
-    # extract features and labels
-    features = []
-    labels = []
-    for tx in transactions:
-        features.append([
-            tx.get('amount', 0.0),
-            get_hour(tx.get('date_time', None)), 
-            get_day_of_week(tx.get('date_time', None)),
-            tx['merchant'] if 'merchant' in tx and tx['merchant'] else 'UNKNOWN',
-            tx['plaid_primary_category'] if 'plaid_primary_category' in tx and tx['plaid_primary_category'] else 'UNKNOWN',
-            tx['plaid_detailed_category'] if 'plaid_detailed_category' in tx and tx['plaid_detailed_category'] else 'UNKNOWN',
-        ])
-        labels.append(tx['category_id']) # NOTE: This should never be missing given our query 
-
-    
-
-    # create column specific processor 
-    preprocessor = ColumnTransformer([
-        ('amount_scaler', StandardScaler(), ['amount']), # scale only the transaction amount 
-        ('time_features', 'passthrough', ['hour', 'day']), # hour/day normalized already 
-
-
-        ('merchant_hasher', 
-            Pipeline([
-                ('extractor', FunctionTransformer(extract_text, kw_args={'column': 'merchant'}, validate=False)), # extract text as a single 1D array prior to passing to hasher
-                ('hasher', HashingVectorizer(n_features=100)) # transform to vectors 
-            ]),
-            ['merchant'] 
-        ),
-
-        ('plaid_encoder', OneHotEncoder(handle_unknown='ignore'), ['primary_category', 'detailed_category']), # binary encoding for each unique plaid primary category / detailed category  
-    ], remainder='drop', sparse_threshold=0)
-
-    X = pd.DataFrame(features, columns=['amount', 'hour', 'day', 'merchant', 'primary_category', 'detailed_category'])
-    y = np.array(labels)
-
-
-    return preprocessor.fit_transform(X), y, preprocessor
-
-
-
-
-
-def save_artifacts(model, preprocessor, label_encoder, user_id):
+def save_artifacts(model, preprocessor, label_encoder, best_accuracy, user_id):
     """
     Save relevant training and testing artifacts on server 
 
@@ -267,6 +200,7 @@ def save_artifacts(model, preprocessor, label_encoder, user_id):
         model (nn.Module): neural network model 
         preprocessor (ColumnTransformer): preprocessor of our columns
         label_encoder (LabelEncoder): label encoder 
+        best_accuracy (float): testing accuracy achieved with the model with the best loss
         user_id (long): user ID
     """
     
@@ -277,7 +211,7 @@ def save_artifacts(model, preprocessor, label_encoder, user_id):
         raise AttributeError("No nn.Linear layer found in the model")
     
 
-    dir = f"../artifacts/{user_id}"
+    dir = f"suggestion_engine/artifacts/{user_id}"
     os.makedirs(dir, exist_ok=True)
     os.chdir(dir)
 
@@ -296,7 +230,8 @@ def save_artifacts(model, preprocessor, label_encoder, user_id):
     metadata = {
         'trained_at': datetime.now().isoformat(),
         'num_classes': len(label_encoder.classes_),
-        'input_dim': get_input_dim(model)
+        'input_dim': get_input_dim(model),
+        'accuracy': round(best_accuracy, 2)
     }
     with open("metadata.json", "w") as f:
         json.dump(metadata, f)

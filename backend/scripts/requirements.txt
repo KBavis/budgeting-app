@@ -1,4 +1,0 @@
-argparse
-psycopg2
-requests
-dotenv

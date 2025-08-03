@@ -3,20 +3,22 @@ from pydantic import BaseModel
 from datetime import datetime
 from pathlib import Path
 import torch
-from classifer import CategoryPredictor
-from context_mapper import ContextMapper
-import predict
+from suggestion_engine.models.classifer import CategoryPredictor
+from suggestion_engine.models.context_mapper import ContextMapper
+from suggestion_engine import predict
+from suggestion_engine.outcomes.uncategorized_suggestion import UncategorizedSuggestion
+import json
 
 
 app = FastAPI()
 
 
 class TransactionMetadata(BaseModel):
-    merchant_name: str
+    merchant: str
     amount: float 
     date_time: datetime
-    detailed: str 
-    primary: str
+    plaid_detailed_category: str 
+    plaid_primary_category: str
 
 class CategorySuggestionRequest(BaseModel):
     user_id: int
@@ -27,14 +29,24 @@ class CategorySuggestionRequest(BaseModel):
 def category_suggestion(request: CategorySuggestionRequest):
 
     user_id = request.user_id
-    file_path_str = f"../artifacts/{user_id}/model_weights.pth"
+    file_path_str = f"suggestion_engine/artifacts/{user_id}/model_weights.pth"
+    meta_data_path_str = f"suggestion_engine/artifacts/{user_id}/metadata.json"
     path = Path(file_path_str)
+
+    #TODO: Add ability to retrieve Venmo descriptions and backfill exisitng transactions with additional meta data
+    if request.transaction.merchant == 'Venmo':
+        return UncategorizedSuggestion(reasons=['Unable to currently make accurate predictions for Venmo Transactions'])
 
     if path.is_file():
         print(f"User {user_id} has a corresponding Personal model; utilizing model for prediction")
-        nn = CategoryPredictor()
+
+        # load meta data 
+        with open(meta_data_path_str, "r") as metadata:
+            data = json.load(metadata)
+
+        nn = CategoryPredictor(data['input_dim'], data['num_classes'])
         nn.load_state_dict(torch.load(file_path_str, weights_only=True))
-        suggestion = predict.predict_category(request.transaction)
+        suggestion = predict.predict_category(user_id, request.transaction, nn, data['accuracy'])
     else:
         print(f"User {user_id} has no corresponding Personal model; utilizing Context Mapper for prediction")
         mapper = ContextMapper(user_id)
