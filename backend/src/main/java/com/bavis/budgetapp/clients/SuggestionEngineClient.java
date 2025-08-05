@@ -43,7 +43,7 @@ public class SuggestionEngineClient {
      */
     public Long predictCategory(CategorySuggestionRequest request) throws JsonProcessingException {
         String jsonPayload = mapper.writeValueAsString(request);
-        String url = baseUrl + "/suggestion";
+        String url = baseUrl + "suggestion";
 
         RequestBody body = RequestBody.create(
                 jsonPayload, MediaType.parse("application/json")
