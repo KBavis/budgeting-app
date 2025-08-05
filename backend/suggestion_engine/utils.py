@@ -1,5 +1,4 @@
 
-
 def extract_text(X, column):
     return X[column].values
 

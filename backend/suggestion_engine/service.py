@@ -8,17 +8,18 @@ from suggestion_engine.models.context_mapper import ContextMapper
 from suggestion_engine import predict
 from suggestion_engine.outcomes.uncategorized_suggestion import UncategorizedSuggestion
 import json
+from typing import Optional
 
 
 app = FastAPI()
 
 
 class TransactionMetadata(BaseModel):
-    merchant: str
+    merchant: Optional[str] = None
     amount: float 
-    date_time: datetime
-    plaid_detailed_category: str 
-    plaid_primary_category: str
+    date_time: Optional[datetime] = None
+    plaid_detailed_category: Optional[str] = None
+    plaid_primary_category: Optional[str] = None
 
 class CategorySuggestionRequest(BaseModel):
     user_id: int
