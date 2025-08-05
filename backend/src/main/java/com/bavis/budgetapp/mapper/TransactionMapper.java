@@ -28,7 +28,7 @@ public interface TransactionMapper {
      * @return
      *          - Transaction entity with PlaidTransactionDto properties
      */
-    @Mapping(target = "name", expression=  "java(getFirstCounterpartyName(dto.getCounterparties()))")
+    @Mapping(target = "name", expression = "java(dto.getMerchantName() != null ? dto.getMerchantName() : getFirstCounterpartyName(dto.getCounterparties()))")
     @Mapping(target = "logoUrl", expression = "java(getFirstCounterpartyLogoUrl(dto.getCounterparties()))")
     @Mapping(target = "transactionId", source = "transaction_id")
     @Mapping(target = "amount", source = "amount")
