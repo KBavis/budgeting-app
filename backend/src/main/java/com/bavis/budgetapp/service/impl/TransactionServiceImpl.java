@@ -1,10 +1,12 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.clients.SuggestionEngineClient;
 import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.filter.TransactionFilters;
+import com.bavis.budgetapp.mapper.AccountMapperImpl;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.TransactionService;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +52,10 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionFilters _transactionFilters;
 
+    private final SuggestionEngineClient _suggestionEngineClient;
+
+    private final AccountMapperImpl _accountMapper;
+
     @Lazy
     private final CategoryServiceImpl categoryService;
 
@@ -60,6 +66,7 @@ public class TransactionServiceImpl implements TransactionService {
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
         List<String> allRemovedTransactionIds = new ArrayList<>();
         List<Transaction> previousMonthTransactions = new ArrayList<>();
+        List<AccountDto> updatedAccounts = new ArrayList<>();
 
         Set<String> pendingTransactionIds = new HashSet<>();
 
@@ -117,6 +124,13 @@ public class TransactionServiceImpl implements TransactionService {
 
                     }
 
+                    // Update relevant Account with up-to-date balance information
+                    if(syncResponseDto.getAccounts() != null) {
+                        account = _accountService.updateBalance(syncResponseDto.getAccounts(), account);
+
+                        updatedAccounts.add(_accountMapper.toDTO(account));
+                    }
+
                     //Determine if Plaid has more Transactions to sync for current Account
                     hasMore = syncResponseDto.isHas_more();
                 }
@@ -158,11 +172,21 @@ public class TransactionServiceImpl implements TransactionService {
             if(!filteredTransactionIds.isEmpty())  _transactionRepository.deleteAllById(filteredTransactionIds);
         }
 
-        //Return DTO
+
+        // make predictions for categorizing each Transaction
+        Long userId = _userService.getUserIdByAccountIds(accountsDto.getAccounts());
+        if (userId == null) {
+            throw new RuntimeException("Unable to retrieve user id pertaining to the following account ids: " + accountsDto.getAccounts());
+        }
+        predictCategories(allModifiedOrAddedTransactions, userId);
+        predictCategories(previousMonthTransactions, userId);
+
+        //create DTO to respond with
         return SyncTransactionsDto.builder()
                 .allModifiedOrAddedTransactions(allModifiedOrAddedTransactions)
                 .removedTransactionIds(filteredTransactionIds)
                 .previousMonthTransactions(previousMonthTransactions)
+                .updatedAccounts(updatedAccounts)
                 .build();
     }
 
@@ -463,6 +487,42 @@ public class TransactionServiceImpl implements TransactionService {
             connection.setOriginalCursor(originalCursor);
         }
         _connectionService.update(connection, connection.getConnectionId());
+    }
+
+
+    public void predictCategories(List<Transaction> transactionsToPredict, Long userId) {
+
+        for (Transaction transaction : transactionsToPredict) {
+
+            // generate request
+            TransactionMetadata metadata = TransactionMetadata.builder()
+                    .amount(transaction.getAmount())
+                    .dateTime(transaction.getDateTime())
+                    .plaidDetailedCategory(transaction.getPersonalFinanceCategory().getDetailedCategory())
+                    .plaidPrimaryCategory(transaction.getPersonalFinanceCategory().getPrimaryCategory())
+                    .merchant(transaction.getMerchantName())
+                    .build();
+            CategorySuggestionRequest request = CategorySuggestionRequest.builder()
+                    .userId(userId)
+                    .transactionMetadata(metadata)
+                    .build();
+
+
+            try {
+                Long categoryId = _suggestionEngineClient.predictCategory(request);
+
+                // check if prediction was made & assign
+                if (categoryId != null) {
+                    transaction.setSuggestedCategory(categoryService.read(categoryId));
+                } else {
+                    log.info("No Category suggestion for Transaction {}", metadata);
+                }
+            } catch (Exception e) {
+                log.error("An exception occurred while attempting to predict the Category ID for the transaction {} : {}", metadata, e.getMessage());
+            }
+
+
+        }
     }
 
 }

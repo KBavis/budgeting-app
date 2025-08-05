@@ -74,21 +74,6 @@ public class AccountController {
 		return ResponseEntity.ok( _accountService.connectAccount(connectAccountRequestDto));
 	}
 
-	/**
-	 * Update an Account with new information
-	 *
-	 * @param newAccount
-	 * 			- Account with updated information
-	 * @param accountId
-	 * 			- Account ID corresponding to Account needing updates
-	 * @return
-	 * 			- Updated Account
-	 */
-	@PutMapping("/{accountId}")
-	public ResponseEntity<Account> update(@RequestBody Account newAccount, @PathVariable(value = "accountId") Long accountId) {
-		log.info("Received request to update account with ID {} to be new Account: [{}]", accountId, newAccount);
-		return ResponseEntity.ok(_accountService.update(newAccount, accountId));
-	}
 
 	/**
 	 * Delete a specific Account

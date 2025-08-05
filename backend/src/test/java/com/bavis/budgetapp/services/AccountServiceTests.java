@@ -5,6 +5,7 @@ import com.bavis.budgetapp.dao.AccountRepository;
 import com.bavis.budgetapp.dto.AccountDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.constants.ConnectionStatus;
+import com.bavis.budgetapp.dto.PlaidAccountDto;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
@@ -29,8 +30,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -316,6 +319,82 @@ public class AccountServiceTests {
 
         //Assert
         assertTrue(actualAccounts.isEmpty());
+    }
+
+
+    @Test
+    void test_updateBalance_updatesAccountBalance() {
+        // arrange
+        String accountId = "123XYZ";
+        PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
+        balance.setAvailable(BigDecimal.valueOf(1000.00));
+        balance.setCurrent(BigDecimal.valueOf(2046.00));
+
+        PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
+                .accountId(accountId)
+                .balances(balance)
+                .build();
+        List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
+
+        Account account = new Account();
+        account.setAccountId(accountId);
+        account.setBalance(500.00);
+
+        // mock
+        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+
+        // act
+        Account updatedAccount = accountService.updateBalance(plaidAccountDtos, account);
+
+        // assert
+        assertEquals(2046.00, updatedAccount.getBalance());
+    }
+
+    @Test
+    void test_updateBalance_handlesNull() {
+        // arrange
+        String accountId = "123XYZ";
+
+        Account account = new Account();
+        account.setAccountId(accountId);
+        account.setBalance(500.00);
+
+        // mock
+        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+
+        // act
+        Account updatedAccount = accountService.updateBalance(Collections.emptyList(), account);
+
+        // assert
+        assertEquals(account, updatedAccount); // no difference in account
+    }
+
+    @Test
+    void test_updateBalance_handlesMissngAccount() {
+        // arrange
+        String accountId = "123XYZ";
+        PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
+        balance.setAvailable(BigDecimal.valueOf(1000.00));
+        balance.setCurrent(BigDecimal.valueOf(2046.00));
+
+        PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
+                .accountId(accountId)
+                .balances(balance)
+                .build();
+        List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
+
+        Account account = new Account();
+        account.setAccountId("123");
+        account.setBalance(500.00);
+
+        // mock
+        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+
+        // act
+        Account updatedAccount = accountService.updateBalance(plaidAccountDtos, account);
+
+        // assert
+        assertEquals(account, updatedAccount); // no difference in account
     }
 
 
