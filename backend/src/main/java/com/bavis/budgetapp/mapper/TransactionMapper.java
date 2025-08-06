@@ -28,14 +28,14 @@ public interface TransactionMapper {
      * @return
      *          - Transaction entity with PlaidTransactionDto properties
      */
-    @Mapping(target = "name", expression = "java(dto.getMerchantName() != null ? dto.getMerchantName() : getFirstCounterpartyName(dto.getCounterparties()))")
+    @Mapping(target = "name", expression = "java(getFirstCounterpartyName(dto.getCounterparties()))")
     @Mapping(target = "logoUrl", expression = "java(getFirstCounterpartyLogoUrl(dto.getCounterparties()))")
     @Mapping(target = "transactionId", source = "transaction_id")
     @Mapping(target = "amount", source = "amount")
     @Mapping(target = "date", source = "date")
     @Mapping(target = "dateTime", source = "datetime")
     @Mapping(target = "location", source = "location")
-    @Mapping(target = "merchantName", source = "merchantName")
+    @Mapping(target = "merchantName", source = "java(dto.getMerchantName() != null ? dto.getMerchantName() : getFirstCounterpartyName(dto.getCounterparties()))")
     @Mapping(target = "personalFinanceCategory", expression=  "java(mapPersonalFinanceCategory(dto.getPersonal_finance_category()))")
     @Mapping(target = "account", ignore = true)
     @Mapping(target = "category", ignore = true)
