@@ -3,7 +3,7 @@ from pydantic import BaseModel
 class UncategorizedSuggestion(BaseModel):
 
     reasons: list = [] 
-    type: str 
+    type: str = "UNCATEGORIZED"
     suggested_actions: list = []
 
     def to_dict(self):
