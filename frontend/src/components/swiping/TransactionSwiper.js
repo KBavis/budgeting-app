@@ -20,6 +20,7 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
   const [editedAmount, setEditedAmount] = useState('');
 
   const currentTransaction = transactions[currentIndex];
+  const hasSuggestedCategory = currentTransaction?.suggestedCategory;
 
   useEffect(() => {
     if (currentTransaction) {
@@ -28,7 +29,18 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
     }
   }, [currentTransaction]);
 
-  
+  const handleAcceptSuggestion = () => {
+    const { suggestedCategory } = currentTransaction;
+    updateCategory(currentTransaction.transactionId, suggestedCategory.categoryId, false);
+    setAlert(`Transaction assigned to ${suggestedCategory.name}`, 'success');
+    setCardAnimation('card-exit-left');
+  };
+
+  const handleDenySuggestion = () => {
+    // This will show the manual category selection flow
+    // The buttons will automatically appear since hasSuggestedCategory becomes irrelevant for UI
+    setAlert('Choose a category manually', 'info');
+  };
 
   const handleCategoryTypeClick = (categoryType) => {
     setSelectedCategoryType(categoryType);
@@ -127,9 +139,33 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
             </div>
         </div>
       </div>
-      <div className="buttons">
-        {categoryTypes.map(ct => <button key={ct.categoryTypeId} onClick={() => handleCategoryTypeClick(ct)}>{ct.name}</button>)}
-      </div>
+      
+      {/* Suggested Category Section */}
+      {hasSuggestedCategory && (
+        <div className="suggestion-container">
+          <div className="suggestion-header">
+            <h3>Suggested Category</h3>
+          </div>
+          <div className="suggestion-content">
+            <div className="suggested-category">
+              <span className="category-type">{currentTransaction.suggestedCategory.categoryType?.name}</span>
+              <span className="category-name">{currentTransaction.suggestedCategory.name}</span>
+            </div>
+            <div className="suggestion-buttons">
+              <button onClick={handleAcceptSuggestion} className="accept-button">✓ Accept</button>
+              <button onClick={handleDenySuggestion} className="deny-button">✗ Choose Different</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Category Selection - Show when no suggestion or after denying */}
+      {(!hasSuggestedCategory || showCategorySlider) && (
+        <div className="buttons">
+          {categoryTypes.map(ct => <button key={ct.categoryTypeId} onClick={() => handleCategoryTypeClick(ct)}>{ct.name}</button>)}
+        </div>
+      )}
+
       {showCategorySlider && (
         <CategorySlider
           categoryType={selectedCategoryType}
