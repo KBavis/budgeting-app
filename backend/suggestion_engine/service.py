@@ -35,7 +35,7 @@ def category_suggestion(request: CategorySuggestionRequest):
     path = Path(file_path_str)
 
     #TODO: Add ability to retrieve Venmo descriptions and backfill exisitng transactions with additional meta data
-    if request.transaction.merchant == 'Venmo':
+    if request.transaction.merchant == 'Venmo': #TODO: Fix issue with merchant not being named 'Venmo' or 'Charles Schwab'
         return UncategorizedSuggestion(reasons=['Unable to currently make accurate predictions for Venmo Transactions'])
 
     if path.is_file():
