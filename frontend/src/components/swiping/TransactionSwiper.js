@@ -41,7 +41,6 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
 
   const handleDenySuggestion = () => {
     setSuggestionDenied(true);
-    setAlert('Choose a category manually', 'info');
   };
 
   const handleCategoryTypeClick = (categoryType) => {
