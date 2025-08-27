@@ -47,7 +47,6 @@ const HomePage = () => {
    const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown v
    const [showPrevTransactionsModal, setShowPrevTransactionsModal] = useState(false);
    const [modalPrevMonthTransactions, setModalPrevMonthTransactions] = useState([]);
-   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
    const [showTransactionSwiper, setShowTransactionSwiper] = useState(null);
    const [transactionsToAssign, setTransactionsToAssign] = useState([]);
 
@@ -325,25 +324,13 @@ const HomePage = () => {
       summariesLoading,
    ]);
 
-   useEffect(() => {
-      const handleResize = () => {
-          setIsMobile(window.innerWidth < 768);
-      };
-      window.addEventListener('resize', handleResize);
-      return () => {
-          window.removeEventListener('resize', handleResize);
-      };
-  }, []);
-
   useEffect(() => {
-      if (isMobile) {
-          const unassigned = transactions.filter(t => !t.category || t.category.name === 'Miscellaneous');
-          setTransactionsToAssign(unassigned);
-          if (unassigned.length > 0 && showTransactionSwiper === null) {
-              setShowTransactionSwiper(true);
-          }
+      const unassigned = transactions.filter(t => !t.category || t.category.name === 'Miscellaneous');
+      setTransactionsToAssign(unassigned);
+      if (unassigned.length > 0 && showTransactionSwiper === null) {
+         setShowTransactionSwiper(true);
       }
-  }, [transactions, isMobile, showTransactionSwiper]);
+  }, [transactions, showTransactionSwiper]);
 
   
 
@@ -357,7 +344,7 @@ const HomePage = () => {
             handleShowAddCategoryModal={handleShowAddCategoryModal}
             user={user} // Pass the user prop
          />
-         {isMobile && transactionsToAssign.length > 0 && !showTransactionSwiper && (
+         {transactionsToAssign.length > 0 && !showTransactionSwiper && (
             <div className="absolute top-20 right-5">
                <button
                   className="bg-green-500 border-2 border-green-500 text-xs hover:bg-transparent duration-1000 text-white font-bold py-1 px-2 rounded"
@@ -414,7 +401,6 @@ const HomePage = () => {
                   <Loading />
                )}
             </div>
-            {!isMobile && <MiscellaneousTransactions />}
          </div>
          {/* Modals */}
          {showSplitTransactionModal && ( // Render modal if showModal is true and selectedCategoryType is not null
