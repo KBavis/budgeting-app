@@ -4,7 +4,6 @@ import accountContext from "../context/account/accountContext";
 import categoryTypeContext from "../context/category/types/categoryTypeContext";
 import CategoryType from "../components/category/types/CategoryType";
 import authContext from "../context/auth/authContext";
-import MiscellaneousTransactions from "../components/category/MiscellaneousTransactions";
 import categoryContext from "../context/category/categoryContext";
 import IncomeContext from "../context/income/incomeContext";
 import Loading from "../components/util/Loading";
