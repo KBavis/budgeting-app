@@ -61,7 +61,7 @@ pipeline {
                             scp -i "%SSH_KEY%" -o StrictHostKeyChecking=no compose.yaml %SSH_USER%@%SERVER_IP%:/home/deployuser
 
                             REM ssh to update version and restart containers
-                            ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@%SERVER_IP% "cd /home/deployuser && docker-compose down && sed -i 's/^FRONTEND_VERSION=.*/FRONTEND_VERSION=%VERSION%/' .env && docker-compose up -d"
+                            ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@%SERVER_IP% "cd /home/deployuser && docker-compose down && docker system prune -f && sed -i 's/^FRONTEND_VERSION=.*/FRONTEND_VERSION=%VERSION%/' .env && docker-compose pull && docker-compose up -d"
                         '''
                     }
                 }
