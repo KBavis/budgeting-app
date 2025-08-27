@@ -18,14 +18,17 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
   const [isEditingAmount, setIsEditingAmount] = useState(false);
   const [editedName, setEditedName] = useState('');
   const [editedAmount, setEditedAmount] = useState('');
+  const [suggestionDenied, setSuggestionDenied] = useState(false);
 
   const currentTransaction = transactions[currentIndex];
-  const hasSuggestedCategory = currentTransaction?.suggestedCategory;
+  const hasSuggestedCategory = currentTransaction?.suggestedCategory && !suggestionDenied;
 
   useEffect(() => {
     if (currentTransaction) {
       setEditedName(currentTransaction.name);
       setEditedAmount(currentTransaction.amount);
+      // Reset suggestion denied state when moving to new transaction
+      setSuggestionDenied(false);
     }
   }, [currentTransaction]);
 
@@ -37,8 +40,7 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
   };
 
   const handleDenySuggestion = () => {
-    // This will show the manual category selection flow
-    // The buttons will automatically appear since hasSuggestedCategory becomes irrelevant for UI
+    setSuggestionDenied(true);
     setAlert('Choose a category manually', 'info');
   };
 
@@ -159,7 +161,7 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
         </div>
       )}
 
-      {/* Manual Category Selection - Show when no suggestion or after denying */}
+      {/* Manual Category Selection - Show when no suggestion, denied, or category slider is open */}
       {(!hasSuggestedCategory || showCategorySlider) && (
         <div className="buttons">
           {categoryTypes.map(ct => <button key={ct.categoryTypeId} onClick={() => handleCategoryTypeClick(ct)}>{ct.name}</button>)}
