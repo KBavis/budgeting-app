@@ -211,7 +211,6 @@ const HomePage = () => {
    const getAccounts = async () => {
       if (!accounts || accounts.length === 0) {
          //Fetch All User Accounts
-         console.log("Fetching accounts...");
          setAccountsLoading();
          await fetchAccounts();
       }
@@ -221,7 +220,6 @@ const HomePage = () => {
    const getBudgetSummaries = async () => {
       if (!summaries || summaries.length === 0) {
          //Fetch All Budget Summaries
-         console.log("Fetching budget summaries...");
          setSummariesLoading();
          await fetchBudgetSummaries();
       }
@@ -231,7 +229,6 @@ const HomePage = () => {
    const getCategoryTypes = async () => {
       if (!categoryTypes || categoryTypes.length === 0) {
          //Fetch All Category Types
-         console.log("Fetching Category Types...");
          setCategoryTypesLoading();
          await fetchCategoryTypes();
       }
@@ -241,7 +238,6 @@ const HomePage = () => {
    const getIncomes = async () => {
       if (!incomes || incomes.length === 0) {
          //Fetch All Incomes
-         console.log("Fetching Incomes...");
          setIncomesLoading();
          await fetchIncomes();
       }
@@ -251,7 +247,6 @@ const HomePage = () => {
    const getCategories = async () => {
       if (!categories || categories.length === 0) {
          //Fetch All Categories
-         console.log("Fetching Categories...");
          setCategoriesLoading();
          await fetchCategories();
       }
@@ -261,7 +256,6 @@ const HomePage = () => {
    const getTransactions = async () => {
       if (!transactions || transactions.length === 0) {
          //Fetch All Transactions
-         console.log("Fetching Transactions...");
          setTransactionLoading();
          await fetchTransactions();
       }
