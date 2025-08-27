@@ -25,7 +25,7 @@ pipeline {
                 dir('frontend') {
                     script {
                         def version = env.VERSION
-                        bat "docker build -t budget-app-frontend:${version} --build-arg VERSION=${version} -f docker/Dockerfile ."
+                        bat "docker build --no-cache -t budget-app-frontend:${version} --build-arg VERSION=${version} -f docker/Dockerfile ."
                     }
                 }
             }
