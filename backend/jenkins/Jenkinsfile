@@ -60,7 +60,6 @@ pipeline {
                 dir('backend/suggestion_engine') {
                     script {
                         def imageVersion = env.VERSION
-                        def baseVersion = env.BASE_VERSION
                         bat "docker build -t budget-app-suggestion-engine:${imageVersion} -f docker/Dockerfile ."
                     }
                 }
