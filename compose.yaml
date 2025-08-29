@@ -1,6 +1,8 @@
 version: '3.8'
 
 services:
+
+  # react frontend service 
   frontend:
     image: baviske/budget-app-frontend:${FRONTEND_VERSION}
     container_name: frontend-app
@@ -27,6 +29,7 @@ services:
       - /var/cache/nginx
       - /var/run
 
+  # spring boot backend service 
   backend:
     image: baviske/budget-app-backend:${BACKEND_VERSION}
     container_name: backend-app
@@ -45,9 +48,34 @@ services:
     deploy:
       resources:
         limits:
-          memory: 320M
+          memory: 512M
         reservations:
-          memory: 192M
+          memory: 256M
+    tmpfs:
+      - /tmp
+  
+
+  # python suggestion engine service 
+  suggestion-engine:
+    image: baviske/budget-app-suggestion-engine:${BACKEND_VERSION}
+    container_name: suggestion-engine-app
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=${DB_PORT}
+    restart: unless-stopped
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
     tmpfs:
       - /tmp
 
