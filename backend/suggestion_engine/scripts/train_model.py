@@ -24,7 +24,7 @@ def main(user_id):
     """
     
     # fetch user transactions
-    transactions = fetch_user_transactions(user_id) 
+    transactions = fetch_user_transactions(user_id) #TODO: Skip training model on users if < 50 transactions categorized
     print(f"Successfully retrieved {len(transactions)} user transactions to train model on")
 
     # preprocess users transactions
