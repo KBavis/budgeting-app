@@ -48,9 +48,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 320M
         reservations:
-          memory: 256M
+          memory: 192M
     tmpfs:
       - /tmp
   
@@ -67,17 +67,24 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
       - DB_PORT=${DB_PORT}
+        # memory optimizations
+      - PYTHONHASHSEED=0
+      - PYTHONUNBUFFERED=1
+      - OMP_NUM_THREADS=1
+      - MKL_NUM_THREADS=1
+      - OPENBLAS_NUM_THREADS=1
     restart: unless-stopped
     networks:
       - app-network
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 350M
         reservations:
-          memory: 128M
+          memory: 200M
     tmpfs:
       - /tmp
+    mem_swappiness: 60 # enable swap usage
 
 networks:
   app-network:
