@@ -7,8 +7,6 @@ from suggestion_engine.models.classifer import CategoryPredictor
 from torch.utils.data import DataLoader, TensorDataset
 import torch
 from torch import nn
-import numpy as np
-import pandas as pd
 import os
 import joblib
 import json
