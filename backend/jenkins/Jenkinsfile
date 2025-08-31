@@ -57,10 +57,10 @@ pipeline {
 
         stage('Build Suggestion Engine Docker Image') {
             steps {
-                dir('backend/suggestion_engine') {
+                dir('backend') {
                     script {
                         def imageVersion = env.VERSION
-                        bat "docker build -t budget-app-suggestion-engine:${imageVersion} -f docker/Dockerfile ."
+                        bat "docker build -t budget-app-suggestion-engine:${imageVersion} -f suggestion-engine/docker/Dockerfile ."
                     }
                 }
             }
