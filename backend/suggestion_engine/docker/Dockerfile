@@ -24,14 +24,18 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/root/.local/bin:$PATH" \
     PYTHONPATH="/app"
 
+
+# update working directory 
+WORKDIR /app
+
 # copy Python packages from builder stage
 COPY --from=builder /root/.local /root/.local
 
 # copy code
-COPY . .
+COPY . /app
 
 # expose relevant port 
 EXPOSE 8000
 
 # run service
-CMD ["uvicorn", "service:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "suggestion_engine.service:app", "--host", "0.0.0.0", "--port", "8000"]
