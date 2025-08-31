@@ -13,8 +13,8 @@ psycopg2-binary==2.9.9
 python-dotenv==1.0.0
 
 # PyTorch (training-specific)
-torch>=2.0.0,<3.0.0
-torchvision>=0.15.0,<1.0.0  # often needed with torch
+--find-links https://download.pytorch.org/whl/cpu
+torch==2.7.1
 
 # ONNX for model export (training-specific)
 onnx>=1.15.0
