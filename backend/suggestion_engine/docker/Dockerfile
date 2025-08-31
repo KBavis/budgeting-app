@@ -1,17 +1,37 @@
-FROM python:3.11-slim
+# build stage
+FROM python:3.11-slim as builder
 
-WORKDIR /app
+# avoid bytecode generation, enforce stdout/stderr to be unbuffered, no cache dir when installing pckgs, disbale automatic version checks
+ENV PYTHONDONTWRITEBYTECODE=1 \ 
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# avoid bytecode being written to disk, force python to output to stdout
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+# change to build dir
+WORKDIR /build
 
+# copy & install necessary deps
 COPY requirements.txt .
+RUN pip install --user --no-warn-script-location -r requirements.txt
 
-RUN pip install --no-cache-dir -r requirements.txt
 
+# production stage 
+FROM python:3.11-slim as production
+
+# avoid bytecode generation, enforce stdout/stdder to be unbuffered, update PATH variable, indicate to Python interpreter where to look for moudle
+ENV PYTHONDONTWRITEBYTECODE=1 \ 
+    PYTHONUNBUFFERED=1 \
+    PATH="/root/.local/bin:$PATH" \
+    PYTHONPATH="/app"
+
+# copy Python packages from builder stage
+COPY --from=builder /root/.local /root/.local
+
+# copy code
 COPY . .
 
+# expose relevant port 
 EXPOSE 8000
 
+# run service
 CMD ["uvicorn", "service:app", "--host", "0.0.0.0", "--port", "8000"]
