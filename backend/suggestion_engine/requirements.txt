@@ -2,10 +2,6 @@
 # fix for Python 3.12 distutils issue
 setuptools>=65.0.0
 
-# torch
---find-links https://download.pytorch.org/whl/cpu
-torch==2.7.1
-
 # core
 numpy==1.26.4
 pandas==2.2.0
@@ -21,3 +17,6 @@ psycopg2-binary==2.9.9
 # utils
 requests==2.31.0
 python-dotenv==1.0.0
+
+# ONNX
+onnxruntime==1.18.1

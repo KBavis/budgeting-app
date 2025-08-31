@@ -61,6 +61,8 @@ services:
     container_name: suggestion-engine-app
     ports:
       - "8000:8000"
+    volumes:
+      - ./budgeting-app/backend/suggestion_engine/artifacts:/app/suggestion_engine/artifacts
     environment:
       - DB_HOST=${DB_HOST}
       - DB_NAME=${DB_NAME}

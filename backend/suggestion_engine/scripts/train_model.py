@@ -7,8 +7,6 @@ from suggestion_engine.models.classifer import CategoryPredictor
 from torch.utils.data import DataLoader, TensorDataset
 import torch
 from torch import nn
-import numpy as np
-import pandas as pd
 import os
 import joblib
 import json
@@ -217,7 +215,7 @@ def save_artifacts(model, preprocessor, label_encoder, best_accuracy, user_id):
 
     print(f"Attempting to save relevant training/testing artifacts in {os.getcwd()}")
 
-    # save model 
+    # save model weights
     torch.save(model.state_dict(), "model_weights.pth")
 
     # save preprocesing pipeline 
@@ -227,14 +225,29 @@ def save_artifacts(model, preprocessor, label_encoder, best_accuracy, user_id):
     joblib.dump(label_encoder, "label_encoder.joblib")
 
     # save meta data 
+    model_input_dim = get_input_dim(model)
     metadata = {
         'trained_at': datetime.now().isoformat(),
         'num_classes': len(label_encoder.classes_),
-        'input_dim': get_input_dim(model),
+        'input_dim': model_input_dim,
         'accuracy': round(best_accuracy, 2)
     }
     with open("metadata.json", "w") as f:
         json.dump(metadata, f)
+    
+
+    # save model using ONNX
+    dummy_input = (torch.randn(1, model_input_dim),)  # Changed variable name
+    torch.onnx.export(
+        model, 
+        dummy_input, 
+        "model.onnx", 
+        export_params=True,
+        opset_version=11, 
+        do_constant_folding=True,
+        input_names=['input'],
+        output_names=['output']
+    )
 
 
 def fetch_user_transactions(user_id: int):
