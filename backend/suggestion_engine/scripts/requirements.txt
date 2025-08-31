@@ -1,0 +1,24 @@
+# fix for Python 3.12 distutils issue
+setuptools>=65.0.0
+
+# core dependencies 
+numpy==1.26.4
+pandas==2.2.0
+scikit-learn==1.4.0
+
+# db 
+psycopg2-binary==2.9.9
+
+# utils (shared with production)
+python-dotenv==1.0.0
+
+# PyTorch (training-specific)
+torch>=2.0.0,<3.0.0
+torchvision>=0.15.0,<1.0.0  # often needed with torch
+
+# ONNX for model export (training-specific)
+onnx>=1.15.0
+onnxscript>=0.1.0
+
+# Model serialization (training-specific)
+joblib>=1.3.0
