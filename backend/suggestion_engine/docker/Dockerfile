@@ -1,5 +1,5 @@
 # build stage
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 # avoid bytecode generation, enforce stdout/stderr to be unbuffered, no cache dir when installing pckgs, disbale automatic version checks
 ENV PYTHONDONTWRITEBYTECODE=1 \ 
@@ -11,12 +11,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /build
 
 # copy & install necessary deps
-COPY requirements.txt .
+COPY suggestion_engine/requirements.txt .
 RUN pip install --user --no-warn-script-location -r requirements.txt
 
 
 # production stage 
-FROM python:3.11-slim as production
+FROM python:3.11-slim AS production
 
 # avoid bytecode generation, enforce stdout/stdder to be unbuffered, update PATH variable, indicate to Python interpreter where to look for moudle
 ENV PYTHONDONTWRITEBYTECODE=1 \ 
