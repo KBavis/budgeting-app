@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from datetime import datetime
-from suggestion_engine.models.manager import ModelManager
-from suggestion_engine import predict
-from suggestion_engine.outcomes.uncategorized_suggestion import UncategorizedSuggestion
+from suggestion_engine.inference.models.manager import ModelManager
+from suggestion_engine.inference import predict
+from suggestion_engine.inference.outcomes.uncategorized_suggestion import UncategorizedSuggestion
 from typing import Optional
 
 

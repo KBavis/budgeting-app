@@ -11,7 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /build
 
 # copy & install necessary deps
-COPY suggestion_engine/requirements.txt .
+COPY suggestion_engine/inference/requirements.txt .
 RUN pip install --user --no-warn-script-location -r requirements.txt
 
 
@@ -38,4 +38,4 @@ COPY . /app
 EXPOSE 8000
 
 # run service
-CMD ["uvicorn", "suggestion_engine.service:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "suggestion_engine.inference.service:app", "--host", "0.0.0.0", "--port", "8000"]

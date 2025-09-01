@@ -1,5 +1,5 @@
 import gc
-from suggestion_engine.models.classifer import CategoryPredictor
+from backend.suggestion_engine.training.models.classifer import CategoryPredictor
 from pathlib import Path
 import json
 import torch

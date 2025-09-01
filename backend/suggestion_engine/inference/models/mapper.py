@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from suggestion_engine.outcomes.uncategorized_suggestion import UncategorizedSuggestion
-from suggestion_engine.outcomes.category_suggestion import CategorySuggestion
+from suggestion_engine.inference.outcomes.uncategorized_suggestion import UncategorizedSuggestion
+from suggestion_engine.inference.outcomes.category_suggestion import CategorySuggestion
 
 class ContextMapper():
     """
