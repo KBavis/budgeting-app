@@ -1,8 +1,7 @@
 import gc
-from suggestion_engine.models.classifer import CategoryPredictor
 from pathlib import Path
 import json
-import torch
+import onnxruntime as ort
 
 class ModelManager:
 
@@ -26,24 +25,22 @@ class ModelManager:
 
         
         # validate model persisted corresponding to user 
-        model_weights_path = Path(f"suggestion_engine/artifacts/{user_id}/model_weights.pth")
-        if not model_weights_path.is_file():
+        onnx_model_path = Path(f"suggestion_engine/artifacts/{user_id}/model.onnx")
+        if not onnx_model_path.is_file():
             return None 
+        
+        # load onnx model 
+        onnx_model = ort.InferenceSession(str(onnx_model_path))
 
         # fetch model meta data 
         meta_data = self.load_model_meta_data(user_id)
 
-        # create model in memory & store in cache
-        nn = CategoryPredictor(meta_data["input_dim"], meta_data["num_classes"])
-        nn.load_state_dict(torch.load(str(model_weights_path), weights_only=True))
-        nn.eval()
-
-        self._user_models[user_id] = nn
+        self._user_models[user_id] = onnx_model
         self.model_accuracy[user_id] = meta_data['accuracy']
 
         gc.collect() # force garabge collection
 
-        return nn
+        return onnx_model
     
 
     def load_model_meta_data(self, user_id):
