@@ -34,11 +34,11 @@ def category_suggestion(request: CategorySuggestionRequest):
         return UncategorizedSuggestion(reasons=['Unable to currently make accurate predictions for Venmo Transactions'])
 
     # retrieve model
-    model = manager.get_model(user_id)
-    if not model:
+    onnx_model = manager.get_model(user_id)
+    if not onnx_model:
         # TODO: Invoke Context Mapper logic 
         return UncategorizedSuggestion(reasons=[f'No existing model exists for user ID {user_id}'])
     
     # make suggestion
-    return predict.predict_category(user_id, request.transaction, model, manager.model_accuracy[user_id])
+    return predict.predict_category(user_id, request.transaction, onnx_model, manager.model_accuracy[user_id])
     
