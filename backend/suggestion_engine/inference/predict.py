@@ -1,6 +1,6 @@
 from suggestion_engine.inference.outcomes.category_suggestion import CategorySuggestion
 from suggestion_engine.inference.outcomes.uncategorized_suggestion import UncategorizedSuggestion
-from suggestion_engine import data
+from suggestion_engine.training.preprocess import data
 import joblib
 import pandas as pd
 import numpy as np
