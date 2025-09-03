@@ -15,4 +15,5 @@ gradlew
 gradlew.bat
 __pycache__
 suggestion_engine/artifacts
+.service_venv/
 

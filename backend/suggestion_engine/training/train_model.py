@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
 import argparse
-from suggestion_engine import db
+from suggestion_engine.training.preprocess import db
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from suggestion_engine.models.classifer import CategoryPredictor
+from suggestion_engine.training.models.classifer import CategoryPredictor
 from torch.utils.data import DataLoader, TensorDataset
 import torch
 from torch import nn
@@ -11,7 +11,7 @@ import os
 import joblib
 import json
 from datetime import datetime
-from suggestion_engine.data import preprocess
+from suggestion_engine.training.preprocess.data import preprocess
 
 def main(user_id):
     """

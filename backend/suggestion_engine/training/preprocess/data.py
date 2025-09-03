@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransfo
 from sklearn.pipeline import Pipeline
 import pandas as pd
 import numpy as np
-from suggestion_engine.utils import get_day_of_week, get_hour, extract_text
+from suggestion_engine.training.preprocess.utils import get_day_of_week, get_hour, extract_text
 
 
 def prepare_input(transactions: list):
