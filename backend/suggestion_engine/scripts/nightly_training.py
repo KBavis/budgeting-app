@@ -96,7 +96,7 @@ async def train_single_user_model(user: str):
         process = await asyncio.create_subprocess_exec(
             sys.executable, # use same python interpreter 
             '-m', 'suggestion_engine.training.train_model',
-            str(user), # user ID to pass as arg
+            '--user', str(user), # user ID to pass as arg
             # redirrect stdout & stderr
             stdout=asyncio.subprocess.PIPE, 
             stderr=asyncio.subprocess.PIPE,
