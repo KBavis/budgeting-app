@@ -95,12 +95,12 @@ async def train_single_user_model(user: str):
         # create subprocess to run train_model.py
         process = await asyncio.create_subprocess_exec(
             sys.executable, # use same python interpreter 
-            'suggestion_engine/training/train_model.py', # script to invoke
+            '-m', 'suggestion_engine.training.train_model',
             str(user), # user ID to pass as arg
             # redirrect stdout & stderr
             stdout=asyncio.subprocess.PIPE, 
             stderr=asyncio.subprocess.PIPE,
-            cwd=os.getcwd()
+            cwd=os.path.join(os.getcwd()),  # project root, i.e. backend
         )
 
         stdout, stderr = await process.communicate()  # wait for child process to complete 
