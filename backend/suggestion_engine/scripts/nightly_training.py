@@ -93,7 +93,7 @@ async def train_single_user_model(user: str):
 
     try:
         # create subprocess to run train_model.py
-        process = asyncio.create_subprocess_exec(
+        process = await asyncio.create_subprocess_exec(
             sys.executable, # use same python interpreter 
             'training/train_model.py', # script to invoke
             str(user), # user ID to pass as arg
@@ -210,9 +210,6 @@ def connect_db():
     except Exception as e:
         print(f"Failed to connect DB: {e}")
         raise e
-
-
-
 
 
 if __name__ == "__main__":
