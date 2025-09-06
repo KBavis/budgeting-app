@@ -14,7 +14,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(f'logs/nightly_training_{timestamp}.log'),
+        logging.FileHandler(f'suggestion_engine/logs/nightly_training_{timestamp}.log'),
         logging.StreamHandler(sys.stdout)
     ]
 )
@@ -95,7 +95,7 @@ async def train_single_user_model(user: str):
         # create subprocess to run train_model.py
         process = await asyncio.create_subprocess_exec(
             sys.executable, # use same python interpreter 
-            'training/train_model.py', # script to invoke
+            'suggestion_engine/training/train_model.py', # script to invoke
             str(user), # user ID to pass as arg
             # redirrect stdout & stderr
             stdout=asyncio.subprocess.PIPE, 
