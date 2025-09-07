@@ -10,7 +10,7 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    overflow: hidden; /* Prevent background scroll */
+    overflow: hidden; 
   }
   
   .card-container {
@@ -42,6 +42,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
   }
 
   .transaction-info {
@@ -49,6 +50,7 @@
       align-items: center;
       flex-grow: 1;
       min-width: 0;
+      max-width: calc(100% - 60px); 
   }
 
   .transaction-logo {
@@ -81,7 +83,11 @@
     font-size: 1.5rem;
     cursor: pointer;
     flex-shrink: 0;
-    margin-left: 10px;
+    width: 40px; 
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .card-body p {
@@ -96,6 +102,7 @@
     align-items: center;
     flex-grow: 1;
     min-width: 0;
+    gap: 8px; 
   }
 
   .edit-input {
@@ -103,23 +110,26 @@
     border: none;
     border-bottom: 2px solid white;
     color: white;
-    font-size: 1.5rem;
-    margin-right: 10px;
-    width: 200px; 
-    max-width: 200px; 
+    font-size: 1.2rem; 
+    flex-grow: 1;
+    min-width: 0; 
+    max-width: 100%; 
     overflow: hidden; 
     text-overflow: ellipsis; 
-    white-space: nowrap; 
+    white-space: nowrap;
+    padding: 2px 0;
   }
 
   .save-button {
     background: #4CAF50;
     color: white;
     border: none;
-    padding: 5px 10px;
+    padding: 6px 12px;
     border-radius: 5px;
     cursor: pointer;
     flex-shrink: 0;
+    font-size: 0.9rem; 
+    white-space: nowrap;
   }
   
   .card-enter-right {
@@ -322,6 +332,22 @@
     transform: translateY(-1px);
   }
 
+  /* Mobile-specific adjustments */
+  @media (max-width: 480px) {
+    .edit-input {
+      font-size: 1rem; 
+    }
+    
+    .save-button {
+      padding: 4px 8px;
+      font-size: 0.8rem;
+    }
+    
+    .transaction-info {
+      max-width: calc(100% - 50px); 
+    }
+  }
+
   
   @keyframes slide-up {
     from {
@@ -340,4 +366,3 @@
       transform: translateY(100%);
     }
   }
-  
