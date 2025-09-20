@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcType;
@@ -26,6 +27,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class MonthlyCategoryPerformance {
 
     @Id
@@ -49,10 +51,10 @@ public class MonthlyCategoryPerformance {
     private Long categoryTypeId;
 
     @Column(name = "total_spend")
-    private Long totalSpend;
+    private Double totalSpend;
 
     @Column(name = "total_amount_allocated")
-    private Long totalAmountAllocated;
+    private Double totalAmountAllocated;
 
     @Column(name = "category_utilization")
     private Double categoryPercentUtilization;
