@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.entity.BudgetPerformance;
+import com.bavis.budgetapp.entity.analysis.BudgetPerformance;
 import com.bavis.budgetapp.model.MonthYear;
 
 import java.util.List;

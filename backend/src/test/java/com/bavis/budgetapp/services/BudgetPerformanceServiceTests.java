@@ -2,7 +2,7 @@ package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.constants.OverviewType;
 import com.bavis.budgetapp.dao.BudgetPerformanceRepository;
-import com.bavis.budgetapp.entity.BudgetPerformance;
+import com.bavis.budgetapp.entity.analysis.BudgetPerformance;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.Transaction;

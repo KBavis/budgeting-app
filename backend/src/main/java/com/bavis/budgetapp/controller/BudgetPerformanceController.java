@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.entity.BudgetPerformance;
+import com.bavis.budgetapp.entity.analysis.BudgetPerformance;
 import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.BudgetPerformanceService;
 import jakarta.validation.Valid;
