@@ -118,7 +118,7 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
             String merchantName = !StringUtils.isEmpty(transaction.getMerchantName()) ? transaction.getMerchantName() : transaction.getName();
 
             List<Transaction> merchantTransactions = merchantMapping.getOrDefault(merchantName, new ArrayList<>());
-            transactions.add(transaction);
+            merchantTransactions.add(transaction);
 
             merchantMapping.put(merchantName, merchantTransactions);
         }
@@ -127,10 +127,10 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
         List<MerchantAnalysis> merchantAnalyses = new ArrayList<>();
         for (Map.Entry<String, List<Transaction>> entry : merchantMapping.entrySet()) {
             String merchantName = entry.getKey();
-            Double totalAmountSpent = entry.getValue().stream()
+            double totalAmountSpent = entry.getValue().stream()
                     .mapToDouble(Transaction::getAmount)
                     .sum();
-            Integer transactionCount = entry.getValue().size();
+            int transactionCount = entry.getValue().size();
             Double avgTransactionAmount = BigDecimal.valueOf(totalAmountSpent)
                     .divide(BigDecimal.valueOf(transactionCount), 2, RoundingMode.HALF_UP)
                     .doubleValue();
