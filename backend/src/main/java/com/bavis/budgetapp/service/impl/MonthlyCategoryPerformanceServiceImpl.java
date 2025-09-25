@@ -79,6 +79,11 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
 
     }
 
+    @Override
+    public List<MonthlyCategoryPerformance> getPerformances(Long categoryTypeId, MonthYear monthYear) {
+        return repository.findByCategoryTypeIdAndMonthYear(categoryTypeId, monthYear);
+    }
+
     public Double getTotalSpend(List<Transaction> transactions) {
         return transactions.stream()
                 .mapToDouble(Transaction::getAmount)
