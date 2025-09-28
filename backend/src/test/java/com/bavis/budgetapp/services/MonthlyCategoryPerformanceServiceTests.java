@@ -153,6 +153,7 @@ public class MonthlyCategoryPerformanceServiceTests {
                 .merchantName("Sephora")
                 .transactionCount(1)
                 .totalSpent(90.0)
+                .merchantRank(1)
                 .avgTransactionAmount(90.0)
                 .build();
 
@@ -160,6 +161,7 @@ public class MonthlyCategoryPerformanceServiceTests {
                 .merchantName("Dicks")
                 .transactionCount(2)
                 .totalSpent(60.0)
+                .merchantRank(2)
                 .avgTransactionAmount(30.0)
                 .build();
 
@@ -167,6 +169,7 @@ public class MonthlyCategoryPerformanceServiceTests {
                 .merchantName("Dell")
                 .transactionCount(2)
                 .totalSpent(30.0)
+                .merchantRank(3)
                 .avgTransactionAmount(15.0)
                 .build();
 

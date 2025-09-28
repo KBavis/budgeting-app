@@ -153,9 +153,18 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
 
 
         // extract top 3 greatest spenders by merchant
-        return merchantAnalyses.stream()
+        List<MerchantAnalysis> top3Spenders = merchantAnalyses.stream()
                 .sorted(Comparator.comparing(MerchantAnalysis::getTotalSpent).reversed())
                 .limit(3)
                 .toList();
+
+        // add relevant merchant ranks
+        int rank = 1;
+        for (MerchantAnalysis current: top3Spenders) {
+            current.setMerchantRank(rank);
+            rank+= 1;
+        }
+
+        return top3Spenders;
     }
 }
