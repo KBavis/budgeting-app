@@ -128,10 +128,10 @@ const BudgetSummaryPage = () => {
                             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                                 Budget Performance for <span className="text-indigo-500 text-4xl font-extrabold">{convertToNormalCase(selectedSummary.id.monthYear.month)} {selectedSummary.id.monthYear.year}</span>
                             </h2>
-                            <BudgetOverview overview={selectedSummary.generalOverview} />
-                            <BudgetOverview overview={selectedSummary.needsOverview} />
-                            <BudgetOverview overview={selectedSummary.wantsOverview} />
-                            <BudgetOverview overview={selectedSummary.investmentOverview} />
+                            <BudgetOverview overview={selectedSummary.generalOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
+                            <BudgetOverview overview={selectedSummary.needsOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
+                            <BudgetOverview overview={selectedSummary.wantsOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
+                            <BudgetOverview overview={selectedSummary.investmentOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
                         </>
                     )}
                 </div>

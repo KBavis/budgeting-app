@@ -1,5 +1,6 @@
 import React from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Component used to represent a BudgetOverview in our BudgetPerformance entity
@@ -9,7 +10,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
  * @returns
  *          - BudgetOverview component
  */
-const BudgetOverview = ({ overview }) => {
+const BudgetOverview = ({ overview, month, year }) => {
    const {
       overviewType,
       totalSpent,
@@ -18,6 +19,8 @@ const BudgetOverview = ({ overview }) => {
       totalAmountSaved,
       savedAmountAttributesTotal,
    } = overview;
+
+   const navigate = useNavigate();
 
    // If over budget, make the spent percentage 100% for pie chart display
    const adjustedTotalSpent =
@@ -97,11 +100,10 @@ const BudgetOverview = ({ overview }) => {
             <div
                className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()} xs:h-3`}
                style={{
-                  width: `${
-                     totalPercentUtilized * 100 > 100
-                        ? 100
-                        : totalPercentUtilized * 100
-                  }%`,
+                  width: `${totalPercentUtilized * 100 > 100
+                     ? 100
+                     : totalPercentUtilized * 100
+                     }%`,
                }}
             ></div>
          </div>
@@ -148,6 +150,17 @@ const BudgetOverview = ({ overview }) => {
                <Tooltip />
             </PieChart>
          </ResponsiveContainer>
+         {overviewType != "GENERAL" &&
+            <div className="flex justify-center mt-4">
+               <button
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline"
+                  type="submit"
+                  onClick={() => navigate(`/${overviewType.toLowerCase()}/analysis/${month.toLowerCase()}/${year}`)}
+               >
+                  View Spending Analysis
+               </button>
+            </div>
+         }
       </div>
    );
 };
