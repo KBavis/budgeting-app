@@ -24,8 +24,6 @@ const CategoryPerformanceState = (props) => {
             setAuthToken(localStorage.token);
         }
 
-        console.log(monthYear)
-
         const config = {
             headers: {
                 "Content-Type": "application/json",
