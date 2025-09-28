@@ -1,9 +1,11 @@
 import { useReducer } from "react";
 import { FETCH_CATEGORY_PERFORMANCES_SUCCESS, FETCH_CATEGORY_PERFORMANCES_ERROR, SET_LOADING, CLEAR_ERRORS } from "./types";
 import categoryPerformanceReducer from "./categoryPerformanceReducer";
-import { initalState } from "../../summary/initialState";
+import initialState from "../initialState";
 import apiUrl from "../../../utils/url";
 import axios from "axios";
+import setAuthToken from "../../../utils/setAuthToken";
+import CategoryPerformanceContext from "./categoryPerformanceContext";
 
 /**
  * Global state for Category Performances
@@ -57,7 +59,7 @@ const CategoryPerformanceState = (props) => {
 
 
     return (
-        <CategoryPerformanceState.Provider value={{
+        <CategoryPerformanceContext.Provider value={{
             category_performances: state.category_performances,
             loading: state.loading,
             error: state.error,
@@ -66,7 +68,7 @@ const CategoryPerformanceState = (props) => {
             clearErrors
         }}>
             {props.children}
-        </CategoryPerformanceState.Provider>
+        </CategoryPerformanceContext.Provider>
     )
 }
 
