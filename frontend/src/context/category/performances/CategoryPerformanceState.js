@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { useContext, useReducer } from "react";
 import { FETCH_CATEGORY_PERFORMANCES_SUCCESS, FETCH_CATEGORY_PERFORMANCES_ERROR, SET_LOADING, CLEAR_ERRORS } from "./types";
 import categoryPerformanceReducer from "./categoryPerformanceReducer";
 import initialState from "../initialState";
@@ -6,6 +6,7 @@ import apiUrl from "../../../utils/url";
 import axios from "axios";
 import setAuthToken from "../../../utils/setAuthToken";
 import CategoryPerformanceContext from "./categoryPerformanceContext";
+import AlertContext from "../../alert/alertContext";
 
 /**
  * Global state for Category Performances
@@ -15,12 +16,15 @@ import CategoryPerformanceContext from "./categoryPerformanceContext";
  */
 const CategoryPerformanceState = (props) => {
 
+    const { setAlert } = useContext(AlertContext)
     const [state, dispatch] = useReducer(categoryPerformanceReducer, initialState)
 
     const fetchCategoryPerformances = async (categoryTypeId, monthYear) => {
         if (localStorage.token) {
             setAuthToken(localStorage.token);
         }
+
+        console.log(monthYear)
 
         const config = {
             headers: {
@@ -38,8 +42,10 @@ const CategoryPerformanceState = (props) => {
                 type: FETCH_CATEGORY_PERFORMANCES_SUCCESS,
                 payload: res.data
             })
+            setAlert("Successfully retrieved Category Performances", "success")
         } catch (err) {
             console.error(err);
+            setAlert("Failed to retrieve Category Performances", "danger")
             dispatch({
                 type: FETCH_CATEGORY_PERFORMANCES_ERROR,
                 payload: err.response.data.error
