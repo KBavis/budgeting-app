@@ -3,14 +3,19 @@ import SummaryContext from "../context/summary/summaryContext";
 import BudgetOverview from "../components/summary/BudgetOverview";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import CategoryPerformanceContext from '../context/category/performances/categoryPerformanceContext';
+import categoryTypeContext from '../context/category/types/categoryTypeContext';
 
 const BudgetSummaryPage = () => {
     const { summaries, fetchBudgetSummaries, setLoading } = useContext(SummaryContext);
+    const { fetchCategoryPerformancesByListOfCategoryIds } = useContext(CategoryPerformanceContext)
+    const { categoryTypes } = useContext(categoryTypeContext)
     const [selectedSummary, setSelectedSummary] = useState(null);
     const initalFetchRef = useRef(false);
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 4; // 2 columns x 2 rows
+    const [categoryTypeIds, setCategoryTypeIds] = useState([])
 
     const handleMonthYearClick = (summary) => {
         if (selectedSummary === summary) {
@@ -19,6 +24,7 @@ const BudgetSummaryPage = () => {
             setSelectedSummary(summary);
         }
     }
+
 
     const handleBackClick = () => {
         navigate("/home");
@@ -54,6 +60,32 @@ const BudgetSummaryPage = () => {
         }
     }, []);
 
+
+    // fetch category type performances for all relevant CategoryTypeIds & selected Month Year
+    useEffect(() => {
+        const fetch = async () => {
+            let month = selectedSummary.id.monthYear.month
+            let year = selectedSummary.id.monthYear.year
+            let monthYear = { "month": month.toUpperCase(), "year": parseInt(year) }
+
+            await fetchCategoryPerformancesByListOfCategoryIds(categoryTypeIds, monthYear)
+        }
+
+        if (selectedSummary && categoryTypeIds) {
+            fetch()
+        }
+
+
+    }, [selectedSummary, categoryTypeIds])
+
+    // extract list of relevant category type ids for user 
+    useEffect(() => {
+        if (categoryTypes) {
+            let ids = categoryTypes.map((type) => type.categoryTypeId)
+            setCategoryTypeIds(ids)
+        }
+
+    }, [categoryTypes])
 
     /**
      * Functionality to convert to normal case

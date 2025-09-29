@@ -6,7 +6,6 @@ import { useContext, useEffect, useState } from "react"
 const SpendingAnalysisPage = () => {
 
     const { categoryTypes } = useContext(categoryTypeContext)
-    const { fetchCategoryPerformances } = useContext(CategoryPerformanceContext)
 
     const [currentType, setCurrentType] = useState(null)
     const navigate = useNavigate()
@@ -26,22 +25,6 @@ const SpendingAnalysisPage = () => {
         }
 
     }, [categoryTypes])
-
-    // retrieve relevant CategoryPerformances corresponding to month, year, and CategoryType
-    useEffect(() => {
-
-
-        const fetch = async () => {
-            let monthYear = { "month": month.toUpperCase(), "year": parseInt(year) }
-            await fetchCategoryPerformances(parseInt(currentType.categoryTypeId), monthYear)
-        }
-
-        if (currentType) {
-            fetch()
-        }
-
-    }, [currentType])
-
 
     return (
         // gradient background on page

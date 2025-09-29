@@ -19,7 +19,8 @@ const CategoryPerformanceState = (props) => {
     const { setAlert } = useContext(AlertContext)
     const [state, dispatch] = useReducer(categoryPerformanceReducer, initialState)
 
-    const fetchCategoryPerformances = async (categoryTypeId, monthYear) => {
+
+    const fetchCategoryPerformances = async (categoryTypeIds, monthYear) => {
         if (localStorage.token) {
             setAuthToken(localStorage.token);
         }
@@ -33,19 +34,22 @@ const CategoryPerformanceState = (props) => {
             },
         };
 
+        const request = {
+            categoryTypeIds,
+            monthYear
+        }
+
         try {
             const res = await axios.post(
-                `${apiUrl}/category/performance/${categoryTypeId}`,
-                monthYear, config
+                `${apiUrl}/category/performance`,
+                request, config
             );
             dispatch({
                 type: FETCH_CATEGORY_PERFORMANCES_SUCCESS,
                 payload: res.data
             })
-            setAlert("Successfully retrieved Category Performances", "success")
         } catch (err) {
             console.error(err);
-            setAlert("Failed to retrieve Category Performances", "danger")
             dispatch({
                 type: FETCH_CATEGORY_PERFORMANCES_ERROR,
                 payload: err.response.data.error
