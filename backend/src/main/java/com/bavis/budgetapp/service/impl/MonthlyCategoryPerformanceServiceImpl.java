@@ -81,7 +81,12 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
 
     @Override
     public List<MonthlyCategoryPerformance> getPerformances(Long categoryTypeId, MonthYear monthYear) {
-        return repository.findByCategoryTypeIdAndMonthYear(categoryTypeId, monthYear);
+        return repository.findByCategoryTypeIdInAndMonthYear(Collections.singletonList(categoryTypeId), monthYear);
+    }
+
+    @Override
+    public List<MonthlyCategoryPerformance> getPerformances(List<Long> categoryTypeIds, MonthYear monthYear) {
+        return repository.findByCategoryTypeIdInAndMonthYear(categoryTypeIds, monthYear);
     }
 
     public Double getTotalSpend(List<Transaction> transactions) {

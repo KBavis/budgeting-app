@@ -35,4 +35,16 @@ public interface MonthlyCategoryPerformanceService {
      *          - list of relevant MonthlyCategoryPerformances corresponding to inputs
      */
     List<MonthlyCategoryPerformance> getPerformances(Long categoryTypeId, MonthYear monthYear);
+
+    /**
+     * Retrieve relevant MonthlyCategoryPerformances for specifc MonthYear and multiple CategoryTypes
+     *
+     * @param categoryTypeIds
+     *          - list of Category Types to retrieves CategoryPerformances for
+     * @param monthYear
+     *          - month / year to retrieve CategoryPerformances for
+     * @return
+     *          - list of relevant MonthlyCategoryPerformances
+     */
+    List<MonthlyCategoryPerformance> getPerformances(List<Long> categoryTypeIds, MonthYear monthYear);
 }
