@@ -24,6 +24,9 @@ const CategoryPerformanceState = (props) => {
             setAuthToken(localStorage.token);
         }
 
+        // set loading when attempting to retireve category peformances
+        setLoading()
+
         const config = {
             headers: {
                 "Content-Type": "application/json",
