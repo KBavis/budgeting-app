@@ -21,7 +21,7 @@ public class CategoryPerformanceController {
     @Autowired
     private MonthlyCategoryPerformanceService categoryPerformanceService;
 
-    @GetMapping("/{categoryTypeId}")
+    @PostMapping("/{categoryTypeId}")
     public List<MonthlyCategoryPerformance> getCategoryPerformances(@Valid @RequestBody MonthYear monthYear, @PathVariable(value = "categoryTypeId") Long categoryTypeId) {
         log.info("Retrieved request to fetch CategoryPerformances for MonthYear={} and CategoryTypeId={}", monthYear, categoryTypeId);
         return categoryPerformanceService.getPerformances(categoryTypeId, monthYear);

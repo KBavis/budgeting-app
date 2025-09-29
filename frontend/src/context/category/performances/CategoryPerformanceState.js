@@ -31,10 +31,9 @@ const CategoryPerformanceState = (props) => {
         };
 
         try {
-            const res = await axios.get(
+            const res = await axios.post(
                 `${apiUrl}/category/performance/${categoryTypeId}`,
-                monthYear,
-                config
+                monthYear, config
             );
             dispatch({
                 type: FETCH_CATEGORY_PERFORMANCES_SUCCESS,
