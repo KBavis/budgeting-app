@@ -8,8 +8,8 @@ import categoryTypeContext from '../context/category/types/categoryTypeContext';
 
 const BudgetSummaryPage = () => {
     const { summaries, fetchBudgetSummaries, setLoading } = useContext(SummaryContext);
-    const { fetchCategoryPerformancesByListOfCategoryIds } = useContext(CategoryPerformanceContext)
-    const { categoryTypes } = useContext(categoryTypeContext)
+    const { fetchCategoryPerformances } = useContext(CategoryPerformanceContext)
+    const { categoryTypes, fetchCategoryTypes } = useContext(categoryTypeContext)
     const [selectedSummary, setSelectedSummary] = useState(null);
     const initalFetchRef = useRef(false);
     const navigate = useNavigate();
@@ -51,6 +51,18 @@ const BudgetSummaryPage = () => {
         }
     }
 
+    // fetch category types if page is refreshed 
+    useEffect(() => {
+        const fetch = async () => {
+            fetchCategoryTypes()
+        }
+
+        if (!categoryTypes || categoryTypes.length == 0) {
+            fetch()
+        }
+
+    }, [categoryTypes])
+
     // Fetch All Entities from Backend initial Component Mounting
     useEffect(() => {
         console.log(`Component Mounted! Initial Fetch Value : ${initalFetchRef.current}`);
@@ -68,7 +80,7 @@ const BudgetSummaryPage = () => {
             let year = selectedSummary.id.monthYear.year
             let monthYear = { "month": month.toUpperCase(), "year": parseInt(year) }
 
-            await fetchCategoryPerformancesByListOfCategoryIds(categoryTypeIds, monthYear)
+            await fetchCategoryPerformances(categoryTypeIds, monthYear)
         }
 
         if (selectedSummary && categoryTypeIds) {

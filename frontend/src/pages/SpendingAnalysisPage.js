@@ -5,7 +5,7 @@ import { useContext, useEffect, useState } from "react"
 
 const SpendingAnalysisPage = () => {
 
-    const { categoryTypes } = useContext(categoryTypeContext)
+    const { categoryTypes, fetchCategoryTypes } = useContext(categoryTypeContext)
 
     const [currentType, setCurrentType] = useState(null)
     const navigate = useNavigate()
@@ -22,6 +22,18 @@ const SpendingAnalysisPage = () => {
                 }
             }
 
+        }
+
+    }, [categoryTypes])
+
+    // fetch category types if page is refreshed 
+    useEffect(() => {
+        const fetch = async () => {
+            fetchCategoryTypes()
+        }
+
+        if (!categoryTypes || categoryTypes.length == 0) {
+            fetch()
         }
 
     }, [categoryTypes])
