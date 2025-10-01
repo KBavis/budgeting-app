@@ -1,8 +1,9 @@
 import {
     FETCH_BUDGET_SUMMARIES_ERROR,
-    FETCH_BUDGET_SUMMARIES_SUCCESS
+    FETCH_BUDGET_SUMMARIES_SUCCESS,
+    SET_PREV
 } from "./types";
-import {CLEAR_ERRORS, SET_LOADING} from "../income/types";
+import { CLEAR_ERRORS, SET_LOADING } from "../income/types";
 
 /**
  * Reducer for up
@@ -10,7 +11,7 @@ import {CLEAR_ERRORS, SET_LOADING} from "../income/types";
  * @param action value containing payload
  * @returns updated summary state
  */
-export default (state,action) => {
+export default (state, action) => {
     switch (action.type) {
         case FETCH_BUDGET_SUMMARIES_SUCCESS:
             return {
@@ -24,6 +25,11 @@ export default (state,action) => {
                 ...state,
                 error: action.payload,
                 loading: false
+            }
+        case SET_PREV:
+            return {
+                ...state,
+                prev: action.payload
             }
         case CLEAR_ERRORS:
             return {

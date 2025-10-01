@@ -7,7 +7,7 @@ import CategoryPerformanceContext from '../context/category/performances/categor
 import categoryTypeContext from '../context/category/types/categoryTypeContext';
 
 const BudgetSummaryPage = () => {
-    const { summaries, fetchBudgetSummaries, setLoading } = useContext(SummaryContext);
+    const { summaries, fetchBudgetSummaries, setLoading, prev, setPrev } = useContext(SummaryContext);
     const { fetchCategoryPerformances } = useContext(CategoryPerformanceContext)
     const { categoryTypes, fetchCategoryTypes } = useContext(categoryTypeContext)
     const [selectedSummary, setSelectedSummary] = useState(null);
@@ -20,8 +20,10 @@ const BudgetSummaryPage = () => {
     const handleMonthYearClick = (summary) => {
         if (selectedSummary === summary) {
             setSelectedSummary(null);
+            setPrev(null);
         } else {
             setSelectedSummary(summary);
+            setPrev(summary)
         }
     }
 
@@ -98,6 +100,14 @@ const BudgetSummaryPage = () => {
         }
 
     }, [categoryTypes])
+
+
+    // set currently selected summary to previous (to preserve history when navigating to spending analysis and back)
+    useEffect(() => {
+        if (prev && prev != null && selectedSummary == null) {
+            handleMonthYearClick(prev)
+        }
+    }, [prev, selectedSummary])
 
     /**
      * Functionality to convert to normal case

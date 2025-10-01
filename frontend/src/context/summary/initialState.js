@@ -3,6 +3,7 @@
  */
 export const initalState = {
     summaries: [],
+    prev: null,
     loading: false,
     error: null,
 };
