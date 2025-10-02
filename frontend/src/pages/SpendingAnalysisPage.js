@@ -2,13 +2,18 @@ import { useNavigate, useParams } from "react-router-dom"
 import categoryTypeContext from "../context/category/types/categoryTypeContext"
 import CategoryPerformanceContext from "../context/category/performances/categoryPerformanceContext"
 import { useContext, useEffect, useState } from "react"
+import Loading from "../components/util/Loading"
+import CategoryPerformance from "../components/category/performances/CategoryPerformance"
+import categoryContext from "../context/category/categoryContext"
 
 const SpendingAnalysisPage = () => {
 
     const { categoryTypes, fetchCategoryTypes } = useContext(categoryTypeContext)
-    const { category_performances, fetchCategoryPerformances } = useContext(CategoryPerformanceContext)
+    const { category_performances, fetchCategoryPerformances, loading } = useContext(CategoryPerformanceContext)
+    const { categories, fetchCategories } = useContext(categoryContext)
 
     const [currentType, setCurrentType] = useState(null)
+    const [filteredPerformances, setFilteredPerformances] = useState([])
     const navigate = useNavigate()
     const { type, month, year } = useParams()
 
@@ -26,6 +31,19 @@ const SpendingAnalysisPage = () => {
         }
 
     }, [categoryTypes])
+
+    // fetch user categories if page is refreshed 
+    useEffect(() => {
+        const fetch = async () => {
+            fetchCategories()
+        }
+
+        if (!categories || categories.length == 0) {
+            console.log('Fetching Categories!')
+            fetch()
+        }
+
+    }, [categories])
 
     // fetch category types if page is refreshed 
     useEffect(() => {
@@ -53,13 +71,29 @@ const SpendingAnalysisPage = () => {
 
     }, [category_performances, currentType])
 
+    // filter category performances based on current category type and sort based on highest spend
+    useEffect(() => {
+        if (currentType && category_performances) {
+            let currPerformances = category_performances
+                .filter((curr) => curr.categoryTypeId === currentType.categoryTypeId)
+                .sort((a, b) => b.totalSpend - a.totalSpend);
+            setFilteredPerformances(currPerformances)
+        }
+
+    }, [currentType, category_performances])
+
+
+    const capitalizeFirstLetter = (word) => {
+        return word.charAt(0).toUpperCase() + word.slice(1)
+    }
+
     return (
         // gradient background on page
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 relative">
             {/* back button for navigation back to Budget Summary page 
-                    TODO:  Create state variable to track previously selected month year so when we navigate back
-                    to home page, we can "remember" which budget summary we have open (like a prevSummary initially set to null)
-            */}
+                        TODO:  Create state variable to track previously selected month year so when we navigate back
+                        to home page, we can "remember" which budget summary we have open (like a prevSummary initially set to null)
+                */}
             <button
                 onClick={() => navigate(-1)}
                 className="fixed top-4 left-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-3 rounded shadow-lg hover:cursor-pointer"
@@ -67,11 +101,28 @@ const SpendingAnalysisPage = () => {
                 ← Back
             </button>
             {/* main page content*/}
-            <div className="flex flex-col items-center justify-center flex-1 text-white">
-                <h1 className="text-3xl font-bold">{type.charAt(0).toUpperCase() + type.slice(1)} Spending Analysis </h1>
+            <div className="flex flex-col items-center justify-center flex-1 text-white mt-8">
+                <h1 className="text-2xl font-bold flex flex-col text-center">
+                    <span className="text-5xl font-extrabold mb-2">{capitalizeFirstLetter(month)} {year}</span>
+                    <span className="text-indigo-600 font-extrabold mt-3 text-3xl">{capitalizeFirstLetter(type)}</span> Spending Analysis
+                </h1>
+                <div className="flex flex-col justify-center items-center mx-auto w-3/4 mt-5 bg-white">
+                    { //TODO: Sort CategoryPerformances based on highest spend 
+                        !loading ? (
+                            filteredPerformances.map((performance) => (
+                                <CategoryPerformance
+                                    key={performance.categoryPerformanceId}
+                                    performance={performance}
+                                />
+                            ))
+                        ) : (
+                            <Loading />
+                        )
+                    }
+                </div>
             </div>
         </div>
-    )
+    );
 }
 
 export default SpendingAnalysisPage
