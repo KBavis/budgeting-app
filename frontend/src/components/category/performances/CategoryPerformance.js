@@ -23,7 +23,7 @@ const CategoryPerformance = ({ performance }) => {
 
     return (
         <div className="flex flex-col items-center w-3/4 mt-4 mb-4 border border-black px-2 py-2">
-            <h1 className="font-extrabold text-3xl text-indigo-600 text-center mb-4">
+            <h1 className="font-extrabold text-3xl text-indigo-600 text-center mb-4 underline">
                 {categoryName}
             </h1>
 
