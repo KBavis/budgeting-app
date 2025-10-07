@@ -83,6 +83,14 @@ const SpendingAnalysisPage = () => {
     }, [currentType, category_performances])
 
 
+    /**
+     * Function to capitlaize first letter of word
+     * 
+     * @param word 
+     *          - word to capitalize first letter for 
+     * @returns 
+     *          - capitalizedd word
+     */
     const capitalizeFirstLetter = (word) => {
         return word.charAt(0).toUpperCase() + word.slice(1)
     }
@@ -102,9 +110,9 @@ const SpendingAnalysisPage = () => {
             </button>
             {/* main page content*/}
             <div className="flex flex-col items-center justify-center flex-1 text-white mt-8">
-                <h1 className="text-2xl font-bold flex flex-col text-center">
+                <h1 className="text-3xl font-bold flex flex-col text-center">
                     <span className="text-5xl font-extrabold mb-2">{capitalizeFirstLetter(month)} {year}</span>
-                    <span className="text-indigo-600 font-extrabold mt-3 text-3xl">{capitalizeFirstLetter(type)}</span> Spending Analysis
+                    <span className="text-indigo-600 font-extrabold mt-3 text-4xl">{capitalizeFirstLetter(type)}</span> Spending Analysis
                 </h1>
                 <div className="flex flex-col justify-center items-center mx-auto w-3/4 mt-5 bg-white">
                     { //TODO: Sort CategoryPerformances based on highest spend 
