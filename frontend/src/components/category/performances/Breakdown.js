@@ -1,60 +1,47 @@
 import { useEffect, useState } from "react"
 
 const Breakdown = ({ performance }) => {
+    const [percentUtilized, setPercentUtilized] = useState(0.0)
 
-    const [percentUtilized, setPercentUtilized] = useState(0.00)
-
-    // set the percent utilized to be a valid percentage instead of ratio
     useEffect(() => {
-        let currUtil = (performance.categoryPercentUtilization * 100)
-        setPercentUtilized(currUtil)
+        setPercentUtilized(performance.categoryPercentUtilization * 100)
     }, [performance])
 
-
-    /**
-     * Function to get the correct color of the text based on the percent utilzied 
-     *  
-     * @returns 
-     *      - tailwindcss classname for relevant text color
-     * 
-     */
     const getTextColor = () => {
-        let ratio = performance.categoryPercentUtilization
-        if (ratio <= .50) {
-            return "text-green-500";
-        } else if (ratio <= .70) {
-            return "text-yellow-500";
-        } else if (ratio <= .90) {
-            return "text-orange-400";
-        } else if (ratio <= .99) {
-            return "text-orange-600"
-        } else {
-            return "text-red-600";
-        }
-    };
-
-
-
+        const ratio = performance.categoryPercentUtilization
+        if (ratio <= 0.5) return "text-green-500"
+        if (ratio <= 0.7) return "text-yellow-500"
+        if (ratio <= 0.9) return "text-orange-400"
+        if (ratio <= 0.99) return "text-orange-600"
+        return "text-red-600"
+    }
 
     return (
-        <div className="border border-black text-center px-2 py-3 h-full bg-white flex flex-col">
-            <h1 className="text-black font-bold text-xl underline">Spending Highlights</h1>
-            <div className="mt-2 border border-black py-3 px-1 bg-gray-100 flex-1">
-                <ul>
-                    <li className="text-black text-base px-2 font-bold mb-2 mt-2">
-                        <span className="">Total Spend:</span> <span className="text-indigo-600 ml-1">${performance.totalSpend.toFixed(2)}</span>
-                    </li>
-                    <li className="text-black text-base px-2 font-bold mb-2 mt-2">
-                        <span className="">Amount Budgeted:</span> <span className="text-indigo-600 ml-1">${performance.totalAmountAllocated.toFixed(2)}</span>
-                    </li>
-                    <li className="text-base px-2 font-bold mb-2 mt-2 text-black">
-                        <span className="">Transaction Count:</span> <span className="text-indigo-600 ml-1">{performance.transactionCount}</span>
-                    </li>
-                    <li className="text-base px-2 font-bold mb-2 mt-2 text-black">
-                        <span className="">Utilization:</span> <span className={`ml-1 ${getTextColor()}`}>{percentUtilized.toFixed(2)}%</span>
-                    </li>
-                </ul>
-            </div>
+        <div className="bg-white border border-gray-300 rounded-2xl shadow-md flex flex-col p-4 h-full">
+            {/* Title */}
+            <h1 className="text-xl font-extrabold text-indigo-700 underline mb-4 text-center">
+                Spending Highlights
+            </h1>
+
+            {/* Stats */}
+            <ul className="flex-1 flex flex-col justify-between">
+                <li className="flex justify-between text-gray-700 font-medium mb-2">
+                    <span>Total Spend:</span>
+                    <span className="text-indigo-600 font-bold">${performance.totalSpend.toFixed(2)}</span>
+                </li>
+                <li className="flex justify-between text-gray-700 font-medium mb-2">
+                    <span>Amount Budgeted:</span>
+                    <span className="text-indigo-600 font-bold">${performance.totalAmountAllocated.toFixed(2)}</span>
+                </li>
+                <li className="flex justify-between text-gray-700 font-medium mb-2">
+                    <span>Transaction Count:</span>
+                    <span className="text-indigo-600 font-bold">{performance.transactionCount}</span>
+                </li>
+                <li className="flex justify-between text-gray-700 font-medium">
+                    <span>Utilization:</span>
+                    <span className={`font-bold ${getTextColor()}`}>{percentUtilized.toFixed(2)}%</span>
+                </li>
+            </ul>
         </div>
     )
 }

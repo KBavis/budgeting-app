@@ -3,8 +3,8 @@
 const Merchant = ({ merchant }) => {
 
     return (
-        <div className="text-black mt-2">
-            <div className="flex flex-col border border-black bg-gray-100 justify-center items-center text-center py-2 px-2">
+        <div className="text-black mt-2 mb-2">
+            <div className="flex flex-col bg-gray-100 justify-center items-center text-center rounded-2xl border-gray-300 shadow-md py-2 px-2">
                 <div className="flex flex-row px-2 py-2 w-full items-center justify-center">
                     {merchant.merchantLogoUrl ? (
                         <img
