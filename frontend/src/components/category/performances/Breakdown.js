@@ -37,21 +37,21 @@ const Breakdown = ({ performance }) => {
 
 
     return (
-        <div className="border border-black text-center px-5 py-3">
+        <div className="border border-black text-center px-2 py-3 h-full bg-white flex flex-col">
             <h1 className="text-black font-bold text-xl underline">Spending Highlights</h1>
-            <div className="mt-2 border border-black py-3 px-1 text-left">
+            <div className="mt-2 border border-black py-3 px-1 bg-gray-100 flex-1">
                 <ul>
-                    <li className="text-black text-sm px-2 font-bold mb-2">
-                        <span className="">Total Spend:</span> <span className="text-slate-500 ml-1">${performance.totalSpend.toFixed(2)}</span>
+                    <li className="text-black text-base px-2 font-bold mb-2 mt-2">
+                        <span className="">Total Spend:</span> <span className="text-indigo-600 ml-1">${performance.totalSpend.toFixed(2)}</span>
                     </li>
-                    <li className="text-black text-sm px-2 font-bold mb-2">
-                        <span className="">Total Amount Budgeted:</span> <span className="text-slate-500 ml-1">${performance.totalAmountAllocated.toFixed(2)}</span>
+                    <li className="text-black text-base px-2 font-bold mb-2 mt-2">
+                        <span className="">Amount Budgeted:</span> <span className="text-indigo-600 ml-1">${performance.totalAmountAllocated.toFixed(2)}</span>
                     </li>
-                    <li className="text-sm px-2 font-bold mb-2 text-black">
+                    <li className="text-base px-2 font-bold mb-2 mt-2 text-black">
+                        <span className="">Transaction Count:</span> <span className="text-indigo-600 ml-1">{performance.transactionCount}</span>
+                    </li>
+                    <li className="text-base px-2 font-bold mb-2 mt-2 text-black">
                         <span className="">Utilization:</span> <span className={`ml-1 ${getTextColor()}`}>{percentUtilized.toFixed(2)}%</span>
-                    </li>
-                    <li className="text-sm px-2 font-bold mb-2 text-black">
-                        <span className="">Number of Transactions:</span> <span className="text-slate-500 ml-1">{performance.transactionCount}</span>
                     </li>
                 </ul>
             </div>

@@ -22,18 +22,16 @@ const CategoryPerformance = ({ performance }) => {
 
 
     return (
-        <div className="flex flex-col items-center w-3/4 mt-4 mb-4 border border-black px-2 py-2">
-            <h1 className="font-extrabold text-3xl text-indigo-600 text-center mb-4 underline">
+        <div className="flex flex-col items-center w-11/12 mt-4 mb-4 border border-black px-2 py-2 bg-gray-100">
+            <h1 className="font-extrabold text-3xl text-indigo-600 text-center mb-2 underline">
                 {categoryName}
             </h1>
-
-            {/* TODO: If this is mobile, lets make these stack veritcally instead of horizontally */}
-            <div className="flex flex-row gap-6 px-4 py-3 w-full border border-black">
-                <div className="flex-1 min-w-0 p-2">
+            <div className="flex flex-row px-4 py-3 w-full items-stretch">
+                <div className="flex-1 min-w-0 p-2 flex flex-col">
                     <Breakdown performance={performance} />
                 </div>
 
-                <div className="flex-1 min-w-0 p-2">
+                <div className="flex-1 min-w-0 p-2 flex flex-col">
                     <Top3Merchants performance={performance} />
                 </div>
             </div>

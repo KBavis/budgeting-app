@@ -71,11 +71,12 @@ const SpendingAnalysisPage = () => {
 
     }, [category_performances, currentType])
 
-    // filter category performances based on current category type and sort based on highest spend
+    // filter category performances based on current category type, sort based on highest spend, filter out Categories with 0 spend
     useEffect(() => {
         if (currentType && category_performances) {
             let currPerformances = category_performances
                 .filter((curr) => curr.categoryTypeId === currentType.categoryTypeId)
+                .filter((curr) => curr.totalSpend != 0)
                 .sort((a, b) => b.totalSpend - a.totalSpend);
             setFilteredPerformances(currPerformances)
         }
@@ -110,12 +111,18 @@ const SpendingAnalysisPage = () => {
             </button>
             {/* main page content*/}
             <div className="flex flex-col items-center justify-center flex-1 text-white mt-8">
-                <h1 className="text-3xl font-bold flex flex-col text-center">
-                    <span className="text-5xl font-extrabold mb-2">{capitalizeFirstLetter(month)} {year}</span>
-                    <span className="text-indigo-600 font-extrabold mt-3 text-4xl">{capitalizeFirstLetter(type)}</span> Spending Analysis
-                </h1>
-                <div className="flex flex-col justify-center items-center mx-auto w-3/4 mt-5 bg-white">
-                    { //TODO: Sort CategoryPerformances based on highest spend 
+                {
+                    filteredPerformances.length > 0 ? (
+                        <h1 className="text-3xl font-bold flex flex-col text-center mb-2">
+                            <span className="text-5xl font-extrabold mb-3">{capitalizeFirstLetter(month)} {year}</span>
+                            <span className="text-indigo-600 font-extrabold mt-3 b text-4xl">{capitalizeFirstLetter(type)}</span> Spending Analysis
+                        </h1>
+                    ) : (
+                        <h1 className="text-5xl font-extrabold">No spending analysis found for <span className="text-indigo-400">{capitalizeFirstLetter(month)} {year}</span></h1>
+                    )
+                }
+                <div className="flex flex-col my-5 justify-center items-center mx-auto w-3/5 mt-3 bg-white">
+                    {
                         !loading ? (
                             filteredPerformances.map((performance) => (
                                 <CategoryPerformance
