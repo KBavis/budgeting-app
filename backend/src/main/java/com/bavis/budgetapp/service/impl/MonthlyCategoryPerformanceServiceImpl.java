@@ -152,6 +152,7 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
                     .transactionCount(transactionCount)
                     .merchantName(merchantName)
                     .avgTransactionAmount(avgTransactionAmount)
+                    .merchantLogoUrl(getMerchantLogoUrl(entry.getValue()))
                     .build();
             merchantAnalyses.add(analysis);
         }
@@ -171,5 +172,22 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
         }
 
         return top3Spenders;
+    }
+
+    /**
+     * Extract logo URL corresponding to List of Transactions for a specific Merchant
+     *
+     * @param transactions
+     *          - list of Transactions corresponding to specific merchant
+     * @return
+     *          - logo URL
+     */
+    private String getMerchantLogoUrl(List<Transaction> transactions) {
+        for (Transaction transaction : transactions) {
+            if (transaction.getLogoUrl() != null) {
+                return transaction.getLogoUrl();
+            }
+        }
+        return null;
     }
 }

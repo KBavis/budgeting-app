@@ -15,4 +15,5 @@ public class MerchantAnalysis {
     private Double totalSpent;
     private Integer transactionCount;
     private Double avgTransactionAmount;
+    private String merchantLogoUrl;
 }
