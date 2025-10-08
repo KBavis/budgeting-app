@@ -16,6 +16,7 @@ const BudgetSummaryPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 4; // 2 columns x 2 rows
     const [categoryTypeIds, setCategoryTypeIds] = useState([])
+    const [sortedSummaries, setSortedSummaries] = useState([])
 
     const handleMonthYearClick = (summary) => {
         if (selectedSummary === summary) {
@@ -26,6 +27,22 @@ const BudgetSummaryPage = () => {
             setPrev(summary)
         }
     }
+
+    // Map months to numbers for easier comparison
+    const monthOrder = {
+        JANUARY: 1,
+        FEBRUARY: 2,
+        MARCH: 3,
+        APRIL: 4,
+        MAY: 5,
+        JUNE: 6,
+        JULY: 7,
+        AUGUST: 8,
+        SEPTEMBER: 9,
+        OCTOBER: 10,
+        NOVEMBER: 11,
+        DECEMBER: 12,
+    };
 
 
     const handleBackClick = () => {
@@ -109,6 +126,26 @@ const BudgetSummaryPage = () => {
         }
     }, [prev, selectedSummary])
 
+    // sort summaries based on latest month & year 
+    useEffect(() => {
+        if (!summaries) {
+            return;
+        }
+
+        let sorted = summaries.sort((a, b) => {
+
+            // if years are different, sort by descending 
+            if (b.id.monthYear.year != a.id.monthYear.year) {
+                return b.id.monthYear.year - a.id.monthYear.year;
+            }
+
+            // if years are same, sort by descending month 
+            return monthOrder[b.id.monthYear.month] - monthOrder[a.id.monthYear.month];
+        })
+        setSortedSummaries(sorted);
+
+    }, [summaries])
+
     /**
      * Functionality to convert to normal case
      *
@@ -128,7 +165,7 @@ const BudgetSummaryPage = () => {
     // Calculate the items for the current page
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentSummaries = summaries.slice(indexOfFirstItem, indexOfLastItem);
+    const currentSummaries = sortedSummaries.slice(indexOfFirstItem, indexOfLastItem);
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
