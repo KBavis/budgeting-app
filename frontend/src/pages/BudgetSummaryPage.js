@@ -230,7 +230,7 @@ const BudgetSummaryPage = () => {
                 </div>
                 <input
                     type="text"
-                    placeholder="Filter budget performances by month..."
+                    placeholder="Filter budget performances by month and year..."
                     value={filterQuery}
                     onChange={(e) => setFilterQuery(e.target.value)}
                     className="mt-4 p-2 w-1/4 mb-5 rounded-md text-black xs:mt-2 xs:p-1 xs:text-sm"

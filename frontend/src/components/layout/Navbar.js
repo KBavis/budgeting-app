@@ -58,7 +58,7 @@ const Navbar = () => {
   }, [categories, categoryTypes])
 
   return (
-    isOnboarded && (
+    isOnboarded && user && (
       <nav
         className={`fixed top-0 left-0 w-full z-50 py-4 transition-colors duration-300 ${isScrolled ? "bg-indigo-600" : "bg-transparent"
           }`}
