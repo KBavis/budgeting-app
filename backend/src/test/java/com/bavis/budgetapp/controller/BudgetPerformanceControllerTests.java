@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.constants.OverviewType;
-import com.bavis.budgetapp.entity.BudgetPerformance;
+import com.bavis.budgetapp.entity.analysis.BudgetPerformance;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.model.BudgetOverview;
 import com.bavis.budgetapp.model.BudgetPerformanceId;

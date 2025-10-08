@@ -2,7 +2,7 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.constants.OverviewType;
 import com.bavis.budgetapp.dao.BudgetPerformanceRepository;
-import com.bavis.budgetapp.entity.BudgetPerformance;
+import com.bavis.budgetapp.entity.analysis.BudgetPerformance;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.Transaction;
@@ -12,6 +12,7 @@ import com.bavis.budgetapp.model.BudgetPerformanceId;
 import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.BudgetPerformanceService;
 import com.bavis.budgetapp.service.CategoryTypeService;
+import com.bavis.budgetapp.service.MonthlyCategoryPerformanceService;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.util.GeneralUtil;
@@ -47,6 +48,9 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
 
     @Autowired
     private CategoryTypeService categoryTypeService;
+
+    @Autowired
+    private MonthlyCategoryPerformanceService categoryPerformanceService;
 
     @Override
     public List<BudgetPerformance> fetchBudgetPerformances() {
@@ -113,6 +117,10 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
                     case GENERAL -> budgetPerformance.setGeneralOverview(budgetOverview);
                 }
             }));
+
+            // Generate user's monthly category performance
+            categoryPerformanceService.generateMonthlyCategoryPerformances(user.getUserId(), monthYear, categories);
+
 
             //Add to List
             budgetPerformances.add(budgetPerformance);
@@ -189,6 +197,8 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
             log.info("Total Amount Budgeted {} and Total Amount Spent {}", totalAmountBudgeted, totalAmountSpent);
             double difference = totalAmountBudgeted - totalAmountSpent; //amount over/under budget
             double totalAmountSaved = calculateTotalAmountSaved(overviewType, totalAmountSpent, user);
+
+            // 
 
             BudgetOverview budgetOverview = BudgetOverview.builder()
                     .overviewType(overviewType)

@@ -2,7 +2,7 @@ package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.constants.OverviewType;
 import com.bavis.budgetapp.dao.BudgetPerformanceRepository;
-import com.bavis.budgetapp.entity.BudgetPerformance;
+import com.bavis.budgetapp.entity.analysis.BudgetPerformance;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.Transaction;
@@ -11,6 +11,7 @@ import com.bavis.budgetapp.model.BudgetOverview;
 import com.bavis.budgetapp.model.BudgetPerformanceId;
 import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.CategoryTypeService;
+import com.bavis.budgetapp.service.MonthlyCategoryPerformanceService;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.service.impl.BudgetPerformanceServiceImpl;
@@ -34,10 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles(profiles = "test")
 public class BudgetPerformanceServiceTests {
@@ -52,6 +50,9 @@ public class BudgetPerformanceServiceTests {
 
     @Mock
     private CategoryTypeService categoryTypeService;
+
+    @Mock
+    private MonthlyCategoryPerformanceService categoryPerformanceService;
 
     @InjectMocks
     @Spy
@@ -208,6 +209,7 @@ public class BudgetPerformanceServiceTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
+        doNothing().when(categoryPerformanceService).generateMonthlyCategoryPerformances(any(), any(), any());
         when(budgetPerformanceRepository.findById_UserId(user.getUserId())).thenReturn(budgetPerformances);
 
         //Act
@@ -226,6 +228,7 @@ public class BudgetPerformanceServiceTests {
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(budgetPerformanceRepository.findById_UserId(user.getUserId())).thenReturn(null);
+        doNothing().when(categoryPerformanceService).generateMonthlyCategoryPerformances(any(), any(), any());
 
         //Act
         List<BudgetPerformance> actualBudgetPerformances = budgetPerformanceService.fetchBudgetPerformances();

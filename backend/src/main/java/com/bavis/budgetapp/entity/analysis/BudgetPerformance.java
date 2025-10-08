@@ -1,4 +1,4 @@
-package com.bavis.budgetapp.entity;
+package com.bavis.budgetapp.entity.analysis;
 
 import com.bavis.budgetapp.model.BudgetOverview;
 import com.bavis.budgetapp.model.BudgetPerformanceId;
@@ -8,12 +8,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Data

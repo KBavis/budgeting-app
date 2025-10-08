@@ -3,22 +3,30 @@ import SummaryContext from "../context/summary/summaryContext";
 import BudgetOverview from "../components/summary/BudgetOverview";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import CategoryPerformanceContext from '../context/category/performances/categoryPerformanceContext';
+import categoryTypeContext from '../context/category/types/categoryTypeContext';
 
 const BudgetSummaryPage = () => {
-    const { summaries, fetchBudgetSummaries, setLoading } = useContext(SummaryContext);
+    const { summaries, fetchBudgetSummaries, setLoading, prev, setPrev } = useContext(SummaryContext);
+    const { fetchCategoryPerformances } = useContext(CategoryPerformanceContext)
+    const { categoryTypes, fetchCategoryTypes } = useContext(categoryTypeContext)
     const [selectedSummary, setSelectedSummary] = useState(null);
     const initalFetchRef = useRef(false);
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 4; // 2 columns x 2 rows
+    const [categoryTypeIds, setCategoryTypeIds] = useState([])
 
     const handleMonthYearClick = (summary) => {
         if (selectedSummary === summary) {
             setSelectedSummary(null);
+            setPrev(null);
         } else {
             setSelectedSummary(summary);
+            setPrev(summary)
         }
     }
+
 
     const handleBackClick = () => {
         navigate("/home");
@@ -45,6 +53,18 @@ const BudgetSummaryPage = () => {
         }
     }
 
+    // fetch category types if page is refreshed 
+    useEffect(() => {
+        const fetch = async () => {
+            fetchCategoryTypes()
+        }
+
+        if (!categoryTypes || categoryTypes.length == 0) {
+            fetch()
+        }
+
+    }, [categoryTypes])
+
     // Fetch All Entities from Backend initial Component Mounting
     useEffect(() => {
         console.log(`Component Mounted! Initial Fetch Value : ${initalFetchRef.current}`);
@@ -54,6 +74,40 @@ const BudgetSummaryPage = () => {
         }
     }, []);
 
+
+    // fetch category type performances for all relevant CategoryTypeIds & selected Month Year
+    useEffect(() => {
+        const fetch = async () => {
+            let month = selectedSummary.id.monthYear.month
+            let year = selectedSummary.id.monthYear.year
+            let monthYear = { "month": month.toUpperCase(), "year": parseInt(year) }
+
+            await fetchCategoryPerformances(categoryTypeIds, monthYear)
+        }
+
+        if (selectedSummary && categoryTypeIds) {
+            fetch()
+        }
+
+
+    }, [selectedSummary, categoryTypeIds])
+
+    // extract list of relevant category type ids for user 
+    useEffect(() => {
+        if (categoryTypes) {
+            let ids = categoryTypes.map((type) => type.categoryTypeId)
+            setCategoryTypeIds(ids)
+        }
+
+    }, [categoryTypes])
+
+
+    // set currently selected summary to previous (to preserve history when navigating to spending analysis and back)
+    useEffect(() => {
+        if (prev && prev != null && selectedSummary == null) {
+            handleMonthYearClick(prev)
+        }
+    }, [prev, selectedSummary])
 
     /**
      * Functionality to convert to normal case
@@ -128,10 +182,10 @@ const BudgetSummaryPage = () => {
                             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                                 Budget Performance for <span className="text-indigo-500 text-4xl font-extrabold">{convertToNormalCase(selectedSummary.id.monthYear.month)} {selectedSummary.id.monthYear.year}</span>
                             </h2>
-                            <BudgetOverview overview={selectedSummary.generalOverview} />
-                            <BudgetOverview overview={selectedSummary.needsOverview} />
-                            <BudgetOverview overview={selectedSummary.wantsOverview} />
-                            <BudgetOverview overview={selectedSummary.investmentOverview} />
+                            <BudgetOverview overview={selectedSummary.generalOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
+                            <BudgetOverview overview={selectedSummary.needsOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
+                            <BudgetOverview overview={selectedSummary.wantsOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
+                            <BudgetOverview overview={selectedSummary.investmentOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
                         </>
                     )}
                 </div>

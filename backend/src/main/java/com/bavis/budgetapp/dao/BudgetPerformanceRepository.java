@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.dao;
 
-import com.bavis.budgetapp.entity.BudgetPerformance;
+import com.bavis.budgetapp.entity.analysis.BudgetPerformance;
 import com.bavis.budgetapp.model.BudgetPerformanceId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
