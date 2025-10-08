@@ -88,7 +88,7 @@ const CategoryTypeInputPage = () => {
             <h1 className="text-3xl md:text-4xl font-bold mb-8 text-white xs:text-2xl">
                Set Category Type Allocations
             </h1>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center mx-3">
                {categoryTypesInput.map((categoryType) => (
                   <CategoryTypeSlider
                      key={categoryType.name}

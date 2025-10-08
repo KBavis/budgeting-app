@@ -96,7 +96,7 @@ const Register = () => {
                         className="block text-gray-700 font-bold mb-2"
                         htmlFor="name"
                      >
-                        Name
+                        Full Name
                      </label>
                      <input
                         className="shadow appearance-none border rounded w-full bg-slate-100 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -105,7 +105,7 @@ const Register = () => {
                         name="name"
                         value={name}
                         onChange={onChange}
-                        placeholder="Enter your name"
+                        placeholder="Enter your full name"
                      />
                   </div>
                   <div className="mb-4">

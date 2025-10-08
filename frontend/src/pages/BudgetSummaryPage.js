@@ -187,11 +187,19 @@ const BudgetSummaryPage = () => {
             />
             <div className="flex flex-col items-center px-8 md:px-12 h-full">
                 {!selectedSummary && (
-                    <div className="max-w-md text-center mb-4 mt-5">
-                        <h2 className="text-3xl md:text-4xl font-bold text-white">
-                            Choose Month to View Budget Performance
-                        </h2>
-                    </div>
+                    summaries && summaries.length > 0 ? (
+                        <div className="max-w-md text-center mb-4 mt-5">
+                            <h2 className="text-3xl md:text-4xl font-bold text-white">
+                                Choose Month to View Budget Performance
+                            </h2>
+                        </div>
+                    ) : (
+                        <div className="max-w-md text-center mb-4 mt-5">
+                            <h2 className="text-3xl md:text-4xl font-bold text-indigo-600">
+                                No Budget Performance's History Available
+                            </h2>
+                        </div>
+                    )
                 )}
                 <div className="flex justify-center items-center w-full h-1/5 mt-5 mb-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-2/5 xs:w-4/5">

@@ -194,6 +194,10 @@ const HomePage = () => {
    //Sync Transactions for Added Accounts
    const fetchUpdatedTransactions = async () => {
       const accountIds = accounts.map((account) => account.accountId);
+      if (!accountIds || accountIds.length == 0) {
+         setAlert("Link your accounts via Plaid to sync transactions", 'danger')
+         return;
+      }
       console.log(`Syncing Transactions for AccountIds`, accountIds);
       await syncTransactions(accountIds);
    };
@@ -284,7 +288,7 @@ const HomePage = () => {
    // Assign Categories for Previous Month Non-Allocated Trasnactions
    useEffect(() => {
 
-      if(prevMonthTransactions && prevMonthTransactions.length > 0) {
+      if (prevMonthTransactions && prevMonthTransactions.length > 0) {
          setModalPrevMonthTransactions([...prevMonthTransactions]) // create copy to iterate through
          setShowPrevTransactionsModal(true);
       }
@@ -302,11 +306,11 @@ const HomePage = () => {
    useEffect(() => {
       setLoading(
          transactionsLoading &&
-            incomesLoading &&
-            categoriesLoading &&
-            categoryTypesLoading &&
-            accountsLoading &&
-            summariesLoading
+         incomesLoading &&
+         categoriesLoading &&
+         categoryTypesLoading &&
+         accountsLoading &&
+         summariesLoading
       );
    }, [
       transactionsLoading,
@@ -317,15 +321,15 @@ const HomePage = () => {
       summariesLoading,
    ]);
 
-  useEffect(() => {
+   useEffect(() => {
       const unassigned = transactions.filter(t => !t.category || t.category.name === 'Miscellaneous');
       setTransactionsToAssign(unassigned);
       if (unassigned.length > 0 && showTransactionSwiper === null) {
          setShowTransactionSwiper(true);
       }
-  }, [transactions, showTransactionSwiper]);
+   }, [transactions, showTransactionSwiper]);
 
-  
+
 
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 relative">
@@ -446,7 +450,7 @@ const HomePage = () => {
                />
             </div>
          )}
-         {showPrevTransactionsModal && 
+         {showPrevTransactionsModal &&
             modalPrevMonthTransactions.length > 0 && (
                <PreviousTransactionsModal
                   transactions={modalPrevMonthTransactions}
@@ -465,7 +469,7 @@ const HomePage = () => {
                      }
                   }}
                />
-         )}
+            )}
          {showRenameCategoryModal && (
             <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
                <RenameCategory
@@ -476,10 +480,10 @@ const HomePage = () => {
          )}
          {showTransactionSwiper && (
             <TransactionSwiper
-                transactions={transactionsToAssign}
-                categories={categories}
-                categoryTypes={categoryTypes}
-                onClose={() => setShowTransactionSwiper(false)}
+               transactions={transactionsToAssign}
+               categories={categories}
+               categoryTypes={categoryTypes}
+               onClose={() => setShowTransactionSwiper(false)}
             />
          )}
       </div>

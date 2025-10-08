@@ -75,7 +75,7 @@ const ConnectAccounts = () => {
    }, []);
 
    return (
-      <div className="flex min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center">
          <div className="max-w-md text-center">
             <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white xs:text-2xl">
                Connect Your Accounts
@@ -107,6 +107,15 @@ const ConnectAccounts = () => {
                </div>
             )}
          </div>
+         {!accountAdded &&
+            <div className="w-full mt-3 flex justify-center">
+               <button
+                  onClick={handleOnContinue}
+                  className="text-xs border border-indigo-300 font-bold py-2 px-3 rounded-2xl bg-indigo-300 mr-5 hover:bg-transparent hover:duration-500">
+                  Skip For Now
+               </button>
+            </div>
+         }
       </div>
    );
 };

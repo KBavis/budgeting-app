@@ -75,10 +75,10 @@ const CategoryCreationContent = ({ categoryType }) => {
       const updatedCategories = selectedCategories.map((cat) =>
          cat.name === name
             ? {
-                 ...cat,
-                 budgetAllocationPercentage: value,
-                 budgetAmount: value * totalBudget,
-              }
+               ...cat,
+               budgetAllocationPercentage: value,
+               budgetAmount: value * totalBudget,
+            }
             : cat
       );
       setSelectedCategories(updatedCategories);
@@ -131,7 +131,7 @@ const CategoryCreationContent = ({ categoryType }) => {
       try {
          await addCategories(categoriesWithType);
          setAlert(
-            `${categoryType} sub-categories were added successfully`,
+            `${categoryType} categories were added successfully`,
             "success"
          );
          setSelectedCategories([]);
@@ -190,7 +190,7 @@ const CategoryCreationContent = ({ categoryType }) => {
          />
          <button
             onClick={handleSubmit}
-            className="font-bold py-3 px-6 rounded text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 xs:py-2 xs:px-4 xs:text-sm"
+            className="font-bold mb-3 py-3 px-6 rounded text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 xs:py-2 xs:px-4 xs:text-sm"
          >
             Submit
          </button>

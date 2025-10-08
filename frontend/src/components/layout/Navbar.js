@@ -2,6 +2,8 @@ import React, { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authContext from "../../context/auth/authContext";
 import transactionContext from "../../context/transaction/transactionContext";
+import categoryContext from "../../context/category/categoryContext";
+import categoryTypeContext from "../../context/category/types/categoryTypeContext";
 
 /**
  *  NavBar component to introduce Multipage Navigation and logging out capabilities
@@ -9,8 +11,12 @@ import transactionContext from "../../context/transaction/transactionContext";
 const Navbar = () => {
   const { user, logout } = useContext(authContext);
   const { transactions } = useContext(transactionContext);
+  const { categories } = useContext(categoryContext)
+  const { categoryTypes } = useContext(categoryTypeContext)
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isOnboarded, setIsOnboarded] = useState(false)
+
 
   const handleLogout = () => {
     logout(); // Call the logout function from the state
@@ -32,13 +38,30 @@ const Navbar = () => {
     };
   }, []);
 
+  // use effect to determine if user has completed onboarding 
+  useEffect(() => {
+    if (!categories || !categoryTypes) {
+      return false;
+    }
+
+    // extract relevant category type Ids
+    let categoryTypeIds = categoryTypes.map((type) => type.categoryTypeId)
+
+    // Iterate through categories and remove matched categoryTypeIds
+    categories.forEach((category) => {
+      const id = category.categoryType?.categoryTypeId;
+      // remove the id if it exists in categoryTypeIds
+      categoryTypeIds = categoryTypeIds.filter((typeId) => typeId !== id);
+    });
+
+    setIsOnboarded(categoryTypeIds.length == 0)
+  }, [categories, categoryTypes])
+
   return (
-    user &&
-    transactions && (
+    isOnboarded && (
       <nav
-        className={`fixed top-0 left-0 w-full z-50 py-4 transition-colors duration-300 ${
-          isScrolled ? "bg-indigo-600" : "bg-transparent"
-        }`}
+        className={`fixed top-0 left-0 w-full z-50 py-4 transition-colors duration-300 ${isScrolled ? "bg-indigo-600" : "bg-transparent"
+          }`}
       >
         <div className="container mx-auto flex justify-end">
           <ul className="flex space-x-6">
