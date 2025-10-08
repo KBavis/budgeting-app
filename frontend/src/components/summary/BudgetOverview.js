@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import CategoryPerformanceContext from "../../context/category/performances/categoryPerformanceContext";
+import categoryContext from "../../context/category/categoryContext";
+import categoryTypeContext from "../../context/category/types/categoryTypeContext";
 
 /**
  * Component used to represent a BudgetOverview in our BudgetPerformance entity
@@ -20,23 +23,109 @@ const BudgetOverview = ({ overview, month, year }) => {
       savedAmountAttributesTotal,
    } = overview;
 
+
    const navigate = useNavigate();
+   const [pieData, setPieData] = useState([])
+   const [categoryMap, setCategoryMap] = useState({})
+   const [currentTypeId, setCurrentTypeId] = useState(null);
 
-   // If over budget, make the spent percentage 100% for pie chart display
-   const adjustedTotalSpent =
-      totalSpent > totalAmountAllocated ? totalAmountAllocated : totalSpent;
+   const { category_performances } = useContext(CategoryPerformanceContext)
+   const { categories, fetchCategories } = useContext(categoryContext)
+   const { categoryTypes, fetchCategoryTypes } = useContext(categoryTypeContext)
 
-   const data = [
-      { name: "Spent", value: parseFloat(adjustedTotalSpent.toFixed(2)) },
-      {
-         name: "Remaining",
-         value: parseFloat(
-            Math.max(totalAmountAllocated - adjustedTotalSpent, 0).toFixed(2)
-         ),
-      },
+
+   /**
+    * Retrieve category name based on Cateogry ID 
+    * 
+    * @param id 
+    *          - category id 
+    */
+   const getCategoryName = (id) => {
+      return categoryMap[id] || "Unknown";
+   }
+
+   // fetch category types if page is refreshed 
+   useEffect(() => {
+      const fetch = async () => {
+         fetchCategoryTypes()
+      }
+
+      if (!categoryTypes || categoryTypes.length == 0) {
+         fetch()
+      }
+
+   }, [categoryTypes])
+
+   // set category type ID 
+   useEffect(() => {
+      if (!categoryTypes) {
+         return;
+      }
+
+      let currCategoryTypename = convertToNormalCase(overviewType)
+      let type = categoryTypes
+         .find((t) => t.name == currCategoryTypename);
+
+      if (type) {
+         setCurrentTypeId(type.categoryTypeId)
+      }
+
+   }, [categoryTypes])
+
+   // generate category mapping 
+   useEffect(() => {
+      if (!categories || categories.length === 0) return;
+
+      const mapping = {};
+      categories.forEach((cat) => {
+         mapping[cat.categoryId] = cat.name;
+      });
+      setCategoryMap(mapping);
+   }, [categories]);
+
+   // fetch user categories if page is refreshed 
+   useEffect(() => {
+      const fetch = async () => {
+         fetchCategories()
+      }
+
+      if (!categories || categories.length == 0) {
+         console.log('Fetching Categories!')
+         fetch()
+      }
+
+   }, [categories])
+
+   // generate relevant pie chart data when category performances refreshed
+   useEffect(() => {
+      if (!category_performances || category_performances.length == 0 || currentTypeId == null) {
+         return;
+      }
+
+      // filter category performances by those corresponding to category type 
+      const filteredPerformances = category_performances
+         .filter((curr) => curr.categoryTypeId == currentTypeId);
+
+      const currPieData = filteredPerformances.map((performance) => ({
+         name: getCategoryName(performance.categoryId),
+         value: parseFloat(performance.totalSpend.toFixed(2))
+      }))
+      setPieData(currPieData)
+
+   }, [category_performances, currentTypeId])
+
+   const COLORS = [
+      "#4f46e5",
+      "#6366f1",
+      "#818cf8",
+      "#a5b4fc",
+      "#c7d2fe",
+      "#60a5fa",
+      "#3b82f6",
+      "#2563eb",
+      "#1d4ed8",
+      "#1e40af",
    ];
-
-   const COLORS = ["#4f46e5", "#d1d5db"]; // Indigo for spent, light gray for remaining
 
    const getProgressBarColor = () => {
       const percentage = totalPercentUtilized * 100;
@@ -129,27 +218,29 @@ const BudgetOverview = ({ overview, month, year }) => {
                ${totalAmountSaved.toFixed(2)}
             </span>
          </div>
-         <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-               <Pie
-                  data={data}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-               >
-                  {data.map((entry, index) => (
-                     <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                     />
-                  ))}
-               </Pie>
-               <Tooltip />
-            </PieChart>
-         </ResponsiveContainer>
+         {pieData.length > 0 && totalSpent > 0 && (
+            <ResponsiveContainer width="100%" height={200}>
+               <PieChart>
+                  <Pie
+                     data={pieData}
+                     cx="50%"
+                     cy="50%"
+                     labelLine={false}
+                     outerRadius={80}
+                     fill="#8884d8"
+                     dataKey="value"
+                  >
+                     {pieData.map((entry, index) => (
+                        <Cell
+                           key={`cell-${index}`}
+                           fill={COLORS[index % COLORS.length]}
+                        />
+                     ))}
+                  </Pie>
+                  <Tooltip formatter={(value, name) => [`$${value.toFixed(2)}`, name]} />
+               </PieChart>
+            </ResponsiveContainer>
+         )}
          {overviewType != "GENERAL" &&
             <div className="flex justify-center mt-4">
                <button
