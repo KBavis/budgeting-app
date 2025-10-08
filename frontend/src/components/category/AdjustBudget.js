@@ -62,7 +62,7 @@ const AdjustBudget = ({
    };
 
    return (
-      <div className="mb-8 p-6 bg-white border-[3px] border-indigo-600 rounded-lg shadow-md relative xs:p-4">
+      <div className="mb-8 mx-5 p-6 bg-white border-[3px] border-indigo-600 rounded-lg shadow-md relative xs:p-4">
          <h2 className="text-3xl font-bold mb-4 text-indigo-800 xs:text-2xl">
             Adjust Budget
          </h2>
