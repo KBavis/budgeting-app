@@ -34,11 +34,10 @@ const Navbar = () => {
 
   return (
     user &&
-    transactions && (
+    transactions && transactions.length > 0 && (
       <nav
-        className={`fixed top-0 left-0 w-full z-50 py-4 transition-colors duration-300 ${
-          isScrolled ? "bg-indigo-600" : "bg-transparent"
-        }`}
+        className={`fixed top-0 left-0 w-full z-50 py-4 transition-colors duration-300 ${isScrolled ? "bg-indigo-600" : "bg-transparent"
+          }`}
       >
         <div className="container mx-auto flex justify-end">
           <ul className="flex space-x-6">
