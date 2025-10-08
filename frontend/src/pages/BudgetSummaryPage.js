@@ -17,6 +17,7 @@ const BudgetSummaryPage = () => {
     const itemsPerPage = 4; // 2 columns x 2 rows
     const [categoryTypeIds, setCategoryTypeIds] = useState([])
     const [sortedSummaries, setSortedSummaries] = useState([])
+    const [filterQuery, setFilterQuery] = useState("");
 
     const handleMonthYearClick = (summary) => {
         if (selectedSummary === summary) {
@@ -167,6 +168,17 @@ const BudgetSummaryPage = () => {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentSummaries = sortedSummaries.slice(indexOfFirstItem, indexOfLastItem);
 
+    // variable to store filtered summaries based on user input
+    const filteredSummaries = sortedSummaries.filter(summary => {
+        let month = summary.id.monthYear.month.toLowerCase()
+        let year = summary.id.monthYear.year.toString()
+        let monthAndYear = month + " " + year;
+        console.log(monthAndYear)
+
+        return monthAndYear.startsWith(filterQuery.toLowerCase());
+
+    });
+
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
             <FaArrowLeft
@@ -183,18 +195,38 @@ const BudgetSummaryPage = () => {
                 )}
                 <div className="flex justify-center items-center w-full h-1/5 mt-5 mb-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-2/5 xs:w-4/5">
-                        {currentSummaries.map((summary, index) => (
-                            <button
-                                key={index}
-                                className={`cursor-pointer text-white font-bold bg-indigo-900 rounded-lg shadow-md p-2 flex items-center justify-center space-x-2 w-full h-12 hover:bg-transparent hover:border hover:border-white hover:duration-500
+                        {filterQuery.length == 0 ? (
+                            // current page summaries if no user input provided
+                            currentSummaries.map((summary, index) => (
+                                <button
+                                    key={index}
+                                    className={`cursor-pointer text-white font-bold bg-indigo-900 rounded-lg shadow-md p-2 flex items-center justify-center space-x-2 w-full h-12 hover:bg-transparent hover:border hover:border-white hover:duration-500
                                     ${selectedSummary === summary ? 'border-2 border-white' : ''} xs:text-sm xs:h-10`}
-                                onClick={() => handleMonthYearClick(summary)}
-                            >
-                                {summary.id.monthYear.month} {summary.id.monthYear.year}
-                            </button>
-                        ))}
+                                    onClick={() => handleMonthYearClick(summary)}
+                                >
+                                    {summary.id.monthYear.month} {summary.id.monthYear.year}
+                                </button>
+                            ))) : (
+                            // filtered budget performances if user input added 
+                            filteredSummaries.map((summary, index) => (
+                                <button
+                                    key={index}
+                                    className={`cursor-pointer text-white font-bold bg-indigo-900 rounded-lg shadow-md p-2 flex items-center justify-center space-x-2 w-full h-12 hover:bg-transparent hover:border hover:border-white hover:duration-500
+                                    ${selectedSummary === summary ? 'border-2 border-white' : ''} xs:text-sm xs:h-10`}
+                                    onClick={() => handleMonthYearClick(summary)}
+                                >
+                                    {summary.id.monthYear.month} {summary.id.monthYear.year}
+                                </button>
+                            )))}
                     </div>
                 </div>
+                <input
+                    type="text"
+                    placeholder="Filter budget performances by month..."
+                    value={filterQuery}
+                    onChange={(e) => setFilterQuery(e.target.value)}
+                    className="mt-4 p-2 w-1/4 mb-5 rounded-md text-black xs:mt-2 xs:p-1 xs:text-sm"
+                />
                 <div className="flex justify-between w-2/5 mb-8 xs:w-4/5">
                     <div className="flex">
                         {currentPage > 1 && (
