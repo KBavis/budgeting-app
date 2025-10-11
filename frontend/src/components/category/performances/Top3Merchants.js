@@ -11,9 +11,11 @@ const Top3Merchants = ({ performance }) => {
     }, [performance])
 
     return (
-        <div className="text-center px-2 py-3 h-full bg-white border-gray-300 rounded-2xl shadow-md">
-            <h1 className="font-extrabold text-indigo-700 underline text-xl">Where Your Money Went?</h1>
-            <div className="w-full space-y-2">
+        <div className="bg-white border border-gray-300 rounded-2xl shadow-md flex flex-col px-2 py-3 h-full md:p-4">
+            <h1 className="text-xl font-extrabold text-indigo-700 underline mb-4 text-center">
+                Where Your Money Went
+            </h1>
+            <div className="flex-1 space-y-3">
                 {merchants.map((merchant) => (
                     <Merchant
                         key={merchant.merchantRank}
@@ -25,4 +27,4 @@ const Top3Merchants = ({ performance }) => {
     )
 }
 
-export default Top3Merchants 
+export default Top3Merchants

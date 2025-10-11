@@ -3,29 +3,38 @@
 const Merchant = ({ merchant }) => {
 
     return (
-        <div className="text-black mt-2 mb-2">
-            <div className="flex flex-col bg-gray-100 justify-center items-center text-center rounded-2xl border-gray-300 shadow-md py-2 px-2">
-                <div className="flex flex-row px-2 py-2 w-full items-center justify-center">
-                    {merchant.merchantLogoUrl ? (
-                        <img
-                            src={merchant.merchantLogoUrl}
-                            alt="Transaction Logo"
-                            className="w-6 h-6 rounded-full flex-shrink-0"
-                        />
-                    ) : (
-                        <img
-                            src="https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
-                            className="w-6 h-6 rounded-full flex-shrink-0"
-                        />
-                    )}
-                    <p className="font-bold text-sm ml-2">{merchant.merchantName}</p>
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm p-2">
+            {/* Merchant Header */}
+            <div className="flex items-center mb-3 pb-2 border-b border-gray-200">
+                {merchant.merchantLogoUrl ? (
+                    <img
+                        src={merchant.merchantLogoUrl}
+                        alt="Merchant Logo"
+                        className="w-8 h-8 rounded-full flex-shrink-0 border border-gray-300"
+                    />
+                ) : (
+                    <img
+                        src="https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
+                        alt="Default Logo"
+                        className="w-8 h-8 rounded-full flex-shrink-0 border border-gray-300"
+                    />
+                )}
+                <p className="font-bold text-base text-gray-800 ml-3">{merchant.merchantName}</p>
+            </div>
+            
+            {/* Merchant Stats */}
+            <div className="space-y-1.5">
+                <div className="flex justify-between text-gray-700 font-medium text-sm">
+                    <span>Total Spend:</span>
+                    <span className="text-indigo-600 font-bold">${merchant.totalSpent.toFixed(2)}</span>
                 </div>
-                <div className="flex mt-2">
-                    <ul>
-                        <li className="text-xs font-bold">Total Spend: <span className="text-indigo-600">${merchant.totalSpent.toFixed(2)}</span></li>
-                        <li className="text-xs font-bold">Average Transaction Amount: <span className="text-indigo-600">${merchant.avgTransactionAmount.toFixed(2)}</span></li>
-                        <li className="text-xs font-bold">Number of Transactions: <span className="text-indigo-600">{merchant.transactionCount}</span></li>
-                    </ul>
+                <div className="flex justify-between text-gray-700 font-medium text-sm">
+                    <span>Avg Transaction:</span>
+                    <span className="text-indigo-600 font-bold">${merchant.avgTransactionAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-700 font-medium text-sm">
+                    <span>Transactions:</span>
+                    <span className="text-indigo-600 font-bold">{merchant.transactionCount}</span>
                 </div>
             </div>
         </div>
