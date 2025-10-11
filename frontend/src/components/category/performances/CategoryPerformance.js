@@ -22,16 +22,16 @@ const CategoryPerformance = ({ performance }) => {
 
 
     return (
-        <div className="flex flex-col items-center w-11/12 mt-4 mb-4 border border-black px-2 py-2 bg-gray-100">
+        <div className="flex flex-col items-center w-full xs:w-11/12 mt-4 mb-4 border border-black px-2 py-2 bg-gray-100">
             <h1 className="font-extrabold text-3xl text-indigo-600 text-center mb-2 underline">
                 {categoryName}
             </h1>
-            <div className="flex flex-col md:flex-row px-4 py-3 w-full items-stretch">
-                <div className="flex-1 min-w-0 p-2 flex flex-col">
+            <div className="flex flex-col md-xl:flex-row p-0 xs:px-4 xs:py-3 w-full items-stretch ">
+                <div className="flex-1 p-2 flex flex-col xs:min-win-0">
                     <Breakdown performance={performance} />
                 </div>
 
-                <div className="flex-1 min-w-0 p-2 flex flex-col">
+                <div className="flex-1 p-2 flex flex-col min-win-0">
                     <Top3Merchants performance={performance} />
                 </div>
             </div>
