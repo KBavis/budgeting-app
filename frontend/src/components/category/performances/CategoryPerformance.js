@@ -26,8 +26,8 @@ const CategoryPerformance = ({ performance }) => {
             <h1 className="font-extrabold text-3xl text-indigo-600 text-center mb-2 underline">
                 {categoryName}
             </h1>
-            <div className="flex flex-col md-xl:flex-row p-0 xs:px-4 xs:py-3 w-full items-stretch ">
-                <div className="flex-1 p-2 flex flex-col xs:min-win-0">
+            <div className="flex flex-col md-xl:flex-row p-0 xs:px-4 xs:py-3 w-full md-xl:items-start">
+                <div className="flex-1 p-2 flex flex-col min-win-0">
                     <Breakdown performance={performance} />
                 </div>
 
