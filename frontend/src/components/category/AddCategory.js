@@ -122,7 +122,7 @@ const AddCategory = ({ onClose }) => {
 
    return (
       <div className="fixed inset-0 flex items-center justify-center z-40 backdrop-blur-sm overflow-y-auto">
-         <div className="bg-white p-8 rounded shadow-lg w-1/2 flex flex-col justify-between xs:w-11/12 xs:p-4">
+         <div className="bg-white p-8 rounded shadow-lg lg:w-1/2 flex flex-col justify-between xs:w-11/12 xs:p-4">
             <div className="flex justify-center items-center mb-4 xs:mb-2">
                <div>
                   <h2 className="text-3xl font-extrabold text-indigo-600 text-center mb-2 xs:text-2xl">

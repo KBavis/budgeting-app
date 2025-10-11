@@ -102,7 +102,7 @@ const SpendingAnalysisPage = () => {
             {/* back button for navigation back to Budget Summary page*/}
             <button
                 onClick={() => navigate(-1)}
-                className="fixed top-4 left-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-3 rounded shadow-lg hover:cursor-pointer"
+                className="fixed top-12 left-2 md:top-4 md:left-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold p-1 md:py-2 md:px-3 rounded shadow-lg hover:cursor-pointer"
             >
                 ← Back
             </button>
@@ -110,7 +110,7 @@ const SpendingAnalysisPage = () => {
             <div className="flex flex-col items-center justify-center flex-1 text-white mt-10 pt-2">
                 {
                     filteredPerformances.length > 0 ? (
-                        <h1 className="text-3xl font-bold flex flex-col text-center mb-2">
+                        <h1 className="text-3xl font-bold flex flex-col text-center mb-2 pt-5">
                             <span className="text-5xl font-extrabold mb-3">{capitalizeFirstLetter(month)} {year}</span>
                             <span className="text-indigo-600 font-extrabold mt-3 b text-4xl">{capitalizeFirstLetter(type)}</span> Spending Analysis
                         </h1>
@@ -118,7 +118,7 @@ const SpendingAnalysisPage = () => {
                         <h1 className="text-5xl font-extrabold">No spending analysis found for <span className="text-indigo-400">{capitalizeFirstLetter(month)} {year}</span></h1>
                     )
                 }
-                <div className="flex flex-col my-5 justify-center items-center mx-auto w-3/5 mt-3 bg-white">
+                <div className="flex flex-col w-11/12 my-5 justify-center items-center mx-auto md:w-3/5 mt-3 bg-white">
                     {
                         !loading ? (
                             filteredPerformances.map((performance) => (

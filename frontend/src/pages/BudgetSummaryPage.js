@@ -185,7 +185,7 @@ const BudgetSummaryPage = () => {
                 className="text-3xl text-white ml-5 mt-5 hover:scale-105 hover:text-gray-200 cursor-pointer z-[500] xs:text-2xl xs:ml-3 xs:mt-3"
                 onClick={handleBackClick}
             />
-            <div className="flex flex-col items-center px-8 md:px-12 h-full">
+            <div className="flex flex-col items-center px-4 h-full md:px-12">
                 {!selectedSummary && (
                     summaries && summaries.length > 0 ? (
                         <div className="max-w-md text-center mb-4 mt-5">
@@ -201,14 +201,14 @@ const BudgetSummaryPage = () => {
                         </div>
                     )
                 )}
-                <div className="flex justify-center items-center w-full h-1/5 mt-5 mb-8">
+                <div className="flex justify-center items-center w-full h-1/5 sm:h-3/5 mt-5 mb-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full sm:w-2/5 xs:w-4/5">
                         {filterQuery.length == 0 ? (
                             // current page summaries if no user input provided
                             currentSummaries.map((summary, index) => (
                                 <button
                                     key={index}
-                                    className={`cursor-pointer text-white font-bold bg-indigo-900 rounded-lg shadow-md p-2 flex items-center justify-center space-x-2 w-full h-12 hover:bg-transparent hover:border hover:border-white hover:duration-500
+                                    className={`cursor-pointer text-white font-bold bg-indigo-900 rounded-lg shadow-md flex items-center justify-center space-x-2 w-full h-8 md:h-12 hover:bg-transparent hover:border hover:border-white hover:duration-500
                                     ${selectedSummary === summary ? 'border-2 border-white' : ''} xs:text-sm xs:h-10`}
                                     onClick={() => handleMonthYearClick(summary)}
                                 >
@@ -230,10 +230,10 @@ const BudgetSummaryPage = () => {
                 </div>
                 <input
                     type="text"
-                    placeholder="Filter budget performances by month and year..."
+                    placeholder="Filter budget performances..."
                     value={filterQuery}
                     onChange={(e) => setFilterQuery(e.target.value)}
-                    className="mt-4 p-2 w-1/4 mb-5 rounded-md text-black xs:mt-2 xs:p-1 xs:text-sm"
+                    className="mt-4 p-2 w-3/4 lg:w-1/4 mb-5 rounded-md text-black xs:mt-2 xs:p-1 xs:text-sm"
                 />
                 <div className="flex justify-between w-2/5 mb-8 xs:w-4/5">
                     <div className="flex">
@@ -253,7 +253,7 @@ const BudgetSummaryPage = () => {
                         )}
                     </div>
                 </div>
-                <div className="flex flex-col items-center w-full h-4/5 overflow-y-auto scrollbar-hide">
+                <div className="flex flex-col items-center w-full h-4/5 overflow-y-auto scrollbar-hide text-center">
                     {selectedSummary && (
                         <>
                             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">

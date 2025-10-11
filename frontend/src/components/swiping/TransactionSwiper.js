@@ -123,7 +123,18 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
                         <button onClick={handleNameSave} className="save-button">Save</button>
                     </div>
                     ) : (
-                    <h3 onClick={() => setIsEditingName(true)}>{editedName} <span className="edit-indicator">✏️</span></h3>
+                    <div className="transaction-name-container">
+                      <h3 onClick={() => setIsEditingName(true)}>
+                        {editedName} <span className="edit-indicator">✏️</span>
+                      </h3>
+                      <span className="transaction-date-inline">
+                        {new Date(currentTransaction.date).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
                     )}
                 </div>
                 <button onClick={handleDelete} className="delete-button">🗑️</button>
