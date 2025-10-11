@@ -102,7 +102,7 @@ const SpendingAnalysisPage = () => {
             {/* back button for navigation back to Budget Summary page*/}
             <button
                 onClick={() => navigate(-1)}
-                className="fixed top-4 left-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-2 md:py-2 md:px-3 rounded shadow-lg hover:cursor-pointer"
+                className="fixed top-12 left-6 md:top-4 md:left-4 z-50 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-2 md:py-2 md:px-3 rounded shadow-lg hover:cursor-pointer"
             >
                 ← Back
             </button>
