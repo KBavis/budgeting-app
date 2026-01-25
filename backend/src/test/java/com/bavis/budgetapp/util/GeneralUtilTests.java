@@ -84,7 +84,14 @@ public class GeneralUtilTests {
     public  void testIsDateInPreviousMonth_Successful() {
         //Arrange date to be previous month
         LocalDate now = LocalDate.now();
-        LocalDate dateToTest = LocalDate.of(now.getYear(), now.getMonthValue() - 1, 19);
+
+        int yearToTest = now.getYear();
+        int monthToTest = now.getMonthValue() - 1;
+
+        // account for unit tests in January
+        LocalDate dateToTest = monthToTest == 0 ?
+                LocalDate.of(yearToTest - 1, 12, 19) :
+                LocalDate.of(yearToTest, yearToTest, 19);
 
         //Act
         boolean validity = GeneralUtil.isDateInPreviousMonth(dateToTest);

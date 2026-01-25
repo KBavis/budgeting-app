@@ -90,7 +90,12 @@ public class GeneralUtil {
         int currentYear = currentDate.getYear();
         int currentMonth =  currentDate.getMonthValue();
 
-        return currentYear == dateToCheck.getYear() && currentMonth - 1 == dateToCheck.getMonthValue(); // account for previous month
+        // Account for instance where current month is January
+        if (currentMonth != 1){
+            return currentYear == dateToCheck.getYear() && currentMonth - 1 == dateToCheck.getMonthValue(); // account for previous month
+        } else {
+            return dateToCheck.getYear() == currentYear - 1 && 12 == dateToCheck.getMonthValue();
+        }
     }
 
     /**
