@@ -41,7 +41,15 @@ public class TransactionFilterTests {
 
     @Test
     void testPrevMonthTransactionFilters_shouldPass() {
-        sampleTransaction.setDate(LocalDate.now().minusMonths(1));
+        int monthToTest = LocalDate.now().getMonthValue() - 1;
+        int yearToTest = LocalDate.now().getYear();
+
+        // account for unit tests in January
+        LocalDate dateToTest = monthToTest == 0 ?
+                LocalDate.of(yearToTest - 1, 12, 19) :
+                LocalDate.of(yearToTest, yearToTest, 19);
+
+        sampleTransaction.setDate(dateToTest);
 
         List<Transaction> accounted = new ArrayList<>();
         boolean result = transactionFilters.prevMonthTransactionFilters(accounted).test(sampleTransaction);
