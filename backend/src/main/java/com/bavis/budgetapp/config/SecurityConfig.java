@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.config;
 
 import com.bavis.budgetapp.filter.JwtAuthenticationFilter;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,11 +15,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.http.HttpMethod;
 
 /**
  * @author Kellen Bavis
  *
- * Class utilized to configure our Security regarding incoming HTTP Requests
+ *         Class utilized to configure our Security regarding incoming HTTP
+ *         Requests
  */
 @Configuration
 @EnableWebSecurity
@@ -35,25 +38,25 @@ public class SecurityConfig {
      * Configure HTTP Security and Apply JWT Authentication Filter to HTTP Requests
      *
      * @param http
-     *      - HTTP request security used to configure web security
+     *             - HTTP request security used to configure web security
      * @return
-     *      - HTTP Security Filter Chain based on configurations
+     *         - HTTP Security Filter Chain based on configurations
      * @throws Exception
-     *      - Exception that could occur while performing filter
+     *                   - Exception that could occur while performing filter
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
-                .authorizeHttpRequests((authz) ->
-                        authz
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
-                                .requestMatchers("/auth/authenticate", "/auth/register", "/error", "/actuator/health").permitAll() // Allow registration/authentication endpoints
-                                .anyRequest().authenticated() // Authenticate all other requests
+                .authorizeHttpRequests((authz) -> authz
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
+                        .requestMatchers("/auth/authenticate", "/auth/register", "/error", "/actuator/health")
+                        .permitAll() // Allow registration/authentication endpoints
+                        .anyRequest().authenticated() // Authenticate all other requests
                 )
-                .sessionManagement((session) ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless session
+                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless
+                                                                                                               // session
                 )
                 .authenticationProvider(authenticationProvider) // Set the authentication provider
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter
@@ -65,7 +68,7 @@ public class SecurityConfig {
      * Configures our CORS Mappings for our production/development front-end
      *
      * @return
-     *      - WebMvcConfigurer utilized for our CORS Mappings
+     *         - WebMvcConfigurer utilized for our CORS Mappings
      */
     @Bean
     public WebMvcConfigurer corsConfigurer() {
