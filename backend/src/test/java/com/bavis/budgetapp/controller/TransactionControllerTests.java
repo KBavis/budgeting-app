@@ -136,6 +136,13 @@ public class TransactionControllerTests {
 
         int currentMonth = date.getMonthValue();
         int currentYear = date.getYear();
+
+        // account for issues where the current month is January of the new year
+        if (currentMonth == 1) {
+            currentMonth = 12;
+            currentYear -= 1;
+        }
+
         transactionThree = Transaction.builder()
                 .transactionId("54321EDCBA")
                 .date(LocalDate.of(currentYear, currentMonth - 1, 19)) // previous month transaction
