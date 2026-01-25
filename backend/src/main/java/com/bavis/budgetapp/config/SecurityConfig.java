@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
                 .authorizeHttpRequests((authz) ->
                         authz
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                                 .requestMatchers("/auth/authenticate", "/auth/register", "/error", "/actuator/health").permitAll() // Allow registration/authentication endpoints
                                 .anyRequest().authenticated() // Authenticate all other requests
                 )
