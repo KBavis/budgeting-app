@@ -1,17 +1,23 @@
-from suggestion_engine.inference.outcomes.category_suggestion import CategorySuggestion
-from suggestion_engine.inference.outcomes.uncategorized_suggestion import UncategorizedSuggestion
+import logging
+
+from suggestion_engine.inference.schema import CategorySuggestion
 from suggestion_engine.training.preprocess import data
 import joblib
 import pandas as pd
 import numpy as np
 
+logger = logging.getLogger(__name__)
+
 
 def predict_category(user_id, transaction, onnx_model, confidence):
-    print(f"Attempting to predict the Category for the following Transaction metadata: {transaction}")
 
     # load joblibs from training
-    preprocesor = joblib.load(f'suggestion_engine/artifacts/{user_id}/preprocessor.joblib')
-    label_encoder = joblib.load(f"suggestion_engine/artifacts/{user_id}/label_encoder.joblib")
+    try:
+        preprocesor = joblib.load(f'suggestion_engine/artifacts/{user_id}/preprocessor.joblib')
+        label_encoder = joblib.load(f"suggestion_engine/artifacts/{user_id}/label_encoder.joblib")
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while loading the preprocessor and label encoder for user {user_id} with error: {e}")
+        raise Exception(f"An unexpected error occurred while loading the preprocessor and label encoder for user {user_id} with error: {e}")
 
     # prepare input data 
     txs = [transaction.dict()]
