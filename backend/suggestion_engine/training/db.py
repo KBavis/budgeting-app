@@ -1,6 +1,7 @@
 import os
 from psycopg2 import connect
 
+
 def fetch_transactions(user_id, connection): 
 
     #TODO: Remove logo_url from WHERE clause once description data is retrievable for venmo transactions
@@ -24,7 +25,14 @@ def fetch_transactions(user_id, connection):
                 return []
 
             for row in rows:
-                transactions.append({"category_id": row[0], "amount": row[1], "date_time": row[2], "merchant_name": row[3], "plaid_detailed_category": row[4], "plaid_primary_category": row[5]})
+                transactions.append({
+                    "category_id": row[0],
+                    "amount": row[1],
+                    "date_time": row[2],
+                    "merchant": row[3],              
+                    "plaid_detailed_category": row[4],
+                    "plaid_primary_category": row[5],
+                })
         
         return transactions
 
@@ -35,14 +43,14 @@ def fetch_transactions(user_id, connection):
 
 def connect_db():
     """
-    Connect our database
+    Connect to the database.
 
     Raises:
-        ValueError: ensure all env variables present
-        e: failure to establish connection
+        ValueError: if any required env variable is missing
+        Exception: if the connection cannot be established
 
     Returns:
-        connection (pyscopg.Connection): pg DB connection
+        connection (psycopg2.Connection): pg DB connection
     """
 
     try:
