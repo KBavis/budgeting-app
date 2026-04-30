@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from backend.suggestion_engine.inference.manager import ModelManager
+from suggestion_engine.inference.manager import ModelManager
 from suggestion_engine.inference import predict
 from suggestion_engine.inference.schema import UncategorizedSuggestion
 from suggestion_engine.inference.schema import CategorySuggestionRequest
@@ -27,14 +27,14 @@ def category_suggestion(request: CategorySuggestionRequest):
         return UncategorizedSuggestion(reasons=['Unable to currently make accurate predictions for Venmo Transactions'])
 
     # retrieve model
-    onnx_model, accuracy, _,  = manager.get_model(user_id)
+    onnx_model, _, _,  = manager.get_model(user_id)
     if not onnx_model:
         logger.warning(f"No model could be retrieved for user ID {user_id}, unable to make category suggestion")
         return UncategorizedSuggestion(reasons=[f'No existing model exists for user ID {user_id}'])
     
     # make suggestion
     try:
-        suggestion = predict.predict_category(user_id, request.transaction, onnx_model, accuracy)
+        suggestion = predict.predict_category(user_id, request.transaction, onnx_model)
         return suggestion
     except Exception as e:
         logger.error(f"An unexpected error occurred while making a category suggestion for user ID {user_id} with error: {e}")
