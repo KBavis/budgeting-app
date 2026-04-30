@@ -1,17 +1,19 @@
 from dotenv import load_dotenv
 import argparse
-from suggestion_engine.training.preprocess import db
+from suggestion_engine.training import db
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from suggestion_engine.training.models.classifer import CategoryPredictor
+from sklearn.utils.class_weight import compute_class_weight
+from suggestion_engine.training.classifier import CategoryPredictor
 from torch.utils.data import DataLoader, TensorDataset
 import torch
 from torch import nn
+import numpy as np
 import os
 import joblib
 import json
 from datetime import datetime
-from suggestion_engine.training.preprocess.data import preprocess
+from suggestion_engine.training.data import preprocess
 
 def main(user_id):
     """
@@ -29,34 +31,37 @@ def main(user_id):
     X, y, preprocessor = preprocess(transactions)
 
     # create data loaders 
-    train_dataloader, test_dataloader, label_encoder = create_data_loaders(X, y)
+    train_dataloader, test_dataloader, label_encoder, class_weights = create_data_loaders(X, y)
     num_classes = len(label_encoder.classes_)
 
     # create model 
     model = CategoryPredictor(X.shape[1], num_categories=num_classes)
 
     # train/test model 
-    best_model, best_accuracy = optimization_loop(train_dataloader, test_dataloader, model)
+    best_model, best_accuracy = optimization_loop(train_dataloader, test_dataloader, model, class_weights)
 
     # save artifacts 
     save_artifacts(best_model, preprocessor, label_encoder, best_accuracy, user_id)
 
 
 
-def optimization_loop(train_data_loader, test_data_loader, model):
+def optimization_loop(train_data_loader, test_data_loader, model, class_weights):
     """
-    Loop through training and testing of our model
+    Loop through training and testing of our model.
 
     Args:
-        train_data_loader (): 
-        test_data_loader (_type_): _description_
-        model (_type_): _description_
+        train_data_loader (DataLoader): training batches
+        test_data_loader (DataLoader): validation batches
+        model (nn.Module): the CategoryPredictor to train
+        class_weights (torch.Tensor): per-class weights to counteract label imbalance
 
     Returns:
-        _type_: _description_
+        best_model (nn.Module): model snapshot with the lowest validation loss
+        best_accuracy (float): validation accuracy (%) at that checkpoint
     """
+    
 
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.CrossEntropyLoss(weight=class_weights) # rare categories are weighted higher (model forced to learn about minority categories)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     epochs = 250
@@ -154,16 +159,27 @@ def optimization_loop(train_data_loader, test_data_loader, model):
 
 def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     """
-    Generate relevant training and testing data loaders and encoded labels
+    Generate training/validation data loaders, a fitted LabelEncoder, and
+    class weights for imbalanced category distributions.
+
+    Class weights are computed to account for the fact that we expect 
+    imbalanced Category distributions (i.e 400+ transactions for Food & Dining, 
+    but only 5 transactions for a niche category). This cuases the 
+    loss function (CrossEntropyLoss) to discover shortcut which is 
+    always predicting frequently used Categories.
+
 
     Args:
-        X (pd.Dataframe): inputs
-        y (np.array): outputs
-        test_size (float, optional): testing size. Defaults to 0.2.
-        batch_size (int, optional): batch size. Defaults to 32.
+        X (np.ndarray): preprocessed feature matrix
+        y (np.ndarray): raw category_id labels
+        test_size (float): fraction of data reserved for validation (default 0.2)
+        batch_size (int): mini-batch size (default 32)
 
     Returns:
-        _type_: _description_
+        train_loader (DataLoader)
+        test_loader (DataLoader)
+        le (LabelEncoder): fitted encoder for decoding predicted class indices
+        class_weights (torch.Tensor): per-class weights tensor for CrossEntropyLoss
     """
 
     le = LabelEncoder()
@@ -173,6 +189,11 @@ def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     X_train, X_val, y_train, y_val = train_test_split(
         X, y_encoded, test_size=test_size, random_state=42
     )
+
+    # compute class weights on training split to handle imbalanced categories
+    classes = np.unique(y_train)
+    weights = compute_class_weight('balanced', classes=classes, y=y_train)
+    class_weights = torch.tensor(weights, dtype=torch.float)
 
     train_dataset = TensorDataset(
         torch.from_numpy(X_train).float(),
@@ -187,7 +208,7 @@ def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
-    return train_loader, test_loader, le
+    return train_loader, test_loader, le, class_weights
 
 
 def save_artifacts(model, preprocessor, label_encoder, best_accuracy, user_id):
