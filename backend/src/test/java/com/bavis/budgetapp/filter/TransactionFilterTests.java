@@ -47,7 +47,7 @@ public class TransactionFilterTests {
         // account for unit tests in January
         LocalDate dateToTest = monthToTest == 0 ?
                 LocalDate.of(yearToTest - 1, 12, 19) :
-                LocalDate.of(yearToTest, yearToTest, 19);
+                LocalDate.of(yearToTest, monthToTest, 19);
 
         sampleTransaction.setDate(dateToTest);
 
