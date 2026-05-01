@@ -192,15 +192,15 @@ def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     le = LabelEncoder()
     y_encoded = le.fit_transform(y)
 
+    # compute class weights on all user data to ensure the weight tensor 
+    classes = np.unique(y_encoded)
+    weights = compute_class_weight('balanced', classes=classes, y=y_encoded)
+    class_weights = torch.tensor(weights, dtype=torch.float)
+
     # split data
     X_train, X_val, y_train, y_val = train_test_split(
         X, y_encoded, test_size=test_size, random_state=42
     )
-
-    # compute class weights on training split to handle imbalanced categories
-    classes = np.unique(y_train)
-    weights = compute_class_weight('balanced', classes=classes, y=y_train)
-    class_weights = torch.tensor(weights, dtype=torch.float)
 
     train_dataset = TensorDataset(
         torch.from_numpy(X_train).float(),
