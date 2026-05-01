@@ -52,13 +52,19 @@ def predict_category(user_id, transaction, onnx_model):
     if not inference:
         raise Exception('An unexpected failure occured while making inference using ONNX model')
 
-    # convert raw logits → softmax probabilities
-    # argmax on probs is equivalent to argmax on logits, but probs give us
-    # a meaningful per-prediction confidence score in [0, 1]
-    logits = inference[0]
-    probs = softmax(logits, axis=1)
-    predicted_class = int(np.argmax(probs, axis=1)[0])
-    per_prediction_confidence = float(probs[0][predicted_class])
+    
+    """
+    TODO: Now that we have the actual confidence level of a particular prediction, we should enhance our 
+    current logic to account for this confidence score. For example, if we have a 95% confidence level 
+    for a prediction, we should automatically assign the transaction to that category, instead of 
+    having the user confirm the category. If it's lower than X percentage, we should have them confirm it 
+    """
+
+
+    logits = inference[0] # extract raw model output (logits)
+    probs = softmax(logits, axis=1) # convert logits to probabilities
+    predicted_class = int(np.argmax(probs, axis=1)[0]) # find index of the highest probability value (the model's prediction)
+    per_prediction_confidence = float(probs[0][predicted_class]) # extract the probability of the predicted class 
 
     # decode integer class index back to the user's category_id
     encoded_map = {i: cls for i, cls in enumerate(label_encoder.classes_)}
