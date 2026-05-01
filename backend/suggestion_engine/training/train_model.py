@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+import copy
 import argparse
 from suggestion_engine.training import db
 from sklearn.preprocessing import LabelEncoder
@@ -76,7 +77,7 @@ def optimization_loop(train_data_loader, test_data_loader, model, class_weights)
     epochs = 250
     best_test_loss = float('inf')
     counter = 0
-    patience = 5
+    patience = 20
 
 
     def train_loop():
@@ -139,7 +140,7 @@ def optimization_loop(train_data_loader, test_data_loader, model, class_weights)
 
 
     
-    best_model = model
+    best_model = None
     best_accuracy = None
 
     for training_iteration in range(epochs):
@@ -149,7 +150,8 @@ def optimization_loop(train_data_loader, test_data_loader, model, class_weights)
 
 
         if test_loss < best_test_loss:
-            best_model = model
+            # use deepcopy to snapshot the model weights at this exact epoch
+            best_model = copy.deepcopy(model)
             best_test_loss = test_loss
             best_accuracy = test_accuracy
             counter = 0
