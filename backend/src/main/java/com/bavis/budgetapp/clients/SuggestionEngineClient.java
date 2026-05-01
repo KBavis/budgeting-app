@@ -42,6 +42,8 @@ public class SuggestionEngineClient {
      *          - suggest Category ID
      */
     public Long predictCategory(CategorySuggestionRequest request) throws JsonProcessingException {
+        // TODO: This workflow seems like it could use some re-working (i.e better request construction, error handling, bulk capabilities, etc)
+
         String jsonPayload = mapper.writeValueAsString(request);
         String url = baseUrl + "suggestion";
 
@@ -73,7 +75,7 @@ public class SuggestionEngineClient {
                 UncategorizedSuggestionResponse uncategorizedResponse = mapper.readValue(json, UncategorizedSuggestionResponse.class);
 
                 //TODO: figure out better way to handle this
-                log.info("Failed to categorize Transaction: {}\nReasons: {}\nSuggested Actions: {}", request.getTransactionMetadata(), uncategorizedResponse.getReasons(), uncategorizedResponse.getSuggestedActions());
+                log.error("Failed to categorize Transaction: {}\nReasons: {}\nSuggested Actions: {}", request.getTransactionMetadata(), uncategorizedResponse.getReasons(), uncategorizedResponse.getSuggestedActions());
                 return null;
             }
 

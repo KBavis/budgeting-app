@@ -5,7 +5,7 @@ import asyncio
 import logging
 import sys
 from datetime import datetime, timedelta
-import glob
+from pathlib import Path
 
 
 # set up logging
@@ -109,12 +109,19 @@ async def train_single_user_model(user: str):
         if process.returncode == 0:
             logger.info(f"User {user} training completed successfully")
             if stdout:
-                logger.debug(f"Training output for user {user}: {stdout.decode().strip()}")
+                logger.info(f"--- Subprocess Output (User {user}) ---\n{stdout.decode().strip()}")
+            if stderr:
+                logger.info(f"--- Subprocess Stderr (User {user}) ---\n{stderr.decode().strip()}")
             return True
         else:
-            error_msg = stderr.decode().strip() if stderr else f"Process exited with code {process.returncode}"
-            logger.error(f"Training failed for user {user}: {error_msg}")
-            raise RuntimeError(f"Training script failed: {error_msg}")
+            stdout_msg = stdout.decode().strip() if stdout else ""
+            stderr_msg = stderr.decode().strip() if stderr else f"Process exited with code {process.returncode}"
+            logger.error(f"Training failed for user {user}")
+            if stdout_msg:
+                logger.error(f"Last Stdout:\n{stdout_msg}")
+            if stderr_msg:
+                logger.error(f"Last Stderr:\n{stderr_msg}")
+            raise RuntimeError(f"Training script failed for user {user}")
 
     except asyncio.TimeoutError:
         logger.error(f"Training timeout for user {user}")
@@ -124,25 +131,26 @@ async def train_single_user_model(user: str):
         raise
 
 
-def cleanup_logs(log_dir="logs", prefix="nightly_training_", days=15):
+def cleanup_logs(days=15):
     """
     Remove log files older than `days` days in the specified log_dir.
     """
-    cutoff = datetime.now() - timedelta(days=days) # determine relevant cut-off
-    pattern = os.path.join(log_dir, f"{prefix}*.log") 
+    log_dir = Path("suggestion_engine/logs")
+    if not log_dir.exists():
+        logger.info(f"Log directory {log_dir} does not exist, skipping cleanup.")
+        return
 
-    for log_file in glob.glob(pattern):
+    log_pattern = "nightly_training_*.log"
+    cutoff = datetime.now() - timedelta(days=days)
+
+    for file_path in log_dir.glob(log_pattern):
         try:
-            # extract time stamp associated with file 
-            basename = os.path.basename(log_file)
-            timestamp_str = basename.replace(prefix, "").replace(".log", "")
-            file_time = datetime.strptime(timestamp_str, "%Y-%m-%d_%H-%M-%S")
-
+            file_time = datetime.fromtimestamp(file_path.stat().st_mtime)
             if file_time < cutoff:
-                os.remove(log_file)
-                logging.info(f"Deleted old log: {log_file}")
+                file_path.unlink()
+                logger.info(f"Deleted old log: {file_path}")
         except Exception as e:
-            logging.warning(f"Skipping {log_file}, could not parse timestamp: {e}")
+            logger.warning(f"Skipping {file_path}, error during cleanup: {e}")
 
     
 

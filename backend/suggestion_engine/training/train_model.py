@@ -1,17 +1,22 @@
 from dotenv import load_dotenv
 import argparse
-from suggestion_engine.training.preprocess import db
+from suggestion_engine.training import db
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from suggestion_engine.training.models.classifer import CategoryPredictor
+from sklearn.utils.class_weight import compute_class_weight
+from suggestion_engine.training.classifier import CategoryPredictor
 from torch.utils.data import DataLoader, TensorDataset
 import torch
 from torch import nn
+import numpy as np
 import os
 import joblib
 import json
+import logging 
 from datetime import datetime
-from suggestion_engine.training.preprocess.data import preprocess
+from suggestion_engine.training.data import preprocess
+
+logger = logging.getLogger(__name__)
 
 def main(user_id):
     """
@@ -20,43 +25,52 @@ def main(user_id):
     Args:
         user_id (int): user ID 
     """
+
+    now = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+    logger.info("\n\n----------------------------\nTraining started for user_id=%s at %s\n----------------------------", user_id, now)
     
     # fetch user transactions
     transactions = fetch_user_transactions(user_id) #TODO: Skip training model on users if < 50 transactions categorized
-    print(f"Successfully retrieved {len(transactions)} user transactions to train model on")
+    logger.info("Retrieved %d transactions to train model on for user_id=%s", len(transactions), user_id)
 
     # preprocess users transactions
     X, y, preprocessor = preprocess(transactions)
 
     # create data loaders 
-    train_dataloader, test_dataloader, label_encoder = create_data_loaders(X, y)
+    train_dataloader, test_dataloader, label_encoder, class_weights = create_data_loaders(X, y)
     num_classes = len(label_encoder.classes_)
 
     # create model 
     model = CategoryPredictor(X.shape[1], num_categories=num_classes)
+    logger.info("Created PyTorch Model for user_id=%s with %d features and %d classes", user_id, X.shape[1], num_classes)
 
     # train/test model 
-    best_model, best_accuracy = optimization_loop(train_dataloader, test_dataloader, model)
+    logger.info("Starting Optimization Loop for user_id=%s", user_id)
+    best_model, best_accuracy = optimization_loop(train_dataloader, test_dataloader, model, class_weights)
 
     # save artifacts 
+    logger.info("Saving Model artifacts for user_id=%s", user_id)
     save_artifacts(best_model, preprocessor, label_encoder, best_accuracy, user_id)
 
 
 
-def optimization_loop(train_data_loader, test_data_loader, model):
+def optimization_loop(train_data_loader, test_data_loader, model, class_weights):
     """
-    Loop through training and testing of our model
+    Loop through training and testing of our model.
 
     Args:
-        train_data_loader (): 
-        test_data_loader (_type_): _description_
-        model (_type_): _description_
+        train_data_loader (DataLoader): training batches
+        test_data_loader (DataLoader): validation batches
+        model (nn.Module): the CategoryPredictor to train
+        class_weights (torch.Tensor): per-class weights to counteract label imbalance
 
     Returns:
-        _type_: _description_
+        best_model (nn.Module): model snapshot with the lowest validation loss
+        best_accuracy (float): validation accuracy (%) at that checkpoint
     """
+    
 
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.CrossEntropyLoss(weight=class_weights) # rare categories are weighted higher (model forced to learn about minority categories)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     epochs = 250
@@ -90,7 +104,7 @@ def optimization_loop(train_data_loader, test_data_loader, model):
 
             if batch % 10 == 0:
                 current = batch * batch_size
-                print(f"[Train] Batch {batch:03d} - Loss: {loss.item():.4f}  ({current}/{total_samples} samples)")
+                logger.info("[Train] Batch %03d - Loss: %.4f  (%d/%d samples)", batch, loss.item(), current, total_samples)
 
 
 
@@ -119,9 +133,7 @@ def optimization_loop(train_data_loader, test_data_loader, model):
         avg_loss = test_loss / len(test_data_loader)
         accuracy = 100 * correct / size
 
-        print("\n[Test Results]")
-        print(f" Accuracy  : {accuracy:.2f}%")
-        print(f" Avg Loss  : {avg_loss:.4f}\n")
+        logger.info("\n[Test Results]\n Accuracy  : %.2f%%\n Avg Loss  : %.4f\n", accuracy, avg_loss)
 
         return avg_loss, accuracy
 
@@ -131,7 +143,7 @@ def optimization_loop(train_data_loader, test_data_loader, model):
     best_accuracy = None
 
     for training_iteration in range(epochs):
-        print(f"Starting Epoch {training_iteration + 1}\n--------------------------")
+        logger.info("Starting Epoch %d\n--------------------------", training_iteration + 1)
         train_loop()
         test_loss, test_accuracy = test_loop()
 
@@ -144,7 +156,7 @@ def optimization_loop(train_data_loader, test_data_loader, model):
         else:
             counter += 1
             if counter >= patience:
-                print(f"Test loss plateaued; best loss acheived was {best_test_loss}")
+                logger.info("Test loss plateaued; best loss achieved was %.4f", best_test_loss)
                 break
     
     return best_model, best_accuracy
@@ -154,16 +166,27 @@ def optimization_loop(train_data_loader, test_data_loader, model):
 
 def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     """
-    Generate relevant training and testing data loaders and encoded labels
+    Generate training/validation data loaders, a fitted LabelEncoder, and
+    class weights for imbalanced category distributions.
+
+    Class weights are computed to account for the fact that we expect 
+    imbalanced Category distributions (i.e 400+ transactions for Food & Dining, 
+    but only 5 transactions for a niche category). This causes the 
+    loss function (CrossEntropyLoss) to discover shortcut which is 
+    always predicting frequently used Categories.
+
 
     Args:
-        X (pd.Dataframe): inputs
-        y (np.array): outputs
-        test_size (float, optional): testing size. Defaults to 0.2.
-        batch_size (int, optional): batch size. Defaults to 32.
+        X (np.ndarray): preprocessed feature matrix
+        y (np.ndarray): raw category_id labels
+        test_size (float): fraction of data reserved for validation (default 0.2)
+        batch_size (int): mini-batch size (default 32)
 
     Returns:
-        _type_: _description_
+        train_loader (DataLoader)
+        test_loader (DataLoader)
+        le (LabelEncoder): fitted encoder for decoding predicted class indices
+        class_weights (torch.Tensor): per-class weights tensor for CrossEntropyLoss
     """
 
     le = LabelEncoder()
@@ -173,6 +196,11 @@ def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     X_train, X_val, y_train, y_val = train_test_split(
         X, y_encoded, test_size=test_size, random_state=42
     )
+
+    # compute class weights on training split to handle imbalanced categories
+    classes = np.unique(y_train)
+    weights = compute_class_weight('balanced', classes=classes, y=y_train)
+    class_weights = torch.tensor(weights, dtype=torch.float)
 
     train_dataset = TensorDataset(
         torch.from_numpy(X_train).float(),
@@ -187,7 +215,7 @@ def create_data_loaders(X, y, test_size=0.2, batch_size=32):
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
-    return train_loader, test_loader, le
+    return train_loader, test_loader, le, class_weights
 
 
 def save_artifacts(model, preprocessor, label_encoder, best_accuracy, user_id):
@@ -213,41 +241,49 @@ def save_artifacts(model, preprocessor, label_encoder, best_accuracy, user_id):
     os.makedirs(dir, exist_ok=True)
     os.chdir(dir)
 
-    print(f"Attempting to save relevant training/testing artifacts in {os.getcwd()}")
+    logger.info("Attempting to save relevant training/testing artifacts in %s", os.getcwd())
 
-    # save model weights
-    torch.save(model.state_dict(), "model_weights.pth")
+    try:
+        # save model weights
+        torch.save(model.state_dict(), "model_weights.pth")
 
-    # save preprocesing pipeline 
-    joblib.dump(preprocessor, "preprocessor.joblib")
+        # save preprocesing pipeline 
+        joblib.dump(preprocessor, "preprocessor.joblib")
 
-    # save label encoder 
-    joblib.dump(label_encoder, "label_encoder.joblib")
+        # save label encoder 
+        joblib.dump(label_encoder, "label_encoder.joblib")
 
-    # save meta data 
-    model_input_dim = get_input_dim(model)
-    metadata = {
-        'trained_at': datetime.now().isoformat(),
-        'num_classes': len(label_encoder.classes_),
-        'input_dim': model_input_dim,
-        'accuracy': round(best_accuracy, 2)
-    }
-    with open("metadata.json", "w") as f:
-        json.dump(metadata, f)
-    
+        # save meta data 
+        model_input_dim = get_input_dim(model)
+        metadata = {
+            'trained_at': datetime.now().isoformat(),
+            'num_classes': len(label_encoder.classes_),
+            'input_dim': model_input_dim,
+            'accuracy': round(best_accuracy, 2)
+        }
+        with open("metadata.json", "w") as f:
+            json.dump(metadata, f)
+        
 
-    # save model using ONNX
-    dummy_input = (torch.randn(1, model_input_dim),)  # Changed variable name
-    torch.onnx.export(
-        model, 
-        dummy_input, 
-        "model.onnx", 
-        export_params=True,
-        opset_version=11, 
-        do_constant_folding=True,
-        input_names=['input'],
-        output_names=['output']
-    )
+        # save model using ONNX
+        dummy_input = (torch.randn(1, model_input_dim),)  # Changed variable name
+        torch.onnx.export(
+            model, 
+            dummy_input, 
+            "model.onnx", 
+            export_params=True,
+            opset_version=11, 
+            do_constant_folding=True,
+            input_names=['input'],
+            output_names=['output']
+        )
+
+        logger.info("Successfully saved model artifacts for user_id=%s", user_id)
+
+    except Exception as e:
+        logger.error("Error saving model artifacts for user_id=%s", user_id)
+        logger.error("Error message: %s", e)
+        raise
 
 
 def fetch_user_transactions(user_id: int):
@@ -288,5 +324,9 @@ def parse_args():
 
 if __name__ == "__main__":
     load_dotenv()
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
     cl_args = parse_args()
     main(cl_args.user)
