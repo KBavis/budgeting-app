@@ -18,14 +18,18 @@ import CategoryState from "./context/category/CategoryState";
 import TransactionState from "./context/transaction/TransactionState";
 import CategoryTypePage from "./pages/CategoryTypePage";
 import AccountsPage from "./pages/AccountsPage";
+import IncomesPage from "./pages/IncomesPage";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import Navbar from "./components/layout/Navbar";
+import ThemeToggleFab from "./components/layout/ThemeToggleFab";
 import BudgetSummaryPage from "./pages/BudgetSummaryPage";
 import SummaryState from "./context/summary/SummaryState";
 import CategoryCreationPage from "./pages/CategoryCreationPage";
 import SpendingAnalysisPage from "./pages/SpendingAnalysisPage";
 import CategoryPerformanceState from "./context/category/performances/CategoryPerformanceState";
+
+import { ThemeProvider } from "./context/theme/ThemeContext";
 
 /**
  *  Main Application File
@@ -56,97 +60,106 @@ function App() {
                            <SummaryState>
                               <CategoryPerformanceState>
                                  <Router>
-                                    <Fragment>
-                                       <Navbar />
-                                       <Alerts />
-                                       <Routes>
-                                          <Route
-                                             path="/connect-accounts"
-                                             element={<ConnectAccounts />}
-                                          />
-                                          <Route
-                                             path="/"
-                                             element={<LoginRegisterPage />}
-                                          />
-                                          <Route
-                                             path="/home"
-                                             element={
-                                                <DndProvider backend={HTML5Backend}>
-                                                   <HomePage />
-                                                </DndProvider>
-                                             }
-                                          />
-                                          <Route path="/login" element={<Login />} />
-                                          <Route
-                                             path="/register"
-                                             element={<Register />}
-                                          />
-                                          <Route
-                                             path="/forgot-password"
-                                             element={<ForgotPassword />}
-                                          />
-                                          <Route
-                                             path="/income"
-                                             element={<IncomeInputPage />}
-                                          />
-                                          <Route
-                                             path="/category-types"
-                                             element={<CategoryTypeInputPage />}
-                                          />
-                                          <Route
-                                             path="/category/needs"
-                                             element={
-                                                <CategoryCreationPage categoryType="Needs" />
-                                             }
-                                          />
-                                          <Route
-                                             path="/category/wants"
-                                             element={
-                                                <CategoryCreationPage categoryType="Wants" />
-                                             }
-                                          />
-                                          <Route
-                                             path="/category/investments"
-                                             element={
-                                                <CategoryCreationPage categoryType="Investments" />
-                                             }
-                                          />
-                                          <Route
-                                             path="/category/type/needs"
-                                             element={
-                                                <CategoryTypePage categoryType="Needs" />
-                                             }
-                                          />
-                                          <Route
-                                             path="/category/type/wants"
-                                             element={
-                                                <CategoryTypePage categoryType="Wants" />
-                                             }
-                                          />
-                                          <Route
-                                             path="/category/type/investments"
-                                             element={
-                                                <CategoryTypePage categoryType="Investments" />
-                                             }
-                                          />
-                                          <Route
-                                             path="/budget/summary"
-                                             element={
-                                                <BudgetSummaryPage />
-                                             }
-                                          />
-                                          <Route
-                                             path="/accounts"
-                                             element={
-                                                <AccountsPage />
-                                             }
-                                          />
-                                          <Route
-                                             path=":type/analysis/:month/:year"
-                                             element={<SpendingAnalysisPage />}
-                                          />
-                                       </Routes>
-                                    </Fragment>
+                                    <ThemeProvider>
+                                       <Fragment>
+                                          <Navbar />
+                                          <ThemeToggleFab />
+                                          <Alerts />
+                                          <Routes>
+                                             <Route
+                                                path="/connect-accounts"
+                                                element={<ConnectAccounts />}
+                                             />
+                                             <Route
+                                                path="/"
+                                                element={<LoginRegisterPage />}
+                                             />
+                                             <Route
+                                                path="/home"
+                                                element={
+                                                   <DndProvider backend={HTML5Backend}>
+                                                      <HomePage />
+                                                   </DndProvider>
+                                                }
+                                             />
+                                             <Route path="/login" element={<Login />} />
+                                             <Route
+                                                path="/register"
+                                                element={<Register />}
+                                             />
+                                             <Route
+                                                path="/forgot-password"
+                                                element={<ForgotPassword />}
+                                             />
+                                             <Route
+                                                path="/income"
+                                                element={<IncomeInputPage />}
+                                             />
+                                             <Route
+                                                path="/category-types"
+                                                element={<CategoryTypeInputPage />}
+                                             />
+                                             <Route
+                                                path="/category/needs"
+                                                element={
+                                                   <CategoryCreationPage categoryType="Needs" />
+                                                }
+                                             />
+                                             <Route
+                                                path="/category/wants"
+                                                element={
+                                                   <CategoryCreationPage categoryType="Wants" />
+                                                }
+                                             />
+                                             <Route
+                                                path="/category/investments"
+                                                element={
+                                                   <CategoryCreationPage categoryType="Investments" />
+                                                }
+                                             />
+                                             <Route
+                                                path="/category/type/needs"
+                                                element={
+                                                   <CategoryTypePage categoryType="Needs" />
+                                                }
+                                             />
+                                             <Route
+                                                path="/category/type/wants"
+                                                element={
+                                                   <CategoryTypePage categoryType="Wants" />
+                                                }
+                                             />
+                                             <Route
+                                                path="/category/type/investments"
+                                                element={
+                                                   <CategoryTypePage categoryType="Investments" />
+                                                }
+                                             />
+                                             <Route
+                                                path="/budget/summary"
+                                                element={
+                                                   <BudgetSummaryPage />
+                                                }
+                                             />
+                                             <Route
+                                                path="/accounts"
+                                                element={
+                                                   <AccountsPage />
+                                                }
+                                             />
+                                             <Route
+                                                path="/income-streams"
+                                                element={
+                                                   <IncomesPage />
+                                                }
+                                             />
+                                             <Route
+                                                path=":type/analysis/:month/:year"
+                                                element={<SpendingAnalysisPage />}
+                                             />
+                                          </Routes>
+                                       </Fragment>
+                                    </ThemeProvider>
                                  </Router>
                               </CategoryPerformanceState>
                            </SummaryState>
