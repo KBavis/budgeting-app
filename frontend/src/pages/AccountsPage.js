@@ -1,180 +1,193 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState, useMemo } from 'react';
 import alertContext from "../context/alert/alertContext";
 import authContext from "../context/auth/authContext";
 import accountContext from "../context/account/accountContext";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import { PlaidLink } from "react-plaid-link";
-import { useNavigate } from "react-router-dom";
 import Account from "../components/accounts/Account";
 import ConfirmationModal from "../components/layout/ConfirmationModal";
 import transactionContext from "../context/transaction/transactionContext";
+import { ThemeContext } from "../context/theme/ThemeContext";
 
 /**
- * Page to display the current users connected Accounts
- *
+ * Page to display the current user's connected Accounts with full Light/Dark mode support
  */
 const AccountsPage = () => {
-    //Global State
     const { accounts, fetchAccounts, setLoading, createAccount, removeAccount, error } = useContext(accountContext);
     const { setAlert } = useContext(alertContext);
     const { refreshLinkToken, user } = useContext(authContext);
     const { fetchTransactions } = useContext(transactionContext);
+    const { theme } = useContext(ThemeContext);
 
-    //Local State
+    const isDark = theme === "dark";
+
     const initialFetchRef = useRef(false);
     const isTokenRefreshed = useRef(false);
-    const navigate = useNavigate();
     const [accountAdded, setAccountAdded] = useState(null);
     const [plaidKey, setPlaidKey] = useState(Date.now());
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [accountToDelete, setAccountToDelete] = useState(null);
 
-    //Functionality to show confirmation modal
     const handleShowConfirmationModal = (account) => {
-        setAccountToDelete(account)
+        setAccountToDelete(account);
         setShowConfirmationModal(true);
-    }
+    };
 
-    //Functionality to close confirmation modal
     const handleCloseConfirmationModal = () => {
         setShowConfirmationModal(false);
         setAccountToDelete(null);
-    }
-
-    //Navigation back to Hoem page
-    const handleBackClick = () => {
-        navigate("/home");
     };
 
     const handleConfirm = async () => {
-        await removeAccount(accountToDelete.accountId); //remove Account from backend & frontend
+        await removeAccount(accountToDelete.accountId);
         await fetchTransactions();
-        handleCloseConfirmationModal()
-    }
+        handleCloseConfirmationModal();
+    };
 
-    // Functionality to handle a user's successful connection of their financial institution via Plaid
     const handleOnSuccess = (publicToken, metadata) => {
         if (accountAdded && accountAdded.plaidAccountId === metadata.account_id) {
             setAlert("Account already added", "danger");
             return;
         }
 
-        // Create payload to send to backend
         const accountData = {
+            institutionName: metadata.institution.name,
+            accountName: metadata.account.name,
+            accountType: metadata.account.type.toUpperCase(),
+            accountSubtype: metadata.account.subtype.toUpperCase(),
+            mask: metadata.account.mask,
             plaidAccountId: metadata.account_id,
-            accountName: metadata.institution.name,
-            publicToken,
-            accountType: mapAccountType(metadata.account.type, metadata.account.subtype),
+            plaidPublicToken: publicToken
         };
-        console.log(accountData);
+
         createAccount(accountData);
-
         setAccountAdded(accountData);
-        setAlert("Account added successfully", "SUCCESS");
-        setPlaidKey(Date.now()); // Force PlaidLink to re-render by updating key
+        setPlaidKey(Date.now());
+        setAlert("Successfully linked financial institution!", "success");
     };
 
-    // Functionality to map a given account type to our backend enum value
-    const mapAccountType = (type, subtype) => {
-        switch (type) {
-            case "depository":
-                return subtype === "checking" ? "CHECKING" : "SAVING";
-            case "credit":
-                return "CREDIT";
-            case "loan":
-                return "LOAN";
-            case "investment":
-                return "INVESTMENT";
-            default:
-                return null;
+    const handleOnExit = (error, metadata) => {
+        if (error) {
+            console.error("Plaid link error: ", error);
         }
     };
 
-    // Functionality to handle a user closing Plaid Link
-    const handleOnExit = (err, metadata) => {
-        console.log("Error:", err);
-        console.log("Metadata:", metadata);
+    const getAccountsData = async () => {
+        setLoading();
+        await fetchAccounts();
     };
 
-    // Functionality to determine whether a User's link token is expired or not
-    const isTokenExpired = (expirationDateTimeString) => {
-        const now = new Date();
-        const expiration = new Date(expirationDateTimeString);
-        return now > expiration;
-    };
-
-    // Refresh User's Link Token if Needed to enable them to add additional accounts
     useEffect(() => {
-        if (!isTokenRefreshed.current && user?.linkToken && isTokenExpired(user.linkToken.expiration)) {
-            console.log("Refreshing user's link token due to link token being expired");
-            isTokenRefreshed.current = true; // Set the flag to true to prevent future refreshes
-            refreshLinkToken(); // Refresh user's link token
-        }
-    }, [user, refreshLinkToken]);
-
-    // Fetch All Accounts
-    const getAccounts = async () => {
-        if (!accounts || accounts.length === 0) {
-            console.log("Fetching accounts...");
-            setLoading();
-            await fetchAccounts();
-        }
-    };
-
-    // Fetch All Entities from Backend on initial Component Mount
-    useEffect(() => {
-        console.log(`Component Mounted! Initial Fetch Value: ${initialFetchRef.current}`);
         if (!initialFetchRef.current || !accounts) {
-            getAccounts();
+            getAccountsData();
             initialFetchRef.current = true;
         }
     }, [accounts]);
 
     useEffect(() => {
+        if (user && user.linkToken.expired && !isTokenRefreshed.current) {
+            isTokenRefreshed.current = true;
+            refreshLinkToken();
+        }
+    }, [user, refreshLinkToken]);
+
+    useEffect(() => {
         if(error) { setAlert(error, "danger"); }
     }, [error]);
 
+    const netWorth = useMemo(() => {
+        if (!accounts) return 0;
+        return accounts.reduce((total, account) => {
+            const type = account.accountType;
+            if (type === 'CREDIT' || type === 'LOAN') {
+                return total - Math.abs(account.balance);
+            }
+            return total + account.balance;
+        }, 0);
+    }, [accounts]);
+
     return accounts && (
-        <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800">
-            <FaArrowLeft
-                className="text-4xl text-white ml-5 mt-5 hover:scale-110 hover:text-gray-200 cursor-pointer z-[500] xs:text-3xl xs:ml-3 xs:mt-3"
-                onClick={handleBackClick}
-            />
-            <div className="flex flex-col items-center px-8 md:px-12 h-full">
-                <div className="max-w-3xl text-center mb-8 mt-5">
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">Your Accounts</h2>
-                </div>
-                <PlaidLink
-                    key={plaidKey} // Add key prop to force re-render
-                    token={user?.linkToken.token}
-                    onSuccess={handleOnSuccess}
-                    onExit={handleOnExit}
-                    className="plaid-link-wrapper-class mb-10"
-                >
-                    {<button className="bg-indigo-600 text-white rounded-3/4 px-6 py-3 text-xl font-bold rounded-full border-indigo-600 border-2 hover:bg-transparent hover:duration-500 xs:px-4 xs:py-2 xs:text-base">
-                        Add Account
-                    </button>}
-                </PlaidLink>
-                <div className="flex flex-col items-center w-full h-3/5 overflow-y-auto scrollbar-hide">
-                    {accounts.map((account, index) => (
-                        <Account key={index} account={account} handleShowConfirmationModal={handleShowConfirmationModal} />
-                    ))}
-                </div>
-            </div>
-            {showConfirmationModal && (
-                <div
-                    className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-                    <ConfirmationModal
-                        account={accountToDelete}
-                        onConfirm={handleConfirm}
-                        onClose={handleCloseConfirmationModal}
-                        question="Are you sure you want to remove the following account?"
-                        accountName={accountToDelete.accountName}
-                        confirmText="Yes"
-                        cancelText="No"
-                    />
+        <div className={`flex flex-col min-h-screen relative ${
+            isDark
+                ? "bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-950 text-slate-100"
+                : "bg-gradient-to-br from-slate-100 via-indigo-50/50 to-slate-100 text-slate-800"
+        }`}>
+            <div className="flex flex-col items-center px-4 md:px-12 h-full pt-16">
+                {/* Header */}
+                <div className="max-w-xl w-full text-center mb-6 mt-5">
+                    <h2 className={`text-4xl md:text-5xl font-black mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>
+                        Your Accounts
+                    </h2>
+                    <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                        View and manage linked financial accounts
+                    </p>
                 </div>
 
+                {/* Net Worth Banner */}
+                {accounts.length > 0 && (
+                    <div className={`w-full max-w-xl border rounded-2xl p-5 mb-6 shadow-lg ${
+                        isDark
+                            ? "bg-slate-800/70 border-slate-600/50"
+                            : "bg-white border-slate-200"
+                    }`}>
+                        <div className="text-center">
+                            <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                                Net Worth
+                            </p>
+                            <p className={`text-3xl font-black ${netWorth >= 0 ? (isDark ? 'text-emerald-400' : 'text-emerald-600') : (isDark ? 'text-red-400' : 'text-red-600')}`}>
+                                {netWorth >= 0 ? '' : '-'}${Math.abs(netWorth).toFixed(2)}
+                            </p>
+                            <p className={`text-xs mt-1 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                                Across {accounts.length} linked account{accounts.length !== 1 ? 's' : ''}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Account List */}
+                <div className="w-full max-w-xl flex flex-col gap-2.5 pb-6">
+                    {accounts.length > 0 ? (
+                        accounts.map((account) => (
+                            <Account
+                                key={account.accountId}
+                                account={account}
+                                handleShowConfirmationModal={handleShowConfirmationModal}
+                            />
+                        ))
+                    ) : (
+                        <div className={`p-8 text-center border rounded-2xl ${
+                            isDark ? "bg-slate-800/60 border-slate-700 text-slate-500" : "bg-white border-slate-200 text-slate-400 shadow-sm"
+                        }`}>
+                            No accounts connected yet. Link your first account below!
+                        </div>
+                    )}
+                </div>
+
+                {/* Link Account Button - at bottom */}
+                <div className="flex justify-center mb-20 w-full max-w-xl">
+                    <PlaidLink
+                        key={plaidKey}
+                        token={user?.linkToken.token}
+                        onSuccess={handleOnSuccess}
+                        onExit={handleOnExit}
+                        className="plaid-link-wrapper-class"
+                    >
+                        <button className="flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-6 py-3 text-sm font-bold transition-all duration-300 shadow-lg hover:scale-105">
+                            <FaPlus size={12} />
+                            Link Bank Account
+                        </button>
+                    </PlaidLink>
+                </div>
+            </div>
+
+            {/* Confirmation Modal */}
+            {showConfirmationModal && accountToDelete && (
+                <ConfirmationModal
+                    question="Are you sure you want to remove the following account?"
+                    accountName={accountToDelete.accountName}
+                    onConfirm={handleConfirm}
+                    onClose={handleCloseConfirmationModal}
+                />
             )}
         </div>
     );
