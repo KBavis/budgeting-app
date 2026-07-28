@@ -5,6 +5,10 @@ import {
    SET_LOADING,
    FETCH_INCOMES_SUCCESS,
    FETCH_INCOMES_FAIL,
+   UPDATE_INCOME_SUCCESS,
+   UPDATE_INCOME_FAIL,
+   DELETE_INCOME_SUCCESS,
+   DELETE_INCOME_FAIL,
 } from "./types";
 
 /**
@@ -12,22 +16,69 @@ import {
  */
 export default (state, action) => {
    switch (action.type) {
-      case CREATE_INCOME_SUCCESS:
-      case FETCH_INCOMES_SUCCESS:
-         let existingIncomes = state.incomes || [];
-         let newIncomes = [...existingIncomes, action.payload];
+      case FETCH_INCOMES_SUCCESS: {
+         const fetchedIncomes = Array.isArray(action.payload) ? action.payload : (action.payload ? [action.payload] : []);
+         return {
+            ...state,
+            incomes: fetchedIncomes,
+            loading: false,
+            error: null,
+            totalIncome: fetchedIncomes.reduce(
+               (total, income) => total + (parseFloat(income?.amount) || 0),
+               0
+            ),
+         };
+      }
+      case CREATE_INCOME_SUCCESS: {
+         const existingIncomes = state.incomes || [];
+         const newIncomes = action.payload ? [...existingIncomes, action.payload] : existingIncomes;
          return {
             ...state,
             incomes: newIncomes,
             loading: false,
             error: null,
             totalIncome: newIncomes.reduce(
-               (total, income) => total + income.amount,
+               (total, income) => total + (parseFloat(income?.amount) || 0),
                0
             ),
          };
+      }
+      case UPDATE_INCOME_SUCCESS: {
+         const targetId = action.payload?.incomeId;
+         const updatedIncomesList = (state.incomes || []).map((inc) =>
+            inc && targetId && String(inc.incomeId) === String(targetId) ? action.payload : inc
+         );
+         return {
+            ...state,
+            incomes: updatedIncomesList,
+            loading: false,
+            error: null,
+            totalIncome: updatedIncomesList.reduce(
+               (total, income) => total + (parseFloat(income?.amount) || 0),
+               0
+            ),
+         };
+      }
+      case DELETE_INCOME_SUCCESS: {
+         const targetId = typeof action.payload === 'object' ? action.payload?.incomeId : action.payload;
+         const filteredIncomes = (state.incomes || []).filter(
+            (inc) => inc && inc.incomeId && String(inc.incomeId) !== String(targetId)
+         );
+         return {
+            ...state,
+            incomes: filteredIncomes,
+            loading: false,
+            error: null,
+            totalIncome: filteredIncomes.reduce(
+               (total, income) => total + (parseFloat(income?.amount) || 0),
+               0
+            ),
+         };
+      }
       case CREATE_INCOME_FAIL:
       case FETCH_INCOMES_FAIL:
+      case UPDATE_INCOME_FAIL:
+      case DELETE_INCOME_FAIL:
          return {
             ...state,
             error: action.payload,
