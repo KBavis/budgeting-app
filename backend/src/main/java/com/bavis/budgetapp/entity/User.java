@@ -86,7 +86,7 @@ public class User implements UserDetails{
 	/**
 	 * User Can Have Multiple Sources of Income
 	 */
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
 	private List<Income> incomes;
 
