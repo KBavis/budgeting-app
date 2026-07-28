@@ -4,6 +4,8 @@ import categoryContext from "../../context/category/categoryContext";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import AlertContext from "../../context/alert/alertContext";
+import Modal from "../layout/Modal";
+import { ThemeContext } from "../../context/theme/ThemeContext";
 
 const AddCategory = ({ onClose }) => {
    // Local State
@@ -15,25 +17,31 @@ const AddCategory = ({ onClose }) => {
    const [totalBudgetAllocation, setTotalBudgetAllocation] = useState(0);
 
    // Global State
-   const { categoryTypes, fetchCategoryType } = useContext(categoryTypeContext);
-   const { addCategory } = useContext(categoryContext);
+   const { categoryTypes, fetchCategoryType, fetchCategoryTypes } = useContext(categoryTypeContext);
+   const { addCategory, fetchCategories } = useContext(categoryContext);
    const { setAlert } = useContext(AlertContext);
+   const { theme } = useContext(ThemeContext);
 
-   // Function to close the modal
-   const handleClose = () => {
-      onClose();
-   };
+   const isDark = theme === "dark";
 
    // Function to handle category type selection
    const handleCategoryTypeSelect = (type) => {
-      const initialCat = type.categories.map((cat) => ({
+      const initialCat = (type.categories || []).map((cat) => ({
          ...cat,
          budgetAllocationPercentage: cat.budgetAllocationPercentage || 0,
       }));
+
+      // Deduplicate
+      const map = new Map();
+      initialCat.forEach((c) => {
+         if (c && c.categoryId) map.set(c.categoryId, c);
+      });
+
+      const unique = Array.from(map.values());
       setSelectedType(type);
-      setSelectedCategories(initialCat);
-      setInitialCategories(initialCat);
-      calculateTotalBudgetAllocation(initialCat, percentage);
+      setSelectedCategories(unique);
+      setInitialCategories(unique);
+      calculateTotalBudgetAllocation(unique, percentage);
    };
 
    // Function to calculate the total budget allocation percentage
@@ -43,31 +51,38 @@ const AddCategory = ({ onClose }) => {
    ) => {
       const total =
          categories.reduce(
-            (sum, category) => sum + category.budgetAllocationPercentage,
+            (sum, category) => sum + (category.budgetAllocationPercentage || 0),
             0
          ) + newCategoryPercentage;
       setTotalBudgetAllocation(total);
    };
 
+   const roundToNearestTenthPercent = (value) => {
+      return Math.round(value * 1000) / 1000;
+   };
+
    // Function to handle submission of form
    const handleSubmit = async () => {
-      // Create UpdateCategoryDtos for existing categories that were modified
+      if (!selectedType) {
+         setAlert("Please select a Category Type", "danger");
+         return;
+      }
+      if (!categoryName) {
+         setAlert("New category must have a name", "danger");
+         return;
+      }
+
       const updateCategoryDtos = selectedCategories
          .filter(
             (category, index) =>
                category.budgetAllocationPercentage !==
-               initialCategories[index].budgetAllocationPercentage
+               (initialCategories[index] ? initialCategories[index].budgetAllocationPercentage : 0)
          )
          .map((category) => ({
             categoryId: category.categoryId,
             budgetAllocationPercentage: category.budgetAllocationPercentage,
          }));
 
-      // Create CategoryDto for the new category
-      if (!categoryName) {
-         setAlert("New category must have a name", "danger");
-         return;
-      }
       const newCategory = {
          name: categoryName,
          budgetAllocationPercentage: percentage,
@@ -75,7 +90,6 @@ const AddCategory = ({ onClose }) => {
          budgetAmount: selectedType.budgetAmount * percentage,
       };
 
-      // Check if the total budget allocation percentage exceeds 1.0
       const roundedPercent = roundToNearestTenthPercent(totalBudgetAllocation);
       if (roundedPercent > 1.0) {
          setAlert(
@@ -85,24 +99,19 @@ const AddCategory = ({ onClose }) => {
          return;
       }
 
-      // Call createCategory with the required parameters
       await addCategory(newCategory, updateCategoryDtos, selectedType);
       await fetchCategoryType(selectedType.categoryTypeId);
+      if (fetchCategoryTypes) await fetchCategoryTypes();
+      if (fetchCategories) await fetchCategories();
 
       onClose();
    };
 
-   const roundToNearestTenthPercent = (value) => {
-      return Math.round(value * 1000) / 1000;
-   };
-
-   // Function to handle slider change for new category percentage
    const handleNewCategorySliderChange = (value) => {
       setPercentage(value);
       calculateTotalBudgetAllocation(selectedCategories, value);
    };
 
-   // Function to handle slider change for existing categories
    const handleSliderChange = (categoryId, value) => {
       const updatedCategories = selectedCategories.map((category) =>
          category.categoryId === categoryId
@@ -113,7 +122,6 @@ const AddCategory = ({ onClose }) => {
       calculateTotalBudgetAllocation(updatedCategories, percentage);
    };
 
-   // Function to reset categories to initial percentages
    const handleReset = () => {
       setSelectedCategories(initialCategories);
       setPercentage(0);
@@ -121,184 +129,181 @@ const AddCategory = ({ onClose }) => {
    };
 
    return (
-      <div className="fixed inset-0 flex items-center justify-center z-40 backdrop-blur-sm overflow-y-auto">
-         <div className="bg-white p-8 rounded shadow-lg lg:w-1/2 flex flex-col justify-between xs:w-11/12 xs:p-4">
-            <div className="flex justify-center items-center mb-4 xs:mb-2">
-               <div>
-                  <h2 className="text-3xl font-extrabold text-indigo-600 text-center mb-2 xs:text-2xl">
-                     Add Category
-                  </h2>
-                  <p className="text-center xs:text-sm">
-                     Please select a Category Type, add a new category, and
-                     adjust the budget allocation for existing categories.
-                  </p>
-               </div>
-            </div>
+      <Modal isOpen={true} onClose={onClose} title="Add Category" size="lg">
+         <div className="flex flex-col gap-4">
+            <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+               Select a Category Type, enter a name, and adjust budget allocation sliders for existing categories.
+            </p>
+
             {/* Select Category Type Section */}
-            <div className="mb-4">
-               <p className="block text-sm font-medium text-gray-700 mb-2">
+            <div className={`p-4 border rounded-xl flex flex-col gap-2 ${
+               isDark ? "bg-slate-800/50 border-slate-700/60" : "bg-slate-50 border-slate-200"
+            }`}>
+               <label className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                   Select Category Type
-               </p>
-               <div className="flex mb-2">
+               </label>
+               <div className="flex flex-wrap gap-3">
                   {categoryTypes.map((type) => (
-                     <div
+                     <label
                         key={type.categoryTypeId}
-                        className="flex items-center mr-4"
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-sm font-bold cursor-pointer transition-all ${
+                           selectedType === type
+                              ? "bg-brand-600 border-brand-500 text-white shadow-sm"
+                              : isDark
+                                 ? "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800"
+                                 : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
+                        }`}
                      >
                         <input
-                           type="checkbox"
-                           id={`categoryType_${type.id}`}
+                           type="radio"
+                           name="categoryType"
                            value={type.name}
                            checked={selectedType === type}
                            onChange={() => handleCategoryTypeSelect(type)}
-                           className="mr-2"
+                           className="hidden"
                         />
-                        <label
-                           htmlFor={`categoryType_${type.id}`}
-                           className="text-sm text-gray-700"
-                        >
-                           {type.name}
-                        </label>
-                     </div>
+                        {type.name}
+                     </label>
                   ))}
                </div>
             </div>
+
             {/* Add Category Section */}
             {selectedType && (
-               <div className="mb-4 p-4 border border-gray-300 rounded-md">
-                  <label
-                     htmlFor="categoryName"
-                     className="block text-sm font-medium text-gray-700"
-                  >
-                     New Category Name
-                  </label>
-                  <input
-                     type="text"
-                     id="categoryName"
-                     value={categoryName}
-                     onChange={(e) => setCategoryName(e.target.value)}
-                     className="mt-1 p-2 w-1/2 border border-gray-300 rounded-md"
-                  />
-                  <div className="relative mb-2 py-4 flex justify-between items-center">
-                     <div className="text-gray-600 mr-2">
-                        {(parseFloat(percentage) * 100).toFixed(0)}%
+               <div className={`p-4 border rounded-xl flex flex-col gap-3 ${
+                  isDark ? "bg-slate-800/50 border-slate-700/60" : "bg-slate-50 border-slate-200"
+               }`}>
+                  <div className="flex flex-col gap-1">
+                     <label htmlFor="categoryName" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                        New Category Name
+                     </label>
+                     <input
+                        type="text"
+                        id="categoryName"
+                        value={categoryName}
+                        onChange={(e) => setCategoryName(e.target.value)}
+                        placeholder="e.g. Dining Out"
+                        className={`px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${
+                           isDark
+                              ? "bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500"
+                              : "bg-white border border-slate-300 text-slate-900 placeholder-slate-400"
+                        }`}
+                     />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                     <div className="flex justify-between items-center text-xs font-semibold">
+                        <span className={isDark ? "text-slate-300" : "text-slate-700"}>New Category Allocation</span>
+                        <span className="text-brand-600 dark:text-brand-400 font-extrabold">{(parseFloat(percentage) * 100).toFixed(0)}%</span>
                      </div>
                      <Slider
-                        className="w-3/4"
                         value={parseFloat(percentage) || 0}
                         min={0}
                         max={1}
                         step={0.01}
                         onChange={handleNewCategorySliderChange}
                         handleStyle={{
-                           borderColor: "rgb(79, 70, 229)",
-                           height: 20,
-                           width: 20,
-                           marginTop: -8,
-                           backgroundColor: "rgb(99, 102, 241)",
-                        }}
-                        railStyle={{
-                           backgroundColor: "rgb(156, 163, 175)",
-                           height: 6,
+                           borderColor: "#6366F1",
+                           backgroundColor: "#818CF8",
                         }}
                         trackStyle={{
-                           backgroundColor: "rgb(79, 70, 229)",
-                           height: 6,
+                           backgroundColor: "#6366F1",
                         }}
-                        dotStyle={{ display: "none" }}
-                        activeDotStyle={{ display: "none" }}
+                        railStyle={{
+                           backgroundColor: isDark ? "#334155" : "#CBD5E1",
+                        }}
                      />
                   </div>
                </div>
             )}
+
             {/* Display Total Budget Allocation */}
             {selectedType && (
-               <div className="mb-4 p-4 border border-gray-300 rounded-md">
-                  <p className="block text-sm font-bold text-gray-700">
-                     Total Budget Allocation:{" "}
+               <div className={`p-3.5 border rounded-xl flex justify-between items-center ${
+                  isDark ? "bg-slate-800/80 border-slate-700/80" : "bg-slate-100 border-slate-200"
+               }`}>
+                  <span className={`text-sm font-bold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
+                     Total Budget Allocation:
+                  </span>
+                  <span className={`text-sm font-extrabold ${
+                     totalBudgetAllocation > 1.0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'
+                  }`}>
                      {(totalBudgetAllocation * 100).toFixed(1)}%
-                  </p>
+                  </span>
                </div>
             )}
+
             {/* Adjust Budget Allocation Section */}
             {selectedType && (
-               <div
-                  className="p-4 border border-gray-300 rounded-md"
-                  style={{ maxHeight: "300px", overflowY: "auto" }}
-               >
-                  <div className="flex justify-between items-center mb-2">
-                     <p className="block text-sm font-medium text-gray-700">
-                        Adjust Existing Category Allocations
-                     </p>
+               <div className={`p-4 border rounded-xl flex flex-col gap-3 max-h-[30vh] overflow-y-auto pr-1 ${
+                  isDark ? "bg-slate-800/50 border-slate-700/60" : "bg-slate-50 border-slate-200"
+               }`}>
+                  <div className="flex justify-between items-center">
+                     <span className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                        Adjust Existing Categories
+                     </span>
                      <button
+                        type="button"
                         onClick={handleReset}
-                        className="px-3 py-1 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
+                        className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
                      >
-                        Reset
+                        Reset Allocations
                      </button>
                   </div>
                   {selectedCategories.map((category) => (
-                     <div key={category.categoryId} className="mb-6">
-                        <div className="flex justify-center items-center mt-3 mb-[2px]">
-                           <label className="block font-bold mr-2">
-                              {category.name}
-                           </label>
+                     <div key={category.categoryId} className="flex flex-col gap-1">
+                        <div className="flex justify-between text-xs">
+                           <span className={isDark ? "text-slate-300" : "text-slate-700 font-medium"}>{category.name}</span>
+                           <span className={`font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                              {((category.budgetAllocationPercentage || 0) * 100).toFixed(0)}%
+                           </span>
                         </div>
-                        <div className="relative mb-2 py-4 flex justify-between items-center">
-                           <div className="text-gray-600 mr-2">
-                              {(
-                                 category.budgetAllocationPercentage * 100
-                              ).toFixed(0)}
-                              %
-                           </div>
-                           <Slider
-                              className="w-3/4"
-                              value={category.budgetAllocationPercentage || 0}
-                              min={0}
-                              max={1}
-                              step={0.01}
-                              onChange={(value) =>
-                                 handleSliderChange(category.categoryId, value)
-                              }
-                              handleStyle={{
-                                 borderColor: "rgb(79, 70, 229)",
-                                 height: 20,
-                                 width: 20,
-                                 marginTop: -8,
-                                 backgroundColor: "rgb(99, 102, 241)",
-                              }}
-                              railStyle={{
-                                 backgroundColor: "rgb(156, 163, 175)",
-                                 height: 6,
-                              }}
-                              trackStyle={{
-                                 backgroundColor: "rgb(79, 70, 229)",
-                                 height: 6,
-                              }}
-                              dotStyle={{ display: "none" }}
-                              activeDotStyle={{ display: "none" }}
-                           />
-                        </div>
+                        <Slider
+                           value={category.budgetAllocationPercentage || 0}
+                           min={0}
+                           max={1}
+                           step={0.01}
+                           onChange={(value) =>
+                              handleSliderChange(category.categoryId, value)
+                           }
+                           handleStyle={{
+                              borderColor: "#6366F1",
+                              backgroundColor: "#818CF8",
+                           }}
+                           trackStyle={{
+                              backgroundColor: "#6366F1",
+                           }}
+                           railStyle={{
+                              backgroundColor: isDark ? "#334155" : "#CBD5E1",
+                           }}
+                        />
                      </div>
                   ))}
                </div>
             )}
-            <div className="flex justify-between mt-4">
+
+            <div className={`flex justify-end gap-3 pt-3 border-t ${isDark ? "border-slate-800" : "border-slate-200"}`}>
                <button
-                  onClick={handleClose}
-                  className="modal-button-cancel px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
+                  type="button"
+                  onClick={onClose}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                     isDark
+                        ? "text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700"
+                        : "text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200"
+                  }`}
                >
-                  Close
+                  Cancel
                </button>
                <button
+                  type="button"
                   onClick={handleSubmit}
-                  className="modal-button-submit px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+                  className="px-5 py-2 text-sm font-bold text-white bg-brand-600 hover:bg-brand-500 rounded-lg transition-colors shadow-md"
                >
                   Submit
                </button>
             </div>
          </div>
-      </div>
+      </Modal>
    );
 };
 
