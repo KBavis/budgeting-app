@@ -37,7 +37,7 @@ const SummaryState = (props) => {
             dispatch({ type: FETCH_BUDGET_SUMMARIES_SUCCESS, payload: res.data });
         } catch (err) {
             console.error(err);
-            dispatch({ type: FETCH_BUDGET_SUMMARIES_ERROR, payload: err.response.data.error });
+            dispatch({ type: FETCH_BUDGET_SUMMARIES_ERROR, payload: err.response?.data?.error || 'Failed to fetch budget summaries' });
         }
     }
 
