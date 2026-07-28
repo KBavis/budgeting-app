@@ -2,12 +2,16 @@ import React, { useState, useEffect, useContext } from 'react';
 import './styles.css';
 import CategorySlider from './CategorySlider';
 import ConfirmationModal from '../layout/ConfirmationModal';
+import SplitTransactionModal from '../transaction/SplitTransaction';
 import transactionContext from '../../context/transaction/transactionContext';
 import AlertContext from '../../context/alert/alertContext';
+import { ThemeContext } from '../../context/theme/ThemeContext';
 
 const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose }) => {
   const { deleteTransaction, renameTransaction, reduceTransactionAmount, updateCategory } = useContext(transactionContext);
   const { setAlert } = useContext(AlertContext);
+  const { theme } = useContext(ThemeContext);
+  const isDark = theme === "dark";
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showCategorySlider, setShowCategorySlider] = useState(false);
@@ -19,15 +23,32 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
   const [editedName, setEditedName] = useState('');
   const [editedAmount, setEditedAmount] = useState('');
   const [suggestionDenied, setSuggestionDenied] = useState(false);
+  const [activePresetSplits, setActivePresetSplits] = useState(null);
+  const [showSplitModal, setShowSplitModal] = useState(false);
 
   const currentTransaction = transactions[currentIndex];
   const hasSuggestedCategory = currentTransaction?.suggestedCategory && !suggestionDenied;
+
+  const isPreviousMonth = (() => {
+    if (!currentTransaction?.date) return false;
+    const txDate = new Date(currentTransaction.date);
+    const now = new Date();
+    const firstOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    return txDate < firstOfCurrentMonth;
+  })();
+
+  const prevMonthLabel = (() => {
+    if (!currentTransaction?.date) return '';
+    return new Date(currentTransaction.date).toLocaleDateString(undefined, {
+      month: 'long',
+      year: 'numeric'
+    });
+  })();
 
   useEffect(() => {
     if (currentTransaction) {
       setEditedName(currentTransaction.name);
       setEditedAmount(currentTransaction.amount);
-      // Reset suggestion denied state when moving to new transaction
       setSuggestionDenied(false);
     }
   }, [currentTransaction]);
@@ -41,6 +62,19 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
 
   const handleDenySuggestion = () => {
     setSuggestionDenied(true);
+  };
+
+  const getCategoriesForType = (ct) => {
+    if (!ct) return [];
+    const globalCats = (categories || []).filter(
+      (c) => c.categoryType && (c.categoryType.categoryTypeId === ct.categoryTypeId || c.categoryType.name === ct.name)
+    );
+    const typeCats = ct.categories || [];
+    const map = new Map();
+    [...typeCats, ...globalCats].forEach((c) => {
+      if (c && c.categoryId) map.set(c.categoryId, c);
+    });
+    return Array.from(map.values());
   };
 
   const handleCategoryTypeClick = (categoryType) => {
@@ -97,6 +131,31 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
     setAlert('Transaction amount updated', 'success');
   };
 
+  const handleQuickReduce = (percentage) => {
+    if (!currentTransaction) return;
+    const newAmount = Math.round((currentTransaction.amount * (1 - percentage)) * 100) / 100;
+    if (newAmount <= 0) {
+      setAlert('Reduced amount must be greater than 0', 'danger');
+      return;
+    }
+    reduceTransactionAmount(currentTransaction.transactionId, newAmount);
+    setEditedAmount(newAmount.toString());
+    setAlert(`Amount reduced by ${(percentage * 100).toFixed(0)}% to $${newAmount}`, 'success');
+  };
+
+  const handleQuickSplitPreset = (ratio1, ratio2) => {
+    if (!currentTransaction) return;
+    const amt = parseFloat(currentTransaction.amount);
+    const amt1 = Math.round(amt * ratio1 * 100) / 100;
+    const amt2 = Math.round((amt - amt1) * 100) / 100;
+
+    setActivePresetSplits([
+      { name: `${currentTransaction.name} (Part 1)`, amount: amt1 },
+      { name: `${currentTransaction.name} (Part 2)`, amount: amt2 }
+    ]);
+    setShowSplitModal(true);
+  };
+
   useEffect(() => {
     if (transactions.length > 0) {
       setCardAnimation('card-enter-right');
@@ -109,11 +168,17 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
 
   return (
     <div className="swiper-container">
+      {/* Transaction Card */}
       <div className="card-container">
         <div
           className={`card ${cardAnimation}`}
           onAnimationEnd={handleAnimationEnd}
         >
+            {isPreviousMonth && (
+              <div className="bg-amber-500/20 text-amber-300 text-xs font-bold px-3 py-1 text-center rounded-t-lg border-b border-amber-500/30 flex items-center justify-center gap-1">
+                <span>📅</span> Previous Month ({prevMonthLabel})
+              </div>
+            )}
             <div className="card-header">
                 <div className="transaction-info">
                     <img src={currentTransaction.logoUrl || 'https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg'} alt="logo" className="transaction-logo" />
@@ -149,9 +214,34 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
                     <p onClick={() => setIsEditingAmount(true)}>${editedAmount} <span className="edit-indicator">✏️</span></p>
                 )}
             </div>
+
+            {/* Quick Actions - Integrated Into Card */}
+            <div className="flex items-center justify-center gap-1.5 mt-1 flex-wrap px-1">
+              {[0.10, 0.25, 0.50].map((pct) => (
+                <button
+                  key={pct}
+                  type="button"
+                  onClick={() => handleQuickReduce(pct)}
+                  className="px-2 py-0.5 text-[10px] font-semibold bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-md border border-white/20 transition-colors"
+                  title={`Reduce by ${(pct * 100).toFixed(0)}%`}
+                >
+                  -{(pct * 100).toFixed(0)}%
+                </button>
+              ))}
+              <span className="text-white/30 mx-0.5">|</span>
+              {[{ label: '50/50', r1: 0.5, r2: 0.5 }, { label: '70/30', r1: 0.7, r2: 0.3 }].map(({ label, r1, r2 }) => (
+                <button
+                  key={label}
+                  onClick={() => handleQuickSplitPreset(r1, r2)}
+                  className="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-200 hover:text-white rounded-md border border-indigo-400/30 transition-colors"
+                >
+                  ✂ {label}
+                </button>
+              ))}
+            </div>
         </div>
       </div>
-      
+
       {/* Suggested Category Section */}
       {hasSuggestedCategory && (
         <div className="suggestion-container">
@@ -171,17 +261,29 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
         </div>
       )}
 
-      {/* Manual Category Selection - Show when no suggestion, denied, or category slider is open */}
+      {/* Manual Category Selection */}
       {(!hasSuggestedCategory || showCategorySlider) && (
-        <div className="buttons">
-          {categoryTypes.map(ct => <button key={ct.categoryTypeId} onClick={() => handleCategoryTypeClick(ct)}>{ct.name}</button>)}
+        <div className="flex flex-wrap justify-center gap-2.5 mt-5 max-w-md px-2">
+          {categoryTypes.map(ct => (
+            <button
+              key={ct.categoryTypeId}
+              onClick={() => handleCategoryTypeClick(ct)}
+              className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md ${
+                isDark
+                  ? "bg-slate-800 border border-slate-700 text-slate-100 hover:bg-brand-600 hover:border-brand-500 hover:text-white"
+                  : "bg-white border-2 border-slate-300 text-slate-900 hover:bg-brand-600 hover:border-brand-600 hover:text-white shadow-sm"
+              }`}
+            >
+              {ct.name}
+            </button>
+          ))}
         </div>
       )}
 
-      {showCategorySlider && (
+      {showCategorySlider && selectedCategoryType && (
         <CategorySlider
           categoryType={selectedCategoryType}
-          categories={selectedCategoryType.categories}
+          categories={getCategoriesForType(selectedCategoryType)}
           onCategorySelect={handleCategorySelect}
           onCancel={() => setShowCategorySlider(false)}
         />
@@ -191,6 +293,16 @@ const TransactionSwiper = ({ transactions, categories, categoryTypes, onClose })
           question="Are you sure you want to delete this transaction?"
           onConfirm={confirmDelete}
           onClose={() => setShowConfirmation(false)}
+        />
+      )}
+      {showSplitModal && (
+        <SplitTransactionModal
+          transaction={currentTransaction}
+          presetSplits={activePresetSplits}
+          onClose={() => {
+            setShowSplitModal(false);
+            setActivePresetSplits(null);
+          }}
         />
       )}
       <button onClick={onClose} className="close-button">

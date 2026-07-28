@@ -3,8 +3,14 @@ import Category from "../Category";
 import transactionContext from "../../../context/transaction/transactionContext";
 import categoryContext from "../../../context/category/categoryContext";
 import { useNavigate } from "react-router-dom";
-import { FaExternalLinkAlt } from "react-icons/fa";
+import { FaExternalLinkAlt, FaChartPie } from "react-icons/fa";
+import { getBudgetStatus } from "../../../utils/budgetColors";
+import { ThemeContext } from "../../../context/theme/ThemeContext";
 
+/**
+ * Enhanced CategoryType component with explicit theme logic ensuring
+ * dark glassmorphic outer cards and high contrast text in Dark Mode.
+ */
 const CategoryType = ({
    categoryType,
    handleShowSplitTransactionModal,
@@ -16,6 +22,9 @@ const CategoryType = ({
 }) => {
    const { transactions } = useContext(transactionContext);
    const { categories } = useContext(categoryContext);
+   const { theme } = useContext(ThemeContext);
+
+   const isDark = theme === "dark";
 
    const [filteredCategories, setFilteredCategories] = useState([]);
    const [filteredTransactions, setFilteredTransactions] = useState([]);
@@ -23,22 +32,33 @@ const CategoryType = ({
    const [totalAmountBudgeted, setTotalAmountBudgeted] = useState(0);
    const [expectedSavings, setExpectedSavings] = useState(0);
 
+   // Filter and deduplicate categories for this CategoryType
    useEffect(() => {
-      const filtered = categories.filter(
+      const filtered = (categories || []).filter(
          (category) =>
+            category.categoryType &&
             category.categoryType.categoryTypeId === categoryType.categoryTypeId
       );
-      setFilteredCategories(filtered);
+
+      const map = new Map();
+      filtered.forEach((cat) => {
+         if (cat && cat.categoryId) {
+            map.set(cat.categoryId, cat);
+         }
+      });
+
+      setFilteredCategories(Array.from(map.values()));
    }, [categories, categoryType.categoryTypeId]);
 
    useEffect(() => {
       if (filteredCategories.length > 0) {
-         // Calculate total budgeted amount
          const totalBudgeted = filteredCategories.reduce(
             (sum, category) => sum + category.budgetAmount,
             0
          );
          setTotalAmountBudgeted(Math.round(totalBudgeted));
+      } else {
+         setTotalAmountBudgeted(0);
       }
    }, [filteredCategories]);
 
@@ -68,112 +88,106 @@ const CategoryType = ({
    }, [filteredTransactions]);
 
    useEffect(() => {
-      // Calculate expected savings
       const totalBudgeted = totalAmountBudgeted;
-      const savedAmount = categoryType.savedAmount || 0; // Assuming savedAmount is provided in categoryType
-
-      // Expected savings is the saved amount plus the difference between total budgeted and total spent
-      const calculatedSavings =
-         savedAmount + (totalBudgeted - totalAmountSpent);
+      const savedAmount = categoryType.savedAmount || 0;
+      const calculatedSavings = savedAmount + (totalBudgeted - totalAmountSpent);
       setExpectedSavings(calculatedSavings);
-   }, [
-      totalAmountBudgeted,
-      filteredCategories,
-      filteredTransactions,
-      categoryType.savedAmount,
-      totalAmountSpent,
-   ]);
+   }, [totalAmountBudgeted, filteredCategories, filteredTransactions, categoryType.savedAmount, totalAmountSpent]);
 
    const navigate = useNavigate();
 
-   const percentageUtilized =
-      totalAmountBudgeted > 0
-         ? Math.min(
-              Math.round((totalAmountSpent / totalAmountBudgeted) * 100),
-              100
-           )
-         : 0;
-
-   const getProgressBarColor = () => {
-      const percentage = percentageUtilized;
-      if (percentage <= 50) {
-         return "bg-green-500";
-      } else if (percentage <= 70) {
-         return "bg-yellow-500";
-      } else if (percentage <= 90) {
-         return "bg-orange-500";
-      } else {
-         return "bg-red-500";
-      }
-   };
-
-   const getSavingsColor = () => {
-      return expectedSavings >= 0 ? "text-green-500" : "text-red-500";
-   };
+   const budgetStatus = getBudgetStatus(totalAmountSpent, totalAmountBudgeted);
 
    const handleClick = () => {
       navigate(`/category/type/${categoryType.name.toLowerCase()}`);
    };
 
+   const progressPercentage = totalAmountBudgeted > 0
+      ? Math.min(Math.round((totalAmountSpent / totalAmountBudgeted) * 100), 100)
+      : 0;
+
    return (
-      <div className="relative bg-white rounded-lg shadow-md px-4 pb-4 w-full md:w-full h-[400px] overflow-y-auto overflow-x-hidden hover:duration-100 xxl:h-[650px] xs:h-[500px] xs:px-2 xs:pb-2">
-         <div className="sticky top-0 z-20 bg-white pb-2 xs:pb-1">
-            <div className="flex justify-between items-center">
-               <div></div> {/* Placeholder to balance the flex alignment */}
-               <h3 className="text-3xl text-center font-bold mb-2 mt-2 flex-grow xs:text-xl">
-                  {categoryType.name}
-               </h3>
+      <div
+         className={`relative backdrop-blur-md border rounded-2xl p-6 w-full flex flex-col min-h-[420px] max-h-[720px] transition-all duration-300 ${
+            isDark
+               ? "bg-slate-950/80 border-slate-800 text-slate-100 shadow-2xl hover:border-slate-700"
+               : "bg-slate-200/70 border-slate-300/80 text-slate-800 shadow-lg hover:border-slate-400"
+         }`}
+      >
+         {/* Sticky Card Header */}
+         <div
+            className={`sticky top-0 z-20 backdrop-blur-md p-4 sm:p-5 mb-4 border rounded-xl shadow-sm ${
+               isDark
+                  ? "bg-slate-900/95 border-slate-800"
+                  : "bg-white/95 border-slate-200"
+            }`}
+         >
+            <div className="flex justify-between items-center mb-3">
+               <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-brand-500/20 text-brand-400 rounded-xl border border-brand-500/30">
+                     <FaChartPie className="w-4 h-4" />
+                  </div>
+                  <h3 className={`text-xl font-extrabold tracking-wide ${isDark ? "text-white" : "text-slate-900"}`}>
+                     {categoryType.name}
+                  </h3>
+               </div>
+
                <button
+                  type="button"
                   onClick={handleClick}
-                  className="text-black font-bold duration-100 hover:scale-1025 hover:cursor-pointer hover:text-indigo-600 xs:text-sm"
+                  className={`p-2 rounded-xl transition-colors ${
+                     isDark
+                        ? "text-slate-400 hover:text-white hover:bg-slate-800"
+                        : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                  }`}
+                  title="View detailed category type analysis"
                >
-                  <FaExternalLinkAlt size={20} className="xs:w-4 xs:h-4"/>
+                  <FaExternalLinkAlt size={14} />
                </button>
             </div>
-            <p className="mb-2 text-center font-semibold xs:text-sm">
-               Spent: ${totalAmountSpent} / ${totalAmountBudgeted}
-            </p>
-            <p className="text-center font-semibold mb-6 xs:text-sm">
-               Expected Savings:{" "}
-               <span className={`font-semibold ${getSavingsColor()}`}>
-                  ${expectedSavings.toFixed(2)}
+
+            {/* Spent / Budgeted Display */}
+            <div className="flex justify-between items-baseline mb-2">
+               <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  Spent / Allocated
                </span>
-            </p>
-            <div className="w-full bg-gray-300 rounded-full h-4 mb-4 pb-3 xs:h-3 xs:mb-2 xs:pb-1">
+               <span className={`text-sm font-bold ${isDark ? "text-slate-200" : "text-slate-700"}`}>
+                  <span className={budgetStatus.textClass}>${totalAmountSpent}</span> / ${totalAmountBudgeted}
+               </span>
+            </div>
+
+            {/* Status Pill Badge */}
+            <div className="flex justify-between items-center mb-3">
+               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${budgetStatus.bg}/20 ${budgetStatus.text} border-${budgetStatus.color}/30`}>
+                  {budgetStatus.label}
+               </span>
+               <span className={`text-xs font-medium ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  Savings: <strong className={expectedSavings >= 0 ? "text-emerald-400" : "text-red-400"}>${expectedSavings.toFixed(2)}</strong>
+               </span>
+            </div>
+
+            {/* Glowing Progress Bar */}
+            <div className={`w-full rounded-full h-2.5 overflow-hidden ${isDark ? "bg-slate-800" : "bg-slate-200"}`}>
                <div
-                  className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()} xs:h-3`}
-                  style={{
-                     width: `${
-                        percentageUtilized > 100 ? 100 : percentageUtilized
-                     }%`,
-                  }}
-               ></div>
+                  className={`h-full rounded-full transition-all duration-500 ease-in-out ${budgetStatus.colorClass}`}
+                  style={{ width: `${progressPercentage}%` }}
+               />
             </div>
          </div>
-         <div className="relative z-10">
-            <div className="flex flex-col items-center space-y-6">
+
+         {/* Category List */}
+         <div className="flex-1 overflow-y-auto pr-1 scrollbar-hide">
+            <div className="flex flex-col gap-3">
                {filteredCategories.map((category) => (
                   <Category
                      key={category.categoryId}
                      category={category}
-                     handleShowSplitTransactionModal={
-                        handleShowSplitTransactionModal
-                     }
-                     handleShowReduceTransactionModal={
-                        handleShowReduceTransactionModal
-                     }
-                     handleShowRenameTransactionModal={
-                        handleShowRenameTransactionModal
-                     }
-                     handleShowAssignCategoryModal={
-                        handleShowAssignCategoryModal
-                     }
-                     handleShowUpdateAllocationsModal={
-                        handleShowUpdateAllocationsModal
-                     }
-                     handleShowRenameCategoryModal={
-                        handleShowRenameCategoryModal
-                     }
+                     handleShowSplitTransactionModal={handleShowSplitTransactionModal}
+                     handleShowReduceTransactionModal={handleShowReduceTransactionModal}
+                     handleShowRenameTransactionModal={handleShowRenameTransactionModal}
+                     handleShowAssignCategoryModal={handleShowAssignCategoryModal}
+                     handleShowUpdateAllocationsModal={handleShowUpdateAllocationsModal}
+                     handleShowRenameCategoryModal={handleShowRenameCategoryModal}
                   />
                ))}
             </div>

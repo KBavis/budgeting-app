@@ -4,19 +4,22 @@ import { PlaidLink } from "react-plaid-link";
 import authContext from "../context/auth/authContext";
 import accountContext from "../context/account/accountContext";
 import AlertContext from "../context/alert/alertContext";
+import { FaCheckCircle, FaUniversity, FaArrowRight } from "react-icons/fa";
+
+import StepProgress from "../components/layout/StepProgress";
 
 /**
  * Component to connect to external financial institutions via Plaid API
  */
 const ConnectAccounts = () => {
-   //Global State
+   // Global State
    const navigate = useNavigate();
    const { user, fetchAuthenticatedUser } = useContext(authContext);
-   const { createAccount } = useContext(accountContext);
+   const { createAccount, accounts, fetchAccounts } = useContext(accountContext);
    const { setAlert } = useContext(AlertContext);
-   const [accountAdded, setAccountAdded] = useState(false);
+   const [connectedAccounts, setConnectedAccounts] = useState([]);
 
-   //Functionality to map a given account type to our backend enum value
+   // Map account type to enum
    const mapAccountType = (type, subtype) => {
       switch (type) {
          case "depository":
@@ -32,9 +35,8 @@ const ConnectAccounts = () => {
       }
    };
 
-   //Functionality to handle a users successful connection of their financial institution via Plaid
+   // Handle successful connection via Plaid
    const handleOnSuccess = (publicToken, metadata) => {
-      //Create paylaoad to send to backend
       const accountData = {
          plaidAccountId: metadata.account_id,
          accountName: metadata.institution.name,
@@ -44,78 +46,115 @@ const ConnectAccounts = () => {
             metadata.account.subtype
          ),
       };
-      console.log(accountData);
+
       createAccount(accountData);
-
-      setAlert("Account added succesfully", "SUCCESS");
-      setAccountAdded(true);
+      setConnectedAccounts((prev) => [...prev, accountData]);
+      setAlert(`Successfully connected ${metadata.institution.name}!`, "SUCCESS");
    };
 
-   //Functonality to handle a user closing Plaid Link
    const handleOnExit = (err, metadata) => {
-      console.log("Error:", err);
-      console.log("Metadata:", metadata);
+      if (err) {
+         console.log("Plaid Link Exit Error:", err);
+      }
    };
 
-   //Functionality to navigate user to Income page
    const handleOnContinue = () => {
       navigate("/income");
    };
 
-   if (!user || !user.linkToken) {
-      // If user is not available or linkToken is missing, redirect to login
-      navigate("/login");
-   }
-
-   //Fetch Authenticated User if Needed on Refresh
    useEffect(() => {
       if (!user && localStorage.token) {
          fetchAuthenticatedUser();
       }
    }, []);
 
+   useEffect(() => {
+      if (user && !user.linkToken) {
+         navigate("/login");
+      }
+   }, [user, navigate]);
+
+   const hasConnected = connectedAccounts.length > 0 || (accounts && accounts.length > 0);
+
    return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center">
-         <div className="max-w-md text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white xs:text-2xl">
-               Connect Your Accounts
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center px-4 py-8">
+         {/* Progress Bar */}
+         <StepProgress currentStep={2} totalSteps={5} />
+
+         {/* Main Card */}
+         <div className="max-w-md w-full bg-slate-900/80 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-2xl p-8 animate-slide-up text-center xs:p-6">
+            <div className="inline-flex p-3 bg-brand-500/20 text-brand-400 rounded-2xl border border-brand-500/30 mb-4">
+               <FaUniversity className="w-8 h-8" />
+            </div>
+
+            <h1 className="text-3xl font-extrabold text-white mb-2 xs:text-2xl">
+               Connect Your Bank
             </h1>
-            {!accountAdded && (
-               <p className="text-base md:text-lg mb-8 text-gray-400">
-                  To get started, please connect your financial accounts using
-                  Plaid.
-               </p>
+            <p className="text-sm text-slate-400 mb-6">
+               Securely sync transactions & balances automatically using Plaid.
+            </p>
+
+            {/* Connected Accounts List */}
+            {hasConnected && (
+               <div className="mb-6 flex flex-col gap-2 max-h-48 overflow-y-auto text-left">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                     Connected Accounts
+                  </p>
+                  {(accounts && accounts.length > 0 ? accounts : connectedAccounts).map((acc, idx) => (
+                     <div
+                        key={acc.plaidAccountId || idx}
+                        className="flex items-center justify-between p-3 bg-slate-800/80 border border-slate-700/60 rounded-xl animate-fade-in"
+                     >
+                        <div className="flex items-center gap-3">
+                           <FaCheckCircle className="text-emerald-400 w-4 h-4 flex-shrink-0" />
+                           <span className="text-sm font-semibold text-slate-100 truncate">
+                              {acc.accountName}
+                           </span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 uppercase">
+                           {acc.accountType}
+                        </span>
+                     </div>
+                  ))}
+               </div>
             )}
+
+            {/* Plaid Link Button */}
             <PlaidLink
-               token={user?.linkToken.token}
+               token={user?.linkToken?.token}
                onSuccess={handleOnSuccess}
                onExit={handleOnExit}
-               className="plaid-link-wrapper"
+               className="plaid-link-wrapper-class w-full block"
+               style={{ background: "none", border: "none", padding: 0 }}
             >
-               <div className="font-bold py-3 px-5 rounded text-white bg-indigo-600 hover:bg-indigo-700 xs:py-2 xs:px-4 xs:text-sm">
-                  {accountAdded ? "Add Another Account" : "Connect Accounts"}
-               </div>
+               <button
+                  type="button"
+                  className="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-brand-500/25 hover:scale-[1.02] flex items-center justify-center gap-2"
+               >
+                  <span>{hasConnected ? "Add Another Account" : "Link Account via Plaid"}</span>
+               </button>
             </PlaidLink>
-            {accountAdded && (
-               <div className="mt-10">
+
+            {/* Action Buttons */}
+            <div className="mt-6 flex flex-col gap-3 pt-6 border-t border-slate-800">
+               {hasConnected ? (
                   <button
                      onClick={handleOnContinue}
-                     className="font-bold py-2 px-4 rounded text-white bg-green-600 hover:bg-green-700"
+                     className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg flex items-center justify-center gap-2"
                   >
-                     Continue...
+                     <span>Continue to Next Step</span>
+                     <FaArrowRight className="w-4 h-4" />
                   </button>
-               </div>
-            )}
-         </div>
-         {!accountAdded &&
-            <div className="w-full mt-3 flex justify-center">
-               <button
-                  onClick={handleOnContinue}
-                  className="text-xs border border-indigo-300 font-bold py-2 px-3 rounded-2xl bg-indigo-300 mr-5 hover:bg-transparent hover:duration-500">
-                  Skip For Now
-               </button>
+               ) : (
+                  <button
+                     onClick={handleOnContinue}
+                     className="text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors py-2"
+                  >
+                     Skip for now (you can connect accounts later)
+                  </button>
+               )}
             </div>
-         }
+         </div>
       </div>
    );
 };

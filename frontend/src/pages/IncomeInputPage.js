@@ -6,34 +6,7 @@ import authContext from "../context/auth/authContext";
 import accountContext from "../context/account/accountContext";
 import { FaWallet, FaPlus, FaTrashAlt, FaArrowRight, FaCheckCircle } from "react-icons/fa";
 
-/**
- * Registration step progress bar — shows "Step 3 of 4"
- */
-const StepProgress = ({ currentStep = 3, totalSteps = 4 }) => {
-   const steps = ["Register", "Connect Accounts", "Income", "Allocations"];
-   return (
-      <div className="w-full max-w-xl mb-6 animate-fade-in">
-         <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-               Step {currentStep} of {totalSteps}
-            </span>
-            <span className="text-xs font-semibold text-brand-300">
-               {steps[currentStep - 1]}
-            </span>
-         </div>
-         <div className="flex gap-1.5">
-            {Array.from({ length: totalSteps }).map((_, i) => (
-               <div
-                  key={i}
-                  className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                     i < currentStep ? "bg-brand-500" : "bg-slate-700"
-                  }`}
-               />
-            ))}
-         </div>
-      </div>
-   );
-};
+import StepProgress from "../components/layout/StepProgress";
 
 /**
  * Page for users to enter single or multiple monthly income sources during registration
@@ -171,7 +144,7 @@ const IncomeInputPage = () => {
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-950 justify-center items-center px-4 py-8">
          {/* Step Progress */}
-         <StepProgress currentStep={3} totalSteps={4} />
+         <StepProgress currentStep={3} totalSteps={5} />
 
          {/* Main Container */}
          <div className="max-w-xl w-full bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-2xl p-6 sm:p-8 animate-slide-up text-left flex flex-col gap-6">
