@@ -1,16 +1,16 @@
 import React, { useContext, useState } from "react";
 import AlertContext from "../../context/alert/alertContext";
 import categoryContext from "../../context/category/categoryContext";
+import Modal from "../layout/Modal";
+import { ThemeContext } from "../../context/theme/ThemeContext";
 
-/**
- *
- * @param {*} param0
- * @returns
- */
 const RenameCategory = ({ onClose, category }) => {
     // Global State
     const { setAlert } = useContext(AlertContext);
     const { renameCategory } = useContext(categoryContext);
+    const { theme } = useContext(ThemeContext);
+
+    const isDark = theme === "dark";
 
     // Local State for New Name
     const [newName, setNewName] = useState("");
@@ -27,67 +27,75 @@ const RenameCategory = ({ onClose, category }) => {
             return;
         }
 
-        const renameCategoryDto = {categoryName: newName, categoryId: category.categoryId}
+        const renameCategoryDto = { categoryName: newName.trim(), categoryId: category.categoryId };
         renameCategory(renameCategoryDto);
         onClose();
     };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center z-[500] backdrop-blur-sm overflow-y-auto">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/3 flex flex-col justify-between max-h-[85%] xs:p-4">
-                <div>
-                    <div className="flex flex-col items-center mb-4 xs:mb-2">
-                        <h2 className="text-3xl font-extrabold text-indigo-600 text-center mb-2 xs:text-2xl">
-                            Rename Category
-                        </h2>
-                        <p className="text-center text-gray-700 xs:text-sm">
-                            To rename the category, please enter the new name below.
-                        </p>
-                    </div>
-                    <div className="flex items-center justify-center mb-4 pt-2 xs:pt-1">
-                        <img
-                            src={
-                                category.logoUrl ||
-                                "https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
-                            }
-                            alt="Category Logo"
-                            className="w-8 h-8 rounded-full xs:w-6 xs:h-6"
-                        />
-                        <div className="ml-2 xs:ml-1">
-                            <p className="font-bold text-lg xs:text-base">{category.name}</p>
-                            <p className="text-gray-500 xs:text-sm">${category.amount}</p>
-                        </div>
+        <Modal isOpen={true} onClose={onClose} title="Rename Category" size="md">
+            <div className="flex flex-col gap-4">
+                <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                    To rename the category, please enter the new name below.
+                </p>
+
+                <div className={`flex items-center gap-3 p-3.5 border rounded-xl ${
+                    isDark ? "bg-slate-800/80 border-slate-700/50" : "bg-slate-50 border-slate-200"
+                }`}>
+                    <img
+                        src={
+                            category.logoUrl ||
+                            "https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
+                        }
+                        alt="Category Logo"
+                        className="w-10 h-10 rounded-full object-cover border border-slate-300 dark:border-slate-600"
+                    />
+                    <div>
+                        <p className={`font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>{category.name}</p>
+                        {category.amount !== undefined && (
+                            <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>${category.amount}</p>
+                        )}
                     </div>
                 </div>
-                <div className="overflow-y-auto flex-1">
-                    <div className="mb-4 border border-gray-300 rounded-lg p-3 flex items-center justify-center bg-indigo-100 xs:p-2">
-                        <div className="relative flex items-center w-1/2 xs:w-full">
-                            <input
-                                type="text"
-                                value={newName}
-                                onChange={handleInputChange}
-                                placeholder="New Name"
-                                className="w-full border pl-2 pr-2 py-1 border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 xs:text-sm"
-                            />
-                        </div>
-                    </div>
+
+                <div className={`p-4 border rounded-xl ${
+                    isDark ? "bg-slate-800/50 border-slate-700/60" : "bg-slate-50 border-slate-200"
+                }`}>
+                    <input
+                        type="text"
+                        value={newName}
+                        onChange={handleInputChange}
+                        placeholder="New Category Name"
+                        className={`w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${
+                            isDark
+                                ? "bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500"
+                                : "bg-white border border-slate-300 text-slate-900 placeholder-slate-400"
+                        }`}
+                    />
                 </div>
-                <div className="flex justify-between mt-4 xs:mt-2">
+
+                <div className={`flex justify-end gap-3 pt-3 border-t ${isDark ? "border-slate-800" : "border-slate-200"}`}>
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="modal-button-cancel px-4 py-2 mr-2 text-white bg-red-500 rounded hover:bg-red-600 xs:px-3 xs:py-1 xs:text-sm"
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                            isDark
+                                ? "text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700"
+                                : "text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200"
+                        }`}
                     >
                         Cancel
                     </button>
                     <button
+                        type="button"
                         onClick={onConfirm}
-                        className="modal-button-confirm px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600 xs:px-3 xs:py-1 xs:text-sm"
+                        className="px-5 py-2 text-sm font-bold text-white bg-brand-600 hover:bg-brand-500 rounded-lg transition-colors shadow-md"
                     >
                         Confirm
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
     );
 };
 

@@ -14,6 +14,7 @@ import com.bavis.budgetapp.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,15 +27,13 @@ import java.util.Objects;
  */
 @Service
 @Log4j2
+@Transactional
 public class IncomeServiceImpl implements IncomeService {
 
-    private IncomeRepository _incomeRepository;
-
-    private UserService _userService;
-
-    private IncomeMapper _incomeMapper;
-
-    private CategoryTypeService _categoryTypeService;
+    private final IncomeRepository _incomeRepository;
+    private final UserService _userService;
+    private final IncomeMapper _incomeMapper;
+    private final CategoryTypeService _categoryTypeService;
 
     public IncomeServiceImpl(IncomeRepository _incomeRepository, UserService _userService, IncomeMapper _incomeMapper, @Lazy CategoryTypeService _categoryTypeService){
         this._incomeRepository = _incomeRepository;
@@ -42,11 +41,11 @@ public class IncomeServiceImpl implements IncomeService {
         this._incomeMapper = _incomeMapper;
         this._categoryTypeService = _categoryTypeService;
     }
+
     @Override
     public Income create(IncomeDto incomeDto) {
         log.info("Creating Income: [{}]", incomeDto);
 
-        //Map DTO to Income Entity
         User currentUser = _userService.getCurrentAuthUser();
         Income income = _incomeMapper.toIncome(incomeDto);
         income.setUser(currentUser);
@@ -69,8 +68,6 @@ public class IncomeServiceImpl implements IncomeService {
         return _incomeRepository.findById(incomeId).orElseThrow(() -> new RuntimeException("Unable to locate Income with the following ID: " + incomeId));
     }
 
-
-    //TODO: consider removing and just using readAll() functionality above
     @Override
     public List<Income> readByUserId(Long userId) {
         log.info("Attempting to find Income[s] for User with ID {}", userId);
@@ -90,19 +87,15 @@ public class IncomeServiceImpl implements IncomeService {
         log.info("Attempting to update user's Income via the following incomeDto: [{}]", incomeDto);
         User authUser = _userService.getCurrentAuthUser();
 
-        //Fetch Income corresponding to IncomeDto
         Income incomeToUpdate = readById(incomeDto.getIncomeId());
 
-        //Ensure Income corresponds to Authenticated User
         if(!Objects.equals(incomeToUpdate.getUser().getUserId(), authUser.getUserId())){
             log.error("Error: Non-auth user is attempting to update income not owned by them");
             throw new RuntimeException("Unable to update user Income due to user not being owner of specified income");
         }
 
-        //Fetch All Category Types corresponding to user
         List<CategoryType> categoryTypes = _categoryTypeService.readAll();
 
-        // Update budgetAmount & savedAmount for each CategoryType
         for(CategoryType type: categoryTypes) {
             double totalCategoryAmount = type.getBudgetAmount() - type.getSavedAmount();
             double newBudgetAmount = type.getBudgetAllocationPercentage() * incomeDto.getAmount();
@@ -110,22 +103,35 @@ public class IncomeServiceImpl implements IncomeService {
 
             UpdateCategoryTypeDto categoryTypeDto = UpdateCategoryTypeDto.builder()
                             .savedAmount(newSavedAmount)
-                            .budgetAllocationPercentage(type.getBudgetAllocationPercentage()) //budget allocation percentage remains the same
+                            .budgetAllocationPercentage(type.getBudgetAllocationPercentage())
                             .amountAllocated(newBudgetAmount)
                             .build();
 
-            _categoryTypeService.update(categoryTypeDto, type.getCategoryTypeId()); //update
+            _categoryTypeService.update(categoryTypeDto, type.getCategoryTypeId());
         }
 
         incomeToUpdate.setUpdatedAt(LocalDateTime.now());
         incomeToUpdate.setAmount(incomeDto.getAmount());
-        _incomeRepository.save(incomeToUpdate); //save income
-        return incomeToUpdate;
+        return _incomeRepository.save(incomeToUpdate);
     }
 
-    //TODO: complete and add comments/logging
     @Override
-    public void detete(Long incomeId) {
+    public void delete(Long incomeId) {
+        log.info("Attempting to delete Income entity with ID {}", incomeId);
+        User authUser = _userService.getCurrentAuthUser();
+        Income incomeToDelete = readById(incomeId);
 
+        if (!Objects.equals(incomeToDelete.getUser().getUserId(), authUser.getUserId())) {
+            log.error("Error: Non-auth user is attempting to delete income not owned by them");
+            throw new RuntimeException("Unable to delete Income due to user not being owner of specified income");
+        }
+
+        if (authUser.getIncomes() != null) {
+            authUser.getIncomes().removeIf(inc -> Objects.equals(inc.getIncomeId(), incomeId));
+        }
+
+        _incomeRepository.delete(incomeToDelete);
+        _incomeRepository.flush();
+        log.info("Successfully deleted Income entity with ID {}", incomeId);
     }
 }

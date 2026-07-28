@@ -1,26 +1,29 @@
-import React, { useContext, useEffect } from "react";
+import React from "react";
 import CategoryCreationContent from "../components/category/CategoryCreationContent";
 
+import StepProgress from "../components/layout/StepProgress";
+
 /**
- * Page to allow user to add corresponding sub-categories to a CategoryType
+ * Page to allow user to add corresponding categories to a specific bucket (Needs, Wants, Investments)
  *
  * @param categoryType
- *          - Category Type we are creating Categories for (Wants, Needs, Investments )
- * @returns
+ *          - Bucket name (Needs, Wants, Investments)
  */
 const CategoryCreationPage = ({ categoryType }) => {
    return (
-      <div className="flex min-h-screen bg-gradient-to-br from-gray-900 mt-5 to-indigo-800 justify-center items-center">
-         <div className="max-w-2xl w-full text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white xs:text-2xl">
-               <span className="ml-2">Add Categories</span>
-               <br />
-               <span>for</span>
-               <br />
-               <span className="text-indigo-600  font-extrabold">
-                  {categoryType}
-               </span>
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 justify-center items-center px-4 py-8">
+         {/* Step Progress */}
+         <StepProgress currentStep={5} totalSteps={5} subTitle={`${categoryType} Setup`} />
+
+         {/* Main Card */}
+         <div className="max-w-xl w-full bg-slate-900/80 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-2xl p-8 animate-slide-up text-center xs:p-6">
+            <h1 className="text-3xl font-extrabold text-white mb-1 xs:text-2xl">
+               Setup <span className="text-brand-400">{categoryType}</span> Categories
             </h1>
+            <p className="text-xs text-slate-400 mb-6">
+               Select or add specific spending categories under <strong className="text-slate-200">{categoryType}</strong> and assign your target monthly budget.
+            </p>
+
             <CategoryCreationContent categoryType={categoryType} />
          </div>
       </div>

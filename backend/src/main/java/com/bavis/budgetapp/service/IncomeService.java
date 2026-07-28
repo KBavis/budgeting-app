@@ -68,7 +68,7 @@ public interface IncomeService {
      * @param incomeId
      *          - ID corresponding to Income entity to be deleted
      */
-    void detete(Long incomeId);
+    void delete(Long incomeId);
 
     /**
      * Functionality to read all Income entities associated with Authenticated User
@@ -77,7 +77,4 @@ public interface IncomeService {
      *      - all incomes associated with Auth user
      */
     List<Income> readAll();
-
-
-
 }

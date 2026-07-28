@@ -6,7 +6,7 @@ import {
 import { CLEAR_ERRORS, SET_LOADING } from "../income/types";
 
 /**
- * Reducer for up
+ * Reducer for SummaryState
  * @param state initial state
  * @param action value containing payload
  * @returns updated summary state

@@ -1,13 +1,27 @@
 import React, { useContext, useState, useEffect } from "react";
 import categoryTypeContext from "../../context/category/types/categoryTypeContext";
+import categoryContext from "../../context/category/categoryContext";
 import AlertContext from "../../context/alert/alertContext";
 import transactionContext from "../../context/transaction/transactionContext";
 
 const PreviousTransactionsModal = ({ transactions, onClose, onTransactionComplete }) => {
   const transaction = transactions[0];
   const { categoryTypes } = useContext(categoryTypeContext);
+  const { categories } = useContext(categoryContext);
   const { setAlert } = useContext(AlertContext);
   const { updateCategory, renameTransaction, reduceTransactionAmount, deleteTransaction } = useContext(transactionContext);
+
+  const getCategoriesForType = (type) => {
+    const globalCats = (categories || []).filter(
+      (c) => c.categoryType && (c.categoryType.categoryTypeId === type.categoryTypeId || c.categoryType.name === type.name)
+    );
+    const typeCats = type.categories || [];
+    const map = new Map();
+    [...typeCats, ...globalCats].forEach((c) => {
+      if (c && c.categoryId) map.set(c.categoryId, c);
+    });
+    return Array.from(map.values());
+  };
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [confirmationVisible, setConfirmationVisible] = useState(false);
@@ -214,22 +228,25 @@ const PreviousTransactionsModal = ({ transactions, onClose, onTransactionComplet
           </div>
 
           {/* Category Selection */}
-          {categoryTypes.map((type) => (
-            <div key={type.categoryTypeId} className="mb-4">
-              <h3 className="text-indigo-600 font-bold mb-2 xs:text-base">{type.name}</h3>
-              <div className="grid grid-cols-2 gap-2 xs:grid-cols-1">
-                {type.categories.map((category) => (
-                  <button
-                    key={category.categoryId}
-                    onClick={() => handleCategorySelect(category)}
-                    className="bg-indigo-900 text-white px-4 py-2 rounded hover:bg-indigo-800 xs:px-3 xs:py-1 xs:text-sm"
-                  >
-                    {category.name}
-                  </button>
-                ))}
+          {categoryTypes.map((type) => {
+            const catList = getCategoriesForType(type);
+            return (
+              <div key={type.categoryTypeId} className="mb-4">
+                <h3 className="text-indigo-600 font-bold mb-2 xs:text-base">{type.name}</h3>
+                <div className="grid grid-cols-2 gap-2 xs:grid-cols-1">
+                  {catList.map((category) => (
+                    <button
+                      key={category.categoryId}
+                      onClick={() => handleCategorySelect(category)}
+                      className="bg-indigo-900 text-white px-4 py-2 rounded hover:bg-indigo-800 xs:px-3 xs:py-1 xs:text-sm"
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Confirmation Dialog */}
           {confirmationVisible && (

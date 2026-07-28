@@ -27,8 +27,6 @@ public class IncomeController {
         this._incomeService = _incomeService;
     }
 
-    //TODO: Consider adding multiple incomes at once
-
     /**
      * Creation of a single income
      *
@@ -55,9 +53,32 @@ public class IncomeController {
         return ResponseEntity.ok(_incomeService.readAll());
     }
 
-    @PatchMapping()
+    /**
+     * Update an existing income
+     *
+     * @param incomeDto
+     *          - DTO containing updated income info
+     * @return
+     *          - updated Income entity
+     */
+    @PatchMapping
     public ResponseEntity<Income> update(@RequestBody UpdateIncomeDto incomeDto) {
         log.info("Received request to update a users income via the following RequestBody: [{}]", incomeDto);
         return ResponseEntity.ok(_incomeService.update(incomeDto));
+    }
+
+    /**
+     * Delete an existing income by ID
+     *
+     * @param incomeId
+     *          - ID of Income entity to delete
+     * @return
+     *          - 200 OK
+     */
+    @DeleteMapping("/{incomeId}")
+    public ResponseEntity<Void> delete(@PathVariable Long incomeId) {
+        log.info("Received request to delete Income entity with ID {}", incomeId);
+        _incomeService.delete(incomeId);
+        return ResponseEntity.ok().build();
     }
 }

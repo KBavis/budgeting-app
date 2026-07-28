@@ -1,124 +1,161 @@
 import React, { useContext, useState } from "react";
 import transactionContext from "../../context/transaction/transactionContext";
 import AlertContext from "../../context/alert/alertContext";
+import Modal from "../layout/Modal";
+import { ThemeContext } from "../../context/theme/ThemeContext";
 
-/**
- * Modal used to Add a Transaction indepdent from any Account
- *
- * @param onClose
- *          - Function to Close Modal
- */
 const AddTransaction = ({ onClose }) => {
-   //Local State
+   // Local State
    const [transactionName, setTransactionName] = useState("");
    const [transactionAmount, setTransactionAmount] = useState("");
    const [transactionDate, setTransactionDate] = useState("");
 
-   //Global State
+   // Global State
    const { addTransaction } = useContext(transactionContext);
    const { setAlert } = useContext(AlertContext);
+   const { theme } = useContext(ThemeContext);
 
-   // Functionality to close the modal
-   const handleClose = () => {
-      onClose();
+   const isDark = theme === "dark";
+
+   // Compute local today's date in YYYY-MM-DD (avoiding UTC timezone offset issues)
+   const getLocalTodayStr = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
    };
+   const todayStr = getLocalTodayStr();
 
-   // Function to handle form submission
+   const isFutureDate = Boolean(transactionDate && transactionDate > todayStr);
+
    const handleSubmit = (e) => {
-      handleClose();
+      e.preventDefault();
+      if (!transactionName || !transactionAmount || !transactionDate) {
+         setAlert("Please fill in all fields.", "danger");
+         return;
+      }
+      if (transactionDate > todayStr) {
+         setAlert("Transaction date cannot be in the future. Please select today or a past date.", "danger");
+         return;
+      }
       const transactionDto = {
          updatedName: transactionName,
-         updatedAmount: transactionAmount,
+         updatedAmount: parseFloat(transactionAmount),
          date: transactionDate,
       };
       addTransaction(transactionDto);
+      onClose();
    };
 
    return (
-      <div className="fixed inset-0 flex items-center justify-center z-40 backdrop-blur-sm overflow-y-auto">
-         <div className="bg-white p-8 rounded shadow-lg lg:w-1/4 flex flex-col justify-between xs:w-11/12 xs:p-4">
-            <div className="mb-4 xs:mb-2">
-               <h2 className="text-3xl font-extrabold text-indigo-600 text-center mb-2 xs:text-2xl">
-                  Add Transaction
-               </h2>
-               <p className="text-center xs:text-sm">
-                  Please fill out the following information to create a
-                  Transaction indepdent of any financial institution.
-               </p>
-               <p className="font-bold text-sm text-center mx-10 xs:text-xs xs:mx-2">
-                  Note: You must assign this added Transaction to an
-                  associated Category prior to logging out!
-               </p>
+      <Modal isOpen={true} onClose={onClose} title="Add Transaction" size="md">
+         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+               Please fill out the following information to create a transaction independent of any financial institution.
+            </p>
+            <p className={`text-xs p-3 rounded-xl border font-semibold ${
+               isDark
+                  ? "text-amber-300 bg-amber-500/10 border-amber-500/20"
+                  : "text-amber-900 bg-amber-50 border-amber-200"
+            }`}>
+               💡 Note: You must assign this added Transaction to an associated Category prior to logging out!
+            </p>
+
+            <div className="flex flex-col gap-1">
+               <label htmlFor="transactionName" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  Transaction Name
+               </label>
+               <input
+                  type="text"
+                  id="transactionName"
+                  value={transactionName}
+                  onChange={(e) => setTransactionName(e.target.value)}
+                  placeholder="e.g. Coffee shop"
+                  className={`px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${
+                     isDark
+                        ? "bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500"
+                        : "bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:bg-white"
+                  }`}
+                  required
+               />
             </div>
-            <form onSubmit={handleSubmit}>
-               <div className="mb-4">
-                  <label
-                     htmlFor="transactionName"
-                     className="block text-sm font-medium text-gray-700"
-                  >
-                     Transaction Name
-                  </label>
+
+            <div className="flex flex-col gap-1">
+               <label htmlFor="transactionAmount" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  Transaction Amount
+               </label>
+               <div className="relative flex items-center">
+                  <span className={`absolute left-3 text-sm font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>$</span>
                   <input
-                     type="text"
-                     id="transactionName"
-                     value={transactionName}
-                     onChange={(e) => setTransactionName(e.target.value)}
-                     className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                     type="number"
+                     step="0.01"
+                     id="transactionAmount"
+                     value={transactionAmount}
+                     onChange={(e) => setTransactionAmount(e.target.value)}
+                     placeholder="0.00"
+                     className={`w-full pl-7 pr-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${
+                        isDark
+                           ? "bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500"
+                           : "bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:bg-white"
+                     }`}
+                     required
                   />
                </div>
-               <div className="mb-4">
-                  <label
-                     htmlFor="transactionAmount"
-                     className="block text-sm font-medium text-gray-700"
-                  >
-                     Transaction Amount
-                  </label>
-                  <div className="relative">
-                     <span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
-                        $
-                     </span>
-                     <input
-                        type="text"
-                        id="transactionAmount"
-                        value={transactionAmount}
-                        onChange={(e) => setTransactionAmount(e.target.value)}
-                        className="mt-1 pl-8 pr-2 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
-                     />
-                  </div>
-               </div>
-               <div className="mb-4">
-                  <label
-                     htmlFor="transactionDate"
-                     className="block text-sm font-medium text-gray-700"
-                  >
-                     Transaction Date
-                  </label>
-                  <input
-                     type="date"
-                     id="transactionDate"
-                     value={transactionDate}
-                     onChange={(e) => setTransactionDate(e.target.value)}
-                     className="mt-1 p-2 w-full border border-gray-300 rounded-md"
-                  />
-               </div>
-               <div className="flex justify-between">
-                  <button
-                     type="button"
-                     onClick={handleClose}
-                     className="modal-button-cancel px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
-                  >
-                     Cancel
-                  </button>
-                  <button
-                     type="submit"
-                     className="modal-button-confirm px-4 py-2 ml-2 text-white bg-green-500 rounded hover:bg-green-600"
-                  >
-                     Confirm
-                  </button>
-               </div>
-            </form>
-         </div>
-      </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+               <label htmlFor="transactionDate" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  Transaction Date
+               </label>
+               <input
+                  type="date"
+                  id="transactionDate"
+                  value={transactionDate}
+                  max={todayStr}
+                  style={{ colorScheme: isDark ? "dark" : "light" }}
+                  onChange={(e) => setTransactionDate(e.target.value)}
+                  className={`px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all ${
+                     isFutureDate
+                        ? "bg-red-500/10 border-2 border-red-500 text-red-500 focus:ring-red-500/50"
+                        : isDark
+                           ? "bg-slate-900 border border-slate-700 text-slate-100 focus:ring-indigo-500/50"
+                           : "bg-slate-50 border border-slate-300 text-slate-900 focus:bg-white focus:ring-indigo-500/50"
+                  }`}
+                  required
+               />
+               {isFutureDate ? (
+                  <p className="text-xs font-bold text-red-500 mt-1 flex items-center gap-1">
+                     ⚠️ Date cannot be in the future. Please select today ({todayStr}) or an earlier date.
+                  </p>
+               ) : (
+                  <p className={`text-[10px] ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                     Date must be on or before today ({todayStr})
+                  </p>
+               )}
+            </div>
+
+            <div className={`flex justify-end gap-3 pt-3 border-t ${isDark ? "border-slate-800" : "border-slate-200"}`}>
+               <button
+                  type="button"
+                  onClick={onClose}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                     isDark
+                        ? "text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700"
+                        : "text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200"
+                  }`}
+               >
+                  Cancel
+               </button>
+               <button
+                  type="submit"
+                  className="px-5 py-2 text-sm font-bold text-white bg-brand-600 hover:bg-brand-500 rounded-lg transition-colors shadow-md"
+               >
+                  Confirm
+               </button>
+            </div>
+         </form>
+      </Modal>
    );
 };
 

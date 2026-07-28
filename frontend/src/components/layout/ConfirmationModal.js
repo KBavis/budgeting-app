@@ -1,45 +1,64 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import Modal from './Modal';
+import { ThemeContext } from '../../context/theme/ThemeContext';
+import { FaExclamationTriangle } from 'react-icons/fa';
 
+/**
+ * Standardized Confirmation Modal component with dynamic Light/Dark mode support
+ */
 const ConfirmationModal = ({
-                               onClose,
-                               onConfirm,
-                               question,
-                               accountName,
-                               confirmText = "Confirm",
-                               cancelText = "Cancel",
-                           }) => {
+    onClose,
+    onConfirm,
+    question,
+    accountName,
+    confirmText = "Confirm",
+    cancelText = "Cancel",
+}) => {
+    const { theme } = useContext(ThemeContext);
+    const isDark = theme === "dark";
+
     return (
-        <div className="fixed inset-0 flex items-center justify-center z-[500] backdrop-blur-sm overflow-y-auto">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/3 flex flex-col justify-between max-h-[85%] xs:p-4">
-                <div>
-                    <div className="flex flex-col items-center mb-4 xs:mb-2">
-                        <h2 className="text-2xl font-bold text-indigo-500 text-center mt-2 mb-4 xs:text-xl xs:mb-2">
-                            {question}
-                        </h2>
-                        <h3 className="text-3xl font-extrabold text-indigo-600 text-center mb-2 xs:text-2xl">
-                            {accountName}
-                        </h3>
-                    </div>
+        <Modal isOpen={true} onClose={onClose} title="Confirm Action" size="sm">
+            <div className="flex flex-col items-center gap-4 text-center">
+                <div className={`p-3.5 rounded-full border ${
+                    isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-600"
+                }`}>
+                    <FaExclamationTriangle className="w-6 h-6" />
                 </div>
-                <div className="flex justify-between mt-4 xs:mt-2">
+
+                <p className={`text-base font-bold leading-snug ${isDark ? "text-slate-200" : "text-slate-800"}`}>
+                    {question}
+                </p>
+
+                {accountName && (
+                    <p className={`text-lg font-black ${isDark ? "text-brand-400" : "text-brand-600"}`}>
+                        {accountName}
+                    </p>
+                )}
+
+                <div className={`flex justify-end gap-3 pt-4 border-t w-full mt-2 ${isDark ? "border-slate-800" : "border-slate-200"}`}>
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="modal-button-cancel px-4 py-2 mr-2 text-white bg-red-500 rounded hover:bg-red-600 xs:px-3 xs:py-1 xs:text-sm"
+                        className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                            isDark
+                                ? "text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700"
+                                : "text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200"
+                        }`}
                     >
                         {cancelText}
                     </button>
                     <button
+                        type="button"
                         onClick={onConfirm}
-                        className="modal-button-confirm px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600 xs:px-3 xs:py-1 xs:text-sm"
+                        className="px-5 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors shadow-md"
                     >
                         {confirmText}
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
     );
 };
 
 export default ConfirmationModal;
-
-

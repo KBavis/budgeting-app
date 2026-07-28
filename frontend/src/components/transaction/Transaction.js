@@ -1,32 +1,29 @@
 import React, { useContext, useState } from "react";
 import { useDrag } from "react-dnd";
 import transactionContext from "../../context/transaction/transactionContext";
-import TransactionDropdown from "../layout/TransactionDropdown";
+import TransactionActionModal from "./TransactionActionModal";
+import ConfirmationModal from "../layout/ConfirmationModal";
+import { ThemeContext } from "../../context/theme/ThemeContext";
+import { FaSlidersH } from "react-icons/fa";
 
 /**
- *
- * @param transaction
- *          - Transaction to generate component for
- * @param handleShowSplitTransactionModal
- *          - Function passed down through props to handle the showing of Split Transaction modal
- * @param handleShowReduceTransactionModal
- *          - Function passed down through props to handle the showing of the Reduce Transaction modal
- * @returns
+ * Transaction component on Unassigned Toolbar with drag-and-drop
+ * and clean action modal (replacing clunky ellipsis dropdown).
  */
 const Transaction = ({
-                        transaction,
-                        handleShowSplitTransactionModal,
-                        handleShowReduceTransactionModal,
-                        handleShowRenameTransactionModal,
-                        handleShowAssignCategoryModal,
-                     }) => {
-   // Local State
-   const [dropdownVisible, setDropdownVisible] = useState(false);
+   transaction,
+   handleShowSplitTransactionModal,
+   handleShowReduceTransactionModal,
+   handleShowRenameTransactionModal,
+   handleShowAssignCategoryModal,
+}) => {
+   const [showActionModal, setShowActionModal] = useState(false);
+   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
-   // Global State
    const { deleteTransaction } = useContext(transactionContext);
+   const { theme } = useContext(ThemeContext);
+   const isDark = theme === "dark";
 
-   // Function to allow the Transaction component to be assigned to corresponding Categories
    const [{ isDragging }, drag] = useDrag(() => ({
       type: "transaction",
       item: { transaction },
@@ -35,86 +32,93 @@ const Transaction = ({
       }),
    }));
 
-   // Function to Handle Dropdown
-   const toggleDropdown = () => {
-      setDropdownVisible(!dropdownVisible);
-   };
-
-   // Function to Assign a Transaction a Category
-   const handleReassignTransaction = () => {
-      handleShowAssignCategoryModal(transaction);
-   };
-
-   // Function to handle drop down option 'Split Transaction'
-   const handleSplitTransaction = () => {
-      toggleDropdown();
-      handleShowSplitTransactionModal(transaction);
-   };
-
-   // Function to handle drop down option 'Reduce Amount'
-   const handleReduceTransaction = () => {
-      toggleDropdown();
-      handleShowReduceTransactionModal(transaction);
-   };
-
-   // Function to delete drop down 'Delete Transaction'
    const handleDeleteTransaction = () => {
-      toggleDropdown();
       deleteTransaction(transaction.transactionId);
+      setShowConfirmDelete(false);
    };
 
-   // Function to handle drop down option 'Rename Transaction'
-   const handleRenameTransaction = () => {
-      toggleDropdown();
-      handleShowRenameTransactionModal(transaction);
-   };
-
-   // Round The Transaction Amount
    const roundedAmount = Math.round(transaction.amount);
-
-   // Format Transaction Date
    const formattedDate = new Date(transaction.date).toLocaleDateString("en-US");
 
    return (
-       <div
-           ref={drag}
-           className={`cursor-pointer bg-indigo-900 rounded-lg shadow-md p-2 flex items-center space-x-2 w-full h-16 relative xs:h-14 xs:p-1 ${
-               isDragging ? "opacity-50" : ""
-           }`}
-       >
-          {transaction.logoUrl ? (
-              <img
+      <>
+         <div
+            ref={drag}
+            onClick={() => setShowActionModal(true)}
+            className={`cursor-pointer rounded-xl shadow-md p-2 flex items-center space-x-2.5 w-full h-16 relative transition-all duration-200 border ${
+               isDragging ? "opacity-40" : ""
+            } ${
+               isDark
+                  ? "bg-slate-800/90 border-slate-700/80 text-slate-100 hover:bg-slate-800"
+                  : "bg-white border-slate-200 text-slate-800 hover:bg-slate-50 shadow-sm"
+            }`}
+         >
+            {transaction.logoUrl ? (
+               <img
                   src={transaction.logoUrl}
                   alt="Transaction Logo"
-                  className="w-10 h-10 rounded-full xs:w-8 xs:h-8 flex-shrink-0"
-              />
-          ) : (
-              <img
+                  className="w-9 h-9 rounded-full flex-shrink-0 object-cover border border-slate-400/30"
+               />
+            ) : (
+               <img
                   src="https://bavis-budget-app-bucket.s3.amazonaws.com/default-avatar-icon-of-social-media-user-vector.jpg"
-                  className="w-10 h-10 rounded-full xs:w-8 xs:h-8 flex-shrink-0"
-              />
-          )}
-          <div className="text-white text-left flex-1 min-w-0">
-             <div className="flex justify-between items-center">
-                <p className="text-sm font-bold xs:text-xs sm:text-sm truncate">{transaction.name}</p>
-                <p className="text-xs font-bold xs:text-xxs sm:text-xs flex-shrink-0 ml-2">{formattedDate}</p>
-             </div>
-             <p className="text-xs xl:text-sm xs:text-xxs sm:text-xs">${roundedAmount}</p>
-          </div>
-          {transaction.category && ( // Only display the dropdown if category is not null
-              <TransactionDropdown
-                  handleDeleteTransaction={handleDeleteTransaction}
-                  handleSplitTransaction={handleSplitTransaction}
-                  handleReassignTransaction={handleReassignTransaction}
-                  handleRenameTransaction={handleRenameTransaction}
-                  handleReduceTransaction={handleReduceTransaction}
-                  className="ml-auto flex-shrink-0"
-              />
-          )}
-       </div>
+                  className="w-9 h-9 rounded-full flex-shrink-0 object-cover border border-slate-400/30"
+                  alt="Default Avatar"
+               />
+            )}
+            <div className="flex-1 min-w-0 text-left">
+               <div className="flex justify-between items-center mb-0.5">
+                  <p className={`text-xs font-bold truncate ${isDark ? "text-white" : "text-slate-900"}`}>
+                     {transaction.name}
+                  </p>
+                  <p className={`text-[10px] font-semibold flex-shrink-0 ml-2 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                     {formattedDate}
+                  </p>
+               </div>
+               <p className={`text-xs font-black ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+                  ${roundedAmount}
+               </p>
+            </div>
+            
+            <button
+               type="button"
+               onClick={(e) => {
+                  e.stopPropagation();
+                  setShowActionModal(true);
+               }}
+               className={`p-1.5 rounded-lg border transition-colors flex-shrink-0 ml-auto ${
+                  isDark
+                     ? "text-slate-400 hover:text-white bg-slate-700/50 border-slate-600"
+                     : "text-slate-500 hover:text-slate-900 bg-slate-100 border-slate-200"
+               }`}
+               title="Transaction Actions"
+            >
+               <FaSlidersH size={12} />
+            </button>
+         </div>
+
+         {/* Action Modal */}
+         <TransactionActionModal
+            isOpen={showActionModal}
+            onClose={() => setShowActionModal(false)}
+            transaction={transaction}
+            handleRename={handleShowRenameTransactionModal}
+            handleReassign={handleShowAssignCategoryModal}
+            handleSplit={handleShowSplitTransactionModal}
+            handleReduce={handleShowReduceTransactionModal}
+            handleDelete={() => setShowConfirmDelete(true)}
+         />
+
+         {/* Confirmation Delete Modal */}
+         {showConfirmDelete && (
+            <ConfirmationModal
+               question={`Are you sure you want to delete transaction "${transaction.name}"?`}
+               onConfirm={handleDeleteTransaction}
+               onClose={() => setShowConfirmDelete(false)}
+            />
+         )}
+      </>
    );
 };
 
 export default Transaction;
-
-

@@ -10,7 +10,8 @@ import {
    CREATE_CATEGORY_SUCCESS,
    UPDATE_CATEGORY_ALLOCATIONS_FAIL,
    UPDATE_CATEGORY_ALLOCATIONS_SUCCESS,
-   DELETE_CATEGORY_SUCCESS, RENAME_CATEGORY_SUCCESS,
+   DELETE_CATEGORY_SUCCESS,
+   RENAME_CATEGORY_SUCCESS,
 } from "./types";
 
 /**
@@ -18,16 +19,27 @@ import {
  */
 export default (state, action) => {
    switch (action.type) {
-      case CREATE_CATEGORIES_SUCCESS:
       case FETCH_CATEGORIES_SUCCESS:
          return {
             ...state,
-            categories: state.categories
-               ? [...state.categories, ...action.payload]
-               : action.payload,
+            categories: Array.isArray(action.payload) ? action.payload : [],
             loading: false,
             error: null,
          };
+      case CREATE_CATEGORIES_SUCCESS: {
+         const existing = state.categories || [];
+         const payloadArr = Array.isArray(action.payload) ? action.payload : [action.payload];
+         const map = new Map();
+         [...existing, ...payloadArr].forEach((c) => {
+            if (c && c.categoryId) map.set(c.categoryId, c);
+         });
+         return {
+            ...state,
+            categories: Array.from(map.values()),
+            loading: false,
+            error: null,
+         };
+      }
       case RENAME_CATEGORY_FAIL:
       case CREATE_CATEGORY_FAIL:
       case CREATE_CATEGORIES_FAIL:
@@ -38,7 +50,7 @@ export default (state, action) => {
             error: action.payload,
             loading: false,
          };
-      case DELETE_CATEGORY_SUCCESS:
+      case DELETE_CATEGORY_SUCCESS: {
          const updates = state.categories
             ? state.categories.filter(
                  (category) => category.categoryId !== action.payload
@@ -49,9 +61,9 @@ export default (state, action) => {
             loading: false,
             categories: updates,
          };
-      case UPDATE_CATEGORY_ALLOCATIONS_SUCCESS:
-         // Filter out original state categories with the same categoryId as in the action payload
-         const filteredCategories = state.categories.filter(
+      }
+      case UPDATE_CATEGORY_ALLOCATIONS_SUCCESS: {
+         const filteredCategories = (state.categories || []).filter(
             (category) =>
                !action.payload.some(
                   (updatedCategory) =>
@@ -59,7 +71,6 @@ export default (state, action) => {
                )
          );
 
-         // Add the updated categories to the state
          const updatedStateCategories = [
             ...filteredCategories,
             ...action.payload,
@@ -71,15 +82,14 @@ export default (state, action) => {
             loading: false,
             error: null,
          };
-      case CREATE_CATEGORY_SUCCESS:
-         //Add New Category
+      }
+      case CREATE_CATEGORY_SUCCESS: {
          const newCategories = [
-            ...state.categories,
+            ...(state.categories || []),
             action.payload.newCategory,
          ];
 
-         //Update Existing Categories BudgetPercent/BudgetAmount
-         const categoriesWithUpdates = action.payload.categoriesWithUpdates;
+         const categoriesWithUpdates = action.payload.categoriesWithUpdates || [];
          const updatedCategories = newCategories.map((category) => {
             const categoryToUpdate = categoriesWithUpdates.find(
                (c) => c.categoryId === category.categoryId
@@ -96,19 +106,29 @@ export default (state, action) => {
             return category;
          });
 
+         // Deduplicate
+         const map = new Map();
+         updatedCategories.forEach((c) => {
+            if (c && c.categoryId) map.set(c.categoryId, c);
+         });
+
          return {
             ...state,
-            categories: updatedCategories,
+            categories: Array.from(map.values()),
             loading: false,
             error: null,
          };
-      case RENAME_CATEGORY_SUCCESS:
-         let categoriesWithRenamed = state.categories?.map((category) => category.categoryId === action.payload.categoryId ? action.payload : category);
+      }
+      case RENAME_CATEGORY_SUCCESS: {
+         const categoriesWithRenamed = state.categories?.map((category) =>
+            category.categoryId === action.payload.categoryId ? action.payload : category
+         );
          return {
             ...state,
             categories: categoriesWithRenamed,
-            loading: false
-         }
+            loading: false,
+         };
+      }
       case CLEAR_ERRORS:
          return {
             ...state,

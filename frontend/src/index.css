@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -37,7 +39,7 @@ button.text-white.bg-transparent.border-none.p-0.m-0:active {
    transition: background-color 0.5s ease !important;
    max-width: 100vw !important;
    max-height: 100vh !important;
-   overflow: auto !important;
+   overflow: hidden !important;
 }
 
 .plaid-link-wrapper-class {
@@ -47,7 +49,7 @@ button.text-white.bg-transparent.border-none.p-0.m-0:active {
    background: none !important;
    max-width: 100vw !important;
    max-height: 100vh !important;
-   overflow: auto !important;
+   overflow: hidden !important;
 }
 
 .dropdown-toggle::after {
@@ -129,4 +131,15 @@ button.text-white.bg-transparent.border-none.p-0.m-0:active {
 
 .animate-prevPage {
    animation: prevPage 0.2s ease-in-out;
+}
+
+/* Hide number input spin buttons (up/down arrows) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
 }

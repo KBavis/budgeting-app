@@ -194,10 +194,8 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: #fff;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    box-shadow: 0px -5px 10px rgba(0, 0, 0, 0.1);
     z-index: 1001;
   }
 
@@ -207,38 +205,6 @@
 
   .slide-down {
     animation: slide-down 0.3s ease-in-out forwards;
-  }
-  
-  .slider-content {
-    padding: 20px;
-    text-align: center;
-  }
-  
-  .category-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
-  }
-  
-  .category-buttons button {
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    background-color: #f0f0f0;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .cancel-button {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 10px;
-    border: none;
-    background-color: #e74c3c;
-    color: #fff;
-    font-size: 16px;
-    cursor: pointer;
   }
 
   .suggestion-container {

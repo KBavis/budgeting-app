@@ -189,10 +189,11 @@ const CategoryCreationContent = ({ categoryType }) => {
             remainingBudget={remainingBudget}
          />
          <button
+            type="button"
             onClick={handleSubmit}
-            className="font-bold mb-3 py-3 px-6 rounded text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 xs:py-2 xs:px-4 xs:text-sm"
+            className="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-brand-500/25 hover:scale-[1.02]"
          >
-            Submit
+            Save {categoryType} Categories & Continue
          </button>
       </div>
    );

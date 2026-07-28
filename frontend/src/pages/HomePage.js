@@ -10,7 +10,6 @@ import Loading from "../components/util/Loading";
 import SplitTransactionModal from "../components/transaction/SplitTransaction";
 import ReduceTransaction from "../components/transaction/ReduceTransaction";
 import AddTransaction from "../components/transaction/AddTransaction";
-import DropdownMenu from "../components/layout/Dropdown";
 import RenameTransaction from "../components/transaction/RenameTransaction";
 import AlertContext from "../context/alert/alertContext";
 import AssignCategoryModal from "../components/transaction/AssignCategoryModal";
@@ -18,41 +17,30 @@ import AddCategory from "../components/category/AddCategory";
 import UpdateAllocationsModal from "../components/category/UpdateAllocationsModal";
 import RenameCategory from "../components/category/RenameCategory";
 import SummaryContext from "../context/summary/summaryContext";
-import PreviousTransactionsModal from "../components/transaction/PreviousTransactionsModal";
 import TransactionSwiper from "../components/swiping/TransactionSwiper";
+import { FaSyncAlt, FaPlus, FaList, FaLayerGroup } from "react-icons/fa";
 
 const HomePage = () => {
-   //Local State
+   // Local State
    const [name, setName] = useState("");
    const [loading, setLoading] = useState(false);
-   const [showSplitTransactionModal, setShowSplitTransactionModal] =
-      useState(false);
-   const [showReduceTransactionModal, setShowReduceTransactionModal] =
-      useState(false);
-   const [showAddTransactionModal, setShowAddTransactionModal] =
-      useState(false);
-   const [showRenameTransactionModal, setShowRenameTransactionModal] =
-      useState(false);
-   const [showAssignCategoryModal, setShowAssignCategoryModal] =
-      useState(false);
-   const [showUpdateAllocationsModal, setShowUpdateAllocationsModal] =
-      useState(false);
-   const [showRenameCategoryModal, setShowRenameCategoryModal] =
-      useState(false);
+   const [showSplitTransactionModal, setShowSplitTransactionModal] = useState(false);
+   const [showReduceTransactionModal, setShowReduceTransactionModal] = useState(false);
+   const [showAddTransactionModal, setShowAddTransactionModal] = useState(false);
+   const [showRenameTransactionModal, setShowRenameTransactionModal] = useState(false);
+   const [showAssignCategoryModal, setShowAssignCategoryModal] = useState(false);
+   const [showUpdateAllocationsModal, setShowUpdateAllocationsModal] = useState(false);
+   const [showRenameCategoryModal, setShowRenameCategoryModal] = useState(false);
    const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
    const [transaction, setTransaction] = useState(null);
    const [categoryType, setCategoryType] = useState(false);
    const [category, setCategory] = useState(null);
-   const [dropdownVisible, setDropdownVisible] = useState(false); // State for dropdown v
-   const [showPrevTransactionsModal, setShowPrevTransactionsModal] = useState(false);
-   const [modalPrevMonthTransactions, setModalPrevMonthTransactions] = useState([]);
    const [showTransactionSwiper, setShowTransactionSwiper] = useState(null);
    const [transactionsToAssign, setTransactionsToAssign] = useState([]);
 
-
    const initalFetchRef = useRef(false);
 
-   //Global States
+   // Global States
    const {
       syncTransactions,
       fetchTransactions,
@@ -64,7 +52,6 @@ const HomePage = () => {
    const {
       accounts,
       fetchAccounts,
-      createAccount,
       loading: accountsLoading,
       setLoading: setAccountsLoading,
    } = useContext(accountContext);
@@ -102,175 +89,125 @@ const HomePage = () => {
       }
    }, [user]);
 
-   //Function to open RenameCategory modal
+   // Function to open RenameCategory modal
    const handleShowRenameCategoryModal = (category) => {
       setCategory(category);
       setShowRenameCategoryModal(true);
    };
 
-   //Function to close RenameCategory modal
    const handleCloseRenameCategoryModal = () => {
       setShowRenameCategoryModal(false);
       setCategory(null);
    };
 
-   // Function to open SplitTransaction modal
    const handleShowSplitTransactionModal = (splitTransaction) => {
       setTransaction(splitTransaction);
       setShowSplitTransactionModal(true);
    };
 
-   //Function to open AdjustCategoryAllocation modal
-   const handleShowUpdateAllocationsModal = (categoryType) => {
-      setCategoryType(categoryType);
-      setShowUpdateAllocationsModal(true);
-   };
-
-   //Function to close AdjustCategoryAllocation modal
-   const handleCloseUpdateAllocationsModal = () => {
-      setCategoryType(null);
-      setShowUpdateAllocationsModal(false);
-   };
-
-   //Function to open AssignCategory modal
-   const handleShowAssignCategoryModal = (transaction) => {
-      setTransaction(transaction);
-      setShowAssignCategoryModal(true);
-   };
-
-   //Function to open AddCategory modal
-   const handleShowAddCategoryModal = () => {
-      setShowAddCategoryModal(true);
-   };
-
-   //Function to close AddCategory modal
-   const handleCloseAddCategoryModal = () => {
-      setShowAddCategoryModal(false);
-   };
-
-   //Function to close AssignCategory modal
-   const handleCloseAssignCategoryModal = () => {
-      setShowAssignCategoryModal(false);
-   };
-
-   //Function to close SplitTransaction modal
    const handleCloseSplitTransactionModal = () => {
       setShowSplitTransactionModal(false);
+      setTransaction(null);
    };
 
-   //Function to open RenameTransaction modal
+   const handleShowReduceTransactionModal = (reduceTransaction) => {
+      setTransaction(reduceTransaction);
+      setShowReduceTransactionModal(true);
+   };
+
+   const handleCloseReduceTransactionModal = () => {
+      setShowReduceTransactionModal(false);
+      setTransaction(null);
+   };
+
+   const handleShowAddTransactionModal = () => {
+      setShowAddTransactionModal(true);
+   };
+
+   const handleCloseAddTransactionModal = () => {
+      setShowAddTransactionModal(false);
+   };
+
    const handleShowRenameTransactionModal = (renameTransaction) => {
       setTransaction(renameTransaction);
       setShowRenameTransactionModal(true);
    };
 
-   //Function to close RenameTransaction modal
    const handleCloseRenameTransactionModal = () => {
       setShowRenameTransactionModal(false);
+      setTransaction(null);
    };
 
-   //Fucntion to open ReduceTransaction modal
-   const handleShowReduceTransactionModal = (reducedTransaction) => {
-      setTransaction(reducedTransaction);
-      setShowReduceTransactionModal(true);
+   const handleShowAssignCategoryModal = (assignCategory) => {
+      setTransaction(assignCategory);
+      setShowAssignCategoryModal(true);
    };
 
-   //Function to close Reduce Transaction modal
-   const handleCloseReduceTransactionModal = () => {
-      setShowReduceTransactionModal(false);
+   const handleCloseAssignCategoryModal = () => {
+      setShowAssignCategoryModal(false);
+      setTransaction(null);
    };
 
-   // Function to open AddTransaction modal
-   const handleShowAddTransactionModal = () => {
-      setDropdownVisible(false);
-      setShowAddTransactionModal(true);
+   const handleShowAddCategoryModal = () => {
+      setShowAddCategoryModal(true);
    };
 
-   //Function to close modal
-   const handleCloseAddTransactionModal = () => {
-      setShowAddTransactionModal(false);
+   const handleCloseAddCategoryModal = () => {
+      setShowAddCategoryModal(false);
    };
 
-   //Sync Transactions for Added Accounts
-   const fetchUpdatedTransactions = async () => {
-      const accountIds = accounts.map((account) => account.accountId);
-      if (!accountIds || accountIds.length == 0) {
-         setAlert("Link your accounts via Plaid to sync transactions", 'danger')
-         return;
-      }
-      console.log(`Syncing Transactions for AccountIds`, accountIds);
-      await syncTransactions(accountIds);
+   const handleShowUpdateAllocationsModal = (categoryType) => {
+      setCategoryType(categoryType);
+      setShowUpdateAllocationsModal(true);
    };
 
-   //Fetch Current Authenticated User
-   const getAuthUser = async () => {
-      //Only fetch authenticated user if not present in local state
-      if (!user && localStorage.token) {
-         console.log("Fetching current authenticated user...");
-         await fetchAuthenticatedUser();
-      }
+   const handleCloseUpdateAllocationsModal = () => {
+      setShowUpdateAllocationsModal(false);
+      setCategoryType(null);
    };
 
-   //Fetch All Accounts
    const getAccounts = async () => {
-      if (!accounts || accounts.length === 0) {
-         //Fetch All User Accounts
-         setAccountsLoading();
-         await fetchAccounts();
-      }
+      setAccountsLoading();
+      await fetchAccounts();
    };
 
-   //Fetch All Budget Summaries
-   const getBudgetSummaries = async () => {
-      if (!summaries || summaries.length === 0) {
-         //Fetch All Budget Summaries
-         setSummariesLoading();
-         await fetchBudgetSummaries();
-      }
-   };
-
-   //Fetch All Category Types
-   const getCategoryTypes = async () => {
-      if (!categoryTypes || categoryTypes.length === 0) {
-         //Fetch All Category Types
-         setCategoryTypesLoading();
-         await fetchCategoryTypes();
-      }
-   };
-
-   //Fetch All Incomes
-   const getIncomes = async () => {
-      if (!incomes || incomes.length === 0) {
-         //Fetch All Incomes
-         setIncomesLoading();
-         await fetchIncomes();
-      }
-   };
-
-   //Fetch All Categories
-   const getCategories = async () => {
-      if (!categories || categories.length === 0) {
-         //Fetch All Categories
-         setCategoriesLoading();
-         await fetchCategories();
-      }
-   };
-
-   //Fetch All Transactions
    const getTransactions = async () => {
-      if (!transactions || transactions.length === 0) {
-         //Fetch All Transactions
-         setTransactionLoading();
-         await fetchTransactions();
-      }
+      setTransactionLoading();
+      await fetchTransactions();
    };
 
-   //Fetch All Entities from Backend initial Component Mounting
+   const getCategories = async () => {
+      setCategoriesLoading();
+      await fetchCategories();
+   };
+
+   const getCategoryTypes = async () => {
+      setCategoryTypesLoading();
+      await fetchCategoryTypes();
+   };
+
+   const getAuthUser = async () => {
+      await fetchAuthenticatedUser();
+   };
+
+   const getIncomes = async () => {
+      setIncomesLoading();
+      await fetchIncomes();
+   };
+
+   const getBudgetSummaries = async () => {
+      setSummariesLoading();
+      await fetchBudgetSummaries();
+   };
+
+   const fetchUpdatedTransactions = async () => {
+      setTransactionLoading();
+      await syncTransactions();
+      setAlert("Successfully Synced Account Transactions!", "success");
+   };
+
+   // Component Mount logic
    useEffect(() => {
-      console.log(
-         `Component Mounted! Initial Fetch Value : ${initalFetchRef.current}`
-      );
-      //Only Fetch if Initial Fetch Is False
       if (!initalFetchRef.current) {
          getAccounts();
          getIncomes();
@@ -279,30 +216,17 @@ const HomePage = () => {
          getBudgetSummaries();
          initalFetchRef.current = true;
       }
-
-      //Logic To Fetch Authenticated User Present in Fetch Function
       getAuthUser();
    }, []);
 
-
-   // Assign Categories for Previous Month Non-Allocated Trasnactions
-   useEffect(() => {
-
-      if (prevMonthTransactions && prevMonthTransactions.length > 0) {
-         setModalPrevMonthTransactions([...prevMonthTransactions]) // create copy to iterate through
-         setShowPrevTransactionsModal(true);
-      }
-
-   }, [prevMonthTransactions])
-
-   //Trigger Fetching of Transactions When Accounts loaded into Context
+   // Fetch transactions when accounts exist
    useEffect(() => {
       if (accounts && accounts.length > 0) {
          getTransactions();
       }
    }, [accounts]);
 
-   // Determine if we are still loading in all our entities from REST API
+   // Determine global loading state
    useEffect(() => {
       setLoading(
          transactionsLoading &&
@@ -321,162 +245,136 @@ const HomePage = () => {
       summariesLoading,
    ]);
 
+   // Merge previous month and current unassigned transactions into single swiper list
    useEffect(() => {
-      const unassigned = transactions.filter(t => !t.category || t.category.name === 'Miscellaneous');
-      setTransactionsToAssign(unassigned);
-      if (unassigned.length > 0 && showTransactionSwiper === null) {
+      const unassigned = (transactions || []).filter(t => !t.category || t.category.name === 'Miscellaneous');
+      const combined = [
+         ...(prevMonthTransactions || []),
+         ...unassigned
+      ];
+      setTransactionsToAssign(combined);
+      if (combined.length > 0 && showTransactionSwiper === null) {
          setShowTransactionSwiper(true);
       }
-   }, [transactions, showTransactionSwiper]);
-
-
+   }, [transactions, prevMonthTransactions, showTransactionSwiper]);
 
    return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-800 relative">
-         {/* Drop Down For Adding Transaction/Accounts/Categories */}
-         <DropdownMenu
-            dropdownVisible={dropdownVisible}
-            setDropdownVisible={setDropdownVisible}
-            handleShowAddTransactionModal={handleShowAddTransactionModal}
-            handleShowAddCategoryModal={handleShowAddCategoryModal}
-            user={user} // Pass the user prop
-         />
-         {transactionsToAssign.length > 0 && !showTransactionSwiper && (
-            <div className="absolute top-20 right-5">
-               <button
-                  className="bg-green-500 border-2 border-green-500 text-xs hover:bg-transparent duration-1000 text-white font-bold py-1 px-2 rounded"
-                  onClick={() => setShowTransactionSwiper(true)}
-               >
-                  Continue Categorization
-               </button>
-            </div>
-         )}
-
-         {/* Main Content */}
-         <div className="flex-1 flex flex-col justify-center items-center px-8 md:px-12 pt-24">
-            <div className="max-w-md text-center mb-16 mt-48 xxl:mt-4 xs:mt-10 xs:mb-8">
-               <h1 className="text-xl md:text-2xl font-bold mb-4 text-white">
-                  Welcome <span className="text-indigo-500">{name}</span>
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-100 to-indigo-100 dark:from-gray-900 dark:to-indigo-800 relative text-slate-800 dark:text-slate-100">
+         {/* Main Content shifted upward */}
+         <div className="flex-1 flex flex-col justify-center items-center px-4 md:px-12 pt-10">
+            <div className="max-w-3xl text-center mb-8 mt-12 md:mt-8 w-full">
+               <h1 className="text-xl md:text-2xl font-bold mb-1 text-slate-500 dark:text-slate-300">
+                  Welcome back, <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{name}</span>
                </h1>
-               <h2 className="text-3xl md:text-4xl mb-3 font-bold text-white">
-                  Let's Start Budgeting
+               <h2 className="text-3xl md:text-5xl font-black mb-6 text-slate-900 dark:text-white tracking-tight">
+                  Budget Dashboard
                </h2>
-               <button
-                  className="bg-indigo-600 border-2 border-indigo-600 md:text-base hover:bg-transparent duration-1000 text-white font-bold py-2 px-4 rounded mt-4 xs:text-sm xs:py-1 xs:px-2"
-                  onClick={fetchUpdatedTransactions}
-               >
-                  Sync Transactions
-               </button>
+
+               {/* Unified Segmented Action Toolbar */}
+               <div className="flex flex-wrap justify-center items-center gap-3">
+                  <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200/90 dark:border-slate-700/80 rounded-2xl p-1.5 shadow-md flex items-center gap-1">
+                     <button
+                        className="px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5"
+                        onClick={handleShowAddTransactionModal}
+                     >
+                        <FaPlus className="w-3 h-3 text-brand-500" />
+                        <span>Transaction</span>
+                     </button>
+                     <div className="w-px h-5 bg-slate-300 dark:bg-slate-700" />
+                     <button
+                        className="px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5"
+                        onClick={handleShowAddCategoryModal}
+                     >
+                        <FaList className="w-3 h-3 text-indigo-500" />
+                        <span>Category</span>
+                     </button>
+                  </div>
+
+                  <button
+                     className="bg-brand-600 border border-brand-500 text-xs md:text-sm hover:bg-brand-500 duration-300 text-white font-bold py-2.5 px-5 rounded-2xl shadow-md transition-all hover:scale-105 inline-flex items-center gap-2"
+                     onClick={fetchUpdatedTransactions}
+                  >
+                     <FaSyncAlt className="w-3.5 h-3.5" />
+                     <span>Sync Transactions</span>
+                  </button>
+
+                  {transactionsToAssign.length > 0 && !showTransactionSwiper && (
+                     <button
+                        className="bg-emerald-600 border border-emerald-500 text-xs md:text-sm hover:bg-emerald-500 duration-300 text-white font-bold py-2.5 px-5 rounded-2xl shadow-md inline-flex items-center gap-2 transition-all hover:scale-105"
+                        onClick={() => setShowTransactionSwiper(true)}
+                     >
+                        <FaLayerGroup className="w-3.5 h-3.5" />
+                        <span>Swiper ({transactionsToAssign.length})</span>
+                     </button>
+                  )}
+               </div>
             </div>
-            <div className="flex flex-col md:flex-row justify-center md:space-x-4 space-y-20 md:space-y-0 w-11/12 md:w-full mb-5">
+
+            {/* Grid Layout for Needs, Wants, Investments */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-7xl xl:max-w-[1600px] mb-16 px-2">
                {!loading ? (
                   categoryTypes.map((categoryType) => (
                      <CategoryType
                         key={categoryType.categoryTypeId}
                         categoryType={categoryType}
-                        handleShowSplitTransactionModal={
-                           handleShowSplitTransactionModal
-                        }
-                        handleShowReduceTransactionModal={
-                           handleShowReduceTransactionModal
-                        }
-                        handleShowRenameTransactionModal={
-                           handleShowRenameTransactionModal
-                        }
-                        handleShowAssignCategoryModal={
-                           handleShowAssignCategoryModal
-                        }
-                        handleShowUpdateAllocationsModal={
-                           handleShowUpdateAllocationsModal
-                        }
-                        handleShowRenameCategoryModal={
-                           handleShowRenameCategoryModal
-                        }
+                        handleShowSplitTransactionModal={handleShowSplitTransactionModal}
+                        handleShowReduceTransactionModal={handleShowReduceTransactionModal}
+                        handleShowRenameTransactionModal={handleShowRenameTransactionModal}
+                        handleShowAssignCategoryModal={handleShowAssignCategoryModal}
+                        handleShowUpdateAllocationsModal={handleShowUpdateAllocationsModal}
+                        handleShowRenameCategoryModal={handleShowRenameCategoryModal}
                      />
                   ))
                ) : (
-                  <Loading />
+                  <div className="col-span-3 flex justify-center py-16">
+                     <Loading />
+                  </div>
                )}
             </div>
          </div>
+
          {/* Modals */}
-         {showSplitTransactionModal && ( // Render modal if showModal is true and selectedCategoryType is not null
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <SplitTransactionModal
-                  onClose={handleCloseSplitTransactionModal}
-                  transaction={transaction}
-               />
-            </div>
+         {showSplitTransactionModal && (
+            <SplitTransactionModal
+               onClose={handleCloseSplitTransactionModal}
+               transaction={transaction}
+            />
          )}
          {showReduceTransactionModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <ReduceTransaction
-                  onClose={handleCloseReduceTransactionModal}
-                  transaction={transaction}
-               />
-            </div>
+            <ReduceTransaction
+               onClose={handleCloseReduceTransactionModal}
+               transaction={transaction}
+            />
          )}
-         {showAddTransactionModal && ( // Render modal if showModal is true and selectedCategoryType is not null
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <AddTransaction onClose={handleCloseAddTransactionModal} />
-            </div>
+         {showAddTransactionModal && (
+            <AddTransaction onClose={handleCloseAddTransactionModal} />
          )}
          {showRenameTransactionModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <RenameTransaction
-                  onClose={handleCloseRenameTransactionModal}
-                  transaction={transaction}
-               />
-            </div>
+            <RenameTransaction
+               onClose={handleCloseRenameTransactionModal}
+               transaction={transaction}
+            />
          )}
          {showAssignCategoryModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <AssignCategoryModal
-                  onClose={handleCloseAssignCategoryModal}
-                  transaction={transaction}
-               />
-            </div>
+            <AssignCategoryModal
+               onClose={handleCloseAssignCategoryModal}
+               transaction={transaction}
+            />
          )}
          {showAddCategoryModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <AddCategory onClose={handleCloseAddCategoryModal} />
-            </div>
+            <AddCategory onClose={handleCloseAddCategoryModal} />
          )}
          {showUpdateAllocationsModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <UpdateAllocationsModal
-                  onClose={handleCloseUpdateAllocationsModal}
-                  categoryType={categoryType}
-               />
-            </div>
+            <UpdateAllocationsModal
+               onClose={handleCloseUpdateAllocationsModal}
+               categoryType={categoryType}
+            />
          )}
-         {showPrevTransactionsModal &&
-            modalPrevMonthTransactions.length > 0 && (
-               <PreviousTransactionsModal
-                  transactions={modalPrevMonthTransactions}
-                  onClose={() => {
-                     setShowPrevTransactionsModal(false);
-                     setModalPrevMonthTransactions([])
-                  }}
-                  onTransactionComplete={() => {
-                     // Remove the first transaction from the list and update the state
-                     const updatedTransactions = modalPrevMonthTransactions.slice(1);
-                     setModalPrevMonthTransactions(updatedTransactions);
-
-                     // If no more transactions, close the modal
-                     if (updatedTransactions.length === 0) {
-                        setShowPrevTransactionsModal(false);
-                     }
-                  }}
-               />
-            )}
          {showRenameCategoryModal && (
-            <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 flex justify-center items-center">
-               <RenameCategory
-                  onClose={handleCloseRenameCategoryModal}
-                  category={category}
-               />
-            </div>
+            <RenameCategory
+               onClose={handleCloseRenameCategoryModal}
+               category={category}
+            />
          )}
          {showTransactionSwiper && (
             <TransactionSwiper
@@ -491,4 +389,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-

@@ -2,31 +2,17 @@ import React, { useContext, useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 import Transaction from "../transaction/Transaction";
 import transactionContext from "../../context/transaction/transactionContext";
-import CategoryDropdown from "../layout/CategoryDropdown";
 import categoryContext from "../../context/category/categoryContext";
 import categoryTypeContext from "../../context/category/types/categoryTypeContext";
 import AlertContext from "../../context/alert/alertContext";
+import { getBudgetStatus } from "../../utils/budgetColors";
+import { FaTrash } from "react-icons/fa";
+import ConfirmationModal from "../layout/ConfirmationModal";
+import { ThemeContext } from "../../context/theme/ThemeContext";
 
 /**
- * Component to store all relevant information for Category entity on Home Page
- *
- * @param category
- *       - Category entity to generate component for
- * @param handleShowSplitTransactionModal
- *       - functionality to show SplitTransaction modal
- * @param handleShowReduceTransactionModal
- *       - functionality to show ReduceTransaction modal
- * @param handleShowRenameTransactionModal
- *       - functionality to show RenameTransactionModal
- * @param handleShowAssignCategoryModal
- *       - functionlaity to show AssignCategoryModal
- * @param handleDeleteCategory
- *       - function to handle deleting a category
- * @param handleRenameCategory
- *       - function to handle renaming a category
- * @param handleUpdateAllocations
- *       - function to handle updating category allocations
- * @returns
+ * Clean Category component with explicit theme switching support
+ * guaranteeing readable text and dark backgrounds in Dark Mode.
  */
 const Category = ({
    category,
@@ -38,24 +24,28 @@ const Category = ({
    handleShowRenameCategoryModal
 }) => {
    // Global State
-   const { transactions, updateCategory, removeCategory } =
-      useContext(transactionContext);
+   const { transactions, updateCategory, removeCategory } = useContext(transactionContext);
    const { deleteCategory } = useContext(categoryContext);
    const { fetchCategoryType } = useContext(categoryTypeContext);
    const { setAlert } = useContext(AlertContext);
+   const { theme } = useContext(ThemeContext);
+
+   const isDark = theme === "dark";
 
    // Local State
    const [recentTransactions, setRecentTransactions] = useState([]);
    const [totalAmountSpent, setTotalAmountSpent] = useState(0);
    const [budgetUsage, setBudgetUsage] = useState(0);
    const [budgetAllocation, setBudgetAllocation] = useState(0);
+   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
-   //Functions
+   // Functions
    const handleDeleteCategory = async () => {
-      removeCategory(category.categoryId); //update correlated Transactions
-      await deleteCategory(category.categoryId); //remove from backend
-      await fetchCategoryType(category.categoryType.categoryTypeId); //fetch updated Category type
+      removeCategory(category.categoryId);
+      await deleteCategory(category.categoryId);
+      await fetchCategoryType(category.categoryType.categoryTypeId);
       setAlert("Category deleted successfully", "success");
+      setShowConfirmDelete(false);
    };
 
    const handleRenameCategory = () => {
@@ -63,11 +53,10 @@ const Category = ({
    };
 
    const handleUpdateAllocations = () => {
-      console.log("Handle Update Allocations Modal Clicked");
       handleShowUpdateAllocationsModal(category.categoryType);
    };
 
-   // Functionality to allow a Transaction to be assigned to a Category
+   // Allow drag and drop of transactions into Category
    const [{ canDrop, isOver }, drop] = useDrop(() => ({
       accept: "transaction",
       drop: (item) => {
@@ -81,23 +70,19 @@ const Category = ({
 
    useEffect(() => {
       if (transactions) {
-         // Filter Transactions corresponding to current Category
          const filtered = transactions.filter(
             (transaction) =>
                transaction.category &&
                transaction.category.categoryId === category.categoryId
          );
 
-         // Set three most recent Transactions for Category
          const mostRecent = filtered.slice(0, 3);
          setRecentTransactions(mostRecent);
 
-         // Sum total amount of Transactions corresponding to entity
          const sum = filtered.reduce((acc, transaction) => {
             return acc + transaction.amount;
          }, 0);
 
-         // Set Total Amount & Budget Usage Percentage
          setTotalAmountSpent(sum.toFixed(0));
          setBudgetUsage((sum / category.budgetAmount) * 100);
       } else {
@@ -105,71 +90,109 @@ const Category = ({
       }
    }, [transactions, category.categoryId]);
 
-   // Set Budget Allocation when Category component initially loaded
    useEffect(() => {
       setBudgetAllocation(category.budgetAmount.toFixed(0));
    }, [category]);
 
-
-   // Function to determine progress bar for our Category entity
-   const getProgressBarColor = () => {
-      const percentage = budgetUsage;
-      if (percentage <= 50) {
-         return "bg-green-500";
-      } else if (percentage <= 70) {
-         return "bg-yellow-500";
-      } else if (percentage <= 90) {
-         return "bg-orange-500";
-      } else {
-         return "bg-red-500";
-      }
-   };
+   const budgetStatus = getBudgetStatus(parseFloat(totalAmountSpent), category.budgetAmount);
 
    return (
-      <div
-         ref={drop}
-         className={`bg-gray-200 rounded-lg shadow-md p-4 relative w-full py-4 ${isOver ? " bg-indigo-200" : canDrop ? " bg-indigo-100" : ""} xs:p-2 xs:w-11/12 xs:py-6`}
-      >
-         <div className="flex justify-between items-center mb-2">
-            <h4 className="text-xl font-bold text-gray-800 xs:text-lg truncate flex-grow">
-               {category.name}
-            </h4>
-            <CategoryDropdown
-               handleDeleteCategory={handleDeleteCategory}
-               handleRenameCategory={handleRenameCategory}
-               handleUpdateAllocations={handleUpdateAllocations}
-               className="ml-auto flex-shrink-0"
-            />
-         </div>
-         <div className="mb-2 text-sm font-semibold text-gray-600 xs:text-xs">
-            <p>Allocated Budget: ${budgetAllocation}</p>
-            <p>Total Spent: ${totalAmountSpent}</p>
-         </div>
-         <div className="w-full bg-gray-300 rounded-full h-4 mb-4 xs:h-3">
-            <div
-               className={`h-4 rounded-full transition-all duration-500 ease-in-out ${getProgressBarColor()} xs:h-3`}
-               style={{ width: `${budgetUsage > 100 ? 100 : budgetUsage}%` }}
-            ></div>
-         </div>
-         <div className="space-y-2">
-            {recentTransactions?.map((transaction) => (
-               <Transaction
-                  key={transaction.transactionId}
-                  transaction={transaction}
-                  handleShowSplitTransactionModal={
-                     handleShowSplitTransactionModal
-                  }
-                  handleShowReduceTransactionModal={
-                     handleShowReduceTransactionModal
-                  }
-                  handleShowRenameTransactionModal={
-                     handleShowRenameTransactionModal
-                  }
-                  handleShowAssignCategoryModal={handleShowAssignCategoryModal}
+      <>
+         <div
+            ref={drop}
+            className={`rounded-xl p-4 relative w-full border transition-all duration-300 ${
+               isDark
+                  ? "bg-slate-800/90 border-slate-700/80 text-slate-100 shadow-md hover:border-slate-600"
+                  : "bg-white border-slate-200/90 text-slate-800 shadow-sm hover:shadow-md hover:border-slate-300"
+            } ${
+               isOver
+                  ? isDark ? "bg-brand-900/60 border-brand-500 scale-[1.01]" : "bg-brand-50 border-brand-500 scale-[1.01]"
+                  : canDrop ? "border-brand-500/50" : ""
+            }`}
+         >
+            {/* Header: Clickable Category Name + Trash Delete Icon */}
+            <div className="flex justify-between items-center mb-2">
+               <button
+                  type="button"
+                  onClick={handleRenameCategory}
+                  className={`text-base font-bold truncate px-2 py-0.5 -ml-2 rounded-lg transition-all text-left ${
+                     isDark
+                        ? "text-white hover:bg-slate-700/60"
+                        : "text-slate-900 hover:bg-slate-100"
+                  }`}
+                  title="Click to rename category"
+               >
+                  {category.name}
+               </button>
+
+               <button
+                  type="button"
+                  onClick={() => setShowConfirmDelete(true)}
+                  className={`p-1.5 rounded-lg transition-colors ml-auto flex-shrink-0 opacity-60 hover:opacity-100 ${
+                     isDark
+                        ? "text-slate-400 hover:text-red-400 hover:bg-slate-700"
+                        : "text-slate-400 hover:text-red-500 hover:bg-slate-100"
+                  }`}
+                  title="Delete category"
+               >
+                  <FaTrash className="w-3.5 h-3.5" />
+               </button>
+            </div>
+
+            {/* Clickable Budget Allocation Pill & Spent Display */}
+            <div className="flex justify-between items-center mb-2 text-xs">
+               <button
+                  type="button"
+                  onClick={handleUpdateAllocations}
+                  className={`border rounded-md px-2 py-0.5 transition-all text-left font-medium ${
+                     isDark
+                        ? "bg-slate-700/60 text-slate-300 border-slate-600 hover:bg-slate-700"
+                        : "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"
+                  }`}
+                  title="Click to edit budget allocation"
+               >
+                  Budget: <strong className={isDark ? "text-white font-bold" : "text-slate-900 font-bold"}>${budgetAllocation}</strong>
+               </button>
+
+               <span className={isDark ? "text-slate-400" : "text-slate-500"}>
+                  Spent: <strong className={budgetStatus.textClass}>${totalAmountSpent}</strong>
+               </span>
+            </div>
+
+            {/* Budget Usage Bar */}
+            <div className={`w-full rounded-full h-2 mb-3 overflow-hidden ${isDark ? "bg-slate-900" : "bg-slate-200"}`}>
+               <div
+                  className={`h-2 rounded-full transition-all duration-500 ease-in-out ${budgetStatus.colorClass}`}
+                  style={{ width: `${budgetUsage > 100 ? 100 : budgetUsage}%` }}
                />
-            ))}
+            </div>
+
+            {/* Recent Transactions list */}
+            {recentTransactions && recentTransactions.length > 0 && (
+               <div className="space-y-1.5 pt-1">
+                  {recentTransactions.map((transaction) => (
+                     <Transaction
+                        key={transaction.transactionId}
+                        transaction={transaction}
+                        handleShowSplitTransactionModal={handleShowSplitTransactionModal}
+                        handleShowReduceTransactionModal={handleShowReduceTransactionModal}
+                        handleShowRenameTransactionModal={handleShowRenameTransactionModal}
+                        handleShowAssignCategoryModal={handleShowAssignCategoryModal}
+                     />
+                  ))}
+               </div>
+            )}
          </div>
-      </div>
+
+         {/* Delete Confirmation Modal */}
+         {showConfirmDelete && (
+            <ConfirmationModal
+               question={`Are you sure you want to delete the category "${category.name}"?`}
+               onConfirm={handleDeleteCategory}
+               onClose={() => setShowConfirmDelete(false)}
+            />
+         )}
+      </>
    );
 };
 

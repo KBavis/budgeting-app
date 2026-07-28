@@ -1,22 +1,10 @@
-import React, { useRef, useState, useEffect } from "react";
+import React from "react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { FaChevronUp, FaChevronDown, FaTimes } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 
 /**
- * Component utilized to allow users to adjust their budget as they see fit
- *
- * @param categories
- *          -  selected Categories to display in the AdjustBudget component
- * @param onSliderChange
- *          - on slider change function to correctly adjust amounts allocated and amount remaining of budget
- * @param onRemoveCategory
- *          - on remove function to handle when a user de-selects a selected cateogory
- * @param totalBudget
- *          - total budget user has to work with (total sum of incomes)A
- * @param remainingBudget
- *          - total budget remaining based on allocated amount to each category
- *
+ * AdjustBudget — Component for adjusting sliders for selected categories within a bucket
  */
 const AdjustBudget = ({
    categories,
@@ -25,132 +13,98 @@ const AdjustBudget = ({
    totalBudget,
    remainingBudget,
 }) => {
-   //Local State
-   const containerRef = useRef(null);
-   const [showArrows, setShowArrows] = useState(false);
-
-   //Use Effect for displaying arrows for user to scroll within component
-   useEffect(() => {
-      const container = containerRef.current;
-      if (container) {
-         const hasOverflow = container.scrollHeight > container.clientHeight;
-         setShowArrows(hasOverflow);
-      }
-   }, [categories]);
-
-   //Customize scroll functionality based on arrows
-   const handleScroll = (direction) => {
-      if (containerRef.current) {
-         const container = containerRef.current;
-         const scrollAmount = direction === "up" ? -200 : 200;
-         container.scrollBy({
-            top: scrollAmount,
-            behavior: "smooth",
-         });
-      }
-   };
-
-   //Function to get appropaite font color based on amount of budget remaining
-   const getAmountColor = () => {
-      if (remainingBudget < 0) {
-         return "text-red-500";
-      } else if (remainingBudget < 500) {
-         return "text-yellow-500";
-      } else {
-         return "text-green-500";
-      }
-   };
+   const isOverBudget = remainingBudget < 0;
 
    return (
-      <div className="mb-8 mx-5 p-6 bg-white border-[3px] border-indigo-600 rounded-lg shadow-md relative xs:p-4">
-         <h2 className="text-3xl font-bold mb-4 text-indigo-800 xs:text-2xl">
-            Adjust Budget
-         </h2>
-         <div className="p-4 bg-gray-100 rounded-md shadow-md mb-6 xs:p-2">
-            <p className="text-lg font-semibold text-gray-700 xs:text-base">
-               Total Amount Available:{" "}
-               <span className={`font-bold ${getAmountColor()} text-xl xs:text-lg`}>
-                  ${remainingBudget.toFixed(2)}
-               </span>
-            </p>
-            <p className="mt-4 xs:text-sm">
-               In case you use less than your allocated budget, the remaining
-               amount will be applied to your savings.
-            </p>
+      <div className="mb-6 flex flex-col gap-4 text-left">
+         {/* Total Allocated Budget Info Banner */}
+         <div className="p-4 bg-slate-800/90 border border-slate-700/80 rounded-xl flex justify-between items-center shadow-inner">
+            <div>
+               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Target Budget Pool
+               </p>
+               <p className="text-lg font-bold text-white">
+                  ${totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+               </p>
+            </div>
+            <div className="text-right">
+               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Unallocated Remaining
+               </p>
+               <p
+                  className={`text-lg font-bold ${
+                     isOverBudget ? "text-red-400" : "text-emerald-400"
+                  }`}
+               >
+                  ${remainingBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+               </p>
+            </div>
          </div>
-         <div
-            ref={containerRef}
-            className="max-h-[300px] overflow-y-auto scrollbar-hide"
-         >
-            {categories.map((category) => (
-               <div key={category.name} className="mb-6">
-                  <div className="flex justify-center items-center mt-3 mb-[2px]">
-                     <label className="block font-bold mr-2">
-                        {category.name}
-                     </label>
-                     <button
-                        className="text-red-500 hover:text-gray-700 focus:outline-none"
-                        onClick={() => onRemoveCategory(category.name)}
+
+         {/* Savings Impact Callout */}
+         <p className="text-[10px] text-amber-300/90 bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/20">
+            💡 <strong>Note:</strong> Unallocated/unspent budget is tracked as <strong>Savings</strong> (overspending reduces savings).
+         </p>
+
+         {/* Category Sliders List */}
+         {categories.length > 0 ? (
+            <div className="flex flex-col gap-3 max-h-72 overflow-y-auto pr-1">
+               {categories.map((category) => {
+                  const pct = Math.round(category.budgetAllocationPercentage * 100);
+                  const dollarAmount = category.budgetAmount || 0;
+
+                  return (
+                     <div
+                        key={category.name}
+                        className="p-3 bg-slate-800/50 border border-slate-700/60 rounded-xl flex flex-col gap-2 relative group"
                      >
-                        <FaTimes size={14} />
-                     </button>
-                  </div>
-                  <div className="relative mb-2 py-4 flex justify-between items-center">
-                     <div className="text-gray-600 mr-4">
-                        {(category.budgetAllocationPercentage * 100).toFixed(0)}
-                        %
+                        <div className="flex justify-between items-center">
+                           <span className="text-xs font-bold text-slate-100">
+                              {category.name}
+                           </span>
+                           <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-brand-300">
+                                 {pct}% (${dollarAmount.toFixed(2)})
+                              </span>
+                              <button
+                                 type="button"
+                                 onClick={() => onRemoveCategory(category.name)}
+                                 className="p-1 text-slate-400 hover:text-red-400 rounded-md hover:bg-slate-700 transition-colors"
+                                 title="Remove category"
+                              >
+                                 <FaTimes className="w-3 h-3" />
+                              </button>
+                           </div>
+                        </div>
+
+                        <div className="px-1 pt-1">
+                           <Slider
+                              value={category.budgetAllocationPercentage}
+                              min={0}
+                              max={1}
+                              step={0.01}
+                              onChange={(value) =>
+                                 onSliderChange(category.name, value, totalBudget)
+                              }
+                              handleStyle={{
+                                 borderColor: "#6366F1",
+                                 backgroundColor: "#818CF8",
+                              }}
+                              trackStyle={{
+                                 backgroundColor: "#6366F1",
+                              }}
+                              railStyle={{
+                                 backgroundColor: "#334155",
+                              }}
+                           />
+                        </div>
                      </div>
-                     <Slider
-                        className="w-full sm:w-3/4"
-                        value={category.budgetAllocationPercentage}
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        onChange={(value) =>
-                           onSliderChange(category.name, value, totalBudget)
-                        }
-                        handleStyle={{
-                           borderColor: "rgb(79, 70, 229)",
-                           height: 20,
-                           width: 20,
-                           marginTop: -8,
-                           backgroundColor: "rgb(99, 102, 241)",
-                        }}
-                        railStyle={{
-                           backgroundColor: "rgb(156, 163, 175)",
-                           height: 6,
-                        }}
-                        trackStyle={{
-                           backgroundColor: "rgb(79, 70, 229)",
-                           height: 6,
-                        }}
-                        dotStyle={{ display: "none" }}
-                        activeDotStyle={{ display: "none" }}
-                     />
-                     <div className="text-gray-600 ml-4">
-                        $
-                        {(
-                           category.budgetAllocationPercentage * totalBudget
-                        ).toFixed(2)}
-                     </div>
-                  </div>
-               </div>
-            ))}
-         </div>
-         {showArrows && (
-            <div className="absolute top-0 right-4 h-full flex flex-col justify-between items-center py-4">
-               <button
-                  className="p-2 bg-indigo-500 text-white rounded-full shadow-md hover:bg-indigo-600 focus:outline-none"
-                  onClick={() => handleScroll("up")}
-               >
-                  <FaChevronUp />
-               </button>
-               <button
-                  className="p-2 bg-indigo-500 text-white rounded-full shadow-md hover:bg-indigo-600 focus:outline-none"
-                  onClick={() => handleScroll("down")}
-               >
-                  <FaChevronDown />
-               </button>
+                  );
+               })}
+            </div>
+         ) : (
+            <div className="py-6 text-center text-xs text-slate-500 border border-dashed border-slate-700 rounded-xl">
+               No categories added yet. Choose from suggested options above or add your own!
             </div>
          )}
       </div>
