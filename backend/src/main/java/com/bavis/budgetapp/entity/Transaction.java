@@ -84,6 +84,7 @@ public class Transaction {
 	/**
 	 * Suggested category based on Model prediction
 	 */
+	@ToString.Exclude
 	@ManyToOne
 	@JoinColumn(name = "suggestedCategoryId", referencedColumnName = "categoryId")
 	private Category suggestedCategory;
@@ -91,6 +92,7 @@ public class Transaction {
 	/**
 	 * Many Transactions To One Account
 	 */
+	@ToString.Exclude
 	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "accountId", referencedColumnName = "accountId")
@@ -99,6 +101,7 @@ public class Transaction {
 	/**
 	 * Many Transactions To One Category 
 	 */
+	@ToString.Exclude
 	@ManyToOne
 	@JoinColumn(name = "categoryId", referencedColumnName = "categoryId")
 	private Category category;
