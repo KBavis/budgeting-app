@@ -47,7 +47,8 @@ const Account = ({ account, handleShowConfirmationModal }) => {
         light: 'bg-slate-100 text-slate-600 border-slate-200',
     };
     const badgeColor = isDark ? badgeDef.dark : badgeDef.light;
-    const isNegative = account.balance < 0;
+    const isLiability = account.accountType === 'CREDIT' || account.accountType === 'LOAN';
+    const isNegative = account.balance < 0 || isLiability;
 
     return (
         <div className={`relative border rounded-xl px-4 py-3 w-full transition-all duration-200 hover:scale-[1.01] group ${
@@ -59,11 +60,15 @@ const Account = ({ account, handleShowConfirmationModal }) => {
             <div className="flex items-center gap-3 pr-8">
                 {/* Institution Icon */}
                 <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${
-                    isDark
-                        ? "bg-indigo-500/20 border border-indigo-400/20"
-                        : "bg-indigo-50 border border-indigo-100"
+                    isLiability
+                        ? (isDark ? "bg-rose-500/20 border border-rose-400/20" : "bg-rose-50 border border-rose-100")
+                        : (isDark ? "bg-indigo-500/20 border border-indigo-400/20" : "bg-indigo-50 border border-indigo-100")
                 }`}>
-                    <FaUniversity className={`text-sm ${isDark ? "text-indigo-300" : "text-indigo-500"}`} />
+                    <FaUniversity className={`text-sm ${
+                        isLiability
+                            ? (isDark ? "text-rose-300" : "text-rose-500")
+                            : (isDark ? "text-indigo-300" : "text-indigo-500")
+                    }`} />
                 </div>
 
                 {/* Account Info */}
@@ -86,12 +91,19 @@ const Account = ({ account, handleShowConfirmationModal }) => {
                 {/* Balance - Right aligned */}
                 <div className="flex-shrink-0 text-right">
                     <p className={`text-base font-extrabold ${
-                        isNegative
+                        isLiability
+                            ? (isDark ? 'text-rose-400' : 'text-rose-600')
+                            : isNegative
                             ? (isDark ? 'text-red-400' : 'text-red-600')
                             : (isDark ? 'text-emerald-400' : 'text-emerald-600')
                     }`}>
-                        {isNegative ? '-' : ''}${Math.abs(account.balance).toFixed(2)}
+                        {isLiability ? '-' : (isNegative ? '-' : '')}${Math.abs(account.balance).toFixed(2)}
                     </p>
+                    {isLiability && (
+                        <p className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
+                            Owed
+                        </p>
+                    )}
                 </div>
             </div>
 
