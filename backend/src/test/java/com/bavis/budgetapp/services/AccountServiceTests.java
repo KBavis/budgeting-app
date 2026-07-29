@@ -327,7 +327,7 @@ public class AccountServiceTests {
         // arrange
         String accountId = "123XYZ";
         PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
-        balance.setAvailable(BigDecimal.valueOf(1000.00));
+        balance.setAvailable(BigDecimal.valueOf(2046.00));
         balance.setCurrent(BigDecimal.valueOf(2046.00));
 
         PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
