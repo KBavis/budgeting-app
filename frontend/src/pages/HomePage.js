@@ -202,7 +202,8 @@ const HomePage = () => {
 
    const fetchUpdatedTransactions = async () => {
       setTransactionLoading();
-      await syncTransactions();
+      const accountIds = (accounts || []).map((acc) => acc.accountId);
+      await syncTransactions(accountIds);
       setAlert("Successfully Synced Account Transactions!", "success");
    };
 
