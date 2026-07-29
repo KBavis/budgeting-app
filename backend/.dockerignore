@@ -1,0 +1,25 @@
+# Gradle cache and build outputs
+.gradle/
+build/classes/
+build/tmp/
+build/reports/
+build/test-results/
+build/generated/
+
+# Python Virtual Environments & caches anywhere in the tree
+**/.venv/
+**/*venv*/
+**/.training_venv/
+**/__pycache__/
+*.pyc
+
+# IDEs and Version Control
+.git/
+.gitignore
+.idea/
+.vscode/
+bin/
+
+# Logs and temp files
+*.log
+tmp/

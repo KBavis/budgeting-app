@@ -65,8 +65,8 @@ public class JsonUtil {
                 String currentAccountId = accountNode.path("account_id").asText();
                 if (currentAccountId.equals(accountId)) {
                     JsonNode balanceNode = accountNode.at(balancePath);
-                    if (balanceNode.isMissingNode()) {
-                        log.error("Balance attribute '{}' not found for account ID '{}'", balancePath, accountId);
+                    if (balanceNode.isMissingNode() || balanceNode.isNull()) {
+                        log.info("Balance attribute '{}' not found or is null for account ID '{}'", balancePath, accountId);
                         return null;
                     }
                     return balanceNode.asDouble();
