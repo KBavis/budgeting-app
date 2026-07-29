@@ -77,7 +77,10 @@ const Navbar = () => {
   }, [categories, categoryTypes]);
 
   // Do not render navbar on auth / registration / onboarding routes
-  if (isHiddenRoute || !isOnboarded || !user) {
+  const mainPages = ["/home", "/accounts", "/income-streams", "/budget/summary"];
+  const isMainPage = mainPages.includes(location.pathname);
+
+  if (isHiddenRoute || !user || (!isOnboarded && !isMainPage && categories && categoryTypes)) {
     return null;
   }
 
