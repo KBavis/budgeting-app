@@ -182,21 +182,26 @@ public class PlaidServiceImpl implements PlaidService{
         }
 
 
-        //Validate Successful Response From PlaidClient
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            String responseBody = responseEntity.getBody();
-
-            Double balance = _jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available");
-            if(balance != null){
-                return balance;
-            }
-
-            log.error("No matching account found for account ID {} while attempting to extract balance from Plaid API response", accountId);
-            throw new PlaidServiceException("No Matching Account ID Found In Plaid Client Response When Attempting To Retrieve Balance");
-        } else {
+        // Validate Successful Response From PlaidClient
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             log.error("Unsuccessful response from Plaid API while attempting to retrieve account balance. Status code: {}", responseEntity.getStatusCode());
             throw new PlaidServiceException("Invalid Response Code When Retrieving Balance Via Plaid Client: [" + responseEntity.getStatusCode() + "]");
         }
+
+        String responseBody = responseEntity.getBody();
+
+        Double balance = _jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available");
+        if (balance == null) {
+            log.info("Available balance null or missing for account ID {}, attempting fallback to current balance", accountId);
+            balance = _jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/current");
+        }
+
+        if (balance != null) {
+            return balance;
+        }
+
+        log.error("No matching account found for account ID {} while attempting to extract balance from Plaid API response", accountId);
+        throw new PlaidServiceException("No Matching Account ID Found In Plaid Client Response When Attempting To Retrieve Balance");
     }
 
     @Override

@@ -338,6 +338,7 @@ public class PlaidServiceTests {
         when(plaidConfig.getSecretKey()).thenReturn("secret-key");
         when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequestDto.class))).thenReturn(responseEntity);
         when(mockJsonUtil.extractBalanceByAccountId(responseBody, validAccountId, "/balances/available")).thenReturn(null);
+        when(mockJsonUtil.extractBalanceByAccountId(responseBody, validAccountId, "/balances/current")).thenReturn(null);
 
 
         //Act & Assert
@@ -352,6 +353,37 @@ public class PlaidServiceTests {
         verify(plaidConfig, times(1)).getSecretKey();
         verify(plaidClient, times(1)).retrieveAccountBalance(any(RetrieveBalanceRequestDto.class));
         verify(mockJsonUtil, times(1)).extractBalanceByAccountId(responseBody, validAccountId, "/balances/available");
+        verify(mockJsonUtil, times(1)).extractBalanceByAccountId(responseBody, validAccountId, "/balances/current");
+    }
+
+    /**
+     * Validate ability of PlaidService to fall back to current balance if available balance is null (e.g. Investment accounts like Charles Schwab)
+     */
+    @Test
+    public void testRetrieveBalance_FallbackToCurrent_Success() {
+        //Arrange
+        String accountId = "investment-account-id";
+        String accessToken = "access-token";
+        double expectedBalance = 5000.0;
+        String responseBody = _jsonUtil.toJson(TestHelper.createBalanceResponse(accountId, expectedBalance));
+        ResponseEntity<String> responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.retrieveAccountBalance(any(RetrieveBalanceRequestDto.class))).thenReturn(responseEntity);
+        when(mockJsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available")).thenReturn(null);
+        when(mockJsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/current")).thenReturn(expectedBalance);
+
+        //Act
+        double actualBalance = plaidService.retrieveBalance(accountId, accessToken);
+
+        //Assert
+        assertEquals(expectedBalance, actualBalance);
+
+        //Verify
+        verify(mockJsonUtil, times(1)).extractBalanceByAccountId(responseBody, accountId, "/balances/available");
+        verify(mockJsonUtil, times(1)).extractBalanceByAccountId(responseBody, accountId, "/balances/current");
     }
 
     /**
