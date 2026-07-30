@@ -77,6 +77,13 @@ const AccountsPage = () => {
         await fetchAccounts();
     };
 
+    const isTokenExpired = (expirationDateTimeString) => {
+        if (!expirationDateTimeString) return true;
+        const now = new Date();
+        const expiration = new Date(expirationDateTimeString);
+        return now > expiration;
+    };
+
     useEffect(() => {
         if (!initialFetchRef.current || !accounts) {
             getAccountsData();
@@ -85,7 +92,7 @@ const AccountsPage = () => {
     }, [accounts]);
 
     useEffect(() => {
-        if (user && user.linkToken.expired && !isTokenRefreshed.current) {
+        if (user?.linkToken && isTokenExpired(user.linkToken.expiration) && !isTokenRefreshed.current) {
             isTokenRefreshed.current = true;
             refreshLinkToken();
         }
