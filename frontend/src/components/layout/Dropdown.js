@@ -36,28 +36,24 @@ const DropdownMenu = ({
 
    // Functionality to handle a user's successful connection of their financial institution via Plaid
    const handleOnSuccess = (publicToken, metadata) => {
-      if (accountAdded) {
-         if (accountAdded.plaidAccountId === metadata.account_id) {
-            setAlert("Account already added", "danger");
-            return;
-         }
-      }
+      const accountsList = (metadata.accounts && metadata.accounts.length > 0)
+         ? metadata.accounts
+         : [metadata.account];
 
-      // Create payload to send to backend
-      const accountData = {
-         plaidAccountId: metadata.account_id,
-         accountName: metadata.institution.name,
-         publicToken,
-         accountType: mapAccountType(
-            metadata.account.type,
-            metadata.account.subtype
-         ),
-      };
-      console.log(accountData);
-      createAccount(accountData);
+      accountsList.forEach((acc) => {
+         const accountData = {
+            plaidAccountId: acc.id || metadata.account_id,
+            accountName: `${metadata.institution.name} - ${acc.name}`,
+            publicToken,
+            accountType: mapAccountType(
+               acc.type || metadata.account.type,
+               acc.subtype || metadata.account.subtype
+            ) || "CHECKING",
+         };
+         createAccount(accountData);
+      });
 
-      setAccountAdded(accountData);
-      setAlert("Account added successfully", "SUCCESS");
+      setAlert("Accounts added successfully", "SUCCESS");
       setPlaidKey(Date.now()); // Force PlaidLink to re-render by updating key
    };
 

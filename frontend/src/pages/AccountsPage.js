@@ -45,23 +45,23 @@ const AccountsPage = () => {
     };
 
     const handleOnSuccess = (publicToken, metadata) => {
-        if (accountAdded && accountAdded.plaidAccountId === metadata.account_id) {
-            setAlert("Account already added", "danger");
-            return;
-        }
+        const accountsList = (metadata.accounts && metadata.accounts.length > 0)
+            ? metadata.accounts
+            : [metadata.account];
 
-        const accountData = {
-            institutionName: metadata.institution.name,
-            accountName: metadata.account.name,
-            accountType: metadata.account.type.toUpperCase(),
-            accountSubtype: metadata.account.subtype.toUpperCase(),
-            mask: metadata.account.mask,
-            plaidAccountId: metadata.account_id,
-            plaidPublicToken: publicToken
-        };
+        accountsList.forEach((acc) => {
+            const accountData = {
+                institutionName: metadata.institution.name,
+                accountName: acc.name,
+                accountType: acc.type ? acc.type.toUpperCase() : 'CHECKING',
+                accountSubtype: acc.subtype ? acc.subtype.toUpperCase() : '',
+                mask: acc.mask,
+                plaidAccountId: acc.id || metadata.account_id,
+                plaidPublicToken: publicToken
+            };
+            createAccount(accountData);
+        });
 
-        createAccount(accountData);
-        setAccountAdded(accountData);
         setPlaidKey(Date.now());
         setAlert("Successfully linked financial institution!", "success");
     };

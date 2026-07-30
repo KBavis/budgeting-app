@@ -37,18 +37,25 @@ const ConnectAccounts = () => {
 
    // Handle successful connection via Plaid
    const handleOnSuccess = (publicToken, metadata) => {
-      const accountData = {
-         plaidAccountId: metadata.account_id,
-         accountName: metadata.institution.name,
-         publicToken,
-         accountType: mapAccountType(
-            metadata.account.type,
-            metadata.account.subtype
-         ),
-      };
+      const accountsList = (metadata.accounts && metadata.accounts.length > 0)
+         ? metadata.accounts
+         : [metadata.account];
 
-      createAccount(accountData);
-      setConnectedAccounts((prev) => [...prev, accountData]);
+      accountsList.forEach((acc) => {
+         const accountData = {
+            plaidAccountId: acc.id || metadata.account_id,
+            accountName: `${metadata.institution.name} - ${acc.name}`,
+            publicToken,
+            accountType: mapAccountType(
+               acc.type || metadata.account.type,
+               acc.subtype || metadata.account.subtype
+            ) || "CHECKING",
+         };
+
+         createAccount(accountData);
+         setConnectedAccounts((prev) => [...prev, accountData]);
+      });
+
       setAlert(`Successfully connected ${metadata.institution.name}!`, "SUCCESS");
    };
 
@@ -96,7 +103,7 @@ const ConnectAccounts = () => {
 
             {/* Connected Accounts List */}
             {hasConnected && (
-               <div className="mb-6 flex flex-col gap-2 max-h-48 overflow-y-auto text-left">
+               <div className="mb-6 flex flex-col gap-2 text-left">
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
                      Connected Accounts
                   </p>
