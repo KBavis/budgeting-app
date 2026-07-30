@@ -64,4 +64,14 @@ public interface AccountService {
 	 * 		- all accounts associated with authenticated user
 	 */
 	List<AccountDto> readAll();
+
+	/**
+	 * Functionality to update/save a specific Account
+	 *
+	 * @param account
+	 * 			- Account to be updated/saved
+	 * @return
+	 * 			- Updated Account
+	 */
+	Account update(Account account);
 }

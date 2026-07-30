@@ -134,7 +134,7 @@ public class TransactionServiceImpl implements TransactionService {
                         try {
                             double freshBalance = _plaidService.retrieveBalance(account.getAccountId(), accessToken);
                             account.setBalance(freshBalance);
-                            account = _accountRepository.save(account);
+                            account = _accountService.update(account);
                             updatedAccounts.add(_accountMapper.toDTO(account));
                             log.info("Refreshed live balance for Investment account {}: ${}", account.getAccountId(), freshBalance);
                         } catch (Exception ex) {

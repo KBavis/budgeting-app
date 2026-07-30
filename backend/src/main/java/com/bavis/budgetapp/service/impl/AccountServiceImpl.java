@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import com.bavis.budgetapp.dao.AccountRepository;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.service.AccountService;
+import com.bavis.budgetapp.constants.AccountType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -179,6 +180,12 @@ public class AccountServiceImpl implements AccountService{
 				.filter(account -> !account.isDeleted())
 				.map(_accountMapper::toDTO)
 				.toList();
+	}
+
+	@Override
+	public Account update(Account account) {
+		log.info("Updating Account with ID {}", account.getAccountId());
+		return _accountRepository.save(account);
 	}
 
 }
