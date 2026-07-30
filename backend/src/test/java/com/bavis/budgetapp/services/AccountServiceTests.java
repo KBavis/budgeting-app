@@ -397,6 +397,61 @@ public class AccountServiceTests {
         assertEquals(account, updatedAccount); // no difference in account
     }
 
+    @Test
+    void test_updateBalance_creditAccount_prioritizesCurrentBalance() {
+        // arrange
+        String accountId = "credit123";
+        PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
+        balance.setAvailable(BigDecimal.valueOf(8000.00)); // remaining limit
+        balance.setCurrent(BigDecimal.valueOf(2000.00));   // amount spent/owed
 
+        PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
+                .accountId(accountId)
+                .balances(balance)
+                .build();
+        List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
 
+        Account account = new Account();
+        account.setAccountId(accountId);
+        account.setAccountType(AccountType.CREDIT);
+        account.setBalance(500.00);
+
+        // mock
+        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+
+        // act
+        Account updatedAccount = accountService.updateBalance(plaidAccountDtos, account);
+
+        // assert
+        assertEquals(2000.00, updatedAccount.getBalance());
+    }
+
+    @Test
+    void test_updateBalance_investmentAccount_prioritizesCurrentBalance() {
+        // arrange
+        String accountId = "inv123";
+        PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
+        balance.setAvailable(null); // available is null for investment accounts
+        balance.setCurrent(BigDecimal.valueOf(15000.00)); // NAV
+
+        PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
+                .accountId(accountId)
+                .balances(balance)
+                .build();
+        List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
+
+        Account account = new Account();
+        account.setAccountId(accountId);
+        account.setAccountType(AccountType.INVESTMENT);
+        account.setBalance(10000.00);
+
+        // mock
+        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+
+        // act
+        Account updatedAccount = accountService.updateBalance(plaidAccountDtos, account);
+
+        // assert
+        assertEquals(15000.00, updatedAccount.getBalance());
+    }
 }
