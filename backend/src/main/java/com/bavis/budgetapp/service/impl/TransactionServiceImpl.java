@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.clients.SuggestionEngineClient;
+import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.*;
 import com.bavis.budgetapp.entity.*;
@@ -125,10 +126,20 @@ public class TransactionServiceImpl implements TransactionService {
                     }
 
                     // Update relevant Account with up-to-date balance information
-                    if(syncResponseDto.getAccounts() != null) {
+                    if(syncResponseDto.getAccounts() != null && !syncResponseDto.getAccounts().isEmpty()) {
                         account = _accountService.updateBalance(syncResponseDto.getAccounts(), account);
-
                         updatedAccounts.add(_accountMapper.toDTO(account));
+                    } else if (account.getAccountType() == AccountType.INVESTMENT) {
+                        // referesh balance via /accounts/balance/get for Investment Accounts
+                        try {
+                            double freshBalance = _plaidService.retrieveBalance(account.getAccountId(), accessToken);
+                            account.setBalance(freshBalance);
+                            account = _accountRepository.save(account);
+                            updatedAccounts.add(_accountMapper.toDTO(account));
+                            log.info("Refreshed live balance for Investment account {}: ${}", account.getAccountId(), freshBalance);
+                        } catch (Exception ex) {
+                            log.warn("Could not retrieve live balance for investment account {}: {}", account.getAccountId(), ex.getMessage());
+                        }
                     }
 
                     //Determine if Plaid has more Transactions to sync for current Account
