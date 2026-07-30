@@ -21,6 +21,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
   const { setAlert } = useContext(AlertContext);
   const { theme } = useContext(ThemeContext);
 
+  const [swiperList] = useState(() => transactions || []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedCategoryTypeId, setSelectedCategoryTypeId] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -36,7 +37,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
 
   const amountHasChanged = parseFloat(editedAmount) !== originalAmount && !isNaN(parseFloat(editedAmount));
 
-  const currentTransaction = transactions[currentIndex];
+  const currentTransaction = swiperList[currentIndex];
   const suggestedCategory = currentTransaction?.suggestedCategory;
   const showSuggestion = suggestedCategory && !suggestionDenied;
 
@@ -101,19 +102,19 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
 
   // --- Card transition logic ---
   const advanceToNext = () => {
-    if (currentIndex < transactions.length - 1) {
+    if (currentIndex < swiperList.length - 1) {
       setCardAnimation('card-exit-left');
     } else {
-      setCurrentIndex(transactions.length);
+      setCurrentIndex(swiperList.length);
     }
   };
 
   const handleAnimationEnd = () => {
     if (cardAnimation === 'card-exit-left') {
-      if (currentIndex < transactions.length - 1) {
+      if (currentIndex < swiperList.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        setCurrentIndex(transactions.length);
+        setCurrentIndex(swiperList.length);
       }
       setCardAnimation('card-enter-right');
     }
@@ -233,13 +234,13 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
   }, [isEditingName, isEditingAmount, selectedCategory, isSubmitting, currentIndex]);
 
   useEffect(() => {
-    if (transactions.length > 0 && currentIndex < transactions.length) {
+    if (swiperList.length > 0 && currentIndex < swiperList.length) {
       setCardAnimation('card-enter-right');
     }
   }, []);
 
   // --- Completion View ---
-  if (!currentTransaction || currentIndex >= transactions.length) {
+  if (!currentTransaction || currentIndex >= swiperList.length) {
     return (
       <div className="swiper-backdrop no-scrollbar">
         <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-xl">
@@ -262,8 +263,8 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
   }
 
   const currentCategoryList = getCategoriesForType(selectedCategoryTypeId);
-  const progressPercent = transactions.length > 0
-    ? Math.round((currentIndex / transactions.length) * 100)
+  const progressPercent = swiperList.length > 0
+    ? Math.round((currentIndex / swiperList.length) * 100)
     : 0;
 
   return (
@@ -278,7 +279,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
               <span>Smart Swiper</span>
             </div>
             <span className="text-xs font-bold text-slate-300">
-              {currentIndex + 1} / {transactions.length}
+              {currentIndex + 1} / {swiperList.length}
             </span>
           </div>
 
