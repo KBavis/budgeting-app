@@ -147,12 +147,20 @@ public class AccountServiceImpl implements AccountService{
 				.filter(plaidAccountDto -> account.getAccountId().equals(plaidAccountDto.getAccountId()))
 				.findFirst()
 				.map(PlaidAccountDto::getBalances)
-				.map(balances -> balances.getAvailable() != null ? balances.getAvailable() : balances.getCurrent())
-				.filter(java.util.Objects::nonNull)
+				.map(balances -> {
+					// default to "current" balance for CREDIT / LOAN / INVESTMENT accounts
+					if (account.getAccountType() == AccountType.CREDIT || 
+						account.getAccountType() == AccountType.LOAN || 
+						account.getAccountType() == AccountType.INVESTMENT) {
+						return balances.getCurrent() != null ? balances.getCurrent() : balances.getAvailable();
+					}
+					return balances.getAvailable() != null ? balances.getAvailable() : balances.getCurrent();
+				})
+				.filter(Objects::nonNull)
 				.map(BigDecimal::doubleValue)
 				.ifPresent(account::setBalance);
 
-		log.info("Updating Account {} with its most recent balance of ${}", account.getAccountId(), account.getBalance());
+		log.info("Updating Account {} ({}) with balance ${}", account.getAccountId(), account.getAccountType(), account.getBalance());
 		return _accountRepository.save(account);
     }
 
