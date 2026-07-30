@@ -1,350 +1,98 @@
-.swiper-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    overflow: hidden; 
-  }
-  
-  .card-container {
-    width: 90vw;
-    max-width: 400px;
-    height: 250px;
-    position: relative;
-    perspective: 1000px;
-  }
-  
-  .card {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #6B7280, #374151);
-    color: white;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 20px;
-    backface-visibility: hidden;
-    transform-style: preserve-3d;
-    transition: transform 0.5s ease-in-out;
-  }
-
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .transaction-info {
-      display: flex;
-      align-items: center;
-      flex-grow: 1;
-      min-width: 0;
-      max-width: calc(100% - 60px); 
-  }
-
-  .transaction-logo {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-right: 15px;
-      flex-shrink: 0;
-  }
-
-  .card-header h3 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .edit-indicator {
-      font-size: 0.8rem;
-      margin-left: 5px;
-      opacity: 0.6;
-  }
-
-  .delete-button {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    flex-shrink: 0;
-    width: 40px; 
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .card-body p {
-    font-size: 2.5rem;
-    font-weight: bold;
-    text-align: center;
-    cursor: pointer;
-  }
-
-  .edit-container {
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    min-width: 0;
-    gap: 8px; 
-  }
-
-  .edit-input {
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid white;
-    color: white;
-    font-size: 1.2rem; 
-    flex-grow: 1;
-    min-width: 0; 
-    max-width: 100%; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    white-space: nowrap;
-    padding: 2px 0;
-  }
-
-  .save-button {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    flex-shrink: 0;
-    font-size: 0.9rem; 
-    white-space: nowrap;
-  }
-  
-  .card-enter-right {
-    animation: card-enter-right 0.5s forwards;
-  }
-  
-  .card-exit-left {
-    animation: card-exit-left 0.5s forwards;
-  }
-  
-  @keyframes card-enter-right {
-    from {
-      transform: translateX(100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-  
-  @keyframes card-exit-left {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-150%) rotate(-10deg);
-    }
-  }
-  
-  .buttons {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-  }
-  
-  .buttons button {
-    padding: 10px 20px;
-    border-radius: 10px;
-    border: none;
-    background-color: #fff;
-    color: #333;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .close-button {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 10px 15px;
-    border-radius: 20px;
-    border: none;
-    background-color: #e74c3c;
-    color: #fff;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  }
-  
-  .category-slider {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    z-index: 1001;
-  }
-
-  .slide-up {
-    animation: slide-up 0.3s ease-in-out forwards;
-  }
-
-  .slide-down {
-    animation: slide-down 0.3s ease-in-out forwards;
-  }
-
-  .suggestion-container {
-    margin-top: 20px;
-    background: linear-gradient(135deg, #4F46E5, #7C3AED);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-    width: 90vw;
-  }
-
-  .suggestion-header {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-
-  .suggestion-header h3 {
-    color: white;
-    font-size: 1.2rem;
-    margin: 0;
-    font-weight: 600;
-  }
-
-  .suggestion-content {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .suggested-category {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-  }
-
-  .category-type {
-    display: block;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .category-name {
-    display: block;
-    color: white;
-    font-size: 1.3rem;
-    font-weight: bold;
-  }
-
-  .suggestion-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-  }
-
-  .accept-button, .deny-button {
-    padding: 12px 20px;
-    border-radius: 10px;
-    border: none;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 120px;
-  }
-
-  .accept-button {
-    background-color: #10B981;
-    color: white;
-  }
-
-  .accept-button:hover {
-    background-color: #059669;
-    transform: translateY(-1px);
-  }
-  .transaction-name-container {
+.swiper-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 1rem;
 }
 
-.transaction-date-inline {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.75);
-  margin-top: 2px;
-  font-style: italic;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Hide scrollbars everywhere in swiper */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-  .deny-button {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-  }
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
 
-  .deny-button:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-  }
+/* Swiper main workspace container */
+.swiper-card-workspace {
+  width: 100%;
+  max-width: 960px;
+  perspective: 1000px;
+  position: relative;
+}
 
-  /* Mobile-specific adjustments */
-  @media (max-width: 480px) {
-    .edit-input {
-      font-size: 1rem; 
-    }
-    
-    .save-button {
-      padding: 4px 8px;
-      font-size: 0.8rem;
-    }
-    
-    .transaction-info {
-      max-width: calc(100% - 50px); 
-    }
-  }
+/* Card Animation Classes */
+.card-enter-right {
+  animation: cardEnterRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
-  
-  @keyframes slide-up {
-    from {
-      transform: translateY(100%);
-    }
-    to {
-      transform: translateY(0);
-    }
-  }
+.card-exit-left {
+  animation: cardExitLeft 0.4s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
 
-  @keyframes slide-down {
-    from {
-      transform: translateY(0);
-    }
-    to {
-      transform: translateY(100%);
-    }
+.card-enter-left {
+  animation: cardEnterLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardEnterRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.96);
   }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes cardExitLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-60px) scale(0.92) rotate(-3deg);
+  }
+}
+
+@keyframes cardEnterLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Pulse Glow for AI Recommendation */
+@keyframes aiGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
+  }
+}
+
+.ai-recommend-glow {
+  animation: aiGlow 3s infinite ease-in-out;
+}
+

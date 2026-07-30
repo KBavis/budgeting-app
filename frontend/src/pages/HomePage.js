@@ -18,7 +18,7 @@ import UpdateAllocationsModal from "../components/category/UpdateAllocationsModa
 import RenameCategory from "../components/category/RenameCategory";
 import SummaryContext from "../context/summary/summaryContext";
 import TransactionSwiper from "../components/swiping/TransactionSwiper";
-import { FaSyncAlt, FaPlus, FaList, FaLayerGroup } from "react-icons/fa";
+import { FaSyncAlt, FaPlus, FaList, FaExclamationCircle } from "react-icons/fa";
 
 const HomePage = () => {
    // Local State
@@ -301,11 +301,17 @@ const HomePage = () => {
 
                   {transactionsToAssign.length > 0 && !showTransactionSwiper && (
                      <button
-                        className="bg-emerald-600 border border-emerald-500 text-xs md:text-sm hover:bg-emerald-500 duration-300 text-white font-bold py-2.5 px-5 rounded-2xl shadow-md inline-flex items-center gap-2 transition-all hover:scale-105"
+                        className="relative group bg-amber-500/10 hover:bg-amber-500/20 dark:bg-amber-500/15 dark:hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-xs md:text-sm font-bold py-2.5 px-4 rounded-2xl shadow-sm hover:shadow-md transition-all hover:scale-105 inline-flex items-center gap-2"
                         onClick={() => setShowTransactionSwiper(true)}
                      >
-                        <FaLayerGroup className="w-3.5 h-3.5" />
-                        <span>Swiper ({transactionsToAssign.length})</span>
+                        <span className="relative flex h-2 w-2">
+                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                           <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                        </span>
+                        <span>Categorize</span>
+                        <span className="bg-amber-500/20 dark:bg-amber-500/30 text-amber-800 dark:text-amber-200 text-[11px] font-extrabold px-2 py-0.5 rounded-full border border-amber-500/30">
+                           {transactionsToAssign.length} Pending
+                        </span>
                      </button>
                   )}
                </div>
