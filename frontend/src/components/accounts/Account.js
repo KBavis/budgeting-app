@@ -97,7 +97,7 @@ const Account = ({ account, handleShowConfirmationModal }) => {
                             ? (isDark ? 'text-red-400' : 'text-red-600')
                             : (isDark ? 'text-emerald-400' : 'text-emerald-600')
                     }`}>
-                        {isLiability ? '-' : (isNegative ? '-' : '')}${Math.abs(account.balance).toFixed(2)}
+                        {isLiability ? '-' : (isNegative ? '-' : '')}${Math.abs(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                     {isLiability && (
                         <p className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
