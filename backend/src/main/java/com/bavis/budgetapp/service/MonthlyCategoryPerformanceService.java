@@ -47,4 +47,14 @@ public interface MonthlyCategoryPerformanceService {
      *          - list of relevant MonthlyCategoryPerformances
      */
     List<MonthlyCategoryPerformance> getPerformances(List<Long> categoryTypeIds, MonthYear monthYear);
+
+    /**
+     * Delete existing MonthlyCategoryPerformances for a specific User ID and MonthYear
+     *
+     * @param userId
+     *          - user ID
+     * @param monthYear
+     *          - specific month / year
+     */
+    void deleteMonthlyCategoryPerformances(Long userId, MonthYear monthYear);
 }

@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author Kellen Bavis
  */
-public interface  BudgetPerformanceService {
+public interface BudgetPerformanceService {
 
     /**
      * Functionality to retrieve all relevant BudgetPerformances for the currently authenticated user
@@ -38,5 +38,15 @@ public interface  BudgetPerformanceService {
      */
     BudgetPerformance fetchBudgetPerformance(MonthYear monthYear);
 
-
+    /**
+     * Functionality to remove existing BudgetPerformance for a specific User ID (if exists) and re-create it for a given Month/Year
+     *
+     * @param userId
+     *          - User ID to recalculate BudgetPerformance for
+     * @param monthYear
+     *          - Month/Year to recalculate BudgetPerformance for
+     * @return
+     *          - recalculated BudgetPerformance entity
+     */
+    BudgetPerformance recalculateUserBudgetPerformance(Long userId, MonthYear monthYear);
 }

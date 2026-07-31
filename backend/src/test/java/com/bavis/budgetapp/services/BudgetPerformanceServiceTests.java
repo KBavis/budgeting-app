@@ -750,10 +750,50 @@ public class BudgetPerformanceServiceTests {
         assertEquals(-1 * totalAmountSpent, totalAmountSaved); //totalAmountSaved = 0 - 456.20
 
         //Verify
-        verify(categoryTypeService, times(1)).readAll(user);
+        verify(categoryTypeService, times(0)).readAll(user);
         verify(categoryTypeService, times(0)).readByName(any(String.class));
     }
 
+    @Test
+    void testRecalculateUserBudgetPerformance_DeletesExistingAndRecalculates() {
+        // Arrange
+        Long targetUserId = user.getUserId();
+        user.setCategories(userCategories);
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = new HashMap<>();
+        budgetOverviews.put(OverviewType.GENERAL, generalOverview);
+        budgetOverviews.put(OverviewType.INVESTMENTS, investmentOverview);
+        budgetOverviews.put(OverviewType.WANTS, wantsOverview);
+        budgetOverviews.put(OverviewType.NEEDS, needsOverview);
+
+        // Mocks
+        when(userService.readById(targetUserId)).thenReturn(user);
+        when(budgetPerformanceRepository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(
+                monthYear.getMonth(), monthYear.getYear(), targetUserId)).thenReturn(budgetPerformance);
+        doNothing().when(budgetPerformanceRepository).delete(budgetPerformance);
+        doNothing().when(budgetPerformanceRepository).flush();
+        doReturn(budgetOverviews).when(budgetPerformanceService).generateBudgetOverviews(any(), any(MonthYear.class), any());
+        doNothing().when(categoryPerformanceService).generateMonthlyCategoryPerformances(any(), any(), any());
+        when(budgetPerformanceRepository.save(any(BudgetPerformance.class))).thenReturn(budgetPerformance);
+
+        // Act
+        BudgetPerformance result = budgetPerformanceService.recalculateUserBudgetPerformance(targetUserId, monthYear);
+
+        // Assert & Verify
+        assertEquals(budgetPerformance, result);
+        verify(budgetPerformanceRepository, times(1)).delete(budgetPerformance);
+        verify(budgetPerformanceRepository, times(1)).save(any(BudgetPerformance.class));
+        verify(categoryPerformanceService, times(1)).generateMonthlyCategoryPerformances(targetUserId, monthYear, userCategories);
+    }
+
+    @Test
+    void testRecalculateUserBudgetPerformance_NullMonthYear_ThrowsIllegalArgumentException() {
+        Long targetUserId = user.getUserId();
+        when(userService.readById(targetUserId)).thenReturn(user);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            budgetPerformanceService.recalculateUserBudgetPerformance(targetUserId, null);
+        });
+    }
 
     /**
      * Utility function to calculate total categoryType 'savedAmount' attribute values

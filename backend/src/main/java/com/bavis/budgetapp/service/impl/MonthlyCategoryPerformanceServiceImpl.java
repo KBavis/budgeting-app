@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -37,7 +38,21 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
     private TransactionService transactionService;
 
     @Override
+    @Transactional
+    public void deleteMonthlyCategoryPerformances(Long userId, MonthYear monthYear) {
+        List<MonthlyCategoryPerformance> existing = repository.findByUserIdAndMonthYear(userId, monthYear);
+        if (existing != null && !existing.isEmpty()) {
+            log.info("Deleting existing MonthlyCategoryPerformances for User {} for {} {}", userId, monthYear.getMonth(), monthYear.getYear());
+            repository.deleteAll(existing);
+            repository.flush();
+        }
+    }
+
+    @Override
+    @Transactional
     public void generateMonthlyCategoryPerformances(Long userId, MonthYear monthYear, List<Category> categories) {
+        // delete any potential existing monthly category performances 
+        deleteMonthlyCategoryPerformances(userId, monthYear);
 
         List<MonthlyCategoryPerformance> monthlyCategoryPerformances = new ArrayList<>();
         for (Category category : categories) {
@@ -168,7 +183,7 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
         int rank = 1;
         for (MerchantAnalysis current: top3Spenders) {
             current.setMerchantRank(rank);
-            rank+= 1;
+            rank += 1;
         }
 
         return top3Spenders;

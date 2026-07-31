@@ -236,6 +236,22 @@ public class MonthlyCategoryPerformanceServiceTests {
         assertEquals(Collections.emptyList(), actualTransactions);
     }
 
+    @Test
+    void testDeleteMonthlyCategoryPerformances_DeletesWhenExisting() {
+        MonthlyCategoryPerformance existingPerformance = MonthlyCategoryPerformance.builder()
+                .categoryPerformanceId(100L)
+                .userId(userId)
+                .monthYear(monthYear)
+                .build();
+
+        when(repository.findByUserIdAndMonthYear(userId, monthYear)).thenReturn(List.of(existingPerformance));
+
+        categoryPerformanceService.deleteMonthlyCategoryPerformances(userId, monthYear);
+
+        verify(repository, times(1)).deleteAll(List.of(existingPerformance));
+        verify(repository, times(1)).flush();
+    }
+
 
     private List<Category> getCategories() {
         CategoryType categoryType = CategoryType.builder()

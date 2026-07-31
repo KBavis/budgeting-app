@@ -233,4 +233,24 @@ public class BudgetPerformanceControllerTests {
 
         verify(budgetPerformanceService, times(1)).fetchBudgetPerformance(monthYear);
     }
+
+    @Test
+    void testRecalculateUserBudgetPerformance_Success() throws Exception {
+        Long userId = 10L;
+        when(budgetPerformanceService.recalculateUserBudgetPerformance(userId, monthYear)).thenReturn(budgetPerformance);
+
+        ResultActions resultActions = mockMvc.perform(post("/budget/performance/recalculate")
+                .param("userId", String.valueOf(userId))
+                .content(objectMapper.writeValueAsString(monthYear))
+                .contentType(MediaType.APPLICATION_JSON));
+
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.generalOverview").value(budgetPerformance.getGeneralOverview()))
+                .andExpect(jsonPath("$.needsOverview").value(budgetPerformance.getNeedsOverview()))
+                .andExpect(jsonPath("$.investmentOverview").value(budgetPerformance.getInvestmentOverview()))
+                .andExpect(jsonPath("$.wantsOverview").value(budgetPerformance.getWantsOverview()));
+
+        verify(budgetPerformanceService, times(1)).recalculateUserBudgetPerformance(userId, monthYear);
+    }
 }

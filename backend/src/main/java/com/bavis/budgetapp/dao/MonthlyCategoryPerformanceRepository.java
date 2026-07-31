@@ -18,4 +18,14 @@ public interface MonthlyCategoryPerformanceRepository extends JpaRepository<Mont
      *          - persisted entities corresponding to inputs
      */
     List<MonthlyCategoryPerformance> findByCategoryTypeIdInAndMonthYear(List<Long> categoryTypeIds, MonthYear monthYear);
+
+    /**
+     * Retrieve MonthlyCategoryPerformances corresponding to a specific User and MonthYear
+     */
+    List<MonthlyCategoryPerformance> findByUserIdAndMonthYear(Long userId, MonthYear monthYear);
+
+    /**
+     * Delete MonthlyCategoryPerformances corresponding to a specific User and MonthYear
+     */
+    void deleteByUserIdAndMonthYear(Long userId, MonthYear monthYear);
 }

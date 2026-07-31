@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -58,5 +59,24 @@ public class BudgetPerformanceController {
     public List<BudgetPerformance> fetchUsersBudgetPerformances() {
         log.info("Fetching the BudgetPerformance entities for current authenticated user");
         return budgetPerformanceService.fetchBudgetPerformances();
+    }
+
+    /**
+     * Recalculate and recreate BudgetPerformance entity for a user and specific Month/Year.
+     * Enforces userId as a required query parameter.
+     *
+     * @param monthYear
+     *          - month and year to recalculate
+     * @param userId
+     *          - required user ID to recalculate for
+     * @return
+     *          - recalculated BudgetPerformance entity
+     */
+    @PostMapping("/recalculate")
+    public BudgetPerformance recalculateUserBudgetPerformance(
+            @Valid @RequestBody MonthYear monthYear,
+            @RequestParam(name = "userId") Long userId) {
+        log.info("Recalculating BudgetPerformance entity for MonthYear {} and userId {}", monthYear, userId);
+        return budgetPerformanceService.recalculateUserBudgetPerformance(userId, monthYear);
     }
 }

@@ -144,6 +144,57 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
         return repository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId());
     }
 
+    @Override
+    @Transactional
+    public BudgetPerformance recalculateUserBudgetPerformance(Long userId, MonthYear monthYear) {
+        User user = userService.readById(userId);
+        if (user == null) {
+            log.error("User not found with id {}", userId);
+            throw new RuntimeException("User not found with id " + userId);
+        }
+
+        if (monthYear == null || monthYear.getMonth() == null) {
+            throw new IllegalArgumentException("MonthYear must be provided for budget performance recalculation");
+        }
+
+        log.info("Recalculating BudgetPerformance entity for UserId {} and MonthYear {}", user.getUserId(), monthYear);
+
+        // Delete existing BudgetPerformance entity for this monthYear & user if present
+        BudgetPerformance existingPerformance = repository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(
+                monthYear.getMonth(), monthYear.getYear(), user.getUserId());
+        if (existingPerformance != null) {
+            log.info("Deleting existing BudgetPerformance entity for UserId {} and MonthYear {}", user.getUserId(), monthYear);
+            repository.delete(existingPerformance);
+            repository.flush();
+        }
+
+        // Re-generate budget overviews for this user
+        List<Category> categories = user.getCategories();
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = generateBudgetOverviews(categories, monthYear, user);
+
+        // Construct new BudgetPerformance entity
+        BudgetPerformance newPerformance = new BudgetPerformance();
+        BudgetPerformanceId id = BudgetPerformanceId.builder()
+                .monthYear(monthYear)
+                .userId(user.getUserId())
+                .build();
+        newPerformance.setId(id);
+
+        budgetOverviews.forEach((overviewType, budgetOverview) -> {
+            switch (overviewType) {
+                case NEEDS -> newPerformance.setNeedsOverview(budgetOverview);
+                case WANTS -> newPerformance.setWantsOverview(budgetOverview);
+                case INVESTMENTS -> newPerformance.setInvestmentOverview(budgetOverview);
+                case GENERAL -> newPerformance.setGeneralOverview(budgetOverview);
+            }
+        });
+
+        // Re-generate monthly category performance records for this user
+        categoryPerformanceService.generateMonthlyCategoryPerformances(user.getUserId(), monthYear, categories);
+
+        return repository.saveAndFlush(newPerformance);
+    }
+
     /**
      * Utility function to generate a BudgetOverview model
      *
