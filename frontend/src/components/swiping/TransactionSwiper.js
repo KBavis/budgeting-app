@@ -4,6 +4,7 @@ import ConfirmationModal from '../layout/ConfirmationModal';
 import transactionContext from '../../context/transaction/transactionContext';
 import AlertContext from '../../context/alert/alertContext';
 import { ThemeContext } from '../../context/theme/ThemeContext';
+import SummaryContext from '../../context/summary/summaryContext';
 import {
   FaCheck,
   FaTrash,
@@ -18,10 +19,26 @@ import {
 
 const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes = [], onClose }) => {
   const { deleteTransaction, renameTransaction, reduceTransactionAmount, updateCategory } = useContext(transactionContext);
+  const { recalculateBudgetSummary } = useContext(SummaryContext);
   const { setAlert } = useContext(AlertContext);
   const { theme } = useContext(ThemeContext);
 
-  const [swiperList] = useState(() => transactions || []);
+  const [swiperList, setSwiperList] = useState(() => transactions || []);
+  const [priorMonthToRecalculate, setPriorMonthToRecalculate] = useState(null);
+
+  useEffect(() => {
+    if (transactions) {
+      setSwiperList(transactions);
+    }
+  }, [transactions]);
+
+  const handleClose = useCallback(async () => {
+    if (priorMonthToRecalculate) {
+      await recalculateBudgetSummary(priorMonthToRecalculate.month, priorMonthToRecalculate.year);
+    }
+    if (onClose) onClose();
+  }, [priorMonthToRecalculate, recalculateBudgetSummary, onClose]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedCategoryTypeId, setSelectedCategoryTypeId] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -140,6 +157,29 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
       // 3. Persist Category assignment
       await updateCategory(currentTransaction.transactionId, selectedCategory.categoryId, isPreviousMonth);
 
+      // 4. Prior month recalculation: track month and trigger recalculateBudgetSummary once all prior month items are settled
+      if (isPreviousMonth && currentTransaction?.date) {
+        const txDate = new Date(currentTransaction.date);
+        const month = txDate.getMonth() + 1;
+        const year = txDate.getFullYear();
+        setPriorMonthToRecalculate({ month, year });
+
+        // Check if there are any remaining prior month items in the swiper queue
+        const remainingPrevMonthCount = swiperList.slice(currentIndex + 1).filter((tx) => {
+          if (!tx?.date) return false;
+          const tDate = new Date(tx.date);
+          const now = new Date();
+          const firstOfCur = new Date(now.getFullYear(), now.getMonth(), 1);
+          return tDate < firstOfCur;
+        }).length;
+
+        // only trigger budget summary recalculation once all prevMonth transactions categorized
+        if (remainingPrevMonthCount === 0) {
+          await recalculateBudgetSummary(month, year);
+          setPriorMonthToRecalculate(null);
+        }
+      }
+
       setAlert(`Saved & assigned to ${selectedCategory.name}`, 'success');
       advanceToNext();
     } catch (err) {
@@ -221,7 +261,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
       if (isEditingName || isEditingAmount) return;
 
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       } else if (e.key === 'ArrowRight') {
         handleSkip();
       } else if (e.key === 'Enter' && selectedCategory && !isSubmitting) {
@@ -231,7 +271,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditingName, isEditingAmount, selectedCategory, isSubmitting, currentIndex]);
+  }, [isEditingName, isEditingAmount, selectedCategory, isSubmitting, currentIndex, handleClose]);
 
   useEffect(() => {
     if (swiperList.length > 0 && currentIndex < swiperList.length) {
@@ -252,7 +292,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
             You have categorized all remaining transactions.
           </p>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl shadow-lg transition-all"
           >
             Done & Return to Dashboard
@@ -284,7 +324,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 rounded-xl bg-slate-800/80 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-700/80 hover:border-red-500/40 transition-all"
             title="Close Swiper (Esc)"
           >
@@ -504,11 +544,10 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
                   <div className="flex items-center gap-2.5">
                     <button
                       onClick={handleAcceptSuggestion}
-                      className={`flex-1 py-2.5 font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 border ${
-                        selectedCategory?.categoryId === suggestedCategory.categoryId
-                          ? 'bg-emerald-600 border-emerald-500 text-white ring-2 ring-emerald-400/40'
-                          : 'bg-indigo-600/80 hover:bg-indigo-600 border-indigo-500 text-white'
-                      }`}
+                      className={`flex-1 py-2.5 font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 border ${selectedCategory?.categoryId === suggestedCategory.categoryId
+                        ? 'bg-emerald-600 border-emerald-500 text-white ring-2 ring-emerald-400/40'
+                        : 'bg-indigo-600/80 hover:bg-indigo-600 border-indigo-500 text-white'
+                        }`}
                     >
                       <FaCheck className="w-3.5 h-3.5" />
                       <span>{selectedCategory?.categoryId === suggestedCategory.categoryId ? 'Selected' : 'Use ML Suggestion'}</span>
@@ -539,11 +578,10 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
                         <button
                           key={ct.categoryTypeId}
                           onClick={() => setSelectedCategoryTypeId(ct.categoryTypeId)}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
-                            isSelected
-                              ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
-                              : 'bg-slate-800/80 border-slate-700/70 text-slate-300 hover:bg-slate-700 hover:text-white'
-                          }`}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${isSelected
+                            ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
+                            : 'bg-slate-800/80 border-slate-700/70 text-slate-300 hover:bg-slate-700 hover:text-white'
+                            }`}
                         >
                           {ct.name}
                         </button>
@@ -559,11 +597,10 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
                         <button
                           key={category.categoryId}
                           onClick={() => setSelectedCategory(category)}
-                          className={`p-3 rounded-2xl text-xs font-bold text-left transition-all border flex items-center justify-between gap-1.5 ${
-                            isCategorySelected
-                              ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg ring-2 ring-indigo-400/50'
-                              : 'bg-slate-800/60 border-slate-700/60 text-slate-200 hover:bg-indigo-600/60 hover:border-indigo-500 hover:text-white'
-                          }`}
+                          className={`p-3 rounded-2xl text-xs font-bold text-left transition-all border flex items-center justify-between gap-1.5 ${isCategorySelected
+                            ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg ring-2 ring-indigo-400/50'
+                            : 'bg-slate-800/60 border-slate-700/60 text-slate-200 hover:bg-indigo-600/60 hover:border-indigo-500 hover:text-white'
+                            }`}
                         >
                           <span className="truncate">{category.name}</span>
                           {isCategorySelected && <FaCheck className="w-3 h-3 text-white shrink-0" />}
@@ -580,11 +617,10 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
               <button
                 onClick={handleCategorizeSubmit}
                 disabled={!selectedCategory || isSubmitting}
-                className={`w-full py-3.5 px-5 rounded-2xl text-sm font-extrabold flex items-center justify-between shadow-lg transition-all duration-200 ${
-                  selectedCategory && !isSubmitting
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] cursor-pointer'
-                    : 'bg-slate-800/50 border border-slate-700/50 text-slate-400 cursor-not-allowed opacity-75'
-                }`}
+                className={`w-full py-3.5 px-5 rounded-2xl text-sm font-extrabold flex items-center justify-between shadow-lg transition-all duration-200 ${selectedCategory && !isSubmitting
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] cursor-pointer'
+                  : 'bg-slate-800/50 border border-slate-700/50 text-slate-400 cursor-not-allowed opacity-75'
+                  }`}
               >
                 <div className="flex items-center gap-2.5">
                   <div className={`p-1.5 rounded-xl ${selectedCategory ? 'bg-white/20 text-white' : 'bg-slate-700/50 text-slate-500'}`}>
@@ -594,8 +630,8 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
                     {isSubmitting
                       ? 'Saving...'
                       : selectedCategory
-                      ? 'Save & Continue'
-                      : 'Select a Category'}
+                        ? 'Save & Continue'
+                        : 'Select a Category'}
                   </span>
                 </div>
 
