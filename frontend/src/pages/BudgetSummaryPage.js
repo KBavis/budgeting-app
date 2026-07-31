@@ -5,6 +5,7 @@ import { FaArrowLeft, FaArrowRight, FaCalendarAlt, FaChevronRight } from "react-
 import CategoryPerformanceContext from '../context/category/performances/categoryPerformanceContext';
 import categoryTypeContext from '../context/category/types/categoryTypeContext';
 import { ThemeContext } from '../context/theme/ThemeContext';
+import { getBudgetStatus } from '../utils/budgetColors';
 
 const monthOrder = {
     JANUARY: 1, FEBRUARY: 2, MARCH: 3, APRIL: 4,
@@ -190,7 +191,7 @@ const BudgetSummaryPage = () => {
                 {availableYears.length > 0 ? (
                     <>
                         {/* Compact, Infinite Scalable Period Toolbar: Year Dropdown & Month Dropdown */}
-                        <div className={`w-full max-w-xl mb-10 p-4 rounded-2xl border shadow-xl flex items-center justify-center gap-6 backdrop-blur-md ${
+                        <div className={`w-full max-w-xl mb-8 p-3.5 sm:p-4 rounded-2xl border shadow-xl flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 backdrop-blur-md ${
                             isDark ? "bg-slate-900/90 border-slate-800" : "bg-white/90 border-slate-200"
                         }`}>
                             {/* Scalable Year Dropdown */}
@@ -221,7 +222,7 @@ const BudgetSummaryPage = () => {
                             </div>
 
                             {/* Divider */}
-                            <div className={`h-6 w-px ${isDark ? "bg-slate-800" : "bg-slate-200"}`} />
+                            <div className={`hidden sm:block h-6 w-px ${isDark ? "bg-slate-800" : "bg-slate-200"}`} />
 
                             {/* Scalable Month Dropdown */}
                             <div className="flex items-center gap-2">
@@ -231,7 +232,7 @@ const BudgetSummaryPage = () => {
                                 <select
                                     value={selectedMonth}
                                     onChange={(e) => handleMonthSelect(e.target.value)}
-                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
+                                    className={`px-3 py-1.5 sm:px-3.5 rounded-xl text-xs font-extrabold transition-all border cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 max-w-[200px] sm:max-w-none ${
                                         selectedMonth !== 'ALL'
                                             ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
                                             : isDark
@@ -259,7 +260,7 @@ const BudgetSummaryPage = () => {
                         {selectedSummary ? (
                             /* Detailed 4-Part Overview for Selected Month */
                             <div className="flex flex-col items-center w-full max-w-5xl animate-fade-in">
-                                <div className="flex items-center justify-between w-full max-w-4xl mb-6 px-2">
+                                <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-4xl mb-6 px-2 gap-3">
                                     <button
                                         onClick={() => { setSelectedSummary(null); setSelectedMonth('ALL'); setPrev(null); }}
                                         className={`text-xs font-bold hover:underline flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all ${
@@ -290,46 +291,75 @@ const BudgetSummaryPage = () => {
                                         const budgeted = summary.generalOverview?.totalAmountAllocated || 0;
                                         const spent = summary.generalOverview?.totalSpent || 0;
                                         const usagePct = budgeted > 0 ? Math.min((spent / budgeted) * 100, 100) : 0;
+                                        const pctRaw = budgeted > 0 ? ((spent / budgeted) * 100).toFixed(1) : '0';
+                                        const diff = budgeted - spent;
+                                        const status = getBudgetStatus(spent, budgeted);
 
                                         return (
                                             <div
                                                 key={`${summary.id.monthYear.month}-${summary.id.monthYear.year}`}
                                                 onClick={() => handleSummaryCardClick(summary)}
-                                                className={`p-6 border rounded-2xl cursor-pointer transition-all duration-300 shadow-md hover:scale-[1.02] flex flex-col justify-between ${
+                                                className={`p-5 sm:p-6 border rounded-2xl cursor-pointer transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] flex flex-col justify-between ${
                                                     isDark
-                                                        ? "bg-slate-900/80 border-slate-800 text-white hover:border-indigo-500/50"
-                                                        : "bg-white border-slate-200 text-slate-900 hover:border-indigo-500"
+                                                        ? "bg-slate-900/80 border-slate-800 text-white hover:border-indigo-500/60"
+                                                        : "bg-white border-slate-200 text-slate-900 hover:border-indigo-400"
                                                 }`}
                                             >
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <h3 className="text-xl font-extrabold">
-                                                        {convertToNormalCase(summary.id.monthYear.month)} {summary.id.monthYear.year}
-                                                    </h3>
-                                                    <span className={`text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1 transition-colors ${
-                                                        isDark
-                                                            ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30 group-hover:bg-indigo-500/30"
-                                                            : "bg-indigo-50 text-indigo-700 border-indigo-200"
-                                                    }`}>
-                                                        View Overview <FaChevronRight size={10} />
-                                                    </span>
+                                                <div>
+                                                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                                        <h3 className="text-lg sm:text-xl font-extrabold tracking-tight">
+                                                            {convertToNormalCase(summary.id.monthYear.month)} {summary.id.monthYear.year}
+                                                        </h3>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${status.bg}/20 ${status.text} border-${status.color}/30 shadow-sm`}>
+                                                                {status.label}
+                                                            </span>
+                                                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full border flex items-center gap-1 transition-colors ${
+                                                                isDark
+                                                                    ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30"
+                                                                    : "bg-indigo-50 text-indigo-700 border-indigo-200"
+                                                            }`}>
+                                                                Overview <FaChevronRight size={9} />
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Spent / Budgeted Header Info */}
+                                                    <div className="flex justify-between items-baseline mb-2">
+                                                        <span className={`text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                                                            Budget Utilization
+                                                        </span>
+                                                        <span className={`text-xs font-bold ${status.textClass}`}>
+                                                            {pctRaw}%
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Dynamic Status Progress Bar */}
+                                                    <div className={`w-full rounded-full h-2.5 mb-4 overflow-hidden ${isDark ? "bg-slate-800" : "bg-slate-100"}`}>
+                                                        <div
+                                                            className={`h-2.5 rounded-full transition-all duration-500 ease-in-out ${status.colorClass}`}
+                                                            style={{ width: `${usagePct}%` }}
+                                                        />
+                                                    </div>
                                                 </div>
 
-                                                {/* Mini Usage Progress Bar */}
-                                                <div className={`w-full rounded-full h-2.5 mb-4 ${isDark ? "bg-slate-800" : "bg-slate-100"}`}>
-                                                    <div
-                                                        className="h-2.5 rounded-full bg-indigo-500 transition-all duration-500"
-                                                        style={{ width: `${usagePct}%` }}
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                                {/* 3-Column Financial Breakdown */}
+                                                <div className={`grid grid-cols-3 gap-2 pt-3 border-t text-center ${isDark ? "border-slate-800" : "border-slate-100"}`}>
                                                     <div>
-                                                        <p className={`text-xs font-medium ${isDark ? "text-slate-400" : "text-slate-500"}`}>Budgeted</p>
-                                                        <p className="font-extrabold text-base">${budgeted.toFixed(0)}</p>
+                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Budgeted</p>
+                                                        <p className="font-extrabold text-sm sm:text-base">${budgeted.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                                                     </div>
                                                     <div>
-                                                        <p className={`text-xs font-medium ${isDark ? "text-slate-400" : "text-slate-500"}`}>Spent</p>
-                                                        <p className="font-extrabold text-base">${spent.toFixed(0)}</p>
+                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Spent</p>
+                                                        <p className={`font-extrabold text-sm sm:text-base ${status.textClass}`}>${spent.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                                                            {diff >= 0 ? 'Saved' : 'Over'}
+                                                        </p>
+                                                        <p className={`font-extrabold text-sm sm:text-base ${diff >= 0 ? (isDark ? "text-emerald-400" : "text-emerald-600") : (isDark ? "text-rose-400" : "text-rose-600")}`}>
+                                                            ${Math.abs(diff).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
