@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { FaChartLine, FaArrowRight } from "react-icons/fa";
 import CategoryPerformanceContext from "../../context/category/performances/categoryPerformanceContext";
@@ -205,17 +205,17 @@ const BudgetOverview = ({ overview, month, year }) => {
             </div>
          </div>
 
-         {/* Pie Chart */}
-         {pieData.length > 0 && totalSpent > 0 && (
+         {/* Pie Chart Section */}
+         {pieData.length > 0 && (
             <div className={`w-full mt-6 pt-5 border-t flex flex-col items-center ${isDark ? "border-slate-700/40" : "border-slate-200"}`}>
-               <ResponsiveContainer width="100%" height={pieHeight}>
+               <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                      <Pie
                         data={pieData}
                         cx="50%"
-                        cy={pieData.length > 4 ? "38%" : "42%"}
+                        cy="50%"
                         labelLine={false}
-                        outerRadius={70}
+                        outerRadius={75}
                         innerRadius={0}
                         paddingAngle={1}
                         dataKey="value"
@@ -225,7 +225,7 @@ const BudgetOverview = ({ overview, month, year }) => {
                               key={`cell-${index}`}
                               fill={activeColors[index % activeColors.length]}
                               stroke={isDark ? "#1e293b" : "#ffffff"}
-                              strokeWidth={1}
+                              strokeWidth={1.5}
                            />
                         ))}
                      </Pie>
@@ -242,22 +242,29 @@ const BudgetOverview = ({ overview, month, year }) => {
                            fontWeight: 700
                         }}
                      />
-                     <Legend
-                        wrapperStyle={{ paddingTop: "14px", fontSize: "11px", position: "relative" }}
-                        formatter={(value) => (
-                           <span className={`font-semibold text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                              {value}
-                           </span>
-                        )}
-                     />
                   </PieChart>
                </ResponsiveContainer>
+
+               {/* Custom Responsive HTML Legend */}
+               <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 px-2 max-w-xl">
+                  {pieData.map((entry, index) => (
+                     <div key={entry.name || index} className="flex items-center gap-1.5 text-xs">
+                        <span
+                           className="w-3 h-3 rounded-sm flex-shrink-0"
+                           style={{ backgroundColor: activeColors[index % activeColors.length] }}
+                        />
+                        <span className={`font-semibold text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                           {entry.name}
+                        </span>
+                     </div>
+                  ))}
+               </div>
             </div>
          )}
 
          {/* Spending Analysis Action Button */}
          {overviewType !== "GENERAL" && month && year && (
-            <div className="flex justify-center mt-5 pt-3 border-t border-slate-700/30">
+            <div className="flex justify-center mt-6 pt-4 border-t border-slate-700/30">
                <button
                   className={`group flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 ${
                      isDark
