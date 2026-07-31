@@ -315,11 +315,16 @@ const TransactionState = (props) => {
             config
          );
 
-         console.log(res.data);
-         dispatch({
-            type: ADD_TRANSACTION_SUCCESS,
-            payload: res.data,
-         });
+         const createdTransaction = res.data;
+
+         if (transaction.categoryId && createdTransaction && createdTransaction.transactionId) {
+            await updateCategory(createdTransaction.transactionId, transaction.categoryId);
+         } else {
+            dispatch({
+               type: ADD_TRANSACTION_SUCCESS,
+               payload: createdTransaction,
+            });
+         }
          setAlert("Transaction successfully added", "success");
       } catch (err) {
          console.error(err);
