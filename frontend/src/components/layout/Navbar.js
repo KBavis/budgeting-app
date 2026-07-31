@@ -96,12 +96,12 @@ const Navbar = () => {
             : "bg-white/80 backdrop-blur-sm border-slate-200/40"
       }`}
     >
-      <div className="container mx-auto flex justify-center sm:justify-end items-center px-3 sm:px-6">
-        <ul className="flex items-center gap-3 sm:gap-7 m-0 p-0 list-none">
+      <div className="container mx-auto flex justify-center sm:justify-end items-center px-4 sm:px-6">
+        <ul className="flex items-center gap-4 sm:gap-8 m-0 p-0 list-none">
           <li>
             <Link
               to="/home"
-              className={`text-xs sm:text-sm font-bold no-underline transition-colors ${
+              className={`text-sm sm:text-base font-bold no-underline transition-colors px-1 py-1 ${
                 location.pathname === "/home"
                   ? "text-indigo-500 dark:text-indigo-400 font-extrabold"
                   : isDark
@@ -116,7 +116,7 @@ const Navbar = () => {
           <li>
             <Link
               to="/accounts"
-              className={`text-xs sm:text-sm font-bold no-underline transition-colors ${
+              className={`text-sm sm:text-base font-bold no-underline transition-colors px-1 py-1 ${
                 location.pathname === "/accounts"
                   ? "text-indigo-500 dark:text-indigo-400 font-extrabold"
                   : isDark
@@ -131,7 +131,7 @@ const Navbar = () => {
           <li>
             <Link
               to="/income-streams"
-              className={`text-xs sm:text-sm font-bold no-underline transition-colors ${
+              className={`text-sm sm:text-base font-bold no-underline transition-colors px-1 py-1 ${
                 location.pathname === "/income-streams"
                   ? "text-indigo-500 dark:text-indigo-400 font-extrabold"
                   : isDark
@@ -146,7 +146,7 @@ const Navbar = () => {
           <li>
             <Link
               to="/budget/summary"
-              className={`text-xs sm:text-sm font-bold no-underline transition-colors ${
+              className={`text-sm sm:text-base font-bold no-underline transition-colors px-1 py-1 ${
                 location.pathname.startsWith("/budget")
                   ? "text-indigo-500 dark:text-indigo-400 font-extrabold"
                   : isDark
@@ -161,7 +161,7 @@ const Navbar = () => {
           <li>
             <button
               onClick={handleLogout}
-              className={`text-xs sm:text-sm font-bold no-underline transition-colors bg-transparent border-0 cursor-pointer p-0 ${
+              className={`text-sm sm:text-base font-bold no-underline transition-colors bg-transparent border-0 cursor-pointer px-1 py-1 ${
                 isDark
                   ? "text-slate-100 hover:text-indigo-400"
                   : "text-slate-800 hover:text-indigo-600"
