@@ -751,7 +751,7 @@ public class BudgetPerformanceServiceTests {
         assertEquals(-1 * totalAmountSpent, totalAmountSaved); //totalAmountSaved = 0 - 456.20
 
         //Verify
-        verify(categoryTypeService, times(0)).readAll(user);
+        verify(categoryTypeService, times(1)).readAll(user);
         verify(categoryTypeService, times(0)).readByName(any(String.class));
     }
 
@@ -774,7 +774,7 @@ public class BudgetPerformanceServiceTests {
         doNothing().when(budgetPerformanceRepository).flush();
         doReturn(budgetOverviews).when(budgetPerformanceService).generateBudgetOverviews(any(), any(MonthYear.class), any());
         doNothing().when(categoryPerformanceService).generateMonthlyCategoryPerformances(any(), any(), any());
-        when(budgetPerformanceRepository.save(any(BudgetPerformance.class))).thenReturn(budgetPerformance);
+        when(budgetPerformanceRepository.saveAndFlush(any(BudgetPerformance.class))).thenReturn(budgetPerformance);
 
         // Act
         BudgetPerformance result = budgetPerformanceService.recalculateUserBudgetPerformance(targetUserId, monthYear);
@@ -782,7 +782,7 @@ public class BudgetPerformanceServiceTests {
         // Assert & Verify
         assertEquals(budgetPerformance, result);
         verify(budgetPerformanceRepository, times(1)).delete(budgetPerformance);
-        verify(budgetPerformanceRepository, times(1)).save(any(BudgetPerformance.class));
+        verify(budgetPerformanceRepository, times(1)).saveAndFlush(any(BudgetPerformance.class));
         verify(categoryPerformanceService, times(1)).generateMonthlyCategoryPerformances(targetUserId, monthYear, userCategories);
     }
 
