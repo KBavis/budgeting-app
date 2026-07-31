@@ -144,6 +144,8 @@ const BudgetOverview = ({ overview, month, year }) => {
    const pctDisplay = (totalPercentUtilized * 100).toFixed(1);
    const barWidth = Math.min(totalPercentUtilized * 100, 100);
 
+   const pieHeight = pieData.length > 6 ? 280 : (pieData.length > 3 ? 240 : 210);
+
    return (
       <div className={`relative rounded-2xl shadow-lg p-6 mx-auto w-full max-w-4xl mb-8 border transition-all ${
          isDark
@@ -205,15 +207,15 @@ const BudgetOverview = ({ overview, month, year }) => {
 
          {/* Pie Chart */}
          {pieData.length > 0 && totalSpent > 0 && (
-            <div className="w-full my-2 flex flex-col items-center">
-               <ResponsiveContainer width="100%" height={220}>
+            <div className={`w-full mt-6 pt-5 border-t flex flex-col items-center ${isDark ? "border-slate-700/40" : "border-slate-200"}`}>
+               <ResponsiveContainer width="100%" height={pieHeight}>
                   <PieChart>
                      <Pie
                         data={pieData}
                         cx="50%"
-                        cy="50%"
+                        cy={pieData.length > 4 ? "38%" : "42%"}
                         labelLine={false}
-                        outerRadius={80}
+                        outerRadius={70}
                         innerRadius={0}
                         paddingAngle={1}
                         dataKey="value"
@@ -222,8 +224,8 @@ const BudgetOverview = ({ overview, month, year }) => {
                            <Cell
                               key={`cell-${index}`}
                               fill={activeColors[index % activeColors.length]}
-                              stroke={isDark ? "#0f172a" : "#ffffff"}
-                              strokeWidth={2}
+                              stroke={isDark ? "#1e293b" : "#ffffff"}
+                              strokeWidth={1}
                            />
                         ))}
                      </Pie>
@@ -241,7 +243,7 @@ const BudgetOverview = ({ overview, month, year }) => {
                         }}
                      />
                      <Legend
-                        wrapperStyle={{ paddingTop: "12px", fontSize: "12px" }}
+                        wrapperStyle={{ paddingTop: "14px", fontSize: "11px", position: "relative" }}
                         formatter={(value) => (
                            <span className={`font-semibold text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                               {value}
