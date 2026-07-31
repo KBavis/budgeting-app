@@ -92,9 +92,9 @@ export default (state, action) => {
       case UPDATE_TRANSACTION_CATEGORY:
          const { transactionId, category } = action.payload;
          let transactionToUpdate = null;
-         const remainingTransactions = state.transactions.filter(
+         const remainingTransactions = (state.transactions || []).filter(
             (transaction) => {
-               if (transaction.transactionId === transactionId) {
+               if (String(transaction.transactionId) === String(transactionId)) {
                   transactionToUpdate = {
                      ...transaction,
                      category: { ...category },
@@ -105,20 +105,30 @@ export default (state, action) => {
             }
          );
 
+         const remainingPrevMonth = (state.prevMonthTransactions || []).filter(
+            (transaction) => String(transaction.transactionId) !== String(transactionId)
+         );
+
          return {
             ...state,
-            transactions: [transactionToUpdate, ...remainingTransactions],
+            transactions: transactionToUpdate ? [transactionToUpdate, ...remainingTransactions] : remainingTransactions,
+            prevMonthTransactions: remainingPrevMonth,
          };
       case UPDATE_PREV_MONTH_TRANSACTION_CATEGORY:
          const targetId = action.payload; 
 
-         const updatedPrevMonthTransactions = state.prevMonthTransactions.filter(
-            (transaction) => transaction.transactionId !== targetId
+         const updatedPrevMonthTransactions = (state.prevMonthTransactions || []).filter(
+            (transaction) => String(transaction.transactionId) !== String(targetId)
+         );
+
+         const updatedTransactionsPrev = (state.transactions || []).filter(
+            (transaction) => String(transaction.transactionId) !== String(targetId)
          );
 
          return {
             ...state,
             prevMonthTransactions: updatedPrevMonthTransactions,
+            transactions: updatedTransactionsPrev,
          };
       case REMOVE_CATEGORY:
          //Find Transactions with this Category in state and update to be Null
