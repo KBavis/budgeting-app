@@ -1,7 +1,7 @@
 /**
  * Standardized Utility for Budget Status & Colors
  *
- * Thresholds:
+ * Thresholds (Needs / Wants):
  * - < 80%: safe (emerald green)
  * - 80% - 99%: caution (amber yellow)
  * - 100% - 114%: warning (orange)
@@ -23,7 +23,8 @@ export const getBudgetStatus = (spent, budgeted) => {
   if (pct < 80) {
     return {
       color: 'safe',
-      label: `Under Budget — $${(budgeted - spent).toFixed(0)} left`,
+      label: 'Under Budget',
+      detailLabel: `Under Budget — $${(budgeted - spent).toFixed(0)} left`,
       bg: 'bg-emerald-500',
       text: 'text-emerald-400',
       colorClass: 'bg-emerald-500',
@@ -34,7 +35,8 @@ export const getBudgetStatus = (spent, budgeted) => {
   if (pct < 100) {
     return {
       color: 'caution',
-      label: `Nearing Budget Limit — $${(budgeted - spent).toFixed(0)} left`,
+      label: 'Near Limit',
+      detailLabel: `Nearing Budget Limit — $${(budgeted - spent).toFixed(0)} left`,
       bg: 'bg-amber-500',
       text: 'text-amber-400',
       colorClass: 'bg-amber-500',
@@ -45,7 +47,8 @@ export const getBudgetStatus = (spent, budgeted) => {
   if (pct < 115) {
     return {
       color: 'warning',
-      label: `Over Budget by $${(spent - budgeted).toFixed(0)}`,
+      label: 'Over Budget',
+      detailLabel: `Over Budget by $${(spent - budgeted).toFixed(0)}`,
       bg: 'bg-orange-500',
       text: 'text-orange-400',
       colorClass: 'bg-orange-500',
@@ -55,7 +58,8 @@ export const getBudgetStatus = (spent, budgeted) => {
   }
   return {
     color: 'danger',
-    label: `Severely Over Budget by $${(spent - budgeted).toFixed(0)}`,
+    label: 'Exceeded',
+    detailLabel: `Exceeded budget by $${(spent - budgeted).toFixed(0)}`,
     bg: 'bg-red-500',
     text: 'text-red-400',
     colorClass: 'bg-red-500',
@@ -63,3 +67,5 @@ export const getBudgetStatus = (spent, budgeted) => {
     hex: '#EF4444',
   };
 };
+
+
