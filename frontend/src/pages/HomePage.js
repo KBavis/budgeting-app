@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef, useMemo } from "react";
 import transactionContext from "../context/transaction/transactionContext";
 import accountContext from "../context/account/accountContext";
 import categoryTypeContext from "../context/category/types/categoryTypeContext";
@@ -18,7 +18,7 @@ import UpdateAllocationsModal from "../components/category/UpdateAllocationsModa
 import RenameCategory from "../components/category/RenameCategory";
 import SummaryContext from "../context/summary/summaryContext";
 import TransactionSwiper from "../components/swiping/TransactionSwiper";
-import { FaSyncAlt, FaPlus, FaList, FaExclamationCircle } from "react-icons/fa";
+import { FaSyncAlt, FaPlus, FaList, FaExclamationCircle, FaPiggyBank, FaChartLine } from "react-icons/fa";
 
 const HomePage = () => {
    // Local State
@@ -259,6 +259,64 @@ const HomePage = () => {
       }
    }, [transactions, prevMonthTransactions, showTransactionSwiper]);
 
+   // Calculate Monthly Executive Quick Stats
+   const monthlyStats = useMemo(() => {
+      if (!categories || !transactions) {
+         return {
+            totalBudgeted: 0,
+            totalSpent: 0,
+            budgetRemaining: 0,
+            investedAmount: 0,
+            savingsAmount: 0,
+            netWealthBuilt: 0,
+         };
+      }
+
+      const totalBudgeted = categories.reduce((sum, cat) => sum + (cat.budgetAmount || 0), 0);
+      const totalSpent = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+
+      let investedAmount = 0;
+      let savingsAmount = 0;
+
+      (categoryTypes || []).forEach((type) => {
+         const typeCats = categories.filter(
+            (c) => c.categoryType && c.categoryType.categoryTypeId === type.categoryTypeId
+         );
+         const catIds = new Set(typeCats.map((c) => c.categoryId));
+         const spent = transactions
+            .filter((t) => t.category && catIds.has(t.category.categoryId))
+            .reduce((s, t) => s + t.amount, 0);
+         const budgeted = typeCats.reduce((s, c) => s + c.budgetAmount, 0);
+
+         if (type.name === "Investments") {
+            investedAmount += spent;
+         } else {
+            const savings = budgeted - spent;
+            if (savings > 0) {
+               savingsAmount += savings;
+            }
+         }
+      });
+
+      const budgetRemaining = totalBudgeted - totalSpent;
+      const netWealthBuilt = investedAmount + savingsAmount;
+
+      return {
+         totalBudgeted,
+         totalSpent,
+         budgetRemaining,
+         investedAmount,
+         savingsAmount,
+         netWealthBuilt,
+      };
+   }, [categoryTypes, categories, transactions]);
+
+   const currentMonthYear = useMemo(() => {
+      return new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+   }, []);
+
+
+
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-100 to-indigo-100 dark:from-gray-900 dark:to-indigo-800 relative text-slate-800 dark:text-slate-100">
          {/* Main Content shifted upward */}
@@ -317,8 +375,78 @@ const HomePage = () => {
                </div>
             </div>
 
+            {/* Full-width Month / Year Quick Stats Overview Banner */}
+            {!loading && (
+               <div className="w-full max-w-7xl xl:max-w-[1600px] mb-8 px-2">
+                  <div className="w-full rounded-2xl border backdrop-blur-md shadow-md p-5 bg-white/90 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+                     {/* Banner Header */}
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center gap-2.5">
+                           <div className="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-500/20">
+                              <FaChartLine className="w-4 h-4" />
+                           </div>
+                           <div>
+                              <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                 {currentMonthYear} Overview
+                              </h3>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                 Monthly executive financial summary & quick stats
+                              </p>
+                           </div>
+                        </div>
+                     </div>
+
+                     {/* 4-Stat Overview Grid */}
+                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {/* Stat 1: Total Allocated */}
+                        <div className="p-3.5 rounded-xl border bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60">
+                           <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
+                              Total Allocated
+                           </span>
+                           <span className="text-lg md:text-xl font-black text-slate-900 dark:text-white">
+                              ${monthlyStats.totalBudgeted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           </span>
+                        </div>
+
+                        {/* Stat 2: Total Spent */}
+                        <div className="p-3.5 rounded-xl border bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60">
+                           <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
+                              Total Spent
+                           </span>
+                           <span className="text-lg md:text-xl font-black text-indigo-600 dark:text-indigo-400">
+                              ${monthlyStats.totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           </span>
+                        </div>
+
+                        {/* Stat 3: Budget Remaining */}
+                        <div className="p-3.5 rounded-xl border bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60">
+                           <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
+                              Budget Remaining
+                           </span>
+                           <span className={`text-lg md:text-xl font-black ${monthlyStats.budgetRemaining >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                              ${monthlyStats.budgetRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           </span>
+                        </div>
+
+                        {/* Stat 4: Net Wealth Built */}
+                        <div className="p-3.5 rounded-xl border bg-teal-500/10 dark:bg-teal-500/15 border-teal-500/30">
+                           <span className="block text-[11px] font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400 mb-1">
+                              Net Wealth Built
+                           </span>
+                           <span className="text-lg md:text-xl font-black text-teal-600 dark:text-teal-400">
+                              ${monthlyStats.netWealthBuilt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           </span>
+                           <span className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                              (${monthlyStats.investedAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} Invested • ${monthlyStats.savingsAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} Saved)
+                           </span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            )}
+
             {/* Grid Layout for Needs, Wants, Investments */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-7xl xl:max-w-[1600px] mb-16 px-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-7xl xl:max-w-[1600px] mb-12 px-2">
                {!loading ? (
                   categoryTypes.map((categoryType) => (
                      <CategoryType

@@ -157,12 +157,12 @@ const CategoryType = ({
             </div>
 
             {/* Status Pill Badge */}
-            <div className="flex justify-between items-center mb-3">
-               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${budgetStatus.bg}/20 ${budgetStatus.text} border-${budgetStatus.color}/30`}>
+            <div className="flex items-center justify-between gap-2 mb-3">
+               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${budgetStatus.bg}/20 ${budgetStatus.text} border-${budgetStatus.color}/30 shadow-sm`}>
                   {budgetStatus.label}
                </span>
-               <span className={`text-xs font-medium ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                  Savings: <strong className={expectedSavings >= 0 ? "text-emerald-400" : "text-red-400"}>${expectedSavings.toFixed(2)}</strong>
+               <span className={`text-xs font-bold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  {progressPercentage}% Utilized
                </span>
             </div>
 
