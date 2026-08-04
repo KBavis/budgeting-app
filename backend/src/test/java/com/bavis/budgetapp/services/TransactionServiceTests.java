@@ -770,7 +770,7 @@ public class TransactionServiceTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(transactionRepository.findByAccountIdsAndCurrentMonth(any(), any())).thenReturn(expectedAccountTransactions);
+        when(transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(any(), any())).thenReturn(expectedAccountTransactions);
         when(transactionRepository.findByCategoryIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserCreatedTransactions);
 
         //Act
@@ -789,7 +789,7 @@ public class TransactionServiceTests {
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
-        verify(transactionRepository, times(1)).findByAccountIdsAndCurrentMonth(any(), any());
+        verify(transactionRepository, times(1)).findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(any(), any());
         verify(transactionRepository, times(1)).findByCategoryIdsAndCurrentMonth(any(), any());
     }
 
@@ -878,7 +878,7 @@ public class TransactionServiceTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(transactionRepository.findByAccountIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserAccountTransactions);
+        when(transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(any(), any())).thenReturn(expectedUserAccountTransactions);
 
         //Act
         List<Transaction> actualTransactions = transactionService.readAll();
@@ -891,7 +891,7 @@ public class TransactionServiceTests {
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
-        verify(transactionRepository, times(1)).findByAccountIdsAndCurrentMonth(any(), any());
+        verify(transactionRepository, times(1)).findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(any(), any());
     }
 
     @Test

@@ -37,6 +37,7 @@ const HomePage = () => {
    const [category, setCategory] = useState(null);
    const [showTransactionSwiper, setShowTransactionSwiper] = useState(null);
    const [transactionsToAssign, setTransactionsToAssign] = useState([]);
+   const [isSyncing, setIsSyncing] = useState(false);
 
    const initalFetchRef = useRef(false);
 
@@ -201,10 +202,19 @@ const HomePage = () => {
    };
 
    const fetchUpdatedTransactions = async () => {
+      if (isSyncing) return;
+      setIsSyncing(true);
       setTransactionLoading();
-      const accountIds = (accounts || []).map((acc) => acc.accountId);
-      await syncTransactions(accountIds);
-      setAlert("Successfully Synced Account Transactions!", "success");
+      try {
+         const accountIds = (accounts || []).map((acc) => acc.accountId);
+         await syncTransactions(accountIds);
+         setAlert("Successfully Synced Account Transactions!", "success");
+      } catch (err) {
+         console.error(err);
+         setAlert("Failed to sync transactions", "danger");
+      } finally {
+         setIsSyncing(false);
+      }
    };
 
    // Component Mount logic
@@ -249,10 +259,14 @@ const HomePage = () => {
    // Merge previous month and current unassigned transactions into single swiper list
    useEffect(() => {
       const unassigned = (transactions || []).filter(t => !t.category || t.category.name === 'Miscellaneous');
-      const combined = [
-         ...(prevMonthTransactions || []),
-         ...unassigned
-      ];
+      const combinedMap = new Map();
+      (prevMonthTransactions || []).forEach(t => {
+         if (t && t.transactionId) combinedMap.set(t.transactionId, t);
+      });
+      unassigned.forEach(t => {
+         if (t && t.transactionId) combinedMap.set(t.transactionId, t);
+      });
+      const combined = Array.from(combinedMap.values());
       setTransactionsToAssign(combined);
       if (combined.length > 0 && showTransactionSwiper === null) {
          setShowTransactionSwiper(true);
@@ -350,11 +364,16 @@ const HomePage = () => {
                   </div>
 
                   <button
-                     className="bg-brand-600 border border-brand-500 text-xs md:text-sm hover:bg-brand-500 duration-300 text-white font-bold py-2.5 px-5 rounded-2xl shadow-md transition-all hover:scale-105 inline-flex items-center gap-2"
+                     className={`border text-xs md:text-sm duration-300 text-white font-bold py-2.5 px-5 rounded-2xl shadow-md transition-all inline-flex items-center gap-2 ${
+                        isSyncing
+                           ? "bg-brand-600/70 border-brand-500/70 cursor-not-allowed opacity-80 pointer-events-none"
+                           : "bg-brand-600 border-brand-500 hover:bg-brand-500 hover:scale-105 cursor-pointer"
+                     }`}
                      onClick={fetchUpdatedTransactions}
+                     disabled={isSyncing}
                   >
-                     <FaSyncAlt className="w-3.5 h-3.5" />
-                     <span>Sync Transactions</span>
+                     <FaSyncAlt className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+                     <span>{isSyncing ? "Syncing..." : "Sync Transactions"}</span>
                   </button>
 
                   {transactionsToAssign.length > 0 && !showTransactionSwiper && (

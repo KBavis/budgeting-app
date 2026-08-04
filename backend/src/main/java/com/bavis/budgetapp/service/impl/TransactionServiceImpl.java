@@ -227,7 +227,7 @@ public class TransactionServiceImpl implements TransactionService {
                     .collect(Collectors.toList());
 
             log.debug("Reading transactions that are within the same year/date as {} and corresponding to following account IDs: {}", currentDate, accountIds);
-            List<Transaction> accountTransactions = new ArrayList<>(_transactionRepository.findByAccountIdsAndCurrentMonth(accountIds, currentDate));
+            List<Transaction> accountTransactions = new ArrayList<>(_transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(accountIds, currentDate));
             allUserTransactions.addAll(accountTransactions);
         }
 

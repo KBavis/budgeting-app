@@ -16,18 +16,26 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<Transaction, String> {
 
     /**
-     * Retrieve all Transactions for a given list of Account IDs and Within the Current Month/Year
+     * Retrieve all Transactions for a given list of Account IDs within current month/year or unassigned from previous month
      *
      * @param accountIds
      *          - account IDs to fetch Transactions for
      * @param currentDate
      *          - current date to validate Transactions against
      * @return
-     *          - all Transactions corresponding to current year/month and specified Account IDss
+     *          - all Transactions corresponding to current year/month or unassigned from previous month
      */
 
-    @Query("SELECT t FROM Transaction t WHERE t.account.accountId IN :accountIds AND t.isDeleted = FALSE AND (t.date IS NOT NULL AND EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date)))")
-    List<Transaction> findByAccountIdsAndCurrentMonth(@Param("accountIds") List<String> accountIds, @Param("currentDate") LocalDate currentDate);
+    @Query("SELECT t FROM Transaction t WHERE t.account.accountId IN :accountIds AND t.isDeleted = FALSE AND t.date IS NOT NULL AND (" +
+           "(EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date))) " +
+           "OR " +
+           "(t.category IS NULL AND (" +
+             "(EXTRACT(MONTH FROM CAST(:currentDate AS date)) > 1 AND EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) - 1 AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date))) " +
+             "OR " +
+             "(EXTRACT(MONTH FROM CAST(:currentDate AS date)) = 1 AND EXTRACT(MONTH FROM CAST(t.date AS date)) = 12 AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date)) - 1)" +
+           "))" +
+           ")")
+    List<Transaction> findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(@Param("accountIds") List<String> accountIds, @Param("currentDate") LocalDate currentDate);
 
     /**
      * Determine whether a Transaction exists by a specified Transaction ID AND was updated by the user
