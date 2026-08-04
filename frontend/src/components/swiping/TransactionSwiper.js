@@ -26,11 +26,12 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
   const [swiperList, setSwiperList] = useState(() => transactions || []);
   const [priorMonthToRecalculate, setPriorMonthToRecalculate] = useState(null);
 
+  // Freeze swiperList for the duration of the swiping session to prevent skipped items on context updates
   useEffect(() => {
-    if (transactions) {
+    if (transactions && transactions.length > 0 && swiperList.length === 0) {
       setSwiperList(transactions);
     }
-  }, [transactions]);
+  }, [transactions, swiperList.length]);
 
   const handleClose = useCallback(async () => {
     if (priorMonthToRecalculate) {
@@ -344,7 +345,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
         <div className="bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl grid grid-cols-1 md:grid-cols-12 gap-0">
 
           {/* ─── LEFT: Transaction Details & Edits ─── */}
-          <div className="md:col-span-5 p-5 md:p-6 border-b md:border-b-0 md:border-r border-slate-800/80 flex flex-col justify-between bg-slate-950/40">
+          <div className="md:col-span-5 p-4 md:p-6 border-b md:border-b-0 md:border-r border-slate-800/80 flex flex-col justify-between bg-slate-950/40">
             <div
               className={`flex flex-col gap-4 ${cardAnimation}`}
               onAnimationEnd={handleAnimationEnd}
@@ -513,7 +514,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
           </div>
 
           {/* ─── RIGHT: Suggestion + Category Selection + Submission ─── */}
-          <div className="md:col-span-7 p-5 md:p-6 flex flex-col justify-between gap-5">
+          <div className="md:col-span-7 p-4 md:p-6 flex flex-col justify-between gap-4 md:gap-5">
             <div className="flex flex-col gap-4">
               {/* ML Suggested Category (Accept / Reject) */}
               {showSuggestion && (
@@ -590,7 +591,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
                   </div>
 
                   {/* Category Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[280px] overflow-y-auto no-scrollbar">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[200px] sm:max-h-[280px] overflow-y-auto no-scrollbar">
                     {currentCategoryList.map((category) => {
                       const isCategorySelected = selectedCategory?.categoryId === category.categoryId;
                       return (
