@@ -202,23 +202,31 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<Transaction> readAll(){
+    public FetchTransactionsDto readAll(){
         log.info("Attempting to read all Transaction entities corresponding to authenticated user's added Accounts and the current month");
         User currentAuthUser = _userService.getCurrentAuthUser();
         LocalDate currentDate = LocalDate.now();
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear = currentDate.getYear();
+
         List<Account> accounts = Optional.ofNullable(currentAuthUser.getAccounts())
                 .orElseGet(List::of)
                 .stream()
                 .filter(account -> account != null && !account.isDeleted())
                 .toList();
         List<Category> categories = currentAuthUser.getCategories();
-        List<Transaction> allUserTransactions = new ArrayList<>(); //transactions to return
+
+        // lists to seperate current month transactions vs prev month transactions that are unassinged
+        List<Transaction> currentMonthTransactions = new ArrayList<>();
+        List<Transaction> unassignedPreviousMonthTransactions = new ArrayList<>();
 
         //Validate User Has Accounts To Fetch Transactions For
         if(accounts.isEmpty() && categories == null) {
-            return new ArrayList<>();
+            return FetchTransactionsDto.builder()
+                    .currentMonthTransactions(currentMonthTransactions)
+                    .unassignedPreviousMonthTransactions(unassignedPreviousMonthTransactions)
+                    .build();
         }
-
 
         //Fetch All Transactions associated with User Accounts if user has added Accounts
         if(!accounts.isEmpty()) {
@@ -227,11 +235,21 @@ public class TransactionServiceImpl implements TransactionService {
                     .collect(Collectors.toList());
 
             log.debug("Reading transactions that are within the same year/date as {} and corresponding to following account IDs: {}", currentDate, accountIds);
-            List<Transaction> accountTransactions = new ArrayList<>(_transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(accountIds, currentDate));
-            allUserTransactions.addAll(accountTransactions);
+            List<Transaction> accountTransactions = _transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(accountIds, currentDate);
+
+            // split into current-month vs unassigned previous-month based on transaction date
+            for (Transaction t : accountTransactions) {
+                if (t.getDate() != null
+                        && t.getDate().getMonthValue() == currentMonth
+                        && t.getDate().getYear() == currentYear) {
+                    currentMonthTransactions.add(t);
+                } else {
+                    unassignedPreviousMonthTransactions.add(t);
+                }
+            }
         }
 
-        //Fetch All Transactions associated with User Categories if user has added Categories
+        //Fetch All Transactions associated with User Categories if user has added Categories (always current month)
         if(categories != null){
             List<Long> userCategoryIds = categories.stream()
                     .map(Category::getCategoryId)
@@ -240,11 +258,14 @@ public class TransactionServiceImpl implements TransactionService {
             //Fetch All Transactions Corresponding to these Category IDs Where Account is set to Null
             log.debug("Reading transactions that within the same year/date as {} and corresponding to the following Category IDs: {}", currentDate, userCategoryIds);
             List<Transaction> userCreatedTransactions = _transactionRepository.findByCategoryIdsAndCurrentMonth(userCategoryIds, currentDate);
-            allUserTransactions.addAll(userCreatedTransactions);
+            currentMonthTransactions.addAll(userCreatedTransactions);
         }
 
-        log.info("All Transactions corresponding to UserID {} : [{}]", currentAuthUser.getUserId(), allUserTransactions);
-        return  allUserTransactions;
+        log.info("Fetched {} current-month and {} unassigned previous-month transactions for UserID {}", currentMonthTransactions.size(), unassignedPreviousMonthTransactions.size(), currentAuthUser.getUserId());
+        return FetchTransactionsDto.builder()
+                .currentMonthTransactions(currentMonthTransactions)
+                .unassignedPreviousMonthTransactions(unassignedPreviousMonthTransactions)
+                .build();
     }
 
     @Override

@@ -762,6 +762,7 @@ public class TransactionServiceTests {
                 .transactionId("transaction-6")
                 .category(category)
                 .account(null)
+                .date(now)
                 .build();
 
 
@@ -774,18 +775,19 @@ public class TransactionServiceTests {
         when(transactionRepository.findByCategoryIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserCreatedTransactions);
 
         //Act
-        List<Transaction> transactions = transactionService.readAll();
+        FetchTransactionsDto result = transactionService.readAll();
 
         //Assert
-        assertNotNull(transactions);
-        assertEquals(expectedAccountTransactions.size() + expectedUserCreatedTransactions.size(), transactions.size());
-        assertTrue(transactions.containsAll(expectedAccountTransactions));
-        assertTrue(transactions.containsAll(expectedUserCreatedTransactions));
-        assertEquals(transactionOne, transactions.get(0));
-        assertEquals(transactionTwo, transactions.get(1));
-        assertEquals(transactionThree, transactions.get(2));
-        assertEquals(transactionFour, transactions.get(3));
-
+        assertNotNull(result);
+        List<Transaction> currentMonth = result.getCurrentMonthTransactions();
+        List<Transaction> previousMonth = result.getUnassignedPreviousMonthTransactions();
+        assertNotNull(currentMonth);
+        assertNotNull(previousMonth);
+        // All account transactions have date=now (current month), user-created also current month
+        assertEquals(expectedAccountTransactions.size() + expectedUserCreatedTransactions.size(), currentMonth.size());
+        assertTrue(currentMonth.containsAll(expectedAccountTransactions));
+        assertTrue(currentMonth.contains(transactionFour));
+        assertTrue(previousMonth.isEmpty());
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
@@ -805,10 +807,12 @@ public class TransactionServiceTests {
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
         //Act
-        List<Transaction> transactions = transactionService.readAll();
+        FetchTransactionsDto result = transactionService.readAll();
 
         //Assert
-        assertTrue(transactions.isEmpty());
+        assertNotNull(result);
+        assertTrue(result.getCurrentMonthTransactions().isEmpty());
+        assertTrue(result.getUnassignedPreviousMonthTransactions().isEmpty());
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
@@ -841,13 +845,15 @@ public class TransactionServiceTests {
         when(transactionRepository.findByCategoryIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserCreatedTransactions);
 
         //Act
-        List<Transaction> actualTransactions = transactionService.readAll();
+        FetchTransactionsDto result = transactionService.readAll();
 
         //Assert
-        assertNotNull(actualTransactions);
-        assertTrue(actualTransactions.containsAll(expectedUserCreatedTransactions));
-        assertEquals(expectedUserCreatedTransactions.size(), actualTransactions.size());
-        assertEquals(transaction, actualTransactions.get(0));
+        assertNotNull(result);
+        List<Transaction> currentMonth = result.getCurrentMonthTransactions();
+        assertNotNull(currentMonth);
+        assertTrue(currentMonth.containsAll(expectedUserCreatedTransactions));
+        assertEquals(expectedUserCreatedTransactions.size(), currentMonth.size());
+        assertTrue(result.getUnassignedPreviousMonthTransactions().isEmpty());
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
@@ -881,13 +887,15 @@ public class TransactionServiceTests {
         when(transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(any(), any())).thenReturn(expectedUserAccountTransactions);
 
         //Act
-        List<Transaction> actualTransactions = transactionService.readAll();
+        FetchTransactionsDto result = transactionService.readAll();
 
         //Assert
-        assertNotNull(actualTransactions);
-        assertTrue(actualTransactions.containsAll(expectedUserAccountTransactions));
-        assertEquals(expectedUserAccountTransactions.size(), actualTransactions.size());
-        assertEquals(transaction, actualTransactions.get(0));
+        assertNotNull(result);
+        List<Transaction> currentMonth = result.getCurrentMonthTransactions();
+        assertNotNull(currentMonth);
+        assertTrue(currentMonth.containsAll(expectedUserAccountTransactions));
+        assertEquals(expectedUserAccountTransactions.size(), currentMonth.size());
+        assertTrue(result.getUnassignedPreviousMonthTransactions().isEmpty());
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();

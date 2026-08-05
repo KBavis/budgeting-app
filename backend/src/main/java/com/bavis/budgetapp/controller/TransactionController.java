@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.FetchTransactionsDto;
 import com.bavis.budgetapp.dto.SplitTransactionDto;
 import com.bavis.budgetapp.dto.SyncTransactionsDto;
 import com.bavis.budgetapp.dto.TransactionDto;
@@ -73,13 +74,14 @@ public class TransactionController {
 
 
     /**
-     * Retrieve all Transaction entities within the current month corresponding to Authenticated User's added Accounts
+     * Retrieve all Transaction entities within the current month corresponding to Authenticated User's added Accounts,
+     * along with unassigned previous-month transactions that still need to be categorized.
      *
      * @return
-     *      - all Transactions within current month for Accounts associated with authenticated user
+     *      - FetchTransactionsDto containing currentMonthTransactions and unassignedPreviousMonthTransactions
      */
     @GetMapping
-    public ResponseEntity<List<Transaction>> readAll() {
+    public ResponseEntity<FetchTransactionsDto> readAll() {
         log.info("Received request to read all Transactions for current month for authenticated user");
         return ResponseEntity.ok(_transactionService.readAll());
     }

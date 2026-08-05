@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.FetchTransactionsDto;
 import com.bavis.budgetapp.dto.SplitTransactionDto;
 import com.bavis.budgetapp.dto.SyncTransactionsDto;
 import com.bavis.budgetapp.dto.TransactionDto;
@@ -27,12 +28,14 @@ public interface TransactionService {
     SyncTransactionsDto syncTransactions(AccountsDto accountsDto);
 
     /**
-     * Functionality to fetch all Transaction entities corresponding to authenticated User
+     * Functionality to fetch all Transaction entities corresponding to authenticated User.
+     * Returns current-month transactions and unassigned previous-month transactions separately,
+     * so that only unassigned prior-month transactions are surfaced for categorization.
      *
      * @return
-     *      - all Transactions corresponding to Auth User
+     *      - FetchTransactionsDto containing currentMonthTransactions and unassignedPreviousMonthTransactions
      */
-    List<Transaction> readAll();
+    FetchTransactionsDto readAll();
 
 
     /**

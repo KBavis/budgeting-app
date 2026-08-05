@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.controller;
 
 import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.FetchTransactionsDto;
 import com.bavis.budgetapp.dto.SplitTransactionDto;
 import com.bavis.budgetapp.dto.SyncTransactionsDto;
 import com.bavis.budgetapp.dto.TransactionDto;
@@ -220,10 +221,14 @@ public class TransactionControllerTests {
         //Arrange
         Transaction transactionOne = validTransactions.get(0);
         Transaction transactionTwo = validTransactions.get(1);
-        List<Transaction> expectedTransactions = List.of(transactionOne, transactionTwo);
+        List<Transaction> expectedCurrentMonth = List.of(transactionOne, transactionTwo);
+        FetchTransactionsDto fetchDto = FetchTransactionsDto.builder()
+                .currentMonthTransactions(expectedCurrentMonth)
+                .unassignedPreviousMonthTransactions(List.of())
+                .build();
 
         //Mock
-        when(transactionService.readAll()).thenReturn(expectedTransactions);
+        when(transactionService.readAll()).thenReturn(fetchDto);
 
         //Act
         ResultActions resultActions = mockMvc.perform(get("/transactions"));
@@ -231,24 +236,32 @@ public class TransactionControllerTests {
         //Assert
         resultActions.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].transactionId").value(transactionOne.getTransactionId()))
-                .andExpect(jsonPath("$[0].date").value(transactionOne.getDate().toString()))
-                .andExpect(jsonPath("$[0].amount").value(transactionOne.getAmount()))
-                .andExpect(jsonPath("$[0].name").value(transactionOne.getName()))
-                .andExpect(jsonPath("$[0].category").value(transactionOne.getCategory()))
-                .andExpect(jsonPath("$[0].logoUrl").value(transactionOne.getLogoUrl()))
-                .andExpect(jsonPath("$[1].transactionId").value(transactionTwo.getTransactionId()))
-                .andExpect(jsonPath("$[1].date").value(transactionTwo.getDate().toString()))
-                .andExpect(jsonPath("$[1].amount").value(transactionTwo.getAmount()))
-                .andExpect(jsonPath("$[1].category").value(transactionTwo.getCategory()))
-                .andExpect(jsonPath("$[1].logoUrl").value(transactionTwo.getLogoUrl()))
-                .andExpect(jsonPath("$[1].name").value(transactionTwo.getName()));
+                .andExpect(jsonPath("$.currentMonthTransactions[0].transactionId").value(transactionOne.getTransactionId()))
+                .andExpect(jsonPath("$.currentMonthTransactions[0].date").value(transactionOne.getDate().toString()))
+                .andExpect(jsonPath("$.currentMonthTransactions[0].amount").value(transactionOne.getAmount()))
+                .andExpect(jsonPath("$.currentMonthTransactions[0].name").value(transactionOne.getName()))
+                .andExpect(jsonPath("$.currentMonthTransactions[0].category").value(transactionOne.getCategory()))
+                .andExpect(jsonPath("$.currentMonthTransactions[0].logoUrl").value(transactionOne.getLogoUrl()))
+                .andExpect(jsonPath("$.currentMonthTransactions[1].transactionId").value(transactionTwo.getTransactionId()))
+                .andExpect(jsonPath("$.currentMonthTransactions[1].date").value(transactionTwo.getDate().toString()))
+                .andExpect(jsonPath("$.currentMonthTransactions[1].amount").value(transactionTwo.getAmount()))
+                .andExpect(jsonPath("$.currentMonthTransactions[1].category").value(transactionTwo.getCategory()))
+                .andExpect(jsonPath("$.currentMonthTransactions[1].logoUrl").value(transactionTwo.getLogoUrl()))
+                .andExpect(jsonPath("$.currentMonthTransactions[1].name").value(transactionTwo.getName()))
+                .andExpect(jsonPath("$.unassignedPreviousMonthTransactions").isArray())
+                .andExpect(jsonPath("$.unassignedPreviousMonthTransactions").isEmpty());
     }
 
     @Test
     void testReadAll_InvalidAccounts_Successful() throws Exception {
+        //Arrange
+        FetchTransactionsDto fetchDto = FetchTransactionsDto.builder()
+                .currentMonthTransactions(List.of())
+                .unassignedPreviousMonthTransactions(List.of())
+                .build();
+
         //Mock
-        when(transactionService.readAll()).thenReturn(new ArrayList<>());
+        when(transactionService.readAll()).thenReturn(fetchDto);
 
         //Act
         ResultActions resultActions = mockMvc.perform(get("/transactions"));
@@ -256,7 +269,10 @@ public class TransactionControllerTests {
         //Assert
         resultActions.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().string("[]"));
+                .andExpect(jsonPath("$.currentMonthTransactions").isArray())
+                .andExpect(jsonPath("$.currentMonthTransactions").isEmpty())
+                .andExpect(jsonPath("$.unassignedPreviousMonthTransactions").isArray())
+                .andExpect(jsonPath("$.unassignedPreviousMonthTransactions").isEmpty());
     }
 
     @Test

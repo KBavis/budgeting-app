@@ -329,7 +329,9 @@ const HomePage = () => {
       return new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
    }, []);
 
-
+   const handleCloseSwiper = () => {
+      setShowTransactionSwiper(false);
+   };
 
    return (
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-100 to-indigo-100 dark:from-gray-900 dark:to-indigo-800 relative text-slate-800 dark:text-slate-100">
@@ -535,7 +537,7 @@ const HomePage = () => {
                transactions={transactionsToAssign}
                categories={categories}
                categoryTypes={categoryTypes}
-               onClose={() => setShowTransactionSwiper(false)}
+               onClose={handleCloseSwiper}
             />
          )}
       </div>

@@ -196,7 +196,8 @@ export default (state, action) => {
       case FETCH_TRANSACTIONS_SUCCESS:
          return {
             ...state,
-            transactions: action.payload,
+            transactions: action.payload.currentMonthTransactions || [],
+            prevMonthTransactions: action.payload.unassignedPreviousMonthTransactions || [],
             loading: false,
          };
       case REMOVE_TRANSACTION_CATEGORY:
