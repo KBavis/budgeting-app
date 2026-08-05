@@ -1,4 +1,6 @@
 .env
+*.secret.env
+.github.secret.env
 .venv
 .vscode/
 .idea/*

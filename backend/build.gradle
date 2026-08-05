@@ -60,6 +60,7 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.projectlombok:lombok'
 	testImplementation("com.squareup.okhttp3:mockwebserver3:5.1.0") // OkHTTP mock web server
+	testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {
@@ -67,7 +68,7 @@ tasks.named('test') {
 }
 
 tasks.named('bootRun', {
-	args = ["--spring.profiles.active=test"]
+	args = ["--spring.profiles.active=local"]
 })
 
 compileJava {
