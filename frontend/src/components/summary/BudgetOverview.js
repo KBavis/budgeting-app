@@ -196,11 +196,11 @@ const BudgetOverview = ({ overview, month, year }) => {
                </p>
             </div>
             <div>
-               <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
-                  Total Saved
+               <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 text-teal-600 dark:text-teal-400`}>
+                  Net Wealth Built
                </p>
-               <p className={`text-lg font-bold ${getTextColor(totalAmountSaved)}`}>
-                  ${totalAmountSaved.toFixed(2)}
+               <p className={`text-lg font-bold text-teal-600 dark:text-teal-400`}>
+                  ${(totalAmountSaved > 0 ? totalAmountSaved : Math.max(0, savedAmountAttributesTotal)).toFixed(2)}
                </p>
             </div>
          </div>

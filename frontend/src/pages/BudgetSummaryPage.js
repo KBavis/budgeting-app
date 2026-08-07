@@ -294,6 +294,9 @@ const BudgetSummaryPage = () => {
                                         const pctRaw = budgeted > 0 ? ((spent / budgeted) * 100).toFixed(1) : '0';
                                         const diff = budgeted - spent;
                                         const status = getBudgetStatus(spent, budgeted);
+                                        const invested = summary.investmentOverview?.totalSpent || 0;
+                                        const unspentSavings = Math.max(0, diff);
+                                        const netWealthContributed = invested + unspentSavings;
 
                                         return (
                                             <div
@@ -354,11 +357,11 @@ const BudgetSummaryPage = () => {
                                                         <p className={`font-extrabold text-sm sm:text-base ${status.textClass}`}>${spent.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                                                     </div>
                                                     <div>
-                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                                                            {diff >= 0 ? 'Saved' : 'Over'}
+                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 text-teal-600 dark:text-teal-400`}>
+                                                            Net Wealth
                                                         </p>
-                                                        <p className={`font-extrabold text-sm sm:text-base ${diff >= 0 ? (isDark ? "text-emerald-400" : "text-emerald-600") : (isDark ? "text-rose-400" : "text-rose-600")}`}>
-                                                            ${Math.abs(diff).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                        <p className={`font-extrabold text-sm sm:text-base text-teal-600 dark:text-teal-400`}>
+                                                            ${netWealthContributed.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                         </p>
                                                     </div>
                                                 </div>
