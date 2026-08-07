@@ -92,7 +92,7 @@ const AccountsPage = () => {
     }, [accounts]);
 
     useEffect(() => {
-        if (user?.linkToken && isTokenExpired(user.linkToken.expiration) && !isTokenRefreshed.current) {
+        if (user && (!user.linkToken || isTokenExpired(user.linkToken?.expiration)) && !isTokenRefreshed.current) {
             isTokenRefreshed.current = true;
             refreshLinkToken();
         }

@@ -14,7 +14,7 @@ import StepProgress from "../components/layout/StepProgress";
 const ConnectAccounts = () => {
    // Global State
    const navigate = useNavigate();
-   const { user, fetchAuthenticatedUser } = useContext(authContext);
+   const { user, fetchAuthenticatedUser, refreshLinkToken } = useContext(authContext);
    const { createAccount, accounts, fetchAccounts } = useContext(accountContext);
    const { setAlert } = useContext(AlertContext);
    const [connectedAccounts, setConnectedAccounts] = useState([]);
@@ -76,10 +76,10 @@ const ConnectAccounts = () => {
    }, []);
 
    useEffect(() => {
-      if (user && !user.linkToken) {
-         navigate("/login");
+      if (user && (!user.linkToken || (user.linkToken.expiration && new Date() > new Date(user.linkToken.expiration)))) {
+         refreshLinkToken();
       }
-   }, [user, navigate]);
+   }, [user, refreshLinkToken]);
 
    const hasConnected = connectedAccounts.length > 0 || (accounts && accounts.length > 0);
 
