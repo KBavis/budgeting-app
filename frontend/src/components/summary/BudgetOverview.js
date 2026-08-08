@@ -105,8 +105,8 @@ const BudgetOverview = ({ overview, month, year }) => {
       setPieData(currPieData);
    }, [category_performances, currentTypeId, categoryMap]);
 
-   // Skip rendering for GENERAL and INVESTMENTS — handled by FinancialGrowthSummary
-   if (!overview || overviewType === "GENERAL" || overviewType === "INVESTMENTS") {
+   // Skip rendering for GENERAL — handled by FinancialGrowthSummary
+   if (!overview || overviewType === "GENERAL") {
       return null;
    }
 

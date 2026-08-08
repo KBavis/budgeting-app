@@ -1,32 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { useNavigate } from "react-router-dom";
-import { FaChartLine, FaArrowRight, FaPiggyBank, FaSeedling, FaExclamationTriangle } from "react-icons/fa";
-import CategoryPerformanceContext from "../../context/category/performances/categoryPerformanceContext";
-import categoryContext from "../../context/category/categoryContext";
-import categoryTypeContext from "../../context/category/types/categoryTypeContext";
+import React, { useContext } from "react";
+import { FaPiggyBank, FaSeedling, FaExclamationTriangle } from "react-icons/fa";
 import { ThemeContext } from "../../context/theme/ThemeContext";
 
 /**
- * FinancialGrowthSummary — replaces General + Investments BudgetOverview cards.
+ * FinancialGrowthSummary — Executive financial overview component for historical budget summaries.
  *
  * Shows:
- *  - Net worth accumulated (investments + savings from underspending needs/wants)
- *  - Invested amount
- *  - Savings from underspending needs/wants
- *  - Pie chart of investment category breakdown
+ *  - Net Wealth Built hero card (Invested + Cash Flow)
+ *  - Monthly Cash Flow grid (Total Income, Total Spent, Cash Surplus/Deficit)
+ *  - Total Spent Breakdown grid (Needs Spending, Wants Spending, Total Invested)
  */
-const FinancialGrowthSummary = ({ summary, month, year }) => {
-   const navigate = useNavigate();
-   const [investmentPieData, setInvestmentPieData] = useState([]);
-   const [categoryMap, setCategoryMap] = useState({});
-   const [investmentTypeId, setInvestmentTypeId] = useState(null);
-
-   const { category_performances } = useContext(CategoryPerformanceContext);
-   const { categories, fetchCategories } = useContext(categoryContext);
-   const { categoryTypes, fetchCategoryTypes } = useContext(categoryTypeContext);
+const FinancialGrowthSummary = ({ summary }) => {
    const { theme } = useContext(ThemeContext);
-
    const isDark = theme === "dark";
 
    const generalOverview = summary?.generalOverview || {};
@@ -34,256 +19,156 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
    const needsOverview = summary?.needsOverview || {};
    const wantsOverview = summary?.wantsOverview || {};
 
-   // Core calculations
-   const totalAllocated = generalOverview.totalAmountAllocated || 0;
+   // Core values
+   const totalIncome = generalOverview.totalAmountAllocated || 0;
    const totalSpent = generalOverview.totalSpent || 0;
    const investedAmount = investmentOverview.totalSpent || 0;
-   const livingExpensesSpent = (needsOverview.totalSpent || 0) + (wantsOverview.totalSpent || 0);
+   const needsSpent = needsOverview.totalSpent || 0;
+   const wantsSpent = wantsOverview.totalSpent || 0;
 
-   // Consolidated Net Cash Flow (Total Income minus Total Spent)
-   const netCashFlow = totalAllocated - totalSpent;
+   // Cash flow: income minus total spending
+   const netCashFlow = totalIncome - totalSpent;
    const isCashDeficit = netCashFlow < 0;
 
-   // True Net Wealth Built = Total Income (Allocated) minus Living Expenses (Needs + Wants)
-   const netWealthBuilt = totalAllocated - livingExpensesSpent;
+   // Net Wealth Built = Investments + Cash Flow
+   // Investments grow your assets, cash surplus stays in bank, cash deficit means debt
+   const netWealthBuilt = investedAmount + netCashFlow;
    const isNetWealthNegative = netWealthBuilt < 0;
-
-   // fetch category types if page is refreshed
-   useEffect(() => {
-      if (!categoryTypes || categoryTypes.length === 0) {
-         fetchCategoryTypes();
-      }
-   }, [categoryTypes]);
-
-   // identify the Investments category type ID
-   useEffect(() => {
-      if (!categoryTypes) return;
-      const invType = categoryTypes.find((t) => t.name.toLowerCase() === "investments");
-      if (invType) {
-         setInvestmentTypeId(invType.categoryTypeId);
-      }
-   }, [categoryTypes]);
-
-   // generate category mapping
-   useEffect(() => {
-      if (!categories || categories.length === 0) {
-         fetchCategories();
-         return;
-      }
-      const mapping = {};
-      categories.forEach((cat) => {
-         mapping[cat.categoryId] = cat.name;
-      });
-      setCategoryMap(mapping);
-   }, [categories]);
-
-   // build pie chart data from investment category performances
-   useEffect(() => {
-      if (!category_performances || category_performances.length === 0 || investmentTypeId == null) {
-         return;
-      }
-
-      const filtered = category_performances
-         .filter((cp) => !cp.categoryTypeId || String(cp.categoryTypeId) === String(investmentTypeId))
-         .filter((cp) => (cp.totalSpend || 0) > 0);
-
-      const data = filtered.map((cp) => ({
-         name: categoryMap[cp.categoryId] || "Unknown",
-         value: parseFloat((cp.totalSpend || 0).toFixed(2)),
-      }));
-      setInvestmentPieData(data);
-   }, [category_performances, investmentTypeId, categoryMap]);
-
-   const DARK_COLORS = [
-      "#818cf8", "#34d399", "#fbbf24", "#f472b6", "#38bdf8",
-      "#a78bfa", "#4ade80", "#f97316", "#fb7185", "#2dd4bf",
-   ];
-
-   const LIGHT_COLORS = [
-      "#4f46e5", "#059669", "#d97706", "#ec4899", "#0284c7",
-      "#7c3aed", "#16a34a", "#ea580c", "#e11d48", "#0d9488",
-   ];
-
-   const activeColors = isDark ? DARK_COLORS : LIGHT_COLORS;
 
    const formatCurrency = (val) => {
       return "$" + Math.abs(val).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
    };
 
+   const formatCompact = (val) => {
+      return "$" + Math.abs(val).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+   };
+
    return (
-      <div className={`relative rounded-2xl shadow-lg p-6 mx-auto w-full max-w-4xl mb-8 border transition-all ${isDark
+      <div className={`relative rounded-2xl shadow-lg p-4 sm:p-6 mx-auto w-full max-w-4xl mb-8 border transition-all ${isDark
          ? "bg-slate-900/80 border-slate-700/60 text-slate-100"
          : "bg-white border-slate-200 text-slate-800"
          }`}>
 
          {/* Component Header */}
-         <div className="flex items-center justify-center gap-2.5 mb-5">
+         <div className="flex items-center justify-center gap-2.5 mb-4 sm:mb-5">
             <div className={`p-2 rounded-xl border ${isDark
                ? "bg-teal-500/15 border-teal-500/30 text-teal-400"
                : "bg-teal-50 border-teal-200 text-teal-600"
                }`}>
                <FaSeedling size={16} />
             </div>
-            <h3 className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+            <h3 className={`text-lg sm:text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
                Financial Growth Summary
             </h3>
          </div>
 
          {/* Hero Banner Card — Net Wealth Built */}
-         <div className={`text-center mb-6 p-4 rounded-xl border transition-all ${isNetWealthNegative
+         <div className={`text-center mb-5 sm:mb-6 p-3.5 sm:p-4 rounded-xl border transition-all ${isNetWealthNegative
             ? isDark ? "bg-red-500/10 border-red-500/30" : "bg-red-50 border-red-200"
             : isDark ? "bg-teal-500/10 border-teal-500/30" : "bg-teal-50 border-teal-200"
             }`}>
-            <p className={`text-xs font-extrabold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 ${isNetWealthNegative
+            <p className={`text-[10px] sm:text-xs font-extrabold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 ${isNetWealthNegative
                ? isDark ? "text-red-400" : "text-red-600"
                : isDark ? "text-teal-400" : "text-teal-600"
                }`}>
                {isNetWealthNegative ? <FaExclamationTriangle size={11} /> : <FaPiggyBank size={11} />}
                {isNetWealthNegative ? "Net Wealth Loss" : "Net Wealth Built"}
             </p>
-            <p className={`text-3xl font-black ${isNetWealthNegative
+            <p className={`text-2xl sm:text-3xl font-black ${isNetWealthNegative
                ? isDark ? "text-red-400" : "text-red-600"
                : isDark ? "text-teal-400" : "text-teal-600"
                }`}>
                {isNetWealthNegative ? "-" : ""}{formatCurrency(netWealthBuilt)}
             </p>
-            <p className={`text-xs font-medium mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-               {formatCurrency(totalAllocated)} Income – {formatCurrency(livingExpensesSpent)} Living Expenses
+            <p className={`text-[10px] sm:text-xs font-medium mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+               {formatCompact(investedAmount)} Invested {isCashDeficit ? "−" : "+"} {formatCompact(netCashFlow)} {isCashDeficit ? "Deficit" : "Surplus"}
             </p>
          </div>
 
-         {/* 4-Card Metrics Grid */}
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center mb-6">
-            {/* Total Budgeted */}
-            <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                  Total Budgeted
-               </p>
-               <p className={`text-base font-extrabold ${isDark ? "text-white" : "text-slate-900"}`}>
-                  {formatCurrency(totalAllocated)}
-               </p>
-            </div>
+         {/* Row 1: Cash Flow — 3-column grid */}
+         <div className="mb-4 sm:mb-5">
+            <p className={`text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-2 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+               Monthly Cash Flow
+            </p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
+               {/* Total Income */}
+               <div className={`p-3 sm:p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+                  <p className={`text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                     Total Income
+                  </p>
+                  <p className={`text-sm sm:text-base font-extrabold ${isDark ? "text-white" : "text-slate-900"}`}>
+                     {formatCurrency(totalIncome)}
+                  </p>
+               </div>
 
-            {/* Living Expenses */}
-            <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                  Living Expenses
-               </p>
-               <p className={`text-base font-extrabold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
-                  {formatCurrency(livingExpensesSpent)}
-               </p>
-            </div>
+               {/* Total Spent */}
+               <div className={`p-3 sm:p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+                  <p className={`text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                     Total Spent
+                  </p>
+                  <p className={`text-sm sm:text-base font-extrabold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
+                     {formatCurrency(totalSpent)}
+                  </p>
+               </div>
 
-            {/* Total Invested */}
-            <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
-                  Total Invested
-               </p>
-               <p className={`text-base font-black ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
-                  {formatCurrency(investedAmount)}
-               </p>
-            </div>
-
-            {/* Consolidated Cash Flow / Budget Variance */}
-            <div className={`p-3.5 rounded-xl border ${isCashDeficit
-               ? isDark ? "bg-red-500/10 border-red-500/30" : "bg-red-50 border-red-200"
-               : isDark ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-50 border-emerald-200"
-               }`}>
-               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isCashDeficit
-                  ? isDark ? "text-red-400" : "text-red-600"
-                  : isDark ? "text-emerald-400" : "text-emerald-600"
+               {/* Cash Surplus / Deficit */}
+               <div className={`p-3 sm:p-3.5 rounded-xl border ${isCashDeficit
+                  ? isDark ? "bg-red-500/10 border-red-500/30" : "bg-red-50 border-red-200"
+                  : isDark ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-50 border-emerald-200"
                   }`}>
-                  {isCashDeficit ? "Cash Deficit" : "Cash Surplus"}
-               </p>
-               <p className={`text-base font-black ${isCashDeficit
-                  ? isDark ? "text-red-400" : "text-red-600"
-                  : isDark ? "text-emerald-400" : "text-emerald-600"
-                  }`}>
-                  {isCashDeficit ? "-" : "+"}{formatCurrency(netCashFlow)}
-               </p>
+                  <p className={`text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isCashDeficit
+                     ? isDark ? "text-red-400" : "text-red-600"
+                     : isDark ? "text-emerald-400" : "text-emerald-600"
+                     }`}>
+                     {isCashDeficit ? "Cash Deficit" : "Cash Surplus"}
+                  </p>
+                  <p className={`text-sm sm:text-base font-black ${isCashDeficit
+                     ? isDark ? "text-red-400" : "text-red-600"
+                     : isDark ? "text-emerald-400" : "text-emerald-600"
+                     }`}>
+                     {isCashDeficit ? "-" : "+"}{formatCurrency(netCashFlow)}
+                  </p>
+               </div>
             </div>
          </div>
 
-         {/* Investment Category Breakdown */}
-         {investmentPieData.length > 0 && (
-            <div className={`w-full pt-5 border-t flex flex-col items-center ${isDark ? "border-slate-700/40" : "border-slate-200"}`}>
-               <p className={`text-xs font-extrabold uppercase tracking-wider mb-3 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                  Investment Breakdown
-               </p>
-               <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                     <Pie
-                        data={investmentPieData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={75}
-                        innerRadius={30}
-                        paddingAngle={2}
-                        dataKey="value"
-                     >
-                        {investmentPieData.map((entry, index) => (
-                           <Cell
-                              key={`cell-${index}`}
-                              fill={activeColors[index % activeColors.length]}
-                              stroke={isDark ? "#1e293b" : "#ffffff"}
-                              strokeWidth={1.5}
-                           />
-                        ))}
-                     </Pie>
-                     <Tooltip
-                        formatter={(value, name) => [`$${value.toFixed(2)}`, name]}
-                        itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a' }}
-                        labelStyle={{ color: isDark ? '#cbd5e1' : '#475569', fontWeight: 'bold' }}
-                        contentStyle={{
-                           backgroundColor: isDark ? '#0f172a' : '#ffffff',
-                           border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
-                           borderRadius: '12px',
-                           color: isDark ? '#f8fafc' : '#0f172a',
-                           boxShadow: isDark ? '0 10px 25px -5px rgba(0, 0, 0, 0.6)' : '0 10px 15px -3px rgba(0,0,0,0.1)',
-                           fontWeight: 700
-                        }}
-                     />
-                  </PieChart>
-               </ResponsiveContainer>
+         {/* Row 2: Total Spent Breakdown — 3-column grid showing where Total Spent went */}
+         <div>
+            <p className={`text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-2 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+               Total Spent Breakdown
+            </p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
+               {/* Needs Spending */}
+               <div className={`p-3 sm:p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+                  <p className={`text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-blue-400" : "text-blue-600"}`}>
+                     Needs Spending
+                  </p>
+                  <p className={`text-sm sm:text-base font-black ${isDark ? "text-blue-400" : "text-blue-600"}`}>
+                     {formatCurrency(needsSpent)}
+                  </p>
+               </div>
 
-               {/* Legend */}
-               <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 px-2 max-w-xl">
-                  {investmentPieData.map((entry, index) => (
-                     <div key={entry.name || index} className="flex items-center gap-1.5 text-xs">
-                        <span
-                           className="w-3 h-3 rounded-sm flex-shrink-0"
-                           style={{ backgroundColor: activeColors[index % activeColors.length] }}
-                        />
-                        <span className={`font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                           {entry.name}
-                        </span>
-                        <span className={`font-bold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                           ${entry.value.toFixed(0)}
-                        </span>
-                     </div>
-                  ))}
+               {/* Wants Spending */}
+               <div className={`p-3 sm:p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+                  <p className={`text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-purple-400" : "text-purple-600"}`}>
+                     Wants Spending
+                  </p>
+                  <p className={`text-sm sm:text-base font-black ${isDark ? "text-purple-400" : "text-purple-600"}`}>
+                     {formatCurrency(wantsSpent)}
+                  </p>
+               </div>
+
+               {/* Total Invested */}
+               <div className={`p-3 sm:p-3.5 rounded-xl border ${isDark ? "bg-indigo-500/10 border-indigo-500/25" : "bg-indigo-50 border-indigo-200"}`}>
+                  <p className={`text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
+                     Total Invested
+                  </p>
+                  <p className={`text-sm sm:text-base font-black ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
+                     {formatCurrency(investedAmount)}
+                  </p>
                </div>
             </div>
-         )}
-
-         {/* View Investments Analysis Button */}
-         {month && year && (
-            <div className="flex justify-center mt-6 pt-4 border-t border-slate-700/30">
-               <button
-                  className={`group flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 ${isDark
-                     ? "bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white border border-teal-400/30"
-                     : "bg-gradient-to-r from-teal-600 via-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white"
-                     }`}
-                  type="button"
-                  onClick={() => navigate(`/investments/analysis/${month.toLowerCase()}/${year}`)}
-               >
-                  <FaChartLine size={13} className="transition-transform group-hover:scale-110" />
-                  <span>View Investment Analysis</span>
-                  <FaArrowRight size={11} className="transition-transform group-hover:translate-x-1" />
-               </button>
-            </div>
-         )}
+         </div>
       </div>
    );
 };

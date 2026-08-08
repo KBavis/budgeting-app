@@ -282,9 +282,10 @@ const BudgetSummaryPage = () => {
                                 {/* Financial Growth Summary — replaces General + Investments overviews */}
                                 <FinancialGrowthSummary summary={selectedSummary} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
 
-                                {/* Needs & Wants Spending Overviews */}
+                                {/* Needs, Wants & Investments Spending Overviews */}
                                 <BudgetOverview overview={selectedSummary.needsOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
                                 <BudgetOverview overview={selectedSummary.wantsOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
+                                <BudgetOverview overview={selectedSummary.investmentOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
                             </div>
                         ) : displaySummaries.length > 0 ? (
                             /* Summary Cards Grid for ALL Months */
@@ -296,8 +297,9 @@ const BudgetSummaryPage = () => {
                                         const usagePct = budgeted > 0 ? Math.min((spent / budgeted) * 100, 100) : 0;
                                         const pctRaw = budgeted > 0 ? ((spent / budgeted) * 100).toFixed(1) : '0';
                                         const status = getBudgetStatus(spent, budgeted);
-                                        const livingExpensesSpent = (summary.needsOverview?.totalSpent || 0) + (summary.wantsOverview?.totalSpent || 0);
-                                        const netWealthBuilt = budgeted - livingExpensesSpent;
+                                        const investedAmount = summary.investmentOverview?.totalSpent || 0;
+                                        const netCashFlow = budgeted - spent;
+                                        const netWealthBuilt = investedAmount + netCashFlow;
                                         const isNetWealthNegative = netWealthBuilt < 0;
 
                                         return (

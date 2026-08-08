@@ -281,16 +281,15 @@ const HomePage = () => {
             totalSpent: 0,
             budgetRemaining: 0,
             investedAmount: 0,
-            savingsAmount: 0,
             netWealthBuilt: 0,
          };
       }
 
+      // Total income = sum of all budget allocations (which are derived from user income)
       const totalBudgeted = categories.reduce((sum, cat) => sum + (cat.budgetAmount || 0), 0);
       const totalSpent = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
 
       let investedAmount = 0;
-      let savingsAmount = 0;
 
       (categoryTypes || []).forEach((type) => {
          const typeCats = categories.filter(
@@ -300,26 +299,24 @@ const HomePage = () => {
          const spent = transactions
             .filter((t) => t.category && catIds.has(t.category.categoryId))
             .reduce((s, t) => s + t.amount, 0);
-         const budgeted = typeCats.reduce((s, c) => s + c.budgetAmount, 0);
 
          if (type.name === "Investments") {
             investedAmount += spent;
          }
-         const savings = budgeted - spent;
-         if (savings > 0) {
-            savingsAmount += savings;
-         }
       });
 
       const budgetRemaining = totalBudgeted - totalSpent;
-      const netWealthBuilt = investedAmount + savingsAmount;
+      // Net Wealth = Investments + Cash Flow (income − total spending)
+      // Investments grow assets; cash surplus stays in bank; deficit = debt
+      // Savings from underspending already flows into investments or surplus — no double-count
+      const netCashFlow = totalBudgeted - totalSpent;
+      const netWealthBuilt = investedAmount + netCashFlow;
 
       return {
          totalBudgeted,
          totalSpent,
          budgetRemaining,
          investedAmount,
-         savingsAmount,
          netWealthBuilt,
       };
    }, [categoryTypes, categories, transactions]);
@@ -449,15 +446,24 @@ const HomePage = () => {
                         </div>
 
                         {/* Stat 4: Net Wealth Built */}
-                        <div className="p-3.5 rounded-xl border bg-teal-500/10 dark:bg-teal-500/15 border-teal-500/30">
-                           <span className="block text-[11px] font-extrabold uppercase tracking-wider text-teal-600 dark:text-teal-400 mb-1">
-                              Net Wealth Built
+                        <div className={`p-3.5 rounded-xl border ${monthlyStats.netWealthBuilt >= 0
+                           ? "bg-teal-500/10 dark:bg-teal-500/15 border-teal-500/30"
+                           : "bg-rose-500/10 dark:bg-rose-500/15 border-rose-500/30"
+                        }`}>
+                           <span className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1 ${monthlyStats.netWealthBuilt >= 0
+                              ? "text-teal-600 dark:text-teal-400"
+                              : "text-rose-600 dark:text-rose-400"
+                           }`}>
+                              {monthlyStats.netWealthBuilt >= 0 ? "Net Wealth Built" : "Net Wealth Loss"}
                            </span>
-                           <span className="text-lg md:text-xl font-black text-teal-600 dark:text-teal-400">
-                              ${monthlyStats.netWealthBuilt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           <span className={`text-lg md:text-xl font-black ${monthlyStats.netWealthBuilt >= 0
+                              ? "text-teal-600 dark:text-teal-400"
+                              : "text-rose-600 dark:text-rose-400"
+                           }`}>
+                              {monthlyStats.netWealthBuilt < 0 ? "-" : ""}${Math.abs(monthlyStats.netWealthBuilt).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                            </span>
                            <span className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                              (${monthlyStats.investedAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} Invested • ${monthlyStats.savingsAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} Saved)
+                              ${monthlyStats.investedAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} Invested {monthlyStats.budgetRemaining >= 0 ? "+" : "−"} ${Math.abs(monthlyStats.budgetRemaining).toLocaleString('en-US', { maximumFractionDigits: 0 })} {monthlyStats.budgetRemaining >= 0 ? "Surplus" : "Deficit"}
                            </span>
                         </div>
                      </div>
