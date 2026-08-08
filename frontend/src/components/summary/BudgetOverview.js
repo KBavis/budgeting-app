@@ -93,14 +93,15 @@ const BudgetOverview = ({ overview, month, year }) => {
       }
 
       const filteredPerformances = category_performances
-         .filter((curr) => !curr.categoryTypeId || String(curr.categoryTypeId) === String(currentTypeId));
+         .filter((curr) => !curr.categoryTypeId || String(curr.categoryTypeId) === String(currentTypeId))
+         .filter((curr) => (curr.totalSpend || 0) > 0);
 
       const currPieData = filteredPerformances.map((performance) => ({
          name: getCategoryName(performance.categoryId),
          value: parseFloat((performance.totalSpend || 0).toFixed(2))
       }));
       setPieData(currPieData);
-   }, [category_performances, currentTypeId]);
+   }, [category_performances, currentTypeId, categoryMap]);
 
    if (!overview) return null;
 
