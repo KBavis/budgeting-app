@@ -149,9 +149,9 @@ const TransactionState = (props) => {
          );
          const data = res.data;
          const { category } = data;
-         const payload = { transactionId, category };
+         const payload = { transactionId, category, updatedTransaction: data };
 
-         if (isPrevMonth == false) {
+         if (isPrevMonth === false) {
             dispatch({
                type: UPDATE_TRANSACTION_CATEGORY,
                payload,
@@ -160,14 +160,15 @@ const TransactionState = (props) => {
             dispatch({
                type: UPDATE_PREV_MONTH_TRANSACTION_CATEGORY,
                payload: transactionId
-            })
+            });
          }
+         return data;
 
       } catch (err) {
          console.error(err);
          dispatch({
             type: UPDATE_TRANSACTION_CATEGORY_FAILED,
-            payload: err.response.data.error,
+            payload: err.response?.data?.error || err.message,
          });
       }
    };
@@ -194,8 +195,8 @@ const TransactionState = (props) => {
       } catch (err) {
          console.error(err);
          dispatch({
-            REMOVE_TRANSACTION_CATEGORY_FAILED,
-            payload: err.response.data.error,
+            type: REMOVE_TRANSACTION_CATEGORY_FAILED,
+            payload: err.response?.data?.error || err.message,
          });
       }
    };
@@ -241,8 +242,8 @@ const TransactionState = (props) => {
       } catch (err) {
          console.error(err);
          dispatch({
-            REDUCE_TRANSACTION_FAILURE,
-            payload: err.response.data.error,
+            type: REDUCE_TRANSACTION_FAILURE,
+            payload: err.response?.data?.error || err.message,
          });
       }
    };
@@ -285,8 +286,8 @@ const TransactionState = (props) => {
       } catch (err) {
          console.error(err);
          dispatch({
-            SPLIT_TRANSACTIONS_FAILURE,
-            payload: err.response.data.error,
+            type: SPLIT_TRANSACTIONS_FAILURE,
+            payload: err.response?.data?.error || err.message,
          });
       }
    };
@@ -317,22 +318,32 @@ const TransactionState = (props) => {
 
          const createdTransaction = res.data;
 
+         const isPrevMonth = (() => {
+            if (!transaction.date) return false;
+            const txDate = new Date(transaction.date + "T00:00:00");
+            const now = new Date();
+            const firstOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            return txDate < firstOfCurrentMonth;
+         })();
+
          if (transaction.categoryId && createdTransaction && createdTransaction.transactionId) {
-            await updateCategory(createdTransaction.transactionId, transaction.categoryId);
+            await updateCategory(createdTransaction.transactionId, transaction.categoryId, isPrevMonth);
          } else {
-            dispatch({
-               type: ADD_TRANSACTION_SUCCESS,
-               payload: createdTransaction,
-            });
+            if (!isPrevMonth) {
+               dispatch({
+                  type: ADD_TRANSACTION_SUCCESS,
+                  payload: createdTransaction,
+               });
+            }
          }
          setAlert("Transaction successfully added", "success");
       } catch (err) {
          console.error(err);
          dispatch({
-            ADD_TRANSACTION_FAILURE,
-            payload: err.response.data.error,
+            type: ADD_TRANSACTION_FAILURE,
+            payload: err.response?.data?.error || err.message,
          });
-         setAlert(err.response.data.error, "danger");
+         setAlert(err.response?.data?.error || "Failed to add transaction", "danger");
       }
    };
 
@@ -357,10 +368,10 @@ const TransactionState = (props) => {
       } catch (err) {
          console.error(err);
          dispatch({
-            DELETE_TRANSACTION_FAILURE,
-            payload: err.response.data.error,
+            type: DELETE_TRANSACTION_FAILURE,
+            payload: err.response?.data?.error || err.message,
          });
-         setAlert(err.response.data.error, "danger");
+         setAlert(err.response?.data?.error || "Failed to delete transaction", "danger");
       }
    };
 
@@ -386,10 +397,10 @@ const TransactionState = (props) => {
          dispatch({ type: RENAME_TRANSACTION_SUCCESS, payload });
       } catch (err) {
          dispatch({
-            RENAME_TRANSACTION_FAILURE,
-            payload: err.response.data.error,
+            type: RENAME_TRANSACTION_FAILURE,
+            payload: err.response?.data?.error || err.message,
          });
-         setAlert(err.response.data.error, "danger");
+         setAlert(err.response?.data?.error || "Failed to rename transaction", "danger");
       }
    };
 

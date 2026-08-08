@@ -68,7 +68,7 @@ export default (state, action) => {
 
          return {
             ...state,
-            transactions: [...transactions, action.payload],
+            transactions: [action.payload, ...transactions],
          };
       case DELETE_TRANSACTION_SUCCESS:
          // Ensure state.transactions is not null
@@ -90,7 +90,7 @@ export default (state, action) => {
             prevMonthTransactions: filteredPrevMonth,
          };
       case UPDATE_TRANSACTION_CATEGORY:
-         const { transactionId, category } = action.payload;
+         const { transactionId, category, updatedTransaction } = action.payload;
          let transactionToUpdate = null;
          const remainingTransactions = (state.transactions || []).filter(
             (transaction) => {
@@ -109,9 +109,11 @@ export default (state, action) => {
             (transaction) => String(transaction.transactionId) !== String(transactionId)
          );
 
+         const finalTransaction = transactionToUpdate || updatedTransaction;
+
          return {
             ...state,
-            transactions: transactionToUpdate ? [transactionToUpdate, ...remainingTransactions] : remainingTransactions,
+            transactions: finalTransaction ? [finalTransaction, ...remainingTransactions] : remainingTransactions,
             prevMonthTransactions: remainingPrevMonth,
          };
       case UPDATE_PREV_MONTH_TRANSACTION_CATEGORY:
