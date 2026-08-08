@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import AuthState from "./context/auth/AuthState";
 import LoginRegisterPage from "./pages/LoginRegisterPage";
 import HomePage from "./pages/HomePage";
@@ -28,6 +28,7 @@ import SummaryState from "./context/summary/SummaryState";
 import CategoryCreationPage from "./pages/CategoryCreationPage";
 import SpendingAnalysisPage from "./pages/SpendingAnalysisPage";
 import CategoryPerformanceState from "./context/category/performances/CategoryPerformanceState";
+import PrivateRoute from "./components/routing/PrivateRoute";
 
 import { ThemeProvider } from "./context/theme/ThemeContext";
 
@@ -66,21 +67,10 @@ function App() {
                                           <ThemeToggleFab />
                                           <Alerts />
                                           <Routes>
-                                             <Route
-                                                path="/connect-accounts"
-                                                element={<ConnectAccounts />}
-                                             />
+                                             {/* Public Routes */}
                                              <Route
                                                 path="/"
                                                 element={<LoginRegisterPage />}
-                                             />
-                                             <Route
-                                                path="/home"
-                                                element={
-                                                   <DndProvider backend={HTML5Backend}>
-                                                      <HomePage />
-                                                   </DndProvider>
-                                                }
                                              />
                                              <Route path="/login" element={<Login />} />
                                              <Route
@@ -91,72 +81,125 @@ function App() {
                                                 path="/forgot-password"
                                                 element={<ForgotPassword />}
                                              />
+
+                                             {/* Protected Private Routes */}
+                                             <Route
+                                                path="/connect-accounts"
+                                                element={
+                                                   <PrivateRoute>
+                                                      <ConnectAccounts />
+                                                   </PrivateRoute>
+                                                }
+                                             />
+                                             <Route
+                                                path="/home"
+                                                element={
+                                                   <PrivateRoute>
+                                                      <DndProvider backend={HTML5Backend}>
+                                                         <HomePage />
+                                                      </DndProvider>
+                                                   </PrivateRoute>
+                                                }
+                                             />
                                              <Route
                                                 path="/income"
-                                                element={<IncomeInputPage />}
+                                                element={
+                                                   <PrivateRoute>
+                                                      <IncomeInputPage />
+                                                   </PrivateRoute>
+                                                }
                                              />
                                              <Route
                                                 path="/category-types"
-                                                element={<CategoryTypeInputPage />}
+                                                element={
+                                                   <PrivateRoute>
+                                                      <CategoryTypeInputPage />
+                                                   </PrivateRoute>
+                                                }
                                              />
                                              <Route
                                                 path="/category/needs"
                                                 element={
-                                                   <CategoryCreationPage categoryType="Needs" />
+                                                   <PrivateRoute>
+                                                      <CategoryCreationPage categoryType="Needs" />
+                                                   </PrivateRoute>
                                                 }
                                              />
                                              <Route
                                                 path="/category/wants"
                                                 element={
-                                                   <CategoryCreationPage categoryType="Wants" />
+                                                   <PrivateRoute>
+                                                      <CategoryCreationPage categoryType="Wants" />
+                                                   </PrivateRoute>
                                                 }
                                              />
                                              <Route
                                                 path="/category/investments"
                                                 element={
-                                                   <CategoryCreationPage categoryType="Investments" />
+                                                   <PrivateRoute>
+                                                      <CategoryCreationPage categoryType="Investments" />
+                                                   </PrivateRoute>
                                                 }
                                              />
                                              <Route
                                                 path="/category/type/needs"
                                                 element={
-                                                   <CategoryTypePage categoryType="Needs" />
+                                                   <PrivateRoute>
+                                                      <CategoryTypePage categoryType="Needs" />
+                                                   </PrivateRoute>
                                                 }
                                              />
                                              <Route
                                                 path="/category/type/wants"
                                                 element={
-                                                   <CategoryTypePage categoryType="Wants" />
+                                                   <PrivateRoute>
+                                                      <CategoryTypePage categoryType="Wants" />
+                                                   </PrivateRoute>
                                                 }
                                              />
                                              <Route
                                                 path="/category/type/investments"
                                                 element={
-                                                   <CategoryTypePage categoryType="Investments" />
+                                                   <PrivateRoute>
+                                                      <CategoryTypePage categoryType="Investments" />
+                                                   </PrivateRoute>
                                                 }
                                              />
                                              <Route
                                                 path="/budget/summary"
                                                 element={
-                                                   <BudgetSummaryPage />
+                                                   <PrivateRoute>
+                                                      <BudgetSummaryPage />
+                                                   </PrivateRoute>
                                                 }
                                              />
                                              <Route
                                                 path="/accounts"
                                                 element={
-                                                   <AccountsPage />
+                                                   <PrivateRoute>
+                                                      <AccountsPage />
+                                                   </PrivateRoute>
                                                 }
                                              />
                                              <Route
                                                 path="/income-streams"
                                                 element={
-                                                   <IncomesPage />
+                                                   <PrivateRoute>
+                                                      <IncomesPage />
+                                                   </PrivateRoute>
                                                 }
                                              />
                                              <Route
                                                 path=":type/analysis/:month/:year"
-                                                element={<SpendingAnalysisPage />}
+                                                element={
+                                                   <PrivateRoute>
+                                                      <SpendingAnalysisPage />
+                                                   </PrivateRoute>
+                                                }
                                              />
+
+                                             {/* Catch-all fallback */}
+                                             <Route path="*" element={<Navigate to="/" replace />} />
                                           </Routes>
                                        </Fragment>
                                     </ThemeProvider>
