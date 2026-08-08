@@ -37,14 +37,11 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
    // Core calculations
    const totalAllocated = generalOverview.totalAmountAllocated || 0;
    const totalSpent = generalOverview.totalSpent || 0;
-   const budgetVariance = totalAllocated - totalSpent;
-   const isOverbudget = budgetVariance < 0;
-
    const investedAmount = investmentOverview.totalSpent || 0;
    const livingExpensesSpent = (needsOverview.totalSpent || 0) + (wantsOverview.totalSpent || 0);
 
-   // Net Cash Flow (Total Income minus Total Outflow Spent)
-   const netCashFlow = budgetVariance;
+   // Consolidated Net Cash Flow (Total Income minus Total Spent)
+   const netCashFlow = totalAllocated - totalSpent;
    const isCashDeficit = netCashFlow < 0;
 
    // True Net Wealth Built = Total Income (Allocated) minus Living Expenses (Needs + Wants)
@@ -151,109 +148,60 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
                {isNetWealthNegative ? "-" : ""}{formatCurrency(netWealthBuilt)}
             </p>
             <p className={`text-xs font-medium mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-               {formatCurrency(totalAllocated)} Income – {formatCurrency(livingExpensesSpent)} Living Expenses ({formatCurrency(investedAmount)} moved to investments)
+               {formatCurrency(totalAllocated)} Income – {formatCurrency(livingExpensesSpent)} Living Expenses
             </p>
          </div>
 
-         {/* ROW 1: Monthly Budget & Spending */}
-         <div className="mb-6">
-            <p className={`text-xs font-extrabold uppercase tracking-wider mb-2 text-center ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-               Monthly Budget & Spending
-            </p>
-            <div className="grid grid-cols-3 gap-4 text-center">
-               {/* Total Budgeted */}
-               <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                     Total Budgeted
-                  </p>
-                  <p className={`text-lg font-extrabold ${isDark ? "text-white" : "text-slate-900"}`}>
-                     {formatCurrency(totalAllocated)}
-                  </p>
-               </div>
-
-               {/* Total Spent */}
-               <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                     Total Spent
-                  </p>
-                  <p className={`text-lg font-extrabold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
-                     {formatCurrency(totalSpent)}
-                  </p>
-               </div>
-
-               {/* Budget Variance */}
-               <div className={`p-3.5 rounded-xl border ${isOverbudget
-                  ? isDark ? "bg-red-500/10 border-red-500/30" : "bg-red-50 border-red-200"
-                  : isDark ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-50 border-emerald-200"
-                  }`}>
-                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isOverbudget
-                     ? isDark ? "text-red-400" : "text-red-600"
-                     : isDark ? "text-emerald-400" : "text-emerald-600"
-                     }`}>
-                     {isOverbudget ? "Over Budget" : "Under Budget"}
-                  </p>
-                  <p className={`text-lg font-black ${isOverbudget
-                     ? isDark ? "text-red-400" : "text-red-600"
-                     : isDark ? "text-emerald-400" : "text-emerald-600"
-                     }`}>
-                     {isOverbudget ? "-" : "+"}{formatCurrency(budgetVariance)}
-                  </p>
-               </div>
+         {/* 4-Card Metrics Grid */}
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center mb-6">
+            {/* Total Budgeted */}
+            <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  Total Budgeted
+               </p>
+               <p className={`text-base font-extrabold ${isDark ? "text-white" : "text-slate-900"}`}>
+                  {formatCurrency(totalAllocated)}
+               </p>
             </div>
-         </div>
 
-         {/* ROW 2: Spending & Investing Breakdown */}
-         <div className="mb-6">
-            <p className={`text-xs font-extrabold uppercase tracking-wider mb-2 text-center ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-               Spending & Investing Breakdown
-            </p>
-            <div className="grid grid-cols-3 gap-4 text-center">
-               {/* Living Expenses */}
-               <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                     Living Expenses (Needs/Wants)
-                  </p>
-                  <p className={`text-lg font-extrabold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
-                     {formatCurrency(livingExpensesSpent)}
-                  </p>
-               </div>
-
-               {/* Total Invested */}
-               <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
-                     Total Invested
-                  </p>
-                  <p className={`text-lg font-black ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
-                     {formatCurrency(investedAmount)}
-                  </p>
-               </div>
-
-               {/* Net Cash Flow */}
-               <div className={`p-3.5 rounded-xl border ${isCashDeficit
-                  ? isDark ? "bg-red-500/10 border-red-500/30" : "bg-red-50 border-red-200"
-                  : isDark ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-50 border-emerald-200"
-                  }`}>
-                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isCashDeficit
-                     ? isDark ? "text-red-400" : "text-red-600"
-                     : isDark ? "text-emerald-400" : "text-emerald-600"
-                     }`}>
-                     {isCashDeficit ? "Cash Deficit" : "Cash Surplus"}
-                  </p>
-                  <p className={`text-lg font-black ${isCashDeficit
-                     ? isDark ? "text-red-400" : "text-red-600"
-                     : isDark ? "text-emerald-400" : "text-emerald-600"
-                     }`}>
-                     {isCashDeficit ? "-" : "+"}{formatCurrency(netCashFlow)}
-                  </p>
-               </div>
+            {/* Living Expenses */}
+            <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  Living Expenses
+               </p>
+               <p className={`text-base font-extrabold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
+                  {formatCurrency(livingExpensesSpent)}
+               </p>
             </div>
-         </div>
 
-         {/* Overall Budget & Cash Flow Bar */}
-         <div className={`flex justify-between items-center px-4 py-3 rounded-xl mb-5 text-xs font-semibold ${isDark ? "bg-slate-800/50 text-slate-400" : "bg-slate-100 text-slate-500"
-            }`}>
-            <span>Total Allocated: <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{formatCurrency(totalAllocated)}</span></span>
-            <span>Total Spent: <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{formatCurrency(totalSpent)}</span></span>
+            {/* Total Invested */}
+            <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
+                  Total Invested
+               </p>
+               <p className={`text-base font-black ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
+                  {formatCurrency(investedAmount)}
+               </p>
+            </div>
+
+            {/* Consolidated Cash Flow / Budget Variance */}
+            <div className={`p-3.5 rounded-xl border ${isCashDeficit
+               ? isDark ? "bg-red-500/10 border-red-500/30" : "bg-red-50 border-red-200"
+               : isDark ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-50 border-emerald-200"
+               }`}>
+               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isCashDeficit
+                  ? isDark ? "text-red-400" : "text-red-600"
+                  : isDark ? "text-emerald-400" : "text-emerald-600"
+                  }`}>
+                  {isCashDeficit ? "Cash Deficit" : "Cash Surplus"}
+               </p>
+               <p className={`text-base font-black ${isCashDeficit
+                  ? isDark ? "text-red-400" : "text-red-600"
+                  : isDark ? "text-emerald-400" : "text-emerald-600"
+                  }`}>
+                  {isCashDeficit ? "-" : "+"}{formatCurrency(netCashFlow)}
+               </p>
+            </div>
          </div>
 
          {/* Investment Category Breakdown */}
