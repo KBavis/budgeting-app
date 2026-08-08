@@ -35,16 +35,21 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
    const wantsOverview = summary?.wantsOverview || {};
 
    // Core calculations
-   const investedAmount = investmentOverview.totalSpent || 0;
-   const investmentSaved = Math.max(0, (investmentOverview.totalAmountAllocated || 0) - (investmentOverview.totalSpent || 0));
-   const needsSaved = (needsOverview.totalAmountAllocated || 0) - (needsOverview.totalSpent || 0);
-   const wantsSaved = (wantsOverview.totalAmountAllocated || 0) - (wantsOverview.totalSpent || 0);
-   const savingsFromBudget = Math.max(0, needsSaved) + Math.max(0, wantsSaved) + investmentSaved;
-   const overspentAmount = (needsSaved < 0 ? Math.abs(needsSaved) : 0) + (wantsSaved < 0 ? Math.abs(wantsSaved) : 0);
-   const netWealthBuilt = investedAmount + savingsFromBudget - overspentAmount;
-
    const totalAllocated = generalOverview.totalAmountAllocated || 0;
    const totalSpent = generalOverview.totalSpent || 0;
+   const budgetVariance = totalAllocated - totalSpent;
+   const isOverbudget = budgetVariance < 0;
+
+   const investedAmount = investmentOverview.totalSpent || 0;
+   const livingExpensesSpent = (needsOverview.totalSpent || 0) + (wantsOverview.totalSpent || 0);
+
+   // Net Cash Flow (Total Income minus Total Outflow Spent)
+   const netCashFlow = budgetVariance;
+   const isCashDeficit = netCashFlow < 0;
+
+   // True Net Wealth Built = Total Income (Allocated) minus Living Expenses (Needs + Wants)
+   const netWealthBuilt = totalAllocated - livingExpensesSpent;
+   const isNetWealthNegative = netWealthBuilt < 0;
 
    // fetch category types if page is refreshed
    useEffect(() => {
@@ -104,8 +109,6 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
 
    const activeColors = isDark ? DARK_COLORS : LIGHT_COLORS;
 
-   const isNegative = netWealthBuilt < 0;
-
    const formatCurrency = (val) => {
       return "$" + Math.abs(val).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
    };
@@ -116,7 +119,7 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
          : "bg-white border-slate-200 text-slate-800"
          }`}>
 
-         {/* Header */}
+         {/* Component Header */}
          <div className="flex items-center justify-center gap-2.5 mb-5">
             <div className={`p-2 rounded-xl border ${isDark
                ? "bg-teal-500/15 border-teal-500/30 text-teal-400"
@@ -129,73 +132,125 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
             </h3>
          </div>
 
-         {/* Hero Stat — Net Wealth Built */}
-         <div className={`text-center mb-5 p-4 rounded-xl border ${isNegative
+         {/* Hero Banner Card — Net Wealth Built */}
+         <div className={`text-center mb-6 p-4 rounded-xl border transition-all ${isNetWealthNegative
             ? isDark ? "bg-red-500/10 border-red-500/30" : "bg-red-50 border-red-200"
             : isDark ? "bg-teal-500/10 border-teal-500/30" : "bg-teal-50 border-teal-200"
             }`}>
-            <p className={`text-xs font-extrabold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 ${isNegative
+            <p className={`text-xs font-extrabold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 ${isNetWealthNegative
                ? isDark ? "text-red-400" : "text-red-600"
                : isDark ? "text-teal-400" : "text-teal-600"
                }`}>
-               {isNegative ? <FaExclamationTriangle size={11} /> : <FaPiggyBank size={11} />}
-               {isNegative ? "Net Wealth Loss" : "Net Wealth Built"}
+               {isNetWealthNegative ? <FaExclamationTriangle size={11} /> : <FaPiggyBank size={11} />}
+               {isNetWealthNegative ? "Net Wealth Loss" : "Net Wealth Built"}
             </p>
-            <p className={`text-3xl font-black ${isNegative
+            <p className={`text-3xl font-black ${isNetWealthNegative
                ? isDark ? "text-red-400" : "text-red-600"
                : isDark ? "text-teal-400" : "text-teal-600"
                }`}>
-               {isNegative ? "-" : ""}{formatCurrency(netWealthBuilt)}
+               {isNetWealthNegative ? "-" : ""}{formatCurrency(netWealthBuilt)}
             </p>
             <p className={`text-xs font-medium mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-               Total net wealth generated through investments and budget savings
+               {formatCurrency(totalAllocated)} Income – {formatCurrency(livingExpensesSpent)} Living Expenses ({formatCurrency(investedAmount)} moved to investments)
             </p>
          </div>
 
-         {/* 3-Column Breakdown */}
-         <div className="grid grid-cols-3 gap-4 text-center mb-5">
-            {/* Invested */}
-            <div className={`p-3 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
-                  Invested
-               </p>
-               <p className={`text-lg font-black ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
-                  {formatCurrency(investedAmount)}
-               </p>
-            </div>
+         {/* ROW 1: Monthly Budget & Spending */}
+         <div className="mb-6">
+            <p className={`text-xs font-extrabold uppercase tracking-wider mb-2 text-center ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+               Monthly Budget & Spending
+            </p>
+            <div className="grid grid-cols-3 gap-4 text-center">
+               {/* Total Budgeted */}
+               <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                     Total Budgeted
+                  </p>
+                  <p className={`text-lg font-extrabold ${isDark ? "text-white" : "text-slate-900"}`}>
+                     {formatCurrency(totalAllocated)}
+                  </p>
+               </div>
 
-            {/* Saved from Budget */}
-            <div className={`p-3 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
-                  Budget Savings
-               </p>
-               <p className={`text-lg font-black ${savingsFromBudget > 0
-                  ? isDark ? "text-emerald-400" : "text-emerald-600"
-                  : isDark ? "text-slate-400" : "text-slate-500"
-                  }`}>
-                  {formatCurrency(savingsFromBudget)}
-               </p>
-            </div>
+               {/* Total Spent */}
+               <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                     Total Spent
+                  </p>
+                  <p className={`text-lg font-extrabold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
+                     {formatCurrency(totalSpent)}
+                  </p>
+               </div>
 
-            {/* Overspent */}
-            <div className={`p-3 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${overspentAmount > 0
-                  ? isDark ? "text-red-400" : "text-red-600"
-                  : isDark ? "text-slate-500" : "text-slate-400"
+               {/* Budget Variance */}
+               <div className={`p-3.5 rounded-xl border ${isOverbudget
+                  ? isDark ? "bg-red-500/10 border-red-500/30" : "bg-red-50 border-red-200"
+                  : isDark ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-50 border-emerald-200"
                   }`}>
-                  Overspent
-               </p>
-               <p className={`text-lg font-black ${overspentAmount > 0
-                  ? isDark ? "text-red-400" : "text-red-600"
-                  : isDark ? "text-slate-400" : "text-slate-500"
-                  }`}>
-                  {overspentAmount > 0 ? "-" : ""}{formatCurrency(overspentAmount)}
-               </p>
+                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isOverbudget
+                     ? isDark ? "text-red-400" : "text-red-600"
+                     : isDark ? "text-emerald-400" : "text-emerald-600"
+                     }`}>
+                     {isOverbudget ? "Over Budget" : "Under Budget"}
+                  </p>
+                  <p className={`text-lg font-black ${isOverbudget
+                     ? isDark ? "text-red-400" : "text-red-600"
+                     : isDark ? "text-emerald-400" : "text-emerald-600"
+                     }`}>
+                     {isOverbudget ? "-" : "+"}{formatCurrency(budgetVariance)}
+                  </p>
+               </div>
             </div>
          </div>
 
-         {/* Overall Budget Context */}
-         <div className={`flex justify-between items-center px-3 py-2.5 rounded-xl mb-5 text-xs font-semibold ${isDark ? "bg-slate-800/50 text-slate-400" : "bg-slate-100 text-slate-500"
+         {/* ROW 2: Spending & Investing Breakdown */}
+         <div className="mb-6">
+            <p className={`text-xs font-extrabold uppercase tracking-wider mb-2 text-center ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+               Spending & Investing Breakdown
+            </p>
+            <div className="grid grid-cols-3 gap-4 text-center">
+               {/* Living Expenses */}
+               <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                     Living Expenses (Needs/Wants)
+                  </p>
+                  <p className={`text-lg font-extrabold ${isDark ? "text-slate-200" : "text-slate-800"}`}>
+                     {formatCurrency(livingExpensesSpent)}
+                  </p>
+               </div>
+
+               {/* Total Invested */}
+               <div className={`p-3.5 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
+                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
+                     Total Invested
+                  </p>
+                  <p className={`text-lg font-black ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>
+                     {formatCurrency(investedAmount)}
+                  </p>
+               </div>
+
+               {/* Net Cash Flow */}
+               <div className={`p-3.5 rounded-xl border ${isCashDeficit
+                  ? isDark ? "bg-red-500/10 border-red-500/30" : "bg-red-50 border-red-200"
+                  : isDark ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-50 border-emerald-200"
+                  }`}>
+                  <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isCashDeficit
+                     ? isDark ? "text-red-400" : "text-red-600"
+                     : isDark ? "text-emerald-400" : "text-emerald-600"
+                     }`}>
+                     {isCashDeficit ? "Cash Deficit" : "Cash Surplus"}
+                  </p>
+                  <p className={`text-lg font-black ${isCashDeficit
+                     ? isDark ? "text-red-400" : "text-red-600"
+                     : isDark ? "text-emerald-400" : "text-emerald-600"
+                     }`}>
+                     {isCashDeficit ? "-" : "+"}{formatCurrency(netCashFlow)}
+                  </p>
+               </div>
+            </div>
+         </div>
+
+         {/* Overall Budget & Cash Flow Bar */}
+         <div className={`flex justify-between items-center px-4 py-3 rounded-xl mb-5 text-xs font-semibold ${isDark ? "bg-slate-800/50 text-slate-400" : "bg-slate-100 text-slate-500"
             }`}>
             <span>Total Allocated: <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{formatCurrency(totalAllocated)}</span></span>
             <span>Total Spent: <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{formatCurrency(totalSpent)}</span></span>

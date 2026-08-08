@@ -296,13 +296,8 @@ const BudgetSummaryPage = () => {
                                         const usagePct = budgeted > 0 ? Math.min((spent / budgeted) * 100, 100) : 0;
                                         const pctRaw = budgeted > 0 ? ((spent / budgeted) * 100).toFixed(1) : '0';
                                         const status = getBudgetStatus(spent, budgeted);
-                                        const invested = summary.investmentOverview?.totalSpent || 0;
-                                        const investmentSaved = Math.max(0, (summary.investmentOverview?.totalAmountAllocated || 0) - (summary.investmentOverview?.totalSpent || 0));
-                                        const needsSaved = (summary.needsOverview?.totalAmountAllocated || 0) - (summary.needsOverview?.totalSpent || 0);
-                                        const wantsSaved = (summary.wantsOverview?.totalAmountAllocated || 0) - (summary.wantsOverview?.totalSpent || 0);
-                                        const savingsFromBudget = Math.max(0, needsSaved) + Math.max(0, wantsSaved) + investmentSaved;
-                                        const overspent = (needsSaved < 0 ? Math.abs(needsSaved) : 0) + (wantsSaved < 0 ? Math.abs(wantsSaved) : 0);
-                                        const netWealthBuilt = invested + savingsFromBudget - overspent;
+                                        const livingExpensesSpent = (summary.needsOverview?.totalSpent || 0) + (summary.wantsOverview?.totalSpent || 0);
+                                        const netWealthBuilt = budgeted - livingExpensesSpent;
                                         const isNetWealthNegative = netWealthBuilt < 0;
 
                                         return (
