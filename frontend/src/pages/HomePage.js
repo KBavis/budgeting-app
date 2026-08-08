@@ -277,20 +277,21 @@ const HomePage = () => {
    const monthlyStats = useMemo(() => {
       if (!categories || !transactions) {
          return {
-            totalBudgeted: 0,
-            totalSpent: 0,
-            budgetRemaining: 0,
+            expenseBudgeted: 0,
+            expenseSpent: 0,
+            expenseRemaining: 0,
             investedAmount: 0,
-            savingsAmount: 0,
+            expenseSavings: 0,
+            expenseOverspent: 0,
             netWealthBuilt: 0,
          };
       }
 
-      const totalBudgeted = categories.reduce((sum, cat) => sum + (cat.budgetAmount || 0), 0);
-      const totalSpent = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
-
+      let expenseBudgeted = 0;
+      let expenseSpent = 0;
       let investedAmount = 0;
-      let savingsAmount = 0;
+      let expenseSavings = 0;
+      let expenseOverspent = 0;
 
       (categoryTypes || []).forEach((type) => {
          const typeCats = categories.filter(
@@ -304,22 +305,28 @@ const HomePage = () => {
 
          if (type.name === "Investments") {
             investedAmount += spent;
-         }
-         const savings = budgeted - spent;
-         if (savings > 0) {
-            savingsAmount += savings;
+         } else {
+            expenseBudgeted += budgeted;
+            expenseSpent += spent;
+            const diff = budgeted - spent;
+            if (diff > 0) {
+               expenseSavings += diff;
+            } else if (diff < 0) {
+               expenseOverspent += Math.abs(diff);
+            }
          }
       });
 
-      const budgetRemaining = totalBudgeted - totalSpent;
-      const netWealthBuilt = investedAmount + savingsAmount;
+      const expenseRemaining = expenseBudgeted - expenseSpent;
+      const netWealthBuilt = investedAmount + expenseSavings - expenseOverspent;
 
       return {
-         totalBudgeted,
-         totalSpent,
-         budgetRemaining,
+         expenseBudgeted,
+         expenseSpent,
+         expenseRemaining,
          investedAmount,
-         savingsAmount,
+         expenseSavings,
+         expenseOverspent,
          netWealthBuilt,
       };
    }, [categoryTypes, categories, transactions]);
@@ -418,33 +425,33 @@ const HomePage = () => {
 
                      {/* 4-Stat Overview Grid */}
                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {/* Stat 1: Total Allocated */}
+                        {/* Stat 1: Expense Budget */}
                         <div className="p-3.5 rounded-xl border bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60">
                            <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
-                              Total Allocated
+                              Expense Budget
                            </span>
                            <span className="text-lg md:text-xl font-black text-slate-900 dark:text-white">
-                              ${monthlyStats.totalBudgeted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${monthlyStats.expenseBudgeted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                            </span>
                         </div>
 
-                        {/* Stat 2: Total Spent */}
+                        {/* Stat 2: Expenses Spent */}
                         <div className="p-3.5 rounded-xl border bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60">
                            <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
-                              Total Spent
+                              Expenses Spent
                            </span>
                            <span className="text-lg md:text-xl font-black text-indigo-600 dark:text-indigo-400">
-                              ${monthlyStats.totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${monthlyStats.expenseSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                            </span>
                         </div>
 
-                        {/* Stat 3: Budget Remaining */}
+                        {/* Stat 3: Expense Remaining */}
                         <div className="p-3.5 rounded-xl border bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60">
                            <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1">
-                              Budget Remaining
+                              {monthlyStats.expenseRemaining >= 0 ? "Expense Remaining" : "Expense Overspent"}
                            </span>
-                           <span className={`text-lg md:text-xl font-black ${monthlyStats.budgetRemaining >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                              ${monthlyStats.budgetRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                           <span className={`text-lg md:text-xl font-black ${monthlyStats.expenseRemaining >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                              ${Math.abs(monthlyStats.expenseRemaining).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                            </span>
                         </div>
 
@@ -457,7 +464,7 @@ const HomePage = () => {
                               ${monthlyStats.netWealthBuilt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                            </span>
                            <span className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                              (${monthlyStats.investedAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} Invested • ${monthlyStats.savingsAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} Saved)
+                              (${monthlyStats.investedAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} Invested • ${monthlyStats.expenseSavings.toLocaleString('en-US', { maximumFractionDigits: 0 })} Saved)
                            </span>
                         </div>
                      </div>

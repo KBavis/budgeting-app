@@ -291,18 +291,18 @@ const BudgetSummaryPage = () => {
                             <div className="w-full max-w-5xl flex flex-col items-center">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-8">
                                     {currentSummaries.map((summary) => {
-                                        const budgeted = summary.generalOverview?.totalAmountAllocated || 0;
-                                        const spent = summary.generalOverview?.totalSpent || 0;
-                                        const usagePct = budgeted > 0 ? Math.min((spent / budgeted) * 100, 100) : 0;
-                                        const pctRaw = budgeted > 0 ? ((spent / budgeted) * 100).toFixed(1) : '0';
-                                        const status = getBudgetStatus(spent, budgeted);
+                                        const expenseBudgeted = (summary.needsOverview?.totalAmountAllocated || 0) + (summary.wantsOverview?.totalAmountAllocated || 0);
+                                        const expenseSpent = (summary.needsOverview?.totalSpent || 0) + (summary.wantsOverview?.totalSpent || 0);
+                                        const usagePct = expenseBudgeted > 0 ? Math.min((expenseSpent / expenseBudgeted) * 100, 100) : 0;
+                                        const pctRaw = expenseBudgeted > 0 ? ((expenseSpent / expenseBudgeted) * 100).toFixed(1) : '0';
+                                        const status = getBudgetStatus(expenseSpent, expenseBudgeted);
+
                                         const invested = summary.investmentOverview?.totalSpent || 0;
-                                        const investmentSaved = Math.max(0, (summary.investmentOverview?.totalAmountAllocated || 0) - (summary.investmentOverview?.totalSpent || 0));
                                         const needsSaved = (summary.needsOverview?.totalAmountAllocated || 0) - (summary.needsOverview?.totalSpent || 0);
                                         const wantsSaved = (summary.wantsOverview?.totalAmountAllocated || 0) - (summary.wantsOverview?.totalSpent || 0);
-                                        const savingsFromBudget = Math.max(0, needsSaved) + Math.max(0, wantsSaved) + investmentSaved;
-                                        const overspent = (needsSaved < 0 ? Math.abs(needsSaved) : 0) + (wantsSaved < 0 ? Math.abs(wantsSaved) : 0);
-                                        const netWealthBuilt = invested + savingsFromBudget - overspent;
+                                        const expenseSavings = Math.max(0, needsSaved) + Math.max(0, wantsSaved);
+                                        const expenseOverspent = (needsSaved < 0 ? Math.abs(needsSaved) : 0) + (wantsSaved < 0 ? Math.abs(wantsSaved) : 0);
+                                        const netWealthBuilt = invested + expenseSavings - expenseOverspent;
                                         const isNetWealthNegative = netWealthBuilt < 0;
 
                                         return (
@@ -334,17 +334,17 @@ const BudgetSummaryPage = () => {
                                                         </div>
                                                     </div>
 
-                                                    {/* Spent / Budgeted Header Info */}
+                                                    {/* Expenses Utilization Header */}
                                                     <div className="flex justify-between items-baseline mb-2">
                                                         <span className={`text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                                                            Budget Utilization
+                                                            Expense Utilization
                                                         </span>
                                                         <span className={`text-xs font-bold ${status.textClass}`}>
                                                             {pctRaw}%
                                                         </span>
                                                     </div>
 
-                                                    {/* Dynamic Status Progress Bar */}
+                                                    {/* Dynamic Expense Progress Bar */}
                                                     <div className={`w-full rounded-full h-2.5 mb-4 overflow-hidden ${isDark ? "bg-slate-800" : "bg-slate-100"}`}>
                                                         <div
                                                             className={`h-2.5 rounded-full transition-all duration-500 ease-in-out ${status.colorClass}`}
@@ -356,12 +356,12 @@ const BudgetSummaryPage = () => {
                                                 {/* 3-Column Financial Breakdown */}
                                                 <div className={`grid grid-cols-3 gap-2 pt-3 border-t text-center ${isDark ? "border-slate-800" : "border-slate-100"}`}>
                                                     <div>
-                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Budgeted</p>
-                                                        <p className="font-extrabold text-sm sm:text-base">${budgeted.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Expenses Spent</p>
+                                                        <p className={`font-extrabold text-sm sm:text-base ${status.textClass}`}>${expenseSpent.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                                                     </div>
                                                     <div>
-                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Spent</p>
-                                                        <p className={`font-extrabold text-sm sm:text-base ${status.textClass}`}>${spent.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>Invested</p>
+                                                        <p className={`font-extrabold text-sm sm:text-base ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>${invested.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                                                     </div>
                                                     <div>
                                                         <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${
