@@ -82,6 +82,37 @@ public class JsonUtil {
     }
 
     /**
+     * Functionality to extract the account type string for a specified account ID from Plaid JSON response
+     *
+     * @param jsonString
+     *          - JSON Response to extract account type from
+     * @param accountId
+     *          - Account ID to locate type for
+     * @return
+     *          - Extracted account type string (e.g., "depository", "investment", "credit", "loan")
+     */
+    public String extractAccountTypeByAccountId(String jsonString, String accountId) {
+        try {
+            JsonNode rootNode = _objectMapper.readTree(jsonString);
+            JsonNode accountsNode = rootNode.path("accounts");
+
+            for (JsonNode accountNode : accountsNode) {
+                String currentAccountId = accountNode.path("account_id").asText();
+                if (currentAccountId.equals(accountId)) {
+                    JsonNode typeNode = accountNode.path("type");
+                    if (typeNode.isMissingNode() || typeNode.isNull()) {
+                        return null;
+                    }
+                    return typeNode.asText();
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error occurred while extracting account type for account ID '{}': {}", accountId, e.getMessage());
+        }
+        return null;
+    }
+
+    /**
      * Utility function to extract relevant message from FeignClientException for PlaidServiceException cleanliness
      *
      * @param e

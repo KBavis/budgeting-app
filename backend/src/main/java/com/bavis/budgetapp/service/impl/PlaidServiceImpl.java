@@ -190,10 +190,15 @@ public class PlaidServiceImpl implements PlaidService{
 
         String responseBody = responseEntity.getBody();
 
-        Double balance = _jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available");
-        if (balance == null) {
-            log.info("Available balance null or missing for account ID {}, attempting fallback to current balance", accountId);
-            balance = _jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/current");
+        Double available = _jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/available");
+        Double current = _jsonUtil.extractBalanceByAccountId(responseBody, accountId, "/balances/current");
+        String plaidType = _jsonUtil.extractAccountTypeByAccountId(responseBody, accountId);
+
+        Double balance;
+        if ("investment".equalsIgnoreCase(plaidType) || "credit".equalsIgnoreCase(plaidType) || "loan".equalsIgnoreCase(plaidType)) {
+            balance = current != null ? current : available;
+        } else {
+            balance = available != null ? available : current;
         }
 
         if (balance != null) {
