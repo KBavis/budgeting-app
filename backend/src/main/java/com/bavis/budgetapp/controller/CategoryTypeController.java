@@ -4,6 +4,7 @@ import com.bavis.budgetapp.dto.CategoryTypeDto;
 import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.validator.group.UpdateCategoryTypeDtoValidationGroup;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,12 +14,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryTypeService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -69,35 +72,43 @@ public class CategoryTypeController {
 		return _categoryTypeService.createMany(categoryTypes);
 	}
 
+	/**
+	 * Read all CategoryTypes for the authenticated user
+	 *
+	 * @param asOf
+	 * 			- Optional point-in-time date to evaluate CategoryType state history
+	 * @return
+	 * 			- List of CategoryTypes
+	 */
 	@GetMapping
-	public List<CategoryType> readMany() {
-		log.info("Received request to read all Category Types for the authenticated user");
-		return _categoryTypeService.readAll();
+	public List<CategoryType> readMany(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+		log.info("Received request to read all Category Types for the authenticated user with asOf [{}]", asOf);
+		return _categoryTypeService.readAll(asOf);
 	}
-
 
 	/**
 	 * Read a particular CategoryType pertaining to passed in CategoryID
 	 *
 	 * @param categoryTypeId
 	 * 			- specific CategoryID to fetch
+	 * @param asOf
+	 * 			- Optional point-in-time date to evaluate CategoryType state history
 	 * @return
 	 * 			- fetched CategoryType
 	 */
 	@GetMapping("/{categoryTypeId}")
-	public CategoryType read(@PathVariable(value = "categoryTypeId") Long categoryTypeId) {
-		log.info("Received CategoryType read request for Category Type with ID of {}", categoryTypeId);
-		return _categoryTypeService.read(categoryTypeId);
+	public CategoryType read(@PathVariable(value = "categoryTypeId") Long categoryTypeId,
+							 @RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+		log.info("Received CategoryType read request for Category Type with ID of {} and asOf [{}]", categoryTypeId, asOf);
+		return _categoryTypeService.read(categoryTypeId, asOf);
 	}
-
-
 
 	/**
 	 * Update a particular CategoryType
 	 *
 	 * @param categoryTypeId
-	 * 			- CategoryId pertaining to CategoryType needing udpates
-	 * @param  updateCategoryTypeDto
+	 * 			- CategoryId pertaining to CategoryType needing updates
+	 * @param updateCategoryTypeDto
 	 * 			- Updates to apply to CategoryType
 	 * @return
 	 * 			- updated CategoryType

@@ -12,11 +12,12 @@ import com.bavis.budgetapp.validator.group.TransactionDtoAddValidationGroup;
 import com.bavis.budgetapp.validator.group.TransactionDtoSplitValidationGroup;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -72,18 +73,19 @@ public class TransactionController {
         return ResponseEntity.ok(_transactionService.updateTransactionName(transactionId, updatedName));
     }
 
-
     /**
      * Retrieve all Transaction entities within the current month corresponding to Authenticated User's added Accounts,
      * along with unassigned previous-month transactions that still need to be categorized.
      *
+     * @param asOf
+     *      - Optional point-in-time date to evaluate accounts and categories state
      * @return
      *      - FetchTransactionsDto containing currentMonthTransactions and unassignedPreviousMonthTransactions
      */
     @GetMapping
-    public ResponseEntity<FetchTransactionsDto> readAll() {
-        log.info("Received request to read all Transactions for current month for authenticated user");
-        return ResponseEntity.ok(_transactionService.readAll());
+    public ResponseEntity<FetchTransactionsDto> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+        log.info("Received request to read all Transactions for current month for authenticated user with asOf [{}]", asOf);
+        return ResponseEntity.ok(_transactionService.readAll(asOf));
     }
 
     /**
@@ -120,7 +122,7 @@ public class TransactionController {
      * Remove assigned Category from a Transaction
      *
      * @param transactionId
-                - transaction ID to remove assigned Category for
+     *          - transaction ID to remove assigned Category for
      */
     @DeleteMapping ("/{transactionId}/category")
     public void removeCategory(@PathVariable("transactionId") String transactionId){

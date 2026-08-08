@@ -6,9 +6,11 @@ import com.bavis.budgetapp.entity.Income;
 import com.bavis.budgetapp.service.IncomeService;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -44,13 +46,15 @@ public class IncomeController {
     /**
      * Fetching of all Income entities associated with authenticated user
      *
+     * @param asOf
+     *          - Optional point-in-time date to evaluate Income state history
      * @return
-     *      - all Incomes associated with Auth user
+     *          - all Incomes associated with Auth user
      */
     @GetMapping
-    public ResponseEntity<List<Income>> readAll() {
-        log.info("Received request to fetch all incomes corresponding to authenticated user");
-        return ResponseEntity.ok(_incomeService.readAll());
+    public ResponseEntity<List<Income>> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+        log.info("Received request to fetch all incomes corresponding to authenticated user with asOf [{}]", asOf);
+        return ResponseEntity.ok(_incomeService.readAll(asOf));
     }
 
     /**

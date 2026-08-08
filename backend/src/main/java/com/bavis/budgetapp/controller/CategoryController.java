@@ -8,6 +8,7 @@ import com.bavis.budgetapp.validator.group.BulkCategoryDtoValidationGroup;
 import com.bavis.budgetapp.validator.group.CategoryDtoValidationGroup;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,12 +18,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.service.CategoryService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -39,6 +42,7 @@ public class CategoryController {
 	public CategoryController(CategoryService _categoryService) {
 		this._categoryService = _categoryService;
 	}
+
 	/**
 	 * Bulk Create Categories of a same CategoryType
 	 *
@@ -72,15 +76,18 @@ public class CategoryController {
 	 *
 	 * @param categoryId
 	 * 			- Category ID pertaining to specified Category to retrieve
+	 * @param asOf
+	 * 			- Optional point-in-time date to evaluate category state history
 	 * @return
 	 * 			- Fetched Category from DB
 	 */
 	@GetMapping("/{categoryId}")
-	public Category read(@PathVariable(value = "categoryId") Long categoryId) {
-		log.info("Received Category read request for [{}]", categoryId);
+	public Category read(@PathVariable(value = "categoryId") Long categoryId,
+						 @RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+		log.info("Received Category read request for [{}] with asOf [{}]", categoryId, asOf);
 		
 		try {
-			return _categoryService.read(categoryId);
+			return _categoryService.read(categoryId, asOf);
 		}  catch (Exception e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find category with id " + categoryId);
 		}
@@ -89,13 +96,15 @@ public class CategoryController {
 	/**
 	 * Fetch all available Categories for authenticated user
 	 *
+	 * @param asOf
+	 * 			- Optional point-in-time date to evaluate category state history
 	 * @return
 	 * 		- all available Categories
 	 */
 	@GetMapping
-	public List<Category> readAll() {
-		log.info("Received request to fetch all Categories for current authenticated user");
-		return _categoryService.readAll();
+	public List<Category> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+		log.info("Received request to fetch all Categories for current authenticated user with asOf [{}]", asOf);
+		return _categoryService.readAll(asOf);
 	}
 
 	/**
@@ -124,12 +133,13 @@ public class CategoryController {
 		_categoryService.delete(categoryId);
 	}
 
-
 	/**
 	 * Endpoint to rename a specific Category
 	 *
 	 * @param renameCategoryDto
 	 * 			- DTO containing updated Category name and CategoryId
+	 * @return
+	 * 			- updated Category
 	 */
 	@PutMapping("/rename")
 	public Category renameCategory(@RequestBody @Valid RenameCategoryDto renameCategoryDto) {
