@@ -36,14 +36,15 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
 
    // Core calculations
    const investedAmount = investmentOverview.totalSpent || 0;
+   const investmentSaved = Math.max(0, (investmentOverview.totalAmountAllocated || 0) - (investmentOverview.totalSpent || 0));
    const needsSaved = (needsOverview.totalAmountAllocated || 0) - (needsOverview.totalSpent || 0);
    const wantsSaved = (wantsOverview.totalAmountAllocated || 0) - (wantsOverview.totalSpent || 0);
-   const expenseSavings = Math.max(0, needsSaved) + Math.max(0, wantsSaved);
-   const expenseOverspent = (needsSaved < 0 ? Math.abs(needsSaved) : 0) + (wantsSaved < 0 ? Math.abs(wantsSaved) : 0);
-   const netWealthBuilt = investedAmount + expenseSavings - expenseOverspent;
+   const savingsFromBudget = Math.max(0, needsSaved) + Math.max(0, wantsSaved) + investmentSaved;
+   const overspentAmount = (needsSaved < 0 ? Math.abs(needsSaved) : 0) + (wantsSaved < 0 ? Math.abs(wantsSaved) : 0);
+   const netWealthBuilt = investedAmount + savingsFromBudget - overspentAmount;
 
-   const expenseAllocated = (needsOverview.totalAmountAllocated || 0) + (wantsOverview.totalAmountAllocated || 0);
-   const expenseSpent = (needsOverview.totalSpent || 0) + (wantsOverview.totalSpent || 0);
+   const totalAllocated = generalOverview.totalAmountAllocated || 0;
+   const totalSpent = generalOverview.totalSpent || 0;
 
    // fetch category types if page is refreshed
    useEffect(() => {
@@ -147,7 +148,7 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
                {isNegative ? "-" : ""}{formatCurrency(netWealthBuilt)}
             </p>
             <p className={`text-xs font-medium mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-               Investments made plus living expense savings (minus overspending)
+               Total net wealth generated through investments and budget savings
             </p>
          </div>
 
@@ -163,41 +164,41 @@ const FinancialGrowthSummary = ({ summary, month, year }) => {
                </p>
             </div>
 
-            {/* Expense Savings */}
+            {/* Saved from Budget */}
             <div className={`p-3 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
                <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
-                  Expense Savings
+                  Budget Savings
                </p>
-               <p className={`text-lg font-black ${expenseSavings > 0
+               <p className={`text-lg font-black ${savingsFromBudget > 0
                   ? isDark ? "text-emerald-400" : "text-emerald-600"
                   : isDark ? "text-slate-400" : "text-slate-500"
                   }`}>
-                  {formatCurrency(expenseSavings)}
+                  {formatCurrency(savingsFromBudget)}
                </p>
             </div>
 
-            {/* Expense Overspent */}
+            {/* Overspent */}
             <div className={`p-3 rounded-xl border ${isDark ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-slate-200"}`}>
-               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${expenseOverspent > 0
+               <p className={`text-[10px] font-extrabold uppercase tracking-wider mb-0.5 ${overspentAmount > 0
                   ? isDark ? "text-red-400" : "text-red-600"
                   : isDark ? "text-slate-500" : "text-slate-400"
                   }`}>
-                  Expense Overspent
+                  Overspent
                </p>
-               <p className={`text-lg font-black ${expenseOverspent > 0
+               <p className={`text-lg font-black ${overspentAmount > 0
                   ? isDark ? "text-red-400" : "text-red-600"
                   : isDark ? "text-slate-400" : "text-slate-500"
                   }`}>
-                  {expenseOverspent > 0 ? "-" : ""}{formatCurrency(expenseOverspent)}
+                  {overspentAmount > 0 ? "-" : ""}{formatCurrency(overspentAmount)}
                </p>
             </div>
          </div>
 
-         {/* Overall Living Expense Context */}
-         <div className={`flex justify-between items-center px-3.5 py-2.5 rounded-xl mb-5 text-xs font-semibold ${isDark ? "bg-slate-800/50 text-slate-400" : "bg-slate-100 text-slate-500"
+         {/* Overall Budget Context */}
+         <div className={`flex justify-between items-center px-3 py-2.5 rounded-xl mb-5 text-xs font-semibold ${isDark ? "bg-slate-800/50 text-slate-400" : "bg-slate-100 text-slate-500"
             }`}>
-            <span>Needs & Wants Spent: <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{formatCurrency(expenseSpent)}</span> of <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{formatCurrency(expenseAllocated)}</span></span>
-            <span>Total Invested: <span className={`font-bold ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>{formatCurrency(investedAmount)}</span></span>
+            <span>Total Allocated: <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{formatCurrency(totalAllocated)}</span></span>
+            <span>Total Spent: <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{formatCurrency(totalSpent)}</span></span>
          </div>
 
          {/* Investment Category Breakdown */}
