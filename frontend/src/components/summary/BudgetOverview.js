@@ -9,8 +9,10 @@ import { ThemeContext } from "../../context/theme/ThemeContext";
 import { getBudgetStatus } from "../../utils/budgetColors";
 
 /**
- * Component used to represent a BudgetOverview in our BudgetPerformance entity
- * with full Light/Dark mode support.
+ * Component used to represent a BudgetOverview for Needs/Wants spending sections
+ * in the BudgetPerformance entity with full Light/Dark mode support.
+ *
+ * General and Investments types are now handled by FinancialGrowthSummary.
  */
 const BudgetOverview = ({ overview, month, year }) => {
    const navigate = useNavigate();
@@ -30,11 +32,11 @@ const BudgetOverview = ({ overview, month, year }) => {
       totalSpent = 0,
       totalAmountAllocated = 0,
       totalPercentUtilized = 0,
-      totalAmountSaved = 0,
       savedAmountAttributesTotal = 0,
    } = overview || {};
 
    const budgetStatus = getBudgetStatus(totalSpent, totalAmountAllocated);
+   const remaining = totalAmountAllocated - totalSpent;
 
    const getCategoryName = (id) => {
       return categoryMap[id] || "Unknown";
@@ -103,49 +105,26 @@ const BudgetOverview = ({ overview, month, year }) => {
       setPieData(currPieData);
    }, [category_performances, currentTypeId, categoryMap]);
 
-   if (!overview) return null;
+   // Skip rendering for GENERAL and INVESTMENTS — handled by FinancialGrowthSummary
+   if (!overview || overviewType === "GENERAL" || overviewType === "INVESTMENTS") {
+      return null;
+   }
 
    // Carefully selected distinct colors for Dark Mode vs Light Mode
    const DARK_COLORS = [
-      "#818cf8", // Indigo
-      "#f472b6", // Pink
-      "#34d399", // Emerald
-      "#fbbf24", // Amber
-      "#38bdf8", // Sky Blue
-      "#a78bfa", // Purple
-      "#fb7185", // Rose
-      "#4ade80", // Green
-      "#f97316", // Orange
-      "#2dd4bf", // Teal
+      "#818cf8", "#f472b6", "#34d399", "#fbbf24", "#38bdf8",
+      "#a78bfa", "#fb7185", "#4ade80", "#f97316", "#2dd4bf",
    ];
 
    const LIGHT_COLORS = [
-      "#4f46e5", // Deep Indigo
-      "#ec4899", // Pink
-      "#059669", // Emerald
-      "#d97706", // Amber
-      "#0284c7", // Sky Blue
-      "#7c3aed", // Deep Purple
-      "#e11d48", // Rose
-      "#16a34a", // Green
-      "#ea580c", // Orange
-      "#0d9488", // Teal
+      "#4f46e5", "#ec4899", "#059669", "#d97706", "#0284c7",
+      "#7c3aed", "#e11d48", "#16a34a", "#ea580c", "#0d9488",
    ];
 
    const activeColors = isDark ? DARK_COLORS : LIGHT_COLORS;
 
-   const getTextColor = (value) => {
-      return value >= 0 ? (isDark ? "text-emerald-400" : "text-emerald-600") : (isDark ? "text-red-400" : "text-red-600");
-   };
-
-   const getOverUnderText = (value) => {
-      return value >= 0 ? "Under" : "Over";
-   };
-
    const pctDisplay = (totalPercentUtilized * 100).toFixed(1);
    const barWidth = Math.min(totalPercentUtilized * 100, 100);
-
-   const pieHeight = pieData.length > 6 ? 280 : (pieData.length > 3 ? 240 : 210);
 
    return (
       <div className={`relative rounded-2xl shadow-lg p-6 mx-auto w-full max-w-4xl mb-8 border transition-all ${
@@ -179,7 +158,7 @@ const BudgetOverview = ({ overview, month, year }) => {
          </div>
 
          {/* Stats Grid */}
-         <div className="grid grid-cols-3 gap-4 text-center mb-4">
+         <div className="grid grid-cols-2 gap-4 text-center mb-4">
             <div>
                <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                   Utilization
@@ -189,19 +168,19 @@ const BudgetOverview = ({ overview, month, year }) => {
                </p>
             </div>
             <div>
-               <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
-                  {getOverUnderText(savedAmountAttributesTotal)} Budget
+               <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${
+                  remaining >= 0
+                     ? isDark ? "text-emerald-400" : "text-emerald-600"
+                     : isDark ? "text-red-400" : "text-red-600"
+               }`}>
+                  {remaining >= 0 ? "Remaining" : "Over Budget"}
                </p>
-               <p className={`text-lg font-bold ${getTextColor(savedAmountAttributesTotal)}`}>
-                  ${Math.abs(savedAmountAttributesTotal).toFixed(2)}
-               </p>
-            </div>
-            <div>
-               <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 text-teal-600 dark:text-teal-400`}>
-                  Net Wealth Built
-               </p>
-               <p className={`text-lg font-bold text-teal-600 dark:text-teal-400`}>
-                  ${(totalAmountSaved > 0 ? totalAmountSaved : Math.max(0, savedAmountAttributesTotal)).toFixed(2)}
+               <p className={`text-lg font-bold ${
+                  remaining >= 0
+                     ? isDark ? "text-emerald-400" : "text-emerald-600"
+                     : isDark ? "text-red-400" : "text-red-600"
+               }`}>
+                  ${Math.abs(remaining).toFixed(2)}
                </p>
             </div>
          </div>
@@ -264,7 +243,7 @@ const BudgetOverview = ({ overview, month, year }) => {
          )}
 
          {/* Spending Analysis Action Button */}
-         {overviewType !== "GENERAL" && month && year && (
+         {month && year && (
             <div className="flex justify-center mt-6 pt-4 border-t border-slate-700/30">
                <button
                   className={`group flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105 active:scale-95 ${

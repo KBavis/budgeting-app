@@ -304,11 +304,10 @@ const HomePage = () => {
 
          if (type.name === "Investments") {
             investedAmount += spent;
-         } else {
-            const savings = budgeted - spent;
-            if (savings > 0) {
-               savingsAmount += savings;
-            }
+         }
+         const savings = budgeted - spent;
+         if (savings > 0) {
+            savingsAmount += savings;
          }
       });
 

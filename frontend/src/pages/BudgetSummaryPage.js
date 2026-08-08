@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState, useMemo } from 'react';
 import SummaryContext from "../context/summary/summaryContext";
 import BudgetOverview from "../components/summary/BudgetOverview";
+import FinancialGrowthSummary from "../components/summary/FinancialGrowthSummary";
 import { FaArrowLeft, FaArrowRight, FaCalendarAlt, FaChevronRight } from "react-icons/fa";
 import CategoryPerformanceContext from '../context/category/performances/categoryPerformanceContext';
 import categoryTypeContext from '../context/category/types/categoryTypeContext';
@@ -258,7 +259,7 @@ const BudgetSummaryPage = () => {
 
                         {/* Content Area */}
                         {selectedSummary ? (
-                            /* Detailed 4-Part Overview for Selected Month */
+                            /* Financial Growth Summary + Needs/Wants Spending */
                             <div className="flex flex-col items-center w-full max-w-5xl animate-fade-in">
                                 <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-4xl mb-6 px-2 gap-3">
                                     <button
@@ -278,10 +279,12 @@ const BudgetSummaryPage = () => {
                                     </span>
                                 </div>
 
-                                <BudgetOverview overview={selectedSummary.generalOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
+                                {/* Financial Growth Summary — replaces General + Investments overviews */}
+                                <FinancialGrowthSummary summary={selectedSummary} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
+
+                                {/* Needs & Wants Spending Overviews */}
                                 <BudgetOverview overview={selectedSummary.needsOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
                                 <BudgetOverview overview={selectedSummary.wantsOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
-                                <BudgetOverview overview={selectedSummary.investmentOverview} month={selectedSummary.id.monthYear.month} year={selectedSummary.id.monthYear.year} />
                             </div>
                         ) : displaySummaries.length > 0 ? (
                             /* Summary Cards Grid for ALL Months */
@@ -292,11 +295,15 @@ const BudgetSummaryPage = () => {
                                         const spent = summary.generalOverview?.totalSpent || 0;
                                         const usagePct = budgeted > 0 ? Math.min((spent / budgeted) * 100, 100) : 0;
                                         const pctRaw = budgeted > 0 ? ((spent / budgeted) * 100).toFixed(1) : '0';
-                                        const diff = budgeted - spent;
                                         const status = getBudgetStatus(spent, budgeted);
                                         const invested = summary.investmentOverview?.totalSpent || 0;
-                                        const unspentSavings = Math.max(0, diff);
-                                        const netWealthContributed = invested + unspentSavings;
+                                        const investmentSaved = Math.max(0, (summary.investmentOverview?.totalAmountAllocated || 0) - (summary.investmentOverview?.totalSpent || 0));
+                                        const needsSaved = (summary.needsOverview?.totalAmountAllocated || 0) - (summary.needsOverview?.totalSpent || 0);
+                                        const wantsSaved = (summary.wantsOverview?.totalAmountAllocated || 0) - (summary.wantsOverview?.totalSpent || 0);
+                                        const savingsFromBudget = Math.max(0, needsSaved) + Math.max(0, wantsSaved) + investmentSaved;
+                                        const overspent = (needsSaved < 0 ? Math.abs(needsSaved) : 0) + (wantsSaved < 0 ? Math.abs(wantsSaved) : 0);
+                                        const netWealthBuilt = invested + savingsFromBudget - overspent;
+                                        const isNetWealthNegative = netWealthBuilt < 0;
 
                                         return (
                                             <div
@@ -357,11 +364,19 @@ const BudgetSummaryPage = () => {
                                                         <p className={`font-extrabold text-sm sm:text-base ${status.textClass}`}>${spent.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                                                     </div>
                                                     <div>
-                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 text-teal-600 dark:text-teal-400`}>
-                                                            Net Wealth
+                                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${
+                                                            isNetWealthNegative
+                                                                ? "text-red-500 dark:text-red-400"
+                                                                : "text-teal-600 dark:text-teal-400"
+                                                        }`}>
+                                                            {isNetWealthNegative ? "Net Loss" : "Net Wealth"}
                                                         </p>
-                                                        <p className={`font-extrabold text-sm sm:text-base text-teal-600 dark:text-teal-400`}>
-                                                            ${netWealthContributed.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                        <p className={`font-extrabold text-sm sm:text-base ${
+                                                            isNetWealthNegative
+                                                                ? "text-red-500 dark:text-red-400"
+                                                                : "text-teal-600 dark:text-teal-400"
+                                                        }`}>
+                                                            {isNetWealthNegative ? "-" : ""}${Math.abs(netWealthBuilt).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                         </p>
                                                     </div>
                                                 </div>
