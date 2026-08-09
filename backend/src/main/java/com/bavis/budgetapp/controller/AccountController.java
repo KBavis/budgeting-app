@@ -48,7 +48,7 @@ public class AccountController {
 	public ResponseEntity<AccountResponseDto> read(@PathVariable(value = "accountId") String accountId,
 												   @RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received request to read account with ID {} asOf [{}]", accountId, asOf);
-		return ResponseEntity.ok(_accountService.readResponseDto(accountId, asOf));
+		return ResponseEntity.ok(_accountService.get(accountId, asOf));
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class AccountController {
 	@GetMapping
 	public ResponseEntity<List<AccountResponseDto>> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received request to read all account associated with current authenticated user with asOf [{}]", asOf);
-		return ResponseEntity.ok(_accountService.readAll(asOf));
+		return ResponseEntity.ok(_accountService.getAll(asOf));
 	}
 
 	/**

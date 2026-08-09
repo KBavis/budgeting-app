@@ -94,7 +94,7 @@ public class TransactionController {
     @GetMapping
     public ResponseEntity<FetchTransactionsDto> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
         log.info("Received request to read all Transactions for current month for authenticated user with asOf [{}]", asOf);
-        return ResponseEntity.ok(_transactionService.readAll(asOf));
+        return ResponseEntity.ok(_transactionService.getAll(asOf));
     }
 
     /**

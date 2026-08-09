@@ -62,7 +62,7 @@ public class IncomeController {
     @GetMapping
     public ResponseEntity<List<IncomeResponseDto>> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
         log.info("Received request to fetch all incomes corresponding to authenticated user with asOf [{}]", asOf);
-        return ResponseEntity.ok(_incomeService.readAllResponseDtos(asOf));
+        return ResponseEntity.ok(_incomeService.getAll(asOf));
     }
 
     /**

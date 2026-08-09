@@ -86,7 +86,7 @@ public class CategoryController {
 		log.info("Received Category read request for [{}] with asOf [{}]", categoryId, asOf);
 		
 		try {
-			return _categoryService.readResponseDto(categoryId, asOf);
+			return _categoryService.get(categoryId, asOf);
 		}  catch (Exception e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find category with id " + categoryId);
 		}
@@ -103,7 +103,7 @@ public class CategoryController {
 	@GetMapping
 	public List<CategoryResponseDto> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received request to fetch all Categories for current authenticated user with asOf [{}]", asOf);
-		return _categoryService.readAllResponseDtos(asOf);
+		return _categoryService.getAll(asOf);
 	}
 
 	/**

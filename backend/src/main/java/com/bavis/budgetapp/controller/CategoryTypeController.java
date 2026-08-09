@@ -84,7 +84,7 @@ public class CategoryTypeController {
 	@GetMapping
 	public List<CategoryTypeResponseDto> readMany(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received request to read all Category Types for the authenticated user with asOf [{}]", asOf);
-		return _categoryTypeService.readAllResponseDtos(asOf);
+		return _categoryTypeService.getAll(asOf);
 	}
 
 	/**
@@ -101,7 +101,7 @@ public class CategoryTypeController {
 	public CategoryTypeResponseDto read(@PathVariable(value = "categoryTypeId") Long categoryTypeId,
 										 @RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received CategoryType read request for Category Type with ID of {} and asOf [{}]", categoryTypeId, asOf);
-		return _categoryTypeService.readResponseDto(categoryTypeId, asOf);
+		return _categoryTypeService.get(categoryTypeId, asOf);
 	}
 
 	/**
