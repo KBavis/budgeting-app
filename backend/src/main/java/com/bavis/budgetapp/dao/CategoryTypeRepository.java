@@ -17,17 +17,27 @@ import com.bavis.budgetapp.entity.CategoryType;
  */
 public interface CategoryTypeRepository extends JpaRepository<CategoryType, Long> {
 
-	/**
-	 * Fetch CategoryType based on passed in name
-	 *
-	 * @param categoryTypeName
-	 * 			- specified name to search for
-	 * @param userId
-	  *			- userId to fetch CategoryType for
-	 * @return
-	 * 			- CategoryType pertaining to specified name
-	 */
-	CategoryType findByNameAndUserUserId(String categoryTypeName, long userId);
+	@Query("""
+			SELECT DISTINCT ct FROM CategoryType ct 
+			JOIN ct.validTimes vt ON vt.startDate <= :asOf AND vt.endDate >= :asOf 
+			WHERE ct.categoryTypeId = :categoryTypeId 
+			  AND ct.startDate <= :asOf AND ct.endDate >= :asOf AND ct.startDate <= ct.endDate
+			""")
+	Optional<CategoryType> findByCategoryTypeIdAndAsOf(@Param("categoryTypeId") Long categoryTypeId, @Param("asOf") LocalDate asOf);
 
-	List<CategoryType> findByUserUserId(Long id);
+	@Query("""
+			SELECT DISTINCT ct FROM CategoryType ct 
+			JOIN ct.validTimes vt ON vt.startDate <= :asOf AND vt.endDate >= :asOf 
+			WHERE vt.name = :categoryTypeName AND ct.user.userId = :userId 
+			  AND ct.startDate <= :asOf AND ct.endDate >= :asOf AND ct.startDate <= ct.endDate
+			""")
+	Optional<CategoryType> findByNameAndUserUserIdAndAsOf(@Param("categoryTypeName") String categoryTypeName, @Param("userId") long userId, @Param("asOf") LocalDate asOf);
+
+	@Query("""
+			SELECT DISTINCT ct FROM CategoryType ct 
+			JOIN ct.validTimes vt ON vt.startDate <= :asOf AND vt.endDate >= :asOf 
+			WHERE ct.user.userId = :userId 
+			  AND ct.startDate <= :asOf AND ct.endDate >= :asOf AND ct.startDate <= ct.endDate
+			""")
+	List<CategoryType> findByUserUserIdAndAsOf(@Param("userId") Long userId, @Param("asOf") LocalDate asOf);
 }

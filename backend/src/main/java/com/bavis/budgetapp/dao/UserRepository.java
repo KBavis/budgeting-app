@@ -29,6 +29,11 @@ public interface UserRepository extends JpaRepository<User, Long>{
     Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
 
-    @Query(value = "SELECT DISTINCT b.user_id FROM budget_user b JOIN account a ON a.user_id = b.user_id WHERE account_id IN :accountIds", nativeQuery = true)
+    @Query(value = """
+            SELECT DISTINCT b.user_id 
+            FROM budget_user b 
+            JOIN account a ON a.user_id = b.user_id 
+            WHERE account_id IN :accountIds
+            """, nativeQuery = true)
     List<Long> findUserIdByAccountIds(@Param("accountIds") List<String> accountIds);
 }
