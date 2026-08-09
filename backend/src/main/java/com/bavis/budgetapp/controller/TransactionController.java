@@ -12,6 +12,7 @@ import com.bavis.budgetapp.validator.group.TransactionDtoAddValidationGroup;
 import com.bavis.budgetapp.validator.group.TransactionDtoSplitValidationGroup;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
