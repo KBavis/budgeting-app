@@ -1,7 +1,8 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.dto.IncomeDto;
-import com.bavis.budgetapp.dto.UpdateIncomeDto;
+import com.bavis.budgetapp.dto.request.IncomeDto;
+import com.bavis.budgetapp.dto.request.UpdateIncomeDto;
+import com.bavis.budgetapp.dto.response.IncomeResponseDto;
 import com.bavis.budgetapp.entity.Income;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.GetCategoryPerformancesRequest;
+import com.bavis.budgetapp.dto.request.GetCategoryPerformancesRequest;
 import com.bavis.budgetapp.entity.analysis.MonthlyCategoryPerformance;
 import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.MonthlyCategoryPerformanceService;
@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * @author Kellen Bavis
+ */
 @RestController
 @Slf4j
 @RequestMapping("/category/performance")

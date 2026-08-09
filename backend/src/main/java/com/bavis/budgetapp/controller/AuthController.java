@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AuthRequestDto;
-import com.bavis.budgetapp.dto.AuthResponseDto;
+import com.bavis.budgetapp.dto.request.AuthRequestDto;
+import com.bavis.budgetapp.dto.response.AuthResponseDto;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.AuthServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;

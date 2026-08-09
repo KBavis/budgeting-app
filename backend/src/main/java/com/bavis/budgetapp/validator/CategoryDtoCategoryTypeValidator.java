@@ -1,14 +1,12 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.annotation.CategoryDtoValidBudgetAmount;
 import com.bavis.budgetapp.annotation.CategoryDtoValidCategoryType;
-import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.request.CategoryDto;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.service.UserService;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.mapper;
 
-import com.bavis.budgetapp.dto.IncomeDto;
+import com.bavis.budgetapp.dto.request.IncomeDto;
 import com.bavis.budgetapp.constants.IncomeSource;
 import com.bavis.budgetapp.constants.IncomeType;
 import com.bavis.budgetapp.entity.Income;

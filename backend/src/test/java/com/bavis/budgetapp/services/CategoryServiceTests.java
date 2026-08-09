@@ -1,12 +1,14 @@
 package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.dao.CategoryRepository;
-import com.bavis.budgetapp.dto.AddCategoryDto;
-import com.bavis.budgetapp.dto.BulkCategoryDto;
-import com.bavis.budgetapp.dto.CategoryDto;
-import com.bavis.budgetapp.dto.EditCategoryDto;
-import com.bavis.budgetapp.dto.RenameCategoryDto;
-import com.bavis.budgetapp.dto.UpdateCategoryDto;
+import com.bavis.budgetapp.dto.request.AddCategoryDto;
+import com.bavis.budgetapp.dto.request.BulkCategoryDto;
+import com.bavis.budgetapp.dto.request.CategoryDto;
+import com.bavis.budgetapp.dto.request.EditCategoryDto;
+import com.bavis.budgetapp.dto.request.RenameCategoryDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.constants.TemporalConstants;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.Transaction;

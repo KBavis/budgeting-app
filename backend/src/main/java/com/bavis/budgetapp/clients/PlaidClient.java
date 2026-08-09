@@ -2,7 +2,14 @@ package com.bavis.budgetapp.clients;
 
 
 import com.bavis.budgetapp.config.PlaidConfig;
-import com.bavis.budgetapp.dto.*;
+import com.bavis.budgetapp.dto.request.AccountRemovalRequestDto;
+import com.bavis.budgetapp.dto.request.ExchangeTokenRequestDto;
+import com.bavis.budgetapp.dto.request.LinkTokenRequestDto;
+import com.bavis.budgetapp.dto.request.PlaidTransactionSyncRequestDto;
+import com.bavis.budgetapp.dto.request.RetrieveBalanceRequestDto;
+import com.bavis.budgetapp.dto.response.AccessTokenResponseDto;
+import com.bavis.budgetapp.dto.response.LinkTokenResponseDto;
+import com.bavis.budgetapp.dto.response.PlaidTransactionSyncResponseDto;
 import feign.FeignException.FeignClientException;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

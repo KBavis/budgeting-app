@@ -1,10 +1,9 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.IncomeDtoValidAmount;
-import com.bavis.budgetapp.dto.IncomeDto;
+import com.bavis.budgetapp.dto.request.IncomeDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * @author Kellen Bavis

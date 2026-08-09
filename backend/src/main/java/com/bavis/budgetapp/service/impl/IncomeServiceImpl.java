@@ -1,9 +1,10 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dao.IncomeRepository;
-import com.bavis.budgetapp.dto.IncomeDto;
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
-import com.bavis.budgetapp.dto.UpdateIncomeDto;
+import com.bavis.budgetapp.dto.request.IncomeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateIncomeDto;
+import com.bavis.budgetapp.dto.response.IncomeResponseDto;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.mapper.IncomeMapper;
 import com.bavis.budgetapp.entity.Income;

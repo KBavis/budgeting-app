@@ -1,7 +1,10 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.CategoryTypeDto;
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.request.CategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.response.CategoryTypeResponseDto;
+import com.bavis.budgetapp.entity.CategoryType;
+import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.validator.group.UpdateCategoryTypeDtoValidationGroup;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.format.annotation.DateTimeFormat;

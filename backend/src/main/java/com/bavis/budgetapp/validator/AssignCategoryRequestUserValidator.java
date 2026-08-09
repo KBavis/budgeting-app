@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.AssignCategoryRequestValidUser;
-import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.Transaction;

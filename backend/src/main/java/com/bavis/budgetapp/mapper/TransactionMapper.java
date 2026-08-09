@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.mapper;
 
-import com.bavis.budgetapp.dto.PlaidTransactionDto;
-import com.bavis.budgetapp.dto.TransactionDto;
+import com.bavis.budgetapp.dto.request.PlaidTransactionDto;
+import com.bavis.budgetapp.dto.request.TransactionDto;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.model.PlaidConfidenceLevel;
 import com.bavis.budgetapp.model.PlaidDetailedCategory;

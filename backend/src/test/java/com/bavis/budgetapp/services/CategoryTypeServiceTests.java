@@ -2,8 +2,9 @@ package com.bavis.budgetapp.services;
 
 
 import com.bavis.budgetapp.dao.CategoryTypeRepository;
-import com.bavis.budgetapp.dto.CategoryTypeDto;
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.request.CategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.constants.TemporalConstants;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;

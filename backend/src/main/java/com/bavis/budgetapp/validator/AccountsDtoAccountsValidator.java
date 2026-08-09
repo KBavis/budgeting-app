@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.AccountsDtoValidAccounts;
-import com.bavis.budgetapp.dto.AccountsDto;
+import com.bavis.budgetapp.dto.request.AccountsDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;

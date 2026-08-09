@@ -1,9 +1,9 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.dto.AccountDto;
-import com.bavis.budgetapp.dto.PlaidAccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
+import com.bavis.budgetapp.dto.request.PlaidAccountDto;
+import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.entity.Account;
-import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 
 import java.util.List;

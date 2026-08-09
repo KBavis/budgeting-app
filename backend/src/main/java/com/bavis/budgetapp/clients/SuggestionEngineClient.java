@@ -1,8 +1,8 @@
 package com.bavis.budgetapp.clients;
 
-import com.bavis.budgetapp.dto.CategorySuggestionRequest;
-import com.bavis.budgetapp.dto.CategorySuggestionResponse;
-import com.bavis.budgetapp.dto.UncategorizedSuggestionResponse;
+import com.bavis.budgetapp.dto.request.CategorySuggestionRequest;
+import com.bavis.budgetapp.dto.response.CategorySuggestionResponse;
+import com.bavis.budgetapp.dto.response.UncategorizedSuggestionResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

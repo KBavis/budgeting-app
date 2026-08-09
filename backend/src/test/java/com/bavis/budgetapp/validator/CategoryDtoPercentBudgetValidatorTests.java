@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.request.CategoryDto;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -42,7 +41,7 @@ public class CategoryDtoPercentBudgetValidatorTests {
 
     @Test
     void testIsValid_NullCategoryDto_Failure() {
-        invalidDto= null;
+        invalidDto = null;
         assertFalse(validator.isValid(invalidDto, context));
     }
 
@@ -53,7 +52,7 @@ public class CategoryDtoPercentBudgetValidatorTests {
     }
 
     @Test
-    void testIsValid_HundredPercent_Successful(){
+    void testIsValid_HundredPercent_Successful() {
         invalidDto.setBudgetAllocationPercentage(1.0);
         assertTrue(validator.isValid(invalidDto, context));
     }

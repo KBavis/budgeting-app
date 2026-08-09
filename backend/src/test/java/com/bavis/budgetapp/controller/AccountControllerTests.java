@@ -1,9 +1,9 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.exception.AccountConnectionException;
-import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
+import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;

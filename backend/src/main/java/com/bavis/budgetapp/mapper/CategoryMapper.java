@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.mapper;
 
-import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.response.CategoryResponseDto;
+import com.bavis.budgetapp.dto.response.CategoryTypeResponseDto;
 import com.bavis.budgetapp.entity.Category;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

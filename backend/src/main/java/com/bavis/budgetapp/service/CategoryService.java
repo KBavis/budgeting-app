@@ -1,9 +1,10 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.dto.AddCategoryDto;
-import com.bavis.budgetapp.dto.BulkCategoryDto;
-import com.bavis.budgetapp.dto.EditCategoryDto;
-import com.bavis.budgetapp.dto.RenameCategoryDto;
+import com.bavis.budgetapp.dto.request.AddCategoryDto;
+import com.bavis.budgetapp.dto.request.BulkCategoryDto;
+import com.bavis.budgetapp.dto.request.EditCategoryDto;
+import com.bavis.budgetapp.dto.request.RenameCategoryDto;
+import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.entity.Category;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
 import jakarta.validation.ConstraintValidatorContext;
 import org.hibernate.sql.Update;
 import org.junit.Assert;

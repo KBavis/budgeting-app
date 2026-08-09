@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.CategoryTypeDto;
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.request.CategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.impl.CategoryTypeServiceImpl;

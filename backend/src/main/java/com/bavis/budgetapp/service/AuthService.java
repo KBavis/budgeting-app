@@ -4,8 +4,8 @@ package com.bavis.budgetapp.service;
 import com.bavis.budgetapp.exception.JwtServiceException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.exception.UserServiceException;
-import com.bavis.budgetapp.dto.AuthRequestDto;
-import com.bavis.budgetapp.dto.AuthResponseDto;
+import com.bavis.budgetapp.dto.request.AuthRequestDto;
+import com.bavis.budgetapp.dto.response.AuthResponseDto;
 import org.springframework.security.core.AuthenticationException;
 
 

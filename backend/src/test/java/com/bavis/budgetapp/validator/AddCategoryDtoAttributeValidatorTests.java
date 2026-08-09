@@ -1,8 +1,8 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.AddCategoryDto;
-import com.bavis.budgetapp.dto.CategoryDto;
-import com.bavis.budgetapp.dto.UpdateCategoryDto;
+import com.bavis.budgetapp.dto.request.AddCategoryDto;
+import com.bavis.budgetapp.dto.request.CategoryDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryDto;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

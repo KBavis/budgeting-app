@@ -1,7 +1,8 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AccountDto;
-import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
+import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
+import com.bavis.budgetapp.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.format.annotation.DateTimeFormat;

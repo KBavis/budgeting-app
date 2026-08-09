@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.service;
 
 
-import com.bavis.budgetapp.dto.PlaidTransactionSyncResponseDto;
+import com.bavis.budgetapp.dto.response.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.model.LinkToken;
 

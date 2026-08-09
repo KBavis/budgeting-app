@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.mapper;
 
 
-import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.entity.Account;
 import org.junit.jupiter.api.Test;

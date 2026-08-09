@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.filter;
 
 import com.bavis.budgetapp.dao.TransactionRepository;
-import com.bavis.budgetapp.dto.PlaidTransactionDto;
+import com.bavis.budgetapp.dto.request.PlaidTransactionDto;
 import com.bavis.budgetapp.entity.Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

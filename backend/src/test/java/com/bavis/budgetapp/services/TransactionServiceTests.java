@@ -2,7 +2,16 @@ package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.clients.SuggestionEngineClient;
 import com.bavis.budgetapp.dao.TransactionRepository;
-import com.bavis.budgetapp.dto.*;
+import com.bavis.budgetapp.dto.request.AccountsDto;
+import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.request.PlaidAccountDto;
+import com.bavis.budgetapp.dto.request.PlaidTransactionDto;
+import com.bavis.budgetapp.dto.request.SplitTransactionDto;
+import com.bavis.budgetapp.dto.request.TransactionDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
+import com.bavis.budgetapp.dto.response.FetchTransactionsDto;
+import com.bavis.budgetapp.dto.response.PlaidTransactionSyncResponseDto;
+import com.bavis.budgetapp.dto.response.SyncTransactionsDto;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.filter.TransactionFilters;

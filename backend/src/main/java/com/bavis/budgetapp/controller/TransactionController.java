@@ -1,11 +1,11 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
-import com.bavis.budgetapp.dto.FetchTransactionsDto;
-import com.bavis.budgetapp.dto.SplitTransactionDto;
-import com.bavis.budgetapp.dto.SyncTransactionsDto;
-import com.bavis.budgetapp.dto.TransactionDto;
-import com.bavis.budgetapp.dto.AccountsDto;
+import com.bavis.budgetapp.dto.request.AccountsDto;
+import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.request.SplitTransactionDto;
+import com.bavis.budgetapp.dto.request.TransactionDto;
+import com.bavis.budgetapp.dto.response.FetchTransactionsDto;
+import com.bavis.budgetapp.dto.response.SyncTransactionsDto;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.validator.group.TransactionDtoAddValidationGroup;

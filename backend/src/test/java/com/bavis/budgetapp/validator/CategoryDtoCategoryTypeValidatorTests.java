@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.request.CategoryDto;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.CategoryTypeService;

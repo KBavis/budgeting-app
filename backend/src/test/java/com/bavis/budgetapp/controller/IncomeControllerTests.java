@@ -1,9 +1,9 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.IncomeDto;
+import com.bavis.budgetapp.dto.request.IncomeDto;
 import com.bavis.budgetapp.constants.IncomeSource;
 import com.bavis.budgetapp.constants.IncomeType;
-import com.bavis.budgetapp.dto.UpdateIncomeDto;
+import com.bavis.budgetapp.dto.request.UpdateIncomeDto;
 import com.bavis.budgetapp.entity.Income;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.IncomeServiceImpl;

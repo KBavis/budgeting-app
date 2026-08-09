@@ -2,17 +2,18 @@ package com.bavis.budgetapp.services;
 
 
 import com.bavis.budgetapp.dao.AccountRepository;
-import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.constants.ConnectionStatus;
-import com.bavis.budgetapp.dto.PlaidAccountDto;
+import com.bavis.budgetapp.dto.request.PlaidAccountDto;
+import com.bavis.budgetapp.entity.AccountVt;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.entity.User;
-import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
+import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.ConnectionService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.TransactionService;

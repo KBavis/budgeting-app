@@ -2,7 +2,7 @@ package com.bavis.budgetapp.validator;
 
 
 import com.bavis.budgetapp.annotation.UpdateCategoryTypeValidAllocatedAmount;
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

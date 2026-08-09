@@ -1,8 +1,10 @@
 package com.bavis.budgetapp.service.impl;
 
-import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.ConnectionStatus;
-import com.bavis.budgetapp.dto.PlaidAccountDto;
+import com.bavis.budgetapp.dto.request.PlaidAccountDto;
+import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
+import com.bavis.budgetapp.entity.AccountVt;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
