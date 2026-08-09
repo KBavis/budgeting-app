@@ -55,8 +55,7 @@ const CategoryTypePage = ({ categoryType }) => {
       if (currentCategoryType) {
          const filtered = categories.filter(
              (category) =>
-                 category.categoryType.categoryTypeId ===
-                 currentCategoryType.categoryTypeId
+                 category.categoryTypeId === currentCategoryType.categoryTypeId
          );
          setFilteredCategories(filtered);
          setIsLoading(false);

@@ -42,7 +42,7 @@ const DetailedCategory = ({
    // Global State
    const { transactions, removeCategory } = useContext(transactionContext);
    const { deleteCategory } = useContext(categoryContext);
-   const { fetchCategoryType } = useContext(categoryTypeContext);
+   const { fetchCategoryType, categoryTypes } = useContext(categoryTypeContext);
    const { setAlert } = useContext(AlertContext);
    const { theme } = useContext(ThemeContext);
 
@@ -73,7 +73,9 @@ const DetailedCategory = ({
       setShowConfirmDelete(false);
       removeCategory(category.categoryId);
       await deleteCategory(category.categoryId);
-      await fetchCategoryType(category.categoryType.categoryTypeId);
+      if (category.categoryTypeId) {
+         await fetchCategoryType(category.categoryTypeId);
+      }
       setAlert("Category deleted successfully", "success");
    };
 
@@ -82,7 +84,8 @@ const DetailedCategory = ({
    };
 
    const handleUpdateAllocations = () => {
-      handleShowUpdateAllocationsModal(category.categoryType);
+      const ct = (categoryTypes || []).find((t) => t.categoryTypeId === category.categoryTypeId);
+      handleShowUpdateAllocationsModal(ct);
    };
 
    const activeFilterCount = [

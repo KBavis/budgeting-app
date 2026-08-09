@@ -89,8 +89,9 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
       // Auto-select suggested category if available, otherwise null
       if (currentTransaction.suggestedCategory) {
         setSelectedCategory(currentTransaction.suggestedCategory);
-        if (currentTransaction.suggestedCategory.categoryType?.categoryTypeId) {
-          setSelectedCategoryTypeId(currentTransaction.suggestedCategory.categoryType.categoryTypeId);
+        const ctId = currentTransaction.suggestedCategory.categoryTypeId;
+        if (ctId) {
+          setSelectedCategoryTypeId(ctId);
         }
       } else {
         setSelectedCategory(null);
@@ -108,7 +109,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
     if (!ct) return [];
 
     const globalCats = (categories || []).filter(
-      (c) => c.categoryType && (c.categoryType.categoryTypeId === ct.categoryTypeId || c.categoryType.name === ct.name)
+      (c) => c.categoryTypeId === ct.categoryTypeId
     );
     const typeCats = ct.categories || [];
     const map = new Map();
@@ -535,7 +536,7 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
 
                   <div className="bg-slate-900/70 rounded-xl border border-indigo-500/20 p-3 mb-3">
                     <span className="text-[11px] font-bold text-indigo-300/70 uppercase tracking-wider block mb-0.5">
-                      {suggestedCategory.categoryType?.name || 'Category'}
+                      {((categoryTypes || []).find(ct => ct.categoryTypeId === suggestedCategory.categoryTypeId)?.name) || 'Category'}
                     </span>
                     <span className="text-xl font-black text-white block">
                       {suggestedCategory.name}

@@ -13,7 +13,7 @@ const PreviousTransactionsModal = ({ transactions, onClose, onTransactionComplet
 
   const getCategoriesForType = (type) => {
     const globalCats = (categories || []).filter(
-      (c) => c.categoryType && (c.categoryType.categoryTypeId === type.categoryTypeId || c.categoryType.name === type.name)
+      (c) => c.categoryTypeId === type.categoryTypeId
     );
     const typeCats = type.categories || [];
     const map = new Map();

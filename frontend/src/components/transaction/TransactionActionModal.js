@@ -34,7 +34,7 @@ const TransactionActionModal = ({
    // Helper to reliably retrieve all categories for a category type
    const getCategoriesForType = (ct) => {
       const globalCats = (categories || []).filter(
-         (c) => c.categoryType && (c.categoryType.categoryTypeId === ct.categoryTypeId || c.categoryType.name === ct.name)
+         (c) => c.categoryTypeId === ct.categoryTypeId
       );
       const typeCats = ct.categories || [];
       const map = new Map();

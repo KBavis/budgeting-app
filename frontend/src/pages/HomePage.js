@@ -293,7 +293,7 @@ const HomePage = () => {
 
       (categoryTypes || []).forEach((type) => {
          const typeCats = categories.filter(
-            (c) => c.categoryType && c.categoryType.categoryTypeId === type.categoryTypeId
+            (c) => c.categoryTypeId === type.categoryTypeId
          );
          const catIds = new Set(typeCats.map((c) => c.categoryId));
          const spent = transactions

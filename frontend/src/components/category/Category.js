@@ -26,7 +26,7 @@ const Category = ({
    // Global State
    const { transactions, updateCategory, removeCategory } = useContext(transactionContext);
    const { deleteCategory } = useContext(categoryContext);
-   const { fetchCategoryType } = useContext(categoryTypeContext);
+   const { fetchCategoryType, categoryTypes } = useContext(categoryTypeContext);
    const { setAlert } = useContext(AlertContext);
    const { theme } = useContext(ThemeContext);
 
@@ -43,7 +43,9 @@ const Category = ({
    const handleDeleteCategory = async () => {
       removeCategory(category.categoryId);
       await deleteCategory(category.categoryId);
-      await fetchCategoryType(category.categoryType.categoryTypeId);
+      if (category.categoryTypeId) {
+         await fetchCategoryType(category.categoryTypeId);
+      }
       setAlert("Category deleted successfully", "success");
       setShowConfirmDelete(false);
    };
@@ -53,7 +55,8 @@ const Category = ({
    };
 
    const handleUpdateAllocations = () => {
-      handleShowUpdateAllocationsModal(category.categoryType);
+      const ct = (categoryTypes || []).find((t) => t.categoryTypeId === category.categoryTypeId);
+      handleShowUpdateAllocationsModal(ct);
    };
 
    // Allow drag and drop of transactions into Category

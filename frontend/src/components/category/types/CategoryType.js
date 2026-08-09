@@ -35,9 +35,7 @@ const CategoryType = ({
    // Filter and deduplicate categories for this CategoryType
    useEffect(() => {
       const filtered = (categories || []).filter(
-         (category) =>
-            category.categoryType &&
-            category.categoryType.categoryTypeId === categoryType.categoryTypeId
+         (category) => category.categoryTypeId === categoryType.categoryTypeId
       );
 
       const map = new Map();

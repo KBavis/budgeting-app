@@ -21,7 +21,7 @@ public class CategoryResponseDto {
     private String name;
     private double budgetAllocationPercentage;
     private double budgetAmount;
-    private CategoryTypeResponseDto categoryType;
+    private Long categoryTypeId;
     private LocalDate startDate;
     private LocalDate endDate;
 }
