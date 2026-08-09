@@ -7,6 +7,7 @@ import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**

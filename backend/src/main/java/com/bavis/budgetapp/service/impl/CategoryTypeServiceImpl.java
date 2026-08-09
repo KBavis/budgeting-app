@@ -13,11 +13,7 @@ import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
-import com.bavis.budgetapp.dao.CategoryTypeRepository;
-import com.bavis.budgetapp.entity.CategoryType;
-import com.bavis.budgetapp.service.CategoryTypeService;
-
-
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

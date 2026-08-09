@@ -8,6 +8,7 @@ import com.bavis.budgetapp.dto.response.FetchTransactionsDto;
 import com.bavis.budgetapp.dto.response.SyncTransactionsDto;
 import com.bavis.budgetapp.entity.Transaction;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**

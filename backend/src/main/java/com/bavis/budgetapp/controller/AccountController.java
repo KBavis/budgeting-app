@@ -16,9 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bavis.budgetapp.entity.Account;
-import com.bavis.budgetapp.service.AccountService;
-
 import java.time.LocalDate;
 import java.util.List;
 

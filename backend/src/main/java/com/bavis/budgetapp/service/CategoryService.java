@@ -7,6 +7,7 @@ import com.bavis.budgetapp.dto.request.RenameCategoryDto;
 import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.entity.Category;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**

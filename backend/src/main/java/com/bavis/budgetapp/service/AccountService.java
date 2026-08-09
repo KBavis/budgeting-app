@@ -6,6 +6,7 @@ import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**

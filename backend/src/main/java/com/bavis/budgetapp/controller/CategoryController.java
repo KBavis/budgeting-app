@@ -24,9 +24,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.bavis.budgetapp.entity.Category;
-import com.bavis.budgetapp.service.CategoryService;
-
 import java.time.LocalDate;
 import java.util.List;
 
