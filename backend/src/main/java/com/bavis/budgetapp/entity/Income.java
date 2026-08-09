@@ -1,17 +1,29 @@
 package com.bavis.budgetapp.entity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.bavis.budgetapp.constants.IncomeSource;
-import com.bavis.budgetapp.constants.IncomeType;
+import com.bavis.budgetapp.constants.TemporalConstants;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import lombok.Setter;
 
 /**
  * @author Kellen Bavis
@@ -20,7 +32,8 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "income")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,25 +42,24 @@ public class Income {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long incomeId;
 
+    @Builder.Default
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate = TemporalConstants.BEGINNING_OF_TIME;
+
+    @Builder.Default
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate = TemporalConstants.END_OF_TIME;
+
     @ManyToOne
     @JoinColumn(name = "userId", nullable = false)
-    @JsonIgnore //avoid circular reference
+    @JsonIgnore
     private User user;
 
-    private double amount;
-
-
-    @Enumerated(EnumType.STRING)
-    @JsonProperty("incomeType")
-    private IncomeType incomeType;
-
-    @Enumerated(EnumType.STRING)
-    @JsonProperty("incomeSource")
-    private IncomeSource incomeSource;
-
-    private String description;
-
     @JsonProperty("updatedAt")
-    private LocalDateTime updatedAt; //last time income was updated
+    private LocalDateTime updatedAt;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "income", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<IncomeVt> validTimes = new ArrayList<>();
 }

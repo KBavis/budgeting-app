@@ -2,12 +2,13 @@ package com.bavis.budgetapp.entity;
 
 import java.io.Serial;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-
 import com.bavis.budgetapp.constants.Role;
+import com.bavis.budgetapp.constants.TemporalConstants;
 import com.bavis.budgetapp.model.LinkToken;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -46,18 +47,27 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class User implements UserDetails{
+public class User implements UserDetails {
 	@Serial
 	private static final long serialVersionUID = 1L;
 
 	@Id @JsonProperty("userId") @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long userId;
+
+	@Builder.Default
+	@Column(name = "start_date", nullable = false)
+	private LocalDate startDate = TemporalConstants.BEGINNING_OF_TIME;
+
+	@Builder.Default
+	@Column(name = "end_date", nullable = false)
+	private LocalDate endDate = TemporalConstants.END_OF_TIME;
+
 	private String name;
 	private String username;
 	private String password;
 	private String profileImage;
-	private int failedLoginAttempts; //TODO: increment this value when user fails to login (if username is associated with account) AND reset once succesful login
-	private LocalDateTime lockoutEndTime; //TODO: Compare users attempt to login with this lockout time
+	private int failedLoginAttempts;
+	private LocalDateTime lockoutEndTime;
 
 	@Embedded
 	@AttributeOverrides({
@@ -81,7 +91,7 @@ public class User implements UserDetails{
 	 */
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	@JsonIgnore
-	private List<Account> accounts; //connected user accounts
+	private List<Account> accounts;
 
 	/**
 	 * User Can Have Multiple Sources of Income
@@ -90,35 +100,18 @@ public class User implements UserDetails{
 	@JsonIgnore
 	private List<Income> incomes;
 
-
 	public void incrementFailedLoginAttempts() {
 		failedLoginAttempts++;
 	}
 
-	/**
-	 *
-	 * @param minutes
-	 * 			number of minutes to lock account for
-	 */
 	public void lockAccount(int minutes) {
 		lockoutEndTime = LocalDateTime.now().plus(Duration.ofMinutes(minutes));
 	}
 
-	/**
-	 * invoked upon succesfull authentication
-	 */
 	public void resetLoginAttempts() {
 		failedLoginAttempts = 0;
 		lockoutEndTime = null;
 	}
-
-
-
-	/**
-	 * ***************************************************
-	 * ****** OVERRIDING SPRING SECURITY METHODS *********
-	 * ***************************************************
-	 */
 
 	@Override
 	@JsonIgnore
@@ -150,11 +143,6 @@ public class User implements UserDetails{
 		return lockoutEndTime == null || lockoutEndTime.isAfter(LocalDateTime.now());
 	}
 
-	/**
-	 *
-	 * @return
-	 * 		whether the users credentials must be updated
-	 */
 	@Override
 	@JsonIgnore
 	public boolean isCredentialsNonExpired() {
