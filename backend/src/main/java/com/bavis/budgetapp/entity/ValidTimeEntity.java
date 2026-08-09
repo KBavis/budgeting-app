@@ -33,4 +33,13 @@ public abstract class ValidTimeEntity {
     @Builder.Default
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate = TemporalConstants.END_OF_TIME;
+
+    /**
+     * Polymorphic method implemented by concrete Valid Time entities to copy non-temporal domain attributes.
+     * Invoked during same-day effectivity updates to mutate active record in place.
+     *
+     * @param source
+     *          - Candidate VT record containing updated attributes
+     */
+    public abstract void copyAttributesFrom(ValidTimeEntity source);
 }

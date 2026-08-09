@@ -48,4 +48,14 @@ public class CategoryVt extends ValidTimeEntity {
     @JoinColumn(name = "category_type_id")
     @JsonIgnoreProperties("categories")
     private CategoryType categoryType;
+
+    @Override
+    public void copyAttributesFrom(ValidTimeEntity source) {
+        if (source instanceof CategoryVt other) {
+            if (other.getName() != null) this.name = other.getName();
+            this.budgetAllocationPercentage = other.getBudgetAllocationPercentage();
+            this.budgetAmount = other.getBudgetAmount();
+            if (other.getCategoryType() != null) this.categoryType = other.getCategoryType();
+        }
+    }
 }

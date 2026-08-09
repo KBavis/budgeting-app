@@ -45,4 +45,13 @@ public class AccountVt extends ValidTimeEntity {
     private AccountType accountType;
 
     private double balance;
+
+    @Override
+    public void copyAttributesFrom(ValidTimeEntity source) {
+        if (source instanceof AccountVt other) {
+            if (other.getAccountName() != null) this.accountName = other.getAccountName();
+            if (other.getAccountType() != null) this.accountType = other.getAccountType();
+            this.balance = other.getBalance();
+        }
+    }
 }

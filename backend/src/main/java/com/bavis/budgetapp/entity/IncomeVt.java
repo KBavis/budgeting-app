@@ -49,4 +49,14 @@ public class IncomeVt extends ValidTimeEntity {
     private IncomeSource incomeSource;
 
     private String description;
+
+    @Override
+    public void copyAttributesFrom(ValidTimeEntity source) {
+        if (source instanceof IncomeVt other) {
+            this.amount = other.getAmount();
+            if (other.getIncomeType() != null) this.incomeType = other.getIncomeType();
+            if (other.getIncomeSource() != null) this.incomeSource = other.getIncomeSource();
+            if (other.getDescription() != null) this.description = other.getDescription();
+        }
+    }
 }

@@ -43,4 +43,14 @@ public class CategoryTypeVt extends ValidTimeEntity {
     private double budgetAmount;
 
     private double savedAmount;
+
+    @Override
+    public void copyAttributesFrom(ValidTimeEntity source) {
+        if (source instanceof CategoryTypeVt other) {
+            if (other.getName() != null) this.name = other.getName();
+            this.budgetAllocationPercentage = other.getBudgetAllocationPercentage();
+            this.budgetAmount = other.getBudgetAmount();
+            this.savedAmount = other.getSavedAmount();
+        }
+    }
 }
