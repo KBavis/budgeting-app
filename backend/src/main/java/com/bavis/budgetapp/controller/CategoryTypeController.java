@@ -27,12 +27,14 @@ import java.util.List;
 /**
  * @author Kellen Bavis
  *
- *  Controller for working with our CategoryType entities
+ * Controller utilized for manipulating/reading CategoryTypes for users
  */
+
 @RestController
 @Log4j2
-@RequestMapping("/category/type")
+@RequestMapping("/category-type")
 public class CategoryTypeController {
+
 	private final CategoryTypeService _categoryTypeService;
 
 	public CategoryTypeController(CategoryTypeService _categoryTypeService) {
@@ -40,94 +42,91 @@ public class CategoryTypeController {
 	}
 
 	/**
-	 * Creates a new CategoryType
+	 * Endpoint utilized for creating CategoryTypes
 	 *
 	 * @param categoryType
-	 * 			- CategoryType to create
+	 * 			- CategoryType to be created
 	 * @return
-	 * 			- newly created CategoryType
+	 * 			- Created CategoryTypeResponseDto
 	 */
 	@PostMapping
-	public CategoryType createCategoryType(@RequestBody CategoryType categoryType) {
+	public CategoryTypeResponseDto createCategoryType(@RequestBody CategoryType categoryType) {
 		log.info("Received Category Type creation request for [{}]", categoryType);
-		
 		try {
 			return _categoryTypeService.create(categoryType);
 		} catch (Exception e) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access - unable to category type");
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access - unable to create category type");
 		}
 	}
 
 	/**
-	 * Creates multiple CategoryType's
+	 * Endpoint to bulk create CategoryTypes
 	 *
 	 * @param categoryTypes
-	 * 			- CategoryTypes to create
+	 * 			- List of CategoryTypes to create
 	 * @return
-	 * 			- newly created CategoryTypes
+	 * 			- List of created CategoryTypeResponseDtos
 	 */
 	@PostMapping("/bulk")
-	public List<CategoryType> createManyCategoryTypes(@RequestBody List<CategoryTypeDto> categoryTypes) {
+	public List<CategoryTypeResponseDto> createManyCategoryTypes(@RequestBody List<CategoryTypeDto> categoryTypes) {
 		log.info("Received request to create multiple CategoryTypes: [{}]", categoryTypes);
 		return _categoryTypeService.createMany(categoryTypes);
 	}
 
 	/**
-	 * Read all CategoryTypes for the authenticated user
+	 * Read all CategoryTypes pertaining to authenticated user
 	 *
 	 * @param asOf
 	 * 			- Optional point-in-time date to evaluate CategoryType state history
 	 * @return
-	 * 			- List of CategoryTypes
+	 * 			- List of CategoryTypeResponseDtos associated with authenticated user
 	 */
 	@GetMapping
-	public List<CategoryType> readMany(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+	public List<CategoryTypeResponseDto> readMany(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received request to read all Category Types for the authenticated user with asOf [{}]", asOf);
-		return _categoryTypeService.readAll(asOf);
+		return _categoryTypeService.readAllResponseDtos(asOf);
 	}
 
 	/**
-	 * Read a particular CategoryType pertaining to passed in CategoryID
+	 * Read a single CategoryType pertaining to authenticated user
 	 *
 	 * @param categoryTypeId
-	 * 			- specific CategoryID to fetch
+	 * 			- CategoryTypeId to retrieve
 	 * @param asOf
 	 * 			- Optional point-in-time date to evaluate CategoryType state history
 	 * @return
-	 * 			- fetched CategoryType
+	 * 			- CategoryTypeResponseDto corresponding to CategoryTypeId
 	 */
 	@GetMapping("/{categoryTypeId}")
-	public CategoryType read(@PathVariable(value = "categoryTypeId") Long categoryTypeId,
-							 @RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+	public CategoryTypeResponseDto read(@PathVariable(value = "categoryTypeId") Long categoryTypeId,
+										 @RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received CategoryType read request for Category Type with ID of {} and asOf [{}]", categoryTypeId, asOf);
-		return _categoryTypeService.read(categoryTypeId, asOf);
+		return _categoryTypeService.readResponseDto(categoryTypeId, asOf);
 	}
 
 	/**
-	 * Update a particular CategoryType
+	 * Endpoint utilized for updating a CategoryType entity
 	 *
-	 * @param categoryTypeId
-	 * 			- CategoryId pertaining to CategoryType needing updates
 	 * @param updateCategoryTypeDto
-	 * 			- Updates to apply to CategoryType
+	 * 			- CategoryType attributes needing update
 	 * @return
-	 * 			- updated CategoryType
+	 * 			- Updated CategoryTypeResponseDto
 	 */
 	@PutMapping("/{categoryTypeId}")
-	public CategoryType update(@PathVariable(value = "categoryTypeId") Long categoryTypeId, @RequestBody @Validated(UpdateCategoryTypeDtoValidationGroup.class) UpdateCategoryTypeDto updateCategoryTypeDto) {
-		log.info("Recieved CategoryType update request for id [{}] and updates [{}]", categoryTypeId, updateCategoryTypeDto);
+	public CategoryTypeResponseDto update(@PathVariable(value = "categoryTypeId") Long categoryTypeId, @RequestBody @Validated(UpdateCategoryTypeDtoValidationGroup.class) UpdateCategoryTypeDto updateCategoryTypeDto) {
+		log.info("Received CategoryType update request for id [{}] and updates [{}]", categoryTypeId, updateCategoryTypeDto);
 		return _categoryTypeService.update(updateCategoryTypeDto, categoryTypeId);
 	}
 
 	/**
-	 * Delete CategoryType
+	 * Endpoint utilized for deleting a CategoryType entity
 	 *
 	 * @param categoryTypeId
-	 * 			- specific CategoryID pertaining to CategoryType needing deletion
+	 * 			- ID corresponding to CategoryType entity needing deletion
 	 */
 	@DeleteMapping("/{categoryTypeId}")
-	public void delete(@PathVariable(value = "categoryId") Long categoryTypeId) {
-		log.info("Recieved CategoryType deletetion request for id [{}]", categoryTypeId);
+	public void delete(@PathVariable(value = "categoryTypeId") Long categoryTypeId) {
+		log.info("Received CategoryType delete request for id [{}]", categoryTypeId);
 		_categoryTypeService.delete(categoryTypeId);
 	}
 }

@@ -48,10 +48,10 @@ public class CategoryController {
 	 * @param categories
 	 * 			- List of CategoryDtos pertaining to same CategoryType
 	 * @return
-	 * 			- Saved List of Categories
+	 * 			- Saved List of CategoryResponseDtos
 	 */
 	@PostMapping("/bulk")
-	public List<Category> bulkCreate(@RequestBody @Validated({CategoryDtoValidationGroup.class, BulkCategoryDtoValidationGroup.class}) BulkCategoryDto categories){
+	public List<CategoryResponseDto> bulkCreate(@RequestBody @Validated({CategoryDtoValidationGroup.class, BulkCategoryDtoValidationGroup.class}) BulkCategoryDto categories){
 		log.info("Received request to create categories: [{}]", categories.toString());
 		return _categoryService.bulkCreate(categories);
 	}
@@ -62,10 +62,10 @@ public class CategoryController {
 	 * @param addCategoryDto
 	 * 			- DTO containing new Category and updates to any existing Categories
 	 * @return
-	 * 			- created Category
+	 * 			- created CategoryResponseDto
 	 */
 	@PostMapping
-	public Category create(@RequestBody @Valid AddCategoryDto addCategoryDto) {
+	public CategoryResponseDto create(@RequestBody @Valid AddCategoryDto addCategoryDto) {
 		log.info("Received Category creation request via following AddCategoryDto: [{}]", addCategoryDto);
 		return _categoryService.create(addCategoryDto);
 	}
@@ -78,15 +78,15 @@ public class CategoryController {
 	 * @param asOf
 	 * 			- Optional point-in-time date to evaluate category state history
 	 * @return
-	 * 			- Fetched Category from DB
+	 * 			- Fetched CategoryResponseDto from DB
 	 */
 	@GetMapping("/{categoryId}")
-	public Category read(@PathVariable(value = "categoryId") Long categoryId,
-						 @RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+	public CategoryResponseDto read(@PathVariable(value = "categoryId") Long categoryId,
+									@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received Category read request for [{}] with asOf [{}]", categoryId, asOf);
 		
 		try {
-			return _categoryService.read(categoryId, asOf);
+			return _categoryService.readResponseDto(categoryId, asOf);
 		}  catch (Exception e) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find category with id " + categoryId);
 		}
@@ -98,12 +98,12 @@ public class CategoryController {
 	 * @param asOf
 	 * 			- Optional point-in-time date to evaluate category state history
 	 * @return
-	 * 		- all available Categories
+	 * 		- all available CategoryResponseDtos
 	 */
 	@GetMapping
-	public List<Category> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+	public List<CategoryResponseDto> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received request to fetch all Categories for current authenticated user with asOf [{}]", asOf);
-		return _categoryService.readAll(asOf);
+		return _categoryService.readAllResponseDtos(asOf);
 	}
 
 	/**
@@ -112,10 +112,10 @@ public class CategoryController {
 	 * @param editCategoryDto
 	 * 			- DTO containing updated Category budget allocations
 	 * @return
-	 * 			- Updated Categories
+	 * 			- Updated CategoryResponseDtos
 	 */
 	@PutMapping
-	public List<Category> updateCategoryAllocations(@RequestBody EditCategoryDto editCategoryDto) {
+	public List<CategoryResponseDto> updateCategoryAllocations(@RequestBody EditCategoryDto editCategoryDto) {
 		log.info("Received update Category allocations request via EditCategoryDto [{}]", editCategoryDto);
 		return _categoryService.updateCategoryAllocations(editCategoryDto);
 	}
@@ -138,10 +138,10 @@ public class CategoryController {
 	 * @param renameCategoryDto
 	 * 			- DTO containing updated Category name and CategoryId
 	 * @return
-	 * 			- updated Category
+	 * 			- updated CategoryResponseDto
 	 */
 	@PutMapping("/rename")
-	public Category renameCategory(@RequestBody @Valid RenameCategoryDto renameCategoryDto) {
+	public CategoryResponseDto renameCategory(@RequestBody @Valid RenameCategoryDto renameCategoryDto) {
 		log.info("Received rename Category request via RenameCategoryDto [{}]", renameCategoryDto);
 		return _categoryService.renameCategory(renameCategoryDto);
 	}

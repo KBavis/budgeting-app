@@ -38,54 +38,52 @@ public class IncomeController {
     }
 
     /**
-     * Creation of a single income
+     * Create an Income entity
      *
      * @param income
-     *          - Income to create
+     *          - IncomeDto containing attributes necessary to create Income entity
      * @return
-     *          - newly created Income
+     *          - IncomeResponseDto containing created Income entity
      */
     @PostMapping
-    public ResponseEntity<Income> create(@Valid @RequestBody IncomeDto income){
+    public ResponseEntity<IncomeResponseDto> create(@Valid @RequestBody IncomeDto income){
         log.info("Received Income creation request for Income [{}]", income);
         return ResponseEntity.ok(_incomeService.create(income));
     }
 
     /**
-     * Fetching of all Income entities associated with authenticated user
+     * Read all Income entities corresponding to authenticated user
      *
      * @param asOf
      *          - Optional point-in-time date to evaluate Income state history
      * @return
-     *          - all Incomes associated with Auth user
+     *          - List of IncomeResponseDtos corresponding to authenticated user
      */
     @GetMapping
-    public ResponseEntity<List<Income>> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+    public ResponseEntity<List<IncomeResponseDto>> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
         log.info("Received request to fetch all incomes corresponding to authenticated user with asOf [{}]", asOf);
-        return ResponseEntity.ok(_incomeService.readAll(asOf));
+        return ResponseEntity.ok(_incomeService.readAllResponseDtos(asOf));
     }
 
     /**
-     * Update an existing income
+     * Update a specified Income entity
      *
      * @param incomeDto
-     *          - DTO containing updated income info
+     *          - UpdateIncomeDto containing attributes necessary to update an Income entity
      * @return
-     *          - updated Income entity
+     *          - Updated IncomeResponseDto
      */
     @PatchMapping
-    public ResponseEntity<Income> update(@RequestBody UpdateIncomeDto incomeDto) {
+    public ResponseEntity<IncomeResponseDto> update(@RequestBody UpdateIncomeDto incomeDto) {
         log.info("Received request to update a users income via the following RequestBody: [{}]", incomeDto);
         return ResponseEntity.ok(_incomeService.update(incomeDto));
     }
 
     /**
-     * Delete an existing income by ID
+     * Delete a specified Income entity
      *
      * @param incomeId
-     *          - ID of Income entity to delete
-     * @return
-     *          - 200 OK
+     *          - Income ID corresponding to Income entity needing deletion
      */
     @DeleteMapping("/{incomeId}")
     public ResponseEntity<Void> delete(@PathVariable Long incomeId) {

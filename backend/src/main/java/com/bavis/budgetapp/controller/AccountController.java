@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * @author Kellen Bavis
  *
- *  Controller utilzied for working with an Account entity
+ * Controller utilized for working with Account entities
  */
 @RestController
 @Log4j2
@@ -30,9 +30,9 @@ import java.util.List;
 public class AccountController {
 	private final AccountService _accountService;
 
-    public AccountController(AccountService _accountService){
+	public AccountController(AccountService _accountService) {
 		this._accountService = _accountService;
-    }
+	}
 
 	/**
 	 * Fetch a specified Account
@@ -42,14 +42,13 @@ public class AccountController {
 	 * @param asOf
 	 * 			- Optional point-in-time date to evaluate Account state history
 	 * @return
-	 * 			- Fetched account corresponding to passed in AccountID
+	 * 			- Fetched AccountResponseDto corresponding to passed in AccountID
 	 */
 	@GetMapping("/{accountId}")
-	public ResponseEntity<Account> read(@PathVariable(value = "accountId") String accountId,
-										@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+	public ResponseEntity<AccountResponseDto> read(@PathVariable(value = "accountId") String accountId,
+												   @RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received request to read account with ID {} asOf [{}]", accountId, asOf);
-		Account account = _accountService.read(accountId, asOf);
-		return ResponseEntity.ok(account);
+		return ResponseEntity.ok(_accountService.readResponseDto(accountId, asOf));
 	}
 
 	/**
@@ -61,7 +60,7 @@ public class AccountController {
 	 * 		- all accounts associated with auth user
 	 */
 	@GetMapping
-	public ResponseEntity<List<AccountDto>> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
+	public ResponseEntity<List<AccountResponseDto>> readAll(@RequestParam(name = "asOf", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf) {
 		log.info("Received request to read all account associated with current authenticated user with asOf [{}]", asOf);
 		return ResponseEntity.ok(_accountService.readAll(asOf));
 	}
@@ -72,12 +71,12 @@ public class AccountController {
 	 * @param connectAccountRequestDto
 	 * 			- Request to connect a users account
 	 * @return
-	 * 			- Account that was successfully connected
+	 * 			- AccountResponseDto that was successfully connected
 	 */
 	@PostMapping
-	public ResponseEntity<AccountDto> connectAccount(@Valid @RequestBody ConnectAccountRequestDto connectAccountRequestDto){
+	public ResponseEntity<AccountResponseDto> connectAccount(@Valid @RequestBody ConnectAccountRequestDto connectAccountRequestDto){
 		log.info("Received request to connect new account: [{}]", connectAccountRequestDto);
-		return ResponseEntity.ok( _accountService.connectAccount(connectAccountRequestDto));
+		return ResponseEntity.ok(_accountService.connectAccount(connectAccountRequestDto));
 	}
 
 	/**
