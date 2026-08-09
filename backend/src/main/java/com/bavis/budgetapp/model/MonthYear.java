@@ -23,4 +23,11 @@ import java.time.YearMonth;
 public class MonthYear implements Serializable {
     private String month;
     private int year;
+
+    public LocalDate toEndOfMonthDate() {
+        if (month == null || year == 0) return LocalDate.now();
+        Month m = Month.valueOf(month.toUpperCase());
+        YearMonth ym = YearMonth.of(year, m);
+        return ym.atEndOfMonth();
+    }
 }
