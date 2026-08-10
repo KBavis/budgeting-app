@@ -40,7 +40,7 @@ public class EffectivityService {
     }
 
     /**
-     * Saves a VT record into the given validTimes list.
+     * Applies a candidate VT record update into the given validTimes list.
      * Handles initial creation, same-day attribute mutations, and new-day temporal sequence additions.
      *
      * @param validTimes
@@ -52,7 +52,7 @@ public class EffectivityService {
      * @return
      *          - Active or updated VT record
      */
-    public <V extends ValidTimeEntity> V saveVt(List<V> validTimes, V newVt, LocalDate effectiveDate) {
+    public <V extends ValidTimeEntity> V applyVtUpdate(List<V> validTimes, V newVt, LocalDate effectiveDate) {
         LocalDate targetDate = (effectiveDate != null) ? effectiveDate : LocalDate.now();
 
         // 1. Initial Creation (First VT setup)
