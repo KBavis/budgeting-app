@@ -48,7 +48,7 @@ public class CategoryDtoCategoryTypeValidator implements ConstraintValidator<Cat
         boolean valid = false;
 
         try{
-            categoryType = categoryTypeService.read(categoryDto.getCategoryTypeId());
+            categoryType = categoryTypeService.findEntity(categoryDto.getCategoryTypeId(), null);
         } catch(Exception e){
             if(e.getMessage().contains("Invalid category type id:")){
                 return false;

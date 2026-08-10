@@ -45,7 +45,7 @@ public class AccountsDtoAccountsValidator implements ConstraintValidator<Account
             //Fetch Account entity corresponding to Account ID
             Account account;
             try{
-                account = accountService.read(accountId);
+                account = accountService.findEntity(accountId, null);
             } catch (RuntimeException e){
                 return false;
             }
