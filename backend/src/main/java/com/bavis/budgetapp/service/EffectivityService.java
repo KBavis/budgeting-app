@@ -30,13 +30,13 @@ public class EffectivityService {
      */
     public <V extends ValidTimeEntity> V getActiveVt(List<V> validTimes, LocalDate asOf) {
         if (validTimes == null || validTimes.isEmpty()) {
-            return null;
+            throw new IllegalStateException("Corrupt data state: Entity contains no valid time (VT) records.");
         }
         LocalDate target = (asOf != null) ? asOf : LocalDate.now();
         return validTimes.stream()
                 .filter(vt -> GeneralUtil.isActive(vt.getStartDate(), vt.getEndDate(), target))
                 .findFirst()
-                .orElse(validTimes.get(validTimes.size() - 1));
+                .orElseThrow(() -> new IllegalStateException("Corrupt data state: No active valid time (VT) record found as of " + target));
     }
 
     /**
