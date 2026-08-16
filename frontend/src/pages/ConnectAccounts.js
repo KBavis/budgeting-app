@@ -75,8 +75,19 @@ const ConnectAccounts = () => {
       }
    }, []);
 
+   const isTokenExpired = (expirationDateTimeString) => {
+      if (!expirationDateTimeString) return true;
+      let str = String(expirationDateTimeString).trim();
+      if (!str.endsWith("Z") && !str.includes("+") && !str.includes("-", 10)) {
+         str += "Z";
+      }
+      const expiration = new Date(str);
+      if (isNaN(expiration.getTime())) return true;
+      return new Date().getTime() >= (expiration.getTime() - 60000);
+   };
+
    useEffect(() => {
-      if (user && (!user.linkToken || (user.linkToken.expiration && new Date() > new Date(user.linkToken.expiration)))) {
+      if (user && (!user.linkToken || !user.linkToken.token || isTokenExpired(user.linkToken?.expiration))) {
          refreshLinkToken();
       }
    }, [user, refreshLinkToken]);

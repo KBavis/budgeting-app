@@ -116,9 +116,15 @@ const AccountsPage = () => {
 
     const isTokenExpired = (expirationDateTimeString) => {
         if (!expirationDateTimeString) return true;
-        const now = new Date();
-        const expiration = new Date(expirationDateTimeString);
-        return now > expiration;
+        let str = String(expirationDateTimeString).trim();
+        // Append 'Z' if missing timezone offset so JS parses in UTC, matching Plaid server response
+        if (!str.endsWith("Z") && !str.includes("+") && !str.includes("-", 10)) {
+            str += "Z";
+        }
+        const expiration = new Date(str);
+        if (isNaN(expiration.getTime())) return true;
+        // 1-minute safety buffer before expiration
+        return new Date().getTime() >= (expiration.getTime() - 60000);
     };
 
     useEffect(() => {
@@ -129,9 +135,11 @@ const AccountsPage = () => {
     }, [accounts]);
 
     useEffect(() => {
-        if (user && (!user.linkToken || isTokenExpired(user.linkToken?.expiration)) && !isTokenRefreshed.current) {
-            isTokenRefreshed.current = true;
-            refreshLinkToken();
+        if (user && (!user.linkToken || !user.linkToken.token || isTokenExpired(user.linkToken?.expiration))) {
+            if (!isTokenRefreshed.current) {
+                isTokenRefreshed.current = true;
+                refreshLinkToken();
+            }
         }
     }, [user, refreshLinkToken]);
 

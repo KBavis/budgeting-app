@@ -81,23 +81,29 @@ const DropdownMenu = ({
 
    //Functionality to determine whether a User's link token is expired or not
    const isTokenExpired = (expirationDateTimeString) => {
-      const now = new Date();
-      const expiration = new Date(expirationDateTimeString);
-      return now > expiration;
+      if (!expirationDateTimeString) return true;
+      let str = String(expirationDateTimeString).trim();
+      if (!str.endsWith("Z") && !str.includes("+") && !str.includes("-", 10)) {
+         str += "Z";
+      }
+      const expiration = new Date(str);
+      if (isNaN(expiration.getTime())) return true;
+      return new Date().getTime() >= (expiration.getTime() - 60000);
    };
 
    //Refresh User's Link Token if Needed to enable them to add additonal accounts
    useEffect(() => {
       if (
-         !isTokenRefreshed.current &&
-         user?.linkToken &&
-         isTokenExpired(user.linkToken.expiration)
+         user &&
+         (!user.linkToken || !user.linkToken.token || isTokenExpired(user.linkToken?.expiration))
       ) {
-         console.log(
-            "Refreshing users link token due to link token being expired"
-         );
-         isTokenRefreshed.current = true; // Set the flag to true to prevent future refreshes
-         refreshLinkToken(); // Refresh user's link token
+         if (!isTokenRefreshed.current) {
+            console.log(
+               "Refreshing user's link token due to link token being missing or expired"
+            );
+            isTokenRefreshed.current = true;
+            refreshLinkToken();
+         }
       }
    }, [user, refreshLinkToken]);
 
