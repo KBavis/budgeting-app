@@ -226,7 +226,7 @@ public class TransactionServiceTests {
 
         // mocks
         configureSyncTransactionMocks_addedModified();
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
         doNothing().when(transactionService).predictCategories(any(), any());
 
@@ -284,7 +284,7 @@ public class TransactionServiceTests {
 
         // mocks
         configureSyncTransactionMocks_addedModified();
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
         when(accountService.updateBalance(any(), any())).thenAnswer(invocationOnMock -> {
             Account account = invocationOnMock.getArgument(1);
@@ -336,7 +336,7 @@ public class TransactionServiceTests {
 
         // mocks
         configureSyncTransactionMocks_removed(false);
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
 
         // act
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
@@ -381,7 +381,7 @@ public class TransactionServiceTests {
 
         // mocks
         configureSyncTransactionMocks_removed(true);
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
 
         // act
         SyncTransactionsDto syncTransactionsDto = transactionService.syncTransactions(accountsDto);
@@ -426,7 +426,7 @@ public class TransactionServiceTests {
 
         // mocks
         configureSyncTransactionMocks_addedModified();
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(transaction));
         doNothing().when(transactionService).predictCategories(any(), any());
 
@@ -477,7 +477,7 @@ public class TransactionServiceTests {
 
         // mocks
         configureSyncTransactionMocks_addedModified();
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(transaction));
         doNothing().when(transactionService).predictCategories(any(), any());
 
@@ -525,7 +525,7 @@ public class TransactionServiceTests {
 
         // mocks
         configureSyncTransactionMocks_prevMonth();
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
         doNothing().when(transactionService).predictCategories(any(), any());
 
@@ -581,7 +581,7 @@ public class TransactionServiceTests {
 
         // mocks
         configureSyncTransactionMocks_addedModified();
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
         doNothing().when(transactionService).predictCategories(any(), any());
 
@@ -640,7 +640,7 @@ public class TransactionServiceTests {
                 .build();
 
         // Mocks
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
         configureSyncTransactions_multiplePagesMocks(page1Response, page2Response);
         doNothing().when(transactionService).predictCategories(any(), any());
 
@@ -672,7 +672,7 @@ public class TransactionServiceTests {
                 .build();
 
         //Mock
-        when(accountService.read(accountIdOne)).thenThrow(new RuntimeException("Unable to locate Account with ID 12345XYZ"));
+        when(accountService.findEntity(accountIdOne, null)).thenThrow(new RuntimeException("Unable to locate Account with ID 12345XYZ"));
 
         //Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -683,7 +683,7 @@ public class TransactionServiceTests {
         assertEquals("java.lang.RuntimeException: Unable to locate Account with ID 12345XYZ", exception.getMessage());
 
         //Verify
-        verify(accountService, times(1)).read(accountIdOne);
+        verify(accountService, times(1)).findEntity(accountIdOne, null);
     }
 
     @Test
@@ -711,7 +711,7 @@ public class TransactionServiceTests {
 
         //Mock
         when(plaidService.syncTransactions(accountConnectionOne.getAccessToken(), accountConnectionOne.getPreviousCursor())).thenThrow(new PlaidServiceException(errorMsg));
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
 
         //Act & Assert
         PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
@@ -722,7 +722,7 @@ public class TransactionServiceTests {
 
         //Verify
         verify(plaidService, times(1)).syncTransactions(accountConnectionOne.getAccessToken(), accountConnectionOne.getPreviousCursor());
-        verify(accountService, times(1)).read(accountIdOne);
+        verify(accountService, times(1)).findEntity(accountIdOne, null);
     }
 
 
@@ -1070,7 +1070,7 @@ public class TransactionServiceTests {
                 .build();
 
         //Mock
-        when(categoryService.read(Long.parseLong(categoryRequestDto.getCategoryId()))).thenReturn(category);
+        when(categoryService.findEntity(Long.parseLong(categoryRequestDto.getCategoryId()), null)).thenReturn(category);
         when(transactionRepository.findById(categoryRequestDto.getTransactionId())).thenReturn(Optional.of(transaction));
         when(transactionRepository.save(transaction)).thenReturn(updatedTransaction);
 
@@ -1084,7 +1084,7 @@ public class TransactionServiceTests {
         ;
 
         //Verify
-        verify(categoryService, times(1)).read(Long.parseLong(categoryRequestDto.getCategoryId()));
+        verify(categoryService, times(1)).findEntity(Long.parseLong(categoryRequestDto.getCategoryId()), null);
         verify(transactionRepository, times(1)).findById(categoryRequestDto.getTransactionId());
         verify(transactionRepository, times(1)).save(transaction);
     }
@@ -1101,7 +1101,7 @@ public class TransactionServiceTests {
                 .transactionId("invalid-id")
                 .build();
         //Mock
-        when(categoryService.read(Long.parseLong(categoryRequestDto.getCategoryId()))).thenReturn(category);
+        when(categoryService.findEntity(Long.parseLong(categoryRequestDto.getCategoryId()), null)).thenReturn(category);
         when(transactionRepository.findById(categoryRequestDto.getTransactionId())).thenReturn(Optional.empty());
 
         //Act & Assert
@@ -1120,7 +1120,7 @@ public class TransactionServiceTests {
                 .transactionId("valid-id")
                 .build();
         //Mock
-        when(categoryService.read(Long.parseLong(categoryRequestDto.getCategoryId()))).thenThrow(new RuntimeException("Invalid Category ID: " + categoryRequestDto.getCategoryId()));
+        when(categoryService.findEntity(Long.parseLong(categoryRequestDto.getCategoryId()), null)).thenThrow(new RuntimeException("Invalid Category ID: " + categoryRequestDto.getCategoryId()));
 
         //Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -1425,7 +1425,7 @@ public class TransactionServiceTests {
 
         // mocks
         when(suggestionEngineClient.predictCategory(any())).thenReturn(1L);
-        when(categoryService.read(1L)).thenReturn(category);
+        when(categoryService.findEntity(1L, null)).thenReturn(category);
 
         // act
         transactionService.predictCategories(transactions, 1L);

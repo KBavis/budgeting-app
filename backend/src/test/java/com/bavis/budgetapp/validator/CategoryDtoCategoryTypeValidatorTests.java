@@ -16,8 +16,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -62,15 +60,13 @@ public class CategoryDtoCategoryTypeValidatorTests {
         categoryType = CategoryType.builder()
                 .categoryTypeId(10L)
                 .categories(new ArrayList<>())
-                .budgetAmount(1000.0)
-                .budgetAllocationPercentage(.7)
                 .user(user)
                 .build();
     }
 
     @Test
     void testIsValid_ValidCategoryType_Successful() {
-       when(categoryTypeService.read(validCategoryDto.getCategoryTypeId())).thenReturn(categoryType);
+       when(categoryTypeService.findEntity(validCategoryDto.getCategoryTypeId(), null)).thenReturn(categoryType);
        when(userService.getCurrentAuthUser()).thenReturn(user);
 
        assertTrue(validator.isValid(validCategoryDto, context));
@@ -79,7 +75,7 @@ public class CategoryDtoCategoryTypeValidatorTests {
     @Test
     void testIsValid_InvalidCategoryTypeId_Failure() {
         invalidCategoryDto.setCategoryTypeId(11L);
-        when(categoryTypeService.read(invalidCategoryDto.getCategoryTypeId())).thenThrow(new RuntimeException("Invalid category type id: " + invalidCategoryDto.getCategoryTypeId()));
+        when(categoryTypeService.findEntity(invalidCategoryDto.getCategoryTypeId(), null)).thenThrow(new RuntimeException("Invalid category type id: " + invalidCategoryDto.getCategoryTypeId()));
 
 
         assertFalse(validator.isValid(invalidCategoryDto, context));
@@ -92,7 +88,7 @@ public class CategoryDtoCategoryTypeValidatorTests {
                 .username("test")
                 .build();
         invalidCategoryDto.setCategoryTypeId(11L);
-        when(categoryTypeService.read(invalidCategoryDto.getCategoryTypeId())).thenReturn(categoryType);
+        when(categoryTypeService.findEntity(invalidCategoryDto.getCategoryTypeId(), null)).thenReturn(categoryType);
         when(userService.getCurrentAuthUser()).thenReturn(invalidUser);
 
         assertFalse(validator.isValid(invalidCategoryDto, context));

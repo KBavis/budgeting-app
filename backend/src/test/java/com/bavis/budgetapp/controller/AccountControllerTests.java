@@ -46,7 +46,7 @@ public class AccountControllerTests {
     private ObjectMapper objectMapper;
 
     private ConnectAccountRequestDto connectAccountRequestDto;
-    private AccountDto accountDTO;
+    private AccountResponseDto accountResponseDto;
     @BeforeEach
     void setup() {
         connectAccountRequestDto = ConnectAccountRequestDto.builder()
@@ -56,7 +56,7 @@ public class AccountControllerTests {
                 .publicToken("public-token")
                 .build();
 
-        accountDTO = AccountDto.builder()
+        accountResponseDto = AccountResponseDto.builder()
                 .accountType(AccountType.CHECKING)
                 .balance(1000.0)
                 .accountName("Test Account")
@@ -93,7 +93,7 @@ public class AccountControllerTests {
     @Test
     public void testConnectAccount_ValidRequest_Successful() throws Exception {
         //Mock
-        when(accountService.connectAccount(any(ConnectAccountRequestDto.class))).thenReturn(accountDTO);
+        when(accountService.connectAccount(any(ConnectAccountRequestDto.class))).thenReturn(accountResponseDto);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/account")
@@ -103,22 +103,22 @@ public class AccountControllerTests {
         //Assert
         resultActions.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.accountName").value(accountDTO.getAccountName()))
-                .andExpect(jsonPath("$.balance").value(accountDTO.getBalance()))
+                .andExpect(jsonPath("$.accountName").value(accountResponseDto.getAccountName()))
+                .andExpect(jsonPath("$.balance").value(accountResponseDto.getBalance()))
                 .andExpect(jsonPath("$.accountType").value("CHECKING"));
     }
 
     @Test
     void testReadAll_Successful() throws Exception{
         //Arrange
-        AccountDto accountDtoOne = AccountDto.builder()
+        AccountResponseDto accountDtoOne = AccountResponseDto.builder()
                 .accountId("123XYZ")
                 .accountName("Account One")
                 .accountType(AccountType.CHECKING)
                 .balance(1000.0)
                 .build();
 
-        AccountDto accountDtoTwo = AccountDto.builder()
+        AccountResponseDto accountDtoTwo = AccountResponseDto.builder()
                 .accountId("123XYZ")
                 .accountName("Account One")
                 .accountType(AccountType.CHECKING)
@@ -126,17 +126,17 @@ public class AccountControllerTests {
                 .build();
 
 
-        AccountDto accountDtoThree = AccountDto.builder()
+        AccountResponseDto accountDtoThree = AccountResponseDto.builder()
                 .accountId("123XYZ")
                 .accountName("Account One")
                 .accountType(AccountType.CHECKING)
                 .balance(1000.0)
                 .build();
 
-        List<AccountDto> accountDtos = List.of(accountDtoOne, accountDtoTwo, accountDtoThree);
+        List<AccountResponseDto> accountDtos = List.of(accountDtoOne, accountDtoTwo, accountDtoThree);
 
         //Mock
-        when(accountService.readAll()).thenReturn(accountDtos);
+        when(accountService.getAll(null)).thenReturn(accountDtos);
 
         //Act & Assert
         ResultActions resultActions = mockMvc.perform(get("/account"))
@@ -156,7 +156,7 @@ public class AccountControllerTests {
                 .andExpect(jsonPath("$[2].balance").value(accountDtoThree.getBalance()));
 
         //Verify
-        verify(accountService, times(1)).readAll();
+        verify(accountService, times(1)).getAll(null);
     }
 
 

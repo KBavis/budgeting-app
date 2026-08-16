@@ -174,8 +174,8 @@ public class TransactionControllerTests {
         //Mock
         when(transactionService.syncTransactions(validTransactionSyncRequest)).thenReturn(syncTransactionsDto);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountService.read(accountOneId)).thenReturn(accountOne);
-        when(accountService.read(accountTwoId)).thenReturn(accountTwo);
+        when(accountService.findEntity(accountOneId, null)).thenReturn(accountOne);
+        when(accountService.findEntity(accountTwoId, null)).thenReturn(accountTwo);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/transactions/sync")
@@ -212,8 +212,8 @@ public class TransactionControllerTests {
         //Verify
         verify(transactionService, times(1)).syncTransactions(validTransactionSyncRequest);
         verify(userService, times(2)).getCurrentAuthUser();
-        verify(accountService, times(1)).read(accountOneId);
-        verify(accountService, times(1)).read(accountTwoId);
+        verify(accountService, times(1)).findEntity(accountOneId, null);
+        verify(accountService, times(1)).findEntity(accountTwoId, null);
     }
 
     @Test
@@ -282,7 +282,7 @@ public class TransactionControllerTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountService.read(invalidAccountIdOne)).thenThrow(new RuntimeException("Unable to locate Account with ID " + invalidAccountIdOne));
+        when(accountService.findEntity(invalidAccountIdOne, null)).thenThrow(new RuntimeException("Unable to locate Account with ID " + invalidAccountIdOne));
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/transactions/sync")
@@ -295,7 +295,7 @@ public class TransactionControllerTests {
                 .andExpect(jsonPath("$.error").value("The provided list of Account ID's contains at least one invalid entry"));
 
         //Verify
-        verify(accountService, times(1)).read(invalidAccountIdOne);
+        verify(accountService, times(1)).findEntity(invalidAccountIdOne, null);
     }
 
     @Test
@@ -312,7 +312,7 @@ public class TransactionControllerTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountService.read(invalidAccountIdOne)).thenReturn(accountWithNonAuthUser);
+        when(accountService.findEntity(invalidAccountIdOne, null)).thenReturn(accountWithNonAuthUser);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/transactions/sync")
@@ -325,7 +325,7 @@ public class TransactionControllerTests {
                 .andExpect(jsonPath("$.error").value("The provided list of Account ID's contains at least one invalid entry"));
 
         //Verify
-        verify(accountService, times(1)).read(invalidAccountIdOne);
+        verify(accountService, times(1)).findEntity(invalidAccountIdOne, null);
         verify(userService, times(1)).getCurrentAuthUser();
     }
 
@@ -358,7 +358,7 @@ public class TransactionControllerTests {
         //Mock
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(categoryService.read(Long.parseLong(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
+        when(categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
         when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act
@@ -417,7 +417,7 @@ public class TransactionControllerTests {
         //Mock
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(categoryService.read(Long.parseLong(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
+        when(categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
         when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act

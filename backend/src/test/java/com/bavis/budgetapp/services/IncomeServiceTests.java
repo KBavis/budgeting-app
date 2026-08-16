@@ -23,10 +23,18 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.bavis.budgetapp.entity.CategoryTypeVt;
+import com.bavis.budgetapp.entity.IncomeVt;
+import com.bavis.budgetapp.service.EffectivityService;
+import com.bavis.budgetapp.dto.response.IncomeResponseDto;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,12 +54,19 @@ public class IncomeServiceTests {
     @Mock
     private CategoryTypeService categoryTypeService;
 
+    @Mock
+    private EffectivityService effectivityService;
+
     @InjectMocks
     private IncomeServiceImpl incomeService;
 
     private IncomeDto incomeDTO;
 
     private Income income;
+
+    private IncomeVt incomeVt;
+
+    private IncomeResponseDto incomeResponseDto;
 
     private User user;
 
@@ -71,39 +86,49 @@ public class IncomeServiceTests {
                 .build();
 
         income = Income.builder()
+                .incomeId(1L)
+                .user(user)
+                .build();
+
+        incomeVt = IncomeVt.builder()
+                .income(income)
                 .incomeSource(IncomeSource.EMPLOYER)
                 .incomeType(IncomeType.SALARY)
                 .amount(5000.0)
                 .description("Bi-weekly salary from Company")
+                .build();
+
+        incomeResponseDto = IncomeResponseDto.builder()
                 .incomeId(1L)
-                .user(user)
+                .incomeSource(IncomeSource.EMPLOYER)
+                .incomeType(IncomeType.SALARY)
+                .amount(5000.0)
+                .description("Bi-weekly salary from Company")
                 .build();
     }
 
     @Test
     public void testCreate_Successful() {
-       //Mock
+        //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(incomeMapper.toIncome(incomeDTO)).thenReturn(income);
-        when(incomeRepository.save(income)).thenReturn(income);
+        when(incomeRepository.save(any(Income.class))).thenReturn(income);
+        when(effectivityService.getActiveVt(any(), any())).thenReturn(incomeVt);
+        when(incomeMapper.toResponseDto(income, incomeVt)).thenReturn(incomeResponseDto);
 
         //Act
-        Income actualIncome = incomeService.create(incomeDTO);
+        IncomeResponseDto actualResponse = incomeService.create(incomeDTO);
 
         //Assert
-        assertNotNull(actualIncome);
-        assertEquals(income.getIncomeId(), actualIncome.getIncomeId());
-        assertEquals(income.getIncomeSource(), actualIncome.getIncomeSource());
-        assertEquals(income.getIncomeType(), actualIncome.getIncomeType());
-        assertEquals(income.getUser().getUserId(), actualIncome.getUser().getUserId());
-        assertEquals(income.getDescription(), actualIncome.getDescription());
-        assertEquals(income.getAmount(), actualIncome.getAmount());
-        assertNotNull(income.getUpdatedAt()); //not able to validate exact time
+        assertNotNull(actualResponse);
+        assertEquals(incomeResponseDto.getIncomeId(), actualResponse.getIncomeId());
+        assertEquals(incomeResponseDto.getIncomeSource(), actualResponse.getIncomeSource());
+        assertEquals(incomeResponseDto.getIncomeType(), actualResponse.getIncomeType());
+        assertEquals(incomeResponseDto.getDescription(), actualResponse.getDescription());
+        assertEquals(incomeResponseDto.getAmount(), actualResponse.getAmount());
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
-        verify(incomeMapper, times(1)).toIncome(incomeDTO);
-        verify(incomeRepository, times(1)).save(income);
+        verify(incomeRepository, times(1)).save(any(Income.class));
     }
 
     @Test
@@ -112,10 +137,10 @@ public class IncomeServiceTests {
         List<Income> incomes = List.of(income, income, income);
 
         //Mock
-        when(incomeRepository.findByUserUserId(user.getUserId())).thenReturn(incomes);
+        when(incomeRepository.findByUserUserIdAndAsOf(eq(user.getUserId()), any(LocalDate.class))).thenReturn(incomes);
 
         //Act
-        List<Income> foundIncomes = incomeService.readByUserId(user.getUserId());
+        List<Income> foundIncomes = incomeService.findAllEntitiesByUserId(user.getUserId(), null);
 
         //Assert
         assertNotNull(foundIncomes);
@@ -131,11 +156,11 @@ public class IncomeServiceTests {
         List<Income> incomes = List.of(income, income, income);
 
         //Mock
-        when(incomeRepository.findByUserUserId(user.getUserId())).thenReturn(incomes);
+        when(incomeRepository.findByUserUserIdAndAsOf(eq(user.getUserId()), any(LocalDate.class))).thenReturn(incomes);
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
         //Act
-        List<Income> foundIncomes = incomeService.readAll();
+        List<Income> foundIncomes = incomeService.findAllEntities(null);
 
         //Assert
         assertNotNull(foundIncomes);
@@ -152,10 +177,11 @@ public class IncomeServiceTests {
         List<Income> incomes = List.of(income, income, income);
 
         //Mock
-        when(incomeRepository.findByUserUserId(user.getUserId())).thenReturn(incomes);
+        when(incomeRepository.findByUserUserIdAndAsOf(eq(user.getUserId()), any())).thenReturn(incomes);
+        when(effectivityService.getActiveVt(any(), any())).thenReturn(incomeVt);
 
         //Act
-        double totalAmount = incomeService.findUserTotalIncomeAmount(user.getUserId());
+        double totalAmount = incomeService.findUserTotalIncomeAmount(user.getUserId(), null);
 
         //Assert
         assertEquals(expectedAmount, totalAmount);
@@ -171,25 +197,33 @@ public class IncomeServiceTests {
                 .build();
         CategoryType categoryType = CategoryType.builder()
                 .categoryTypeId(1L)
+                .build();
+        CategoryTypeVt ctVt = CategoryTypeVt.builder()
                 .savedAmount(200)
                 .budgetAmount(1000)
                 .budgetAllocationPercentage(.50)
                 .build();
         List<CategoryType> categoryTypes = List.of(categoryType);
 
+        IncomeResponseDto updatedResponse = IncomeResponseDto.builder()
+                .incomeId(1L)
+                .amount(2912)
+                .build();
+
         //Mock
-        when(categoryTypeService.readAll()).thenReturn(categoryTypes);
-        when(incomeRepository.findById(1L)).thenReturn(Optional.of(income));
+        when(categoryTypeService.findAllEntities(null)).thenReturn(categoryTypes);
+        when(incomeRepository.findByIncomeIdAndAsOf(eq(1L), any())).thenReturn(Optional.of(income));
         when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(effectivityService.getActiveVt(any(), any())).thenReturn(ctVt).thenReturn(incomeVt).thenReturn(incomeVt);
         when(categoryTypeService.update(any(UpdateCategoryTypeDto.class), any(Long.class))).thenReturn(null);
-        when(incomeRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(incomeRepository.save(any())).thenReturn(income);
+        when(incomeMapper.toResponseDto(any(), any())).thenReturn(updatedResponse);
 
         //Act
-        Income actualIncome = incomeService.update(updateIncomeDto);
+        IncomeResponseDto actualIncome = incomeService.update(updateIncomeDto);
 
         //Assert
         assertEquals(actualIncome.getAmount(), updateIncomeDto.getAmount());
-        assertNotNull(actualIncome.getUpdatedAt());
     }
 
     @Test
@@ -204,9 +238,8 @@ public class IncomeServiceTests {
                 .amount(2912)
                 .build();
 
-
         //Mock
-        when(incomeRepository.findById(1L)).thenReturn(Optional.of(income));
+        when(incomeRepository.findByIncomeIdAndAsOf(eq(1L), any())).thenReturn(Optional.of(income));
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
         //Act & Assert
@@ -225,6 +258,8 @@ public class IncomeServiceTests {
                 .build();
         CategoryType categoryType = CategoryType.builder()
                 .categoryTypeId(1L)
+                .build();
+        CategoryTypeVt ctVt = CategoryTypeVt.builder()
                 .savedAmount(200)
                 .budgetAmount(1000)
                 .budgetAllocationPercentage(.50)
@@ -232,17 +267,18 @@ public class IncomeServiceTests {
         List<CategoryType> categoryTypes = List.of(categoryType);
 
         UpdateCategoryTypeDto expectedDto = UpdateCategoryTypeDto.builder()
-                .budgetAllocationPercentage(categoryType.getBudgetAllocationPercentage())
-                .amountAllocated(updateIncomeDto.getAmount() * categoryType.getBudgetAllocationPercentage())
-                .savedAmount((updateIncomeDto.getAmount() * categoryType.getBudgetAllocationPercentage()) - (categoryType.getBudgetAmount() - categoryType.getSavedAmount()))
+                .budgetAllocationPercentage(ctVt.getBudgetAllocationPercentage())
+                .amountAllocated(updateIncomeDto.getAmount() * ctVt.getBudgetAllocationPercentage())
+                .savedAmount((updateIncomeDto.getAmount() * ctVt.getBudgetAllocationPercentage()) - (ctVt.getBudgetAmount() - ctVt.getSavedAmount()))
                 .build();
 
         //Mock
-        when(categoryTypeService.readAll()).thenReturn(categoryTypes);
-        when(incomeRepository.findById(1L)).thenReturn(Optional.of(income));
+        when(categoryTypeService.findAllEntities(null)).thenReturn(categoryTypes);
+        when(incomeRepository.findByIncomeIdAndAsOf(eq(1L), any())).thenReturn(Optional.of(income));
         when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(effectivityService.getActiveVt(any(), any())).thenReturn(ctVt).thenReturn(incomeVt).thenReturn(incomeVt);
         when(categoryTypeService.update(any(UpdateCategoryTypeDto.class), any(Long.class))).thenReturn(null);
-        when(incomeRepository.save(any())).thenReturn(null);
+        when(incomeRepository.save(any())).thenReturn(income);
 
         //Act
         incomeService.update(updateIncomeDto);

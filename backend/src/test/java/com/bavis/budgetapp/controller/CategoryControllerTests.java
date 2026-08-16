@@ -6,6 +6,7 @@ import com.bavis.budgetapp.dto.request.CategoryDto;
 import com.bavis.budgetapp.dto.request.EditCategoryDto;
 import com.bavis.budgetapp.dto.request.RenameCategoryDto;
 import com.bavis.budgetapp.dto.request.UpdateCategoryDto;
+import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;
@@ -64,13 +65,13 @@ public class CategoryControllerTests {
 
     private BulkCategoryDto succesfulBulkCategoryDto;
 
-    private Category category1;
-    private Category category2;
-    private Category category3;
+    private CategoryResponseDto category1;
+    private CategoryResponseDto category2;
+    private CategoryResponseDto category3;
 
     private CategoryType categoryType;
 
-    private List<Category> expectedCategoryList;
+    private List<CategoryResponseDto> expectedCategoryList;
 
     private User user;
 
@@ -82,33 +83,31 @@ public class CategoryControllerTests {
 
         categoryType = CategoryType.builder()
                 .categoryTypeId(10L)
-                .budgetAmount(1800.0)
-                .budgetAllocationPercentage(.50)
                 .user(user)
                 .build();
 
-        category1 = Category.builder()
+        category1 = CategoryResponseDto.builder()
                 .name("Restaurants")
                 .categoryId(10L)
                 .budgetAmount(1000.0)
                 .budgetAllocationPercentage(.60)
-                .categoryType(categoryType)
+                .categoryTypeId(10L)
                 .build();
 
-        category2 = Category.builder()
+        category2 = CategoryResponseDto.builder()
                 .name("Loans")
                 .categoryId(11L)
                 .budgetAmount(400.0)
                 .budgetAllocationPercentage(.20)
-                .categoryType(categoryType)
+                .categoryTypeId(10L)
                 .build();
 
-        category3 = Category.builder()
+        category3 = CategoryResponseDto.builder()
                 .name("Animal")
                 .categoryId(12L)
                 .budgetAmount(400.0)
                 .budgetAllocationPercentage(.20)
-                .categoryType(categoryType)
+                .categoryTypeId(10L)
                 .build();
 
         CategoryDto categoryDto1 = CategoryDto.builder()
@@ -257,7 +256,7 @@ public class CategoryControllerTests {
 
         //Mock UserService/CategoryTypeService to pass validations for CategoryType
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(categoryTypeService.read(any(long.class))).thenReturn(categoryType);
+        when(categoryTypeService.findEntity(any(long.class), any())).thenReturn(categoryType);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/category/bulk")
@@ -282,7 +281,7 @@ public class CategoryControllerTests {
 
         //Verify
         verify(userService, times(3)).getCurrentAuthUser();
-        verify(categoryTypeService, times(3)).read(any(long.class));
+        verify(categoryTypeService, times(3)).findEntity(any(long.class), any());
     }
 
     @Test
@@ -316,8 +315,8 @@ public class CategoryControllerTests {
                 .addedCategory(categoryToAdd)
                 .build();
 
-        Category createdCategory = Category.builder()
-                .categoryType(categoryType)
+        CategoryResponseDto createdCategory = CategoryResponseDto.builder()
+                .categoryTypeId(categoryType.getCategoryTypeId())
                 .categoryId(4L)
                 .name("New Category")
                 .budgetAmount(540)
@@ -331,7 +330,7 @@ public class CategoryControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.budgetAllocationPercentage").value(createdCategory.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$.categoryType.categoryTypeId").value(categoryType.getCategoryTypeId()))
+                .andExpect(jsonPath("$.categoryTypeId").value(categoryType.getCategoryTypeId()))
                 .andExpect(jsonPath("$.budgetAmount").value(createdCategory.getBudgetAmount()))
                 .andExpect(jsonPath("$.name").value(createdCategory.getName()))
                 .andExpect(jsonPath("$.categoryId").value(createdCategory.getCategoryId()));
@@ -392,7 +391,7 @@ public class CategoryControllerTests {
 
         //Mock UserService/CategoryTypeService to pass validations for CategoryType
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(categoryTypeService.read(any(long.class))).thenReturn(categoryType);
+        when(categoryTypeService.findEntity(any(long.class), any())).thenReturn(categoryType);
 
         // Act
         ResultActions resultActions = mockMvc.perform(post("/category/bulk")
@@ -406,7 +405,7 @@ public class CategoryControllerTests {
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
-        verify(categoryTypeService, times(1)).read(any(long.class));
+        verify(categoryTypeService, times(1)).findEntity(any(long.class), any());
     }
 
     @Test
@@ -425,7 +424,7 @@ public class CategoryControllerTests {
 
         //Mock UserService/CategoryTypeService to pass validations for CategoryType
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(categoryTypeService.read(any(long.class))).thenReturn(categoryType);
+        when(categoryTypeService.findEntity(any(long.class), any())).thenReturn(categoryType);
 
         // Act
         ResultActions resultActions = mockMvc.perform(post("/category/bulk")
@@ -439,7 +438,7 @@ public class CategoryControllerTests {
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
-        verify(categoryTypeService, times(1)).read(any(long.class));
+        verify(categoryTypeService, times(1)).findEntity(any(long.class), any());
     }
 
     @Test
@@ -458,7 +457,7 @@ public class CategoryControllerTests {
 
         //Mock UserService/CategoryTypeService to pass validations for CategoryType
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(categoryTypeService.read(any(long.class))).thenReturn(categoryType);
+        when(categoryTypeService.findEntity(any(long.class), any())).thenReturn(categoryType);
 
         // Act
         ResultActions resultActions = mockMvc.perform(post("/category/bulk")
@@ -473,7 +472,7 @@ public class CategoryControllerTests {
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
-        verify(categoryTypeService, times(1)).read(any(long.class));
+        verify(categoryTypeService, times(1)).findEntity(any(long.class), any());
     }
 
     @Test
@@ -495,7 +494,7 @@ public class CategoryControllerTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(badUser); //return user that DOESN'T own category type
-        when(categoryTypeService.read(any(long.class))).thenReturn(categoryType);
+        when(categoryTypeService.findEntity(any(long.class), any())).thenReturn(categoryType);
 
         // Act
         ResultActions resultActions = mockMvc.perform(post("/category/bulk")
@@ -511,7 +510,7 @@ public class CategoryControllerTests {
     @Test
     void testReadAll_Successful() throws Exception{
         //Mock
-        when(categoryService.readAll()).thenReturn(expectedCategoryList);
+        when(categoryService.getAll(null)).thenReturn(expectedCategoryList);
 
         //Act
         ResultActions resultActions = mockMvc.perform(get("/category"));
@@ -535,6 +534,6 @@ public class CategoryControllerTests {
                 .andExpect(jsonPath("$[2].budgetAllocationPercentage").value(category3.getBudgetAllocationPercentage()));
 
         //Verify
-        verify(categoryService, times(1)).readAll();
+        verify(categoryService, times(1)).getAll(null);
     }
 }
