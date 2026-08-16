@@ -253,9 +253,10 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 
 		// recompute Category budget_amounts based on increase/decrease in CategoryType
 		// income percentage
+		List<Category> childCategories = categoryRepository.findByCategoryTypeIdAndAsOf(id, today);
 		double totalCategoryAllocations = 0.0;
-		if (categoryType.getCategories() != null && !categoryType.getCategories().isEmpty()) {
-			for (Category cat : categoryType.getCategories()) {
+		if (childCategories != null && !childCategories.isEmpty()) {
+			for (Category cat : childCategories) {
 				CategoryVt cv = effectivityService.getActiveVt(cat.getValidTimes(), today);
 				if (cv != null) {
 					double updatedCatBudgetAmt = cv.getBudgetAllocationPercentage() * budgetAmt;
@@ -270,7 +271,7 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 					totalCategoryAllocations += updatedCatBudgetAmt;
 				}
 			}
-			categoryRepository.saveAll(categoryType.getCategories());
+			categoryRepository.saveAll(childCategories);
 		}
 
 		double savedAmt = budgetAmt - totalCategoryAllocations;
@@ -299,8 +300,9 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 		double userTotalIncome = incomeService.findUserTotalIncomeAmount(categoryType.getUser().getUserId(), null);
 		double budgetAmt = userTotalIncome * active.getBudgetAllocationPercentage();
 
-		double totalCategoryAllocations = categoryType.getCategories() != null
-				? categoryType.getCategories().stream()
+		List<Category> childCategories = categoryRepository.findByCategoryTypeIdAndAsOf(categoryTypeId, today);
+		double totalCategoryAllocations = childCategories != null
+				? childCategories.stream()
 						.mapToDouble(cat -> {
 							CategoryVt cv = effectivityService.getActiveVt(cat.getValidTimes(), today);
 							return cv != null ? cv.getBudgetAmount() : 0.0;

@@ -40,4 +40,12 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 			  AND c.startDate <= :asOf AND c.endDate >= :asOf AND c.startDate <= c.endDate
 			""")
 	List<Category> findByUserUserIdAndAsOf(@Param("userId") Long userId, @Param("asOf") LocalDate asOf);
+
+	@Query("""
+			SELECT DISTINCT c FROM Category c 
+			JOIN c.validTimes vt ON vt.startDate <= :asOf AND vt.endDate >= :asOf 
+			WHERE vt.categoryType.categoryTypeId = :categoryTypeId 
+			  AND c.startDate <= :asOf AND c.endDate >= :asOf AND c.startDate <= c.endDate
+			""")
+	List<Category> findByCategoryTypeIdAndAsOf(@Param("categoryTypeId") Long categoryTypeId, @Param("asOf") LocalDate asOf);
 }
