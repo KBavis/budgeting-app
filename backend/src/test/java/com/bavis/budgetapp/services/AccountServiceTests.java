@@ -158,7 +158,7 @@ public class AccountServiceTests {
         accountService.delete(accountId);
 
         // Verify
-        Mockito.verify(userService, times(0)).findEntity(any(Long.class), any());
+        Mockito.verify(userService, times(0)).readById(any(Long.class));
     }
 
     /**

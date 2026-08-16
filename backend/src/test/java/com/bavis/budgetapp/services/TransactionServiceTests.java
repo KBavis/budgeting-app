@@ -8,6 +8,7 @@ import com.bavis.budgetapp.dto.request.PlaidAccountDto;
 import com.bavis.budgetapp.dto.request.PlaidTransactionDto;
 import com.bavis.budgetapp.dto.request.SplitTransactionDto;
 import com.bavis.budgetapp.dto.request.TransactionDto;
+import com.bavis.budgetapp.dto.request.UpdateAccountDto;
 import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.dto.response.FetchTransactionsDto;
 import com.bavis.budgetapp.dto.response.PlaidTransactionSyncResponseDto;
@@ -286,15 +287,10 @@ public class TransactionServiceTests {
         configureSyncTransactionMocks_addedModified();
         when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
         when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
-        when(accountService.updateBalance(any(), any())).thenAnswer(invocationOnMock -> {
-            Account account = invocationOnMock.getArgument(1);
-            account.setBalance(2046.00);
-            return account;
-        });
         AccountResponseDto dto = AccountResponseDto.builder()
                 .balance(2046.00)
                 .build();
-        when(accountMapper.toResponseDto(any(), any())).thenReturn(dto);
+        when(accountService.update(any(UpdateAccountDto.class))).thenReturn(dto);
         doNothing().when(transactionService).predictCategories(any(), any());
 
         // act
@@ -305,7 +301,7 @@ public class TransactionServiceTests {
         assertEquals(2046.00, syncTransactionsDto.getUpdatedAccounts().get(0).getBalance());
 
         // verify
-        verify(accountService, times(1)).updateBalance(plaidAccountDtos, accountOne);
+        verify(accountService, times(1)).update(any(UpdateAccountDto.class));
     }
 
     @Test
@@ -733,7 +729,6 @@ public class TransactionServiceTests {
         LocalDate now = LocalDate.now();
         Account account = Account.builder()
                 .accountId("account-1")
-                .accountName("First Account")
                 .build();
 
         Category category = Category.builder()

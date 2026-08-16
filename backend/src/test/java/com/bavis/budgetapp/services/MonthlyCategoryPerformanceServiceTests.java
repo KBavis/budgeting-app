@@ -2,6 +2,7 @@ package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.dao.MonthlyCategoryPerformanceRepository;
 import com.bavis.budgetapp.entity.Category;
+import com.bavis.budgetapp.entity.CategoryVt;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.analysis.MerchantAnalysis;
@@ -76,7 +77,13 @@ public class MonthlyCategoryPerformanceServiceTests {
     void testGenerateMonthlyCategoryPerformances_handlesZeroOrLess_allocations() {
 
         // arrange
-        Category zeroAllocation = Category.builder().budgetAmount(0).categoryType(new CategoryType()).categoryId(1L).build();
+        Category zeroAllocation = Category.builder().categoryId(1L).validTimes(new ArrayList<>()).build();
+        CategoryVt zeroAllocationVt = CategoryVt.builder()
+                .category(zeroAllocation)
+                .budgetAmount(0.0)
+                .categoryType(new CategoryType())
+                .build();
+        zeroAllocation.getValidTimes().add(zeroAllocationVt);
         List<Category> zeroAllocationList = List.of(zeroAllocation);
 
         // mocks
@@ -259,10 +266,18 @@ public class MonthlyCategoryPerformanceServiceTests {
                 .categoryTypeId(1L)
                 .build();
 
-        Category category1 = new Category();
-        category1.setCategoryId(1L);
-        category1.setCategoryType(categoryType);
-        category1.setBudgetAmount(200.00);
+        Category category1 = Category.builder()
+                .categoryId(1L)
+                .validTimes(new ArrayList<>())
+                .build();
+
+        CategoryVt vt1 = CategoryVt.builder()
+                .category(category1)
+                .categoryType(categoryType)
+                .budgetAmount(200.00)
+                .build();
+
+        category1.getValidTimes().add(vt1);
 
         return List.of(category1);
     }
