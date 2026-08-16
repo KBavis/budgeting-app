@@ -182,8 +182,8 @@ const IncomesPage = () => {
                            </button>
                         </div>
 
-                        {/* Main content container with right padding to clear top-right action buttons */}
-                        <div className="flex items-start gap-3 pr-14 sm:pr-16">
+                        {/* Main content container */}
+                        <div className="flex items-start gap-3">
                            {/* Wallet Icon */}
                            <div className={`flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mt-0.5 border ${
                               isDark
@@ -194,34 +194,36 @@ const IncomesPage = () => {
                            </div>
 
                            {/* Income Info & Amount Container */}
-                           <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-                              {/* Top Row: Description & Adjacent Amount */}
-                              <div className="flex items-center justify-between gap-2 min-w-0">
+                           <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                              {/* Top Row: Description (pr-14/16 clears top-right Edit/Delete buttons) */}
+                              <div className="pr-14 sm:pr-16">
                                  <h3 className={`text-sm sm:text-base font-bold truncate ${
                                     isDark ? "text-slate-100" : "text-slate-900"
                                  }`} title={inc.description || inc.incomeSource}>
                                     {inc.description || inc.incomeSource || `Income Source ${index + 1}`}
                                  </h3>
+                              </div>
+
+                              {/* Subtitle Row: Type Badge & Source (left) & Income Amount (right, under Edit/Trash icons) */}
+                              <div className="flex items-center justify-between gap-2 min-w-0">
+                                 <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
+                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
+                                       isDark ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    }`}>
+                                       {inc.incomeType || "Income"}
+                                    </span>
+                                    {inc.incomeSource && (
+                                       <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
+                                          {inc.incomeSource}
+                                       </span>
+                                    )}
+                                 </div>
 
                                  <div className="flex-shrink-0 text-right whitespace-nowrap">
                                     <span className={`text-sm sm:text-base font-black tracking-tight ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
                                        +${parseFloat(inc.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                  </div>
-                              </div>
-
-                              {/* Subtitle Row: Type Badge & Source */}
-                              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                                 <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
-                                    isDark ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30" : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                 }`}>
-                                    {inc.incomeType || "Income"}
-                                 </span>
-                                 {inc.incomeSource && (
-                                    <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
-                                       {inc.incomeSource}
-                                    </span>
-                                 )}
                               </div>
                            </div>
                         </div>

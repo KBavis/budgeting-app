@@ -80,8 +80,8 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                 </button>
             </div>
 
-            {/* Main content container with right padding to clear top-right action buttons */}
-            <div className="flex items-start gap-3 pr-14 sm:pr-16">
+            {/* Main content container */}
+            <div className="flex items-start gap-3">
                 {/* Institution Icon */}
                 <div className={`flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mt-0.5 ${
                     isLiability
@@ -95,15 +95,32 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                     }`} />
                 </div>
 
-                {/* Account Details & Balance Container */}
-                <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-                    {/* Top Row: Account Name + Adjacent Balance Amount */}
-                    <div className="flex items-center justify-between gap-2 min-w-0">
+                {/* Account Details & Balance Area */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                    {/* Top Row: Account Name (pr-14/16 clears top-right Edit/Delete icons) */}
+                    <div className="pr-14 sm:pr-16">
                         <h3 className={`text-sm sm:text-base font-bold truncate ${
                             isDark ? "text-white" : "text-slate-900"
                         }`} title={account.accountName}>
                             {account.accountName}
                         </h3>
+                    </div>
+
+                    {/* Subtitle Row: Badge + Institution details (left) & Balance Amount (right, under Edit/Trash icons) */}
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
+                                {badgeDef.label}
+                            </span>
+                            <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
+                                {account.institutionName || 'Financial Institution'} {account.mask ? `•••${account.mask}` : ''}
+                            </span>
+                            {isLiability && (
+                                <span className={`text-[10px] font-extrabold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
+                                    Owed
+                                </span>
+                            )}
+                        </div>
 
                         <div className="flex-shrink-0 text-right whitespace-nowrap">
                             <span className={`text-sm sm:text-base font-black tracking-tight ${
@@ -116,21 +133,6 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                                 {isLiability ? '-' : (isNegative ? '-' : '')}${Math.abs(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                         </div>
-                    </div>
-
-                    {/* Subtitle Row: Badge + Institution details */}
-                    <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
-                            {badgeDef.label}
-                        </span>
-                        <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
-                            {account.institutionName || 'Financial Institution'} {account.mask ? `•••${account.mask}` : ''}
-                        </span>
-                        {isLiability && (
-                            <span className={`ml-auto text-[10px] font-extrabold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
-                                Owed
-                            </span>
-                        )}
                     </div>
                 </div>
             </div>
