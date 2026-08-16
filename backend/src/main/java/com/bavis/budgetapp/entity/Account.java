@@ -46,10 +46,6 @@ public class Account {
 	@Column(name = "end_date", nullable = false)
 	private LocalDate endDate = TemporalConstants.END_OF_TIME;
 
-	@Column(name = "is_deleted", nullable = false)
-	@Builder.Default
-	private boolean isDeleted = false;
-
 	@ManyToOne
 	@JoinColumn(name = "userId")
 	@JsonIgnore

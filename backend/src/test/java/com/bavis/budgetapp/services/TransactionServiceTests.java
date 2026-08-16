@@ -291,9 +291,10 @@ public class TransactionServiceTests {
             account.setBalance(2046.00);
             return account;
         });
-        AccountDto dto = new AccountDto();
-        dto.setBalance(2046.00);
-        when(accountMapper.toDTO(any(Account.class))).thenReturn(dto);
+        AccountResponseDto dto = AccountResponseDto.builder()
+                .balance(2046.00)
+                .build();
+        when(accountMapper.toResponseDto(any(), any())).thenReturn(dto);
         doNothing().when(transactionService).predictCategories(any(), any());
 
         // act

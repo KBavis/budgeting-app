@@ -22,5 +22,4 @@ public class AccountResponseDto {
     private double balance;
     private LocalDate startDate;
     private LocalDate endDate;
-    private boolean isDeleted;
 }

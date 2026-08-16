@@ -30,6 +30,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +126,7 @@ public class AccountServiceTests {
         Mockito.verify(accountRepository, times(1)).save(argumentCaptor.capture());
 
         Account savedAccount = argumentCaptor.getValue();
-        assertTrue(savedAccount.isDeleted());
+        assertEquals(LocalDate.now(), savedAccount.getEndDate());
     }
 
     @Test
@@ -196,7 +197,7 @@ public class AccountServiceTests {
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(connectionService.create(any(Connection.class))).thenReturn(connection);
         when(accountRepository.save(any(Account.class))).thenReturn(account);
-        when(accountMapper.toDTO(any(Account.class), any())).thenReturn(accountResponseDto);
+        when(accountMapper.toResponseDto(any(Account.class), any())).thenReturn(accountResponseDto);
 
         // Act
         AccountResponseDto createdAccountDto = accountService.connectAccount(connectAccountRequestDto);
@@ -213,7 +214,7 @@ public class AccountServiceTests {
         verify(userService, times(1)).getCurrentAuthUser();
         verify(connectionService, times(1)).create(any(Connection.class));
         verify(accountRepository, times(1)).save(any(Account.class));
-        verify(accountMapper, times(1)).toDTO(any(Account.class), any());
+        verify(accountMapper, times(1)).toResponseDto(any(Account.class), any());
     }
 
     /**
@@ -282,7 +283,7 @@ public class AccountServiceTests {
         // Mock
         when(accountRepository.findByUserUserIdAndAsOf(eq(authUser.getUserId()), any())).thenReturn(expectedAccounts);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountMapper.toDTO(any(Account.class), any())).thenAnswer(invocationOnMock -> {
+        when(accountMapper.toResponseDto(any(Account.class), any())).thenAnswer(invocationOnMock -> {
             Account account = invocationOnMock.getArgument(0);
             return AccountResponseDto.builder()
                     .accountId(account.getAccountId())

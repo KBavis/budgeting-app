@@ -2,7 +2,6 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.ConnectionStatus;
-import com.bavis.budgetapp.dto.request.PlaidAccountDto;
 import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.dto.request.UpdateAccountDto;
 import com.bavis.budgetapp.entity.AccountVt;
@@ -27,12 +26,10 @@ import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.service.AccountService;
 import com.bavis.budgetapp.constants.AccountType;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Kellen Bavis
@@ -132,7 +129,7 @@ public class AccountServiceImpl implements AccountService{
 		log.debug("Saved Account: [{}]", savedAccount.toString());
 
 		AccountVt activeVt = _effectivityService.getActiveVt(newAccount.getValidTimes(), LocalDate.now());
-		return _accountMapper.toDTO(newAccount, activeVt);
+		return _accountMapper.toResponseDto(newAccount, activeVt);
 	}
 
 	/**
@@ -157,7 +154,7 @@ public class AccountServiceImpl implements AccountService{
 			}
 		}
 
-		accountToDelete.setDeleted(true);
+		accountToDelete.setEndDate(LocalDate.now());
 		_accountRepository.save(accountToDelete);
 	}
 
@@ -194,7 +191,7 @@ public class AccountServiceImpl implements AccountService{
 
 		Account saved = _accountRepository.save(accountToUpdate);
 		AccountVt activeVt = _effectivityService.getActiveVt(saved.getValidTimes(), LocalDate.now());
-		return _accountMapper.toDTO(saved, activeVt);
+		return _accountMapper.toResponseDto(saved, activeVt);
 	}
 
 	@Override
@@ -237,7 +234,7 @@ public class AccountServiceImpl implements AccountService{
 				.map(account -> {
 					LocalDate target = (asOf != null) ? asOf : LocalDate.now();
 					AccountVt activeVt = _effectivityService.getActiveVt(account.getValidTimes(), target);
-					return _accountMapper.toDTO(account, activeVt);
+					return _accountMapper.toResponseDto(account, activeVt);
 				})
 				.toList();
 	}
@@ -247,9 +244,6 @@ public class AccountServiceImpl implements AccountService{
 		log.info("Attempting to read all Account entities associated with current authenticated user asOf [{}]", asOf);
 		User currentAuthUser = _userService.getCurrentAuthUser();
 		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
-		return _accountRepository.findByUserUserIdAndAsOf(currentAuthUser.getUserId(), target).stream()
-				.filter(account -> !account.isDeleted())
-				.toList();
-
+		return _accountRepository.findByUserUserIdAndAsOf(currentAuthUser.getUserId(), target);
 	}
 }
