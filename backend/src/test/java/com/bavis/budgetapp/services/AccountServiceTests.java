@@ -4,10 +4,12 @@ import com.bavis.budgetapp.dao.AccountRepository;
 import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.constants.ConnectionStatus;
+import com.bavis.budgetapp.constants.TemporalConstants;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.entity.Account;
+import com.bavis.budgetapp.entity.AccountVt;
 import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
@@ -262,16 +264,43 @@ public class AccountServiceTests {
                 .accountId("123XYZ")
                 .validTimes(new ArrayList<>())
                 .build();
+        AccountVt vt1 = AccountVt.builder()
+                .account(accountOne)
+                .accountName("Checking")
+                .accountType(AccountType.CHECKING)
+                .balance(100.0)
+                .startDate(TemporalConstants.BEGINNING_OF_TIME)
+                .endDate(TemporalConstants.END_OF_TIME)
+                .build();
+        accountOne.getValidTimes().add(vt1);
 
         Account accountTwo = Account.builder()
                 .accountId("123XYZ")
                 .validTimes(new ArrayList<>())
                 .build();
+        AccountVt vt2 = AccountVt.builder()
+                .account(accountTwo)
+                .accountName("Checking")
+                .accountType(AccountType.CHECKING)
+                .balance(100.0)
+                .startDate(TemporalConstants.BEGINNING_OF_TIME)
+                .endDate(TemporalConstants.END_OF_TIME)
+                .build();
+        accountTwo.getValidTimes().add(vt2);
 
         Account accountThree = Account.builder()
                 .accountId("123XYZ")
                 .validTimes(new ArrayList<>())
                 .build();
+        AccountVt vt3 = AccountVt.builder()
+                .account(accountThree)
+                .accountName("Checking")
+                .accountType(AccountType.CHECKING)
+                .balance(100.0)
+                .startDate(TemporalConstants.BEGINNING_OF_TIME)
+                .endDate(TemporalConstants.END_OF_TIME)
+                .build();
+        accountThree.getValidTimes().add(vt3);
 
         List<Account> expectedAccounts = List.of(accountThree, accountOne, accountTwo);
 

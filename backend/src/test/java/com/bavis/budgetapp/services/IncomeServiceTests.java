@@ -214,9 +214,9 @@ public class IncomeServiceTests {
         when(categoryTypeService.findAllEntities(null)).thenReturn(categoryTypes);
         when(incomeRepository.findByIncomeIdAndAsOf(eq(1L), any())).thenReturn(Optional.of(income));
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(effectivityService.getActiveVt(any(), any())).thenReturn(ctVt).thenReturn(incomeVt).thenReturn(incomeVt);
+        when(effectivityService.getActiveVt(any(), any())).thenReturn(incomeVt).thenReturn(ctVt).thenReturn(incomeVt);
         when(categoryTypeService.update(any(UpdateCategoryTypeDto.class), any(Long.class))).thenReturn(null);
-        when(incomeRepository.save(any())).thenReturn(income);
+        when(incomeRepository.saveAndFlush(any())).thenReturn(income);
         when(incomeMapper.toResponseDto(any(), any())).thenReturn(updatedResponse);
 
         //Act
@@ -274,9 +274,9 @@ public class IncomeServiceTests {
         when(categoryTypeService.findAllEntities(null)).thenReturn(categoryTypes);
         when(incomeRepository.findByIncomeIdAndAsOf(eq(1L), any())).thenReturn(Optional.of(income));
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(effectivityService.getActiveVt(any(), any())).thenReturn(ctVt).thenReturn(incomeVt).thenReturn(incomeVt);
+        when(effectivityService.getActiveVt(any(), any())).thenReturn(incomeVt).thenReturn(ctVt).thenReturn(incomeVt);
         when(categoryTypeService.update(any(UpdateCategoryTypeDto.class), any(Long.class))).thenReturn(null);
-        when(incomeRepository.save(any())).thenReturn(income);
+        when(incomeRepository.saveAndFlush(any())).thenReturn(income);
 
         //Act
         incomeService.update(updateIncomeDto);

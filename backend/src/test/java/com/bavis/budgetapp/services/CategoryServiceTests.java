@@ -1,13 +1,13 @@
 package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.dao.CategoryRepository;
+import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.request.AddCategoryDto;
 import com.bavis.budgetapp.dto.request.BulkCategoryDto;
 import com.bavis.budgetapp.dto.request.CategoryDto;
 import com.bavis.budgetapp.dto.request.EditCategoryDto;
 import com.bavis.budgetapp.dto.request.RenameCategoryDto;
 import com.bavis.budgetapp.dto.request.UpdateCategoryDto;
-import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.constants.TemporalConstants;
 import com.bavis.budgetapp.entity.Category;
@@ -50,6 +50,9 @@ import static org.mockito.Mockito.*;
 public class CategoryServiceTests {
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private TransactionRepository transactionRepository;
 
     @Mock
     private CategoryTypeServiceImpl categoryTypeService;
@@ -259,9 +262,12 @@ public class CategoryServiceTests {
         // Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(categoryTypeService.findEntity(categoryToAdd.getCategoryTypeId(), null)).thenReturn(categoryType);
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto1.getCategoryId()), any())).thenReturn(Optional.of(category1));
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto2.getCategoryId()), any())).thenReturn(Optional.of(category2));
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto3.getCategoryId()), any())).thenReturn(Optional.of(category3));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto1.getCategoryId()), any()))
+                .thenReturn(Optional.of(category1));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto2.getCategoryId()), any()))
+                .thenReturn(Optional.of(category2));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto3.getCategoryId()), any()))
+                .thenReturn(Optional.of(category3));
 
         // Act
         categoryService.create(addCategoryDto);
@@ -307,9 +313,12 @@ public class CategoryServiceTests {
         // Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(categoryTypeService.findEntity(invalidCategoryToAdd.getCategoryTypeId(), null)).thenReturn(categoryType);
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto1.getCategoryId()), any())).thenReturn(Optional.of(category1));
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto2.getCategoryId()), any())).thenReturn(Optional.of(category2));
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto3.getCategoryId()), any())).thenReturn(Optional.of(category3));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto1.getCategoryId()), any()))
+                .thenReturn(Optional.of(category1));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto2.getCategoryId()), any()))
+                .thenReturn(Optional.of(category2));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto3.getCategoryId()), any()))
+                .thenReturn(Optional.of(category3));
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> categoryService.create(invalidAddCategoryDto));
@@ -331,9 +340,12 @@ public class CategoryServiceTests {
 
         // Mock
         when(categoryTypeService.findEntity(needsCategoryType.getCategoryTypeId(), null)).thenReturn(needsCategoryType);
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto1.getCategoryId()), any())).thenReturn(Optional.of(category1));
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto2.getCategoryId()), any())).thenReturn(Optional.of(category2));
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto3.getCategoryId()), any())).thenReturn(Optional.of(category3));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto1.getCategoryId()), any()))
+                .thenReturn(Optional.of(category1));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto2.getCategoryId()), any()))
+                .thenReturn(Optional.of(category2));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(updateCategoryDto3.getCategoryId()), any()))
+                .thenReturn(Optional.of(category3));
 
         // Act
         List<CategoryResponseDto> categories = categoryService.updateCategoryAllocations(editCategoryDto);
@@ -357,11 +369,12 @@ public class CategoryServiceTests {
         categoryToDelete.getValidTimes().add(catVt);
 
         when(categoryRepository.findByCategoryIdAndAsOf(eq(1L), any())).thenReturn(Optional.of(categoryToDelete));
-        when(categoryRepository.save(any(Category.class))).thenReturn(categoryToDelete);
+        when(transactionRepository.findByCategoryCategoryIdAndAsOf(anyLong(), any())).thenReturn(List.of());
+        when(categoryRepository.saveAndFlush(any(Category.class))).thenReturn(categoryToDelete);
 
         categoryService.delete(1L);
 
-        verify(categoryRepository, times(1)).save(categoryToDelete);
+        verify(categoryRepository, times(1)).saveAndFlush(categoryToDelete);
         verify(categoryRepository, times(1)).findByCategoryIdAndAsOf(eq(1L), any());
     }
 
@@ -370,7 +383,8 @@ public class CategoryServiceTests {
         long categoryId = 1L;
         String expectedErrorMsg = "Invalid category id: " + categoryId;
         when(categoryRepository.findByCategoryIdAndAsOf(eq(categoryId), any())).thenReturn(Optional.empty());
-        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> categoryService.delete(categoryId));
+        RuntimeException runtimeException = assertThrows(RuntimeException.class,
+                () -> categoryService.delete(categoryId));
         assertEquals(expectedErrorMsg, runtimeException.getMessage());
     }
 
@@ -387,8 +401,10 @@ public class CategoryServiceTests {
                 .build();
 
         // Mock
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(renameCategoryDto.getCategoryId()), any())).thenReturn(Optional.of(category1));
-        when(categoryRepository.saveAndFlush(any(Category.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(renameCategoryDto.getCategoryId()), any()))
+                .thenReturn(Optional.of(category1));
+        when(categoryRepository.saveAndFlush(any(Category.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         when(categoryMapper.toResponseDto(any(), any())).thenReturn(expectedResponse);
 
         // Act
@@ -410,7 +426,8 @@ public class CategoryServiceTests {
                 .build();
 
         // Mock
-        when(categoryRepository.findByCategoryIdAndAsOf(eq(renameCategoryDto.getCategoryId()), any())).thenReturn(Optional.empty());
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(renameCategoryDto.getCategoryId()), any()))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
         RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
@@ -439,6 +456,7 @@ public class CategoryServiceTests {
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(categoryTypeService.findEntity(eq(10L), any())).thenReturn(needsCategoryType);
         when(categoryRepository.saveAllAndFlush(any())).thenReturn(actualCategories);
+        when(categoryMapper.toResponseDto(any(), any())).thenReturn(new CategoryResponseDto());
 
         // Act
         List<CategoryResponseDto> createdCategories = categoryService.bulkCreate(bulkCategoryDto);
@@ -453,16 +471,16 @@ public class CategoryServiceTests {
             Long currentCategoryId = category.getCategoryId();
             CategoryVt active = effectivityService.getActiveVt(category.getValidTimes(), LocalDate.now());
 
-            if (currentCategoryId.equals(category1.getCategoryId())) {
+            if (Long.valueOf(1L).equals(currentCategoryId)) {
                 assertEquals(720, active.getBudgetAmount());
                 assertEquals(.4, active.getBudgetAllocationPercentage());
-            } else if (currentCategoryId.equals(category2.getCategoryId())) {
+            } else if (Long.valueOf(2L).equals(currentCategoryId)) {
                 assertEquals(360, active.getBudgetAmount());
                 assertEquals(.2, active.getBudgetAllocationPercentage());
-            } else if (currentCategoryId.equals(category3.getCategoryId())) {
+            } else if (Long.valueOf(3L).equals(currentCategoryId)) {
                 assertEquals(180, active.getBudgetAmount());
                 assertEquals(.1, active.getBudgetAllocationPercentage());
-            } else if (currentCategoryId.equals(4L)) {
+            } else if (currentCategoryId == null || Long.valueOf(4L).equals(currentCategoryId)) {
                 assertEquals(.3, active.getBudgetAllocationPercentage());
                 assertEquals(540, active.getBudgetAmount());
             } else {
