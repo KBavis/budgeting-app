@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dao.CategoryRepository;
+import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.request.AddCategoryDto;
 import com.bavis.budgetapp.dto.request.BulkCategoryDto;
 import com.bavis.budgetapp.dto.request.CategoryDto;
@@ -12,6 +13,7 @@ import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.CategoryTypeVt;
 import com.bavis.budgetapp.entity.CategoryVt;
+import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.service.CategoryService;
@@ -41,6 +43,9 @@ public class CategoryServiceImpl implements CategoryService {
 
 	@Autowired
 	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private TransactionRepository transactionRepository;
 
 	@Autowired
 	private CategoryTypeService categoryTypeService;
@@ -322,7 +327,27 @@ public class CategoryServiceImpl implements CategoryService {
 				? activeVt.getCategoryType().getCategoryTypeId()
 				: null;
 
-		categoryToDelete.setEndDate(LocalDate.now().minusDays(1));
+		LocalDate today = LocalDate.now();
+
+		// Unassign transactions in current month assigned to deleted category
+		List<Transaction> activeTransactions = transactionRepository.findByCategoryCategoryIdAndAsOf(categoryId, today);
+		if (activeTransactions != null && !activeTransactions.isEmpty()) {
+			List<Transaction> toUnassign = new ArrayList<>();
+			for (Transaction t : activeTransactions) {
+				if (t.getDate() != null &&
+						t.getDate().getMonthValue() == today.getMonthValue() &&
+						t.getDate().getYear() == today.getYear()) {
+					t.setCategory(null);
+					toUnassign.add(t);
+				}
+			}
+			if (!toUnassign.isEmpty()) {
+				log.info("Unassigning {} transactions in current month for deleted category [{}]", toUnassign.size(), categoryId);
+				transactionRepository.saveAll(toUnassign);
+			}
+		}
+
+		categoryToDelete.setEndDate(today.minusDays(1));
 		categoryRepository.saveAndFlush(categoryToDelete);
 
 		if (categoryTypeId != null) {
