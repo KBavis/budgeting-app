@@ -197,16 +197,17 @@ const BudgetSummaryPage = () => {
                         }`}>
                             {/* Scalable Year Dropdown */}
                             <div className="flex items-center gap-2">
-                                <span className={`text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                                    <FaCalendarAlt size={12} className="text-indigo-500" />
+                                <span className={`text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? "text-slate-300" : "text-slate-500"}`}>
+                                    <FaCalendarAlt size={12} className="text-indigo-400" />
                                     Year:
                                 </span>
                                 <select
                                     value={selectedYear}
                                     onChange={(e) => handleYearSelect(e.target.value)}
+                                    style={{ colorScheme: isDark ? 'dark' : 'light' }}
                                     className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
                                         isDark
-                                            ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
+                                            ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
                                             : 'bg-slate-100 border-slate-300 text-slate-800 hover:bg-slate-200'
                                     }`}
                                 >
@@ -227,17 +228,18 @@ const BudgetSummaryPage = () => {
 
                             {/* Scalable Month Dropdown */}
                             <div className="flex items-center gap-2">
-                                <span className={`text-xs font-extrabold uppercase tracking-wider ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                                <span className={`text-xs font-extrabold uppercase tracking-wider ${isDark ? "text-slate-300" : "text-slate-500"}`}>
                                     Month:
                                 </span>
                                 <select
                                     value={selectedMonth}
                                     onChange={(e) => handleMonthSelect(e.target.value)}
+                                    style={{ colorScheme: isDark ? 'dark' : 'light' }}
                                     className={`px-3 py-1.5 sm:px-3.5 rounded-xl text-xs font-extrabold transition-all border cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 max-w-[200px] sm:max-w-none ${
                                         selectedMonth !== 'ALL'
                                             ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
                                             : isDark
-                                                ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
+                                                ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
                                                 : 'bg-slate-100 border-slate-300 text-slate-800 hover:bg-slate-200'
                                     }`}
                                 >

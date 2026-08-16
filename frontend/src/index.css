@@ -143,3 +143,11 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* Ensure native select dropdown arrows and form controls turn white in dark mode */
+.dark select,
+.dark input,
+.dark textarea {
+  color-scheme: dark;
+}
+
