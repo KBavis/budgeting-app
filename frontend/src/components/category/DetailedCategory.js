@@ -185,7 +185,7 @@ const DetailedCategory = ({
          </button>
 
          {/* Category Header: Click-to-Edit Name */}
-         <div className="flex flex-col items-center justify-center mb-4">
+         <div className="flex flex-col items-center justify-center mb-4 px-8 sm:px-12 w-full min-w-0">
             {isEditingName ? (
                <div className="flex items-center gap-2 max-w-md w-full justify-center">
                   <input
@@ -198,7 +198,7 @@ const DetailedCategory = ({
                         if (e.key === "Enter") handleConfirmRename();
                         if (e.key === "Escape") handleCancelRename();
                      }}
-                     className={`w-full max-w-xs px-3 py-1 text-xl font-extrabold rounded-xl border text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${
+                     className={`w-full max-w-xs px-3 py-1 text-lg sm:text-xl font-extrabold rounded-xl border text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${
                         isDark
                            ? "bg-slate-900 border-indigo-500 text-white placeholder-slate-500"
                            : "bg-white border-indigo-500 text-slate-900 placeholder-slate-400 shadow-sm"
@@ -228,13 +228,13 @@ const DetailedCategory = ({
             ) : (
                <h3
                   onClick={() => setIsEditingName(true)}
-                  className={`text-2xl md:text-3xl font-extrabold flex items-center gap-2 cursor-pointer transition-colors group ${
+                  className={`text-xl sm:text-2xl md:text-3xl font-extrabold flex items-center justify-center gap-2 cursor-pointer transition-colors group text-center max-w-full min-w-0 break-words ${
                      isDark ? "text-white hover:text-indigo-400" : "text-slate-900 hover:text-indigo-600"
                   }`}
                   title="Click to rename category inline"
                >
-                  {category.name}
-                  <FaPen size={12} className="opacity-0 group-hover:opacity-100 text-indigo-500 transition-opacity" />
+                  <span className="break-words line-clamp-2">{category.name}</span>
+                  <FaPen size={12} className="opacity-0 group-hover:opacity-100 text-indigo-500 transition-opacity flex-shrink-0" />
                </h3>
             )}
          </div>

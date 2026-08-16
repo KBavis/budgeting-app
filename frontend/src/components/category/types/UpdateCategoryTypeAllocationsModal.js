@@ -69,8 +69,8 @@ const UpdateCategoryTypeAllocationsModal = ({ onClose }) => {
 
    const handleSubmit = async () => {
       const roundedPool = Math.round(totalAllocationPool * 1000) / 1000;
-      if (roundedPool > 1.0) {
-         setAlert("Total CategoryType allocation pool cannot exceed 100%", "danger");
+      if (Math.abs(roundedPool - 1.0) > 0.001) {
+         setAlert("Please ensure you are leveraging your entire income (CategoryType allocations must total exactly 100%)", "danger");
          return;
       }
 
@@ -96,32 +96,32 @@ const UpdateCategoryTypeAllocationsModal = ({ onClose }) => {
       onClose();
    };
 
-   const isOver100 = totalAllocationPool > 1.0;
+   const isNot100 = Math.abs(totalAllocationPool - 1.0) > 0.001;
 
    return (
       <Modal isOpen={true} onClose={onClose} title="Update CategoryType Allocations" size="lg">
          <div className="flex flex-col gap-5">
             <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-               Adjust the income allocation sliders for your main CategoryTypes (e.g. Needs, Wants, Investments).
+               Adjust the income allocation sliders for your main CategoryTypes (Needs, Wants, Investments). Your total allocation must equal 100%.
             </p>
 
             {/* Total Budget Allocation Pool Summary Card */}
             <div className={`p-4 border rounded-2xl flex items-center justify-between shadow-sm transition-all ${
-               isOver100
+               isNot100
                   ? isDark
                      ? "bg-red-950/40 border-red-800 text-red-200"
                      : "bg-red-50 border-red-200 text-red-900"
                   : isDark
-                     ? "bg-slate-800/80 border-slate-700/80 text-white"
-                     : "bg-slate-50 border-slate-200 text-slate-900"
+                     ? "bg-emerald-950/30 border-emerald-800/80 text-emerald-200"
+                     : "bg-emerald-50 border-emerald-200 text-emerald-900"
             }`}>
                <div className="flex items-center gap-3">
                   <div className={`p-3 rounded-xl border ${
-                     isOver100
+                     isNot100
                         ? "bg-red-500/20 text-red-500 border-red-500/30"
-                        : "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
+                        : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
                   }`}>
-                     {isOver100 ? <FaExclamationTriangle className="w-5 h-5" /> : <FaChartPie className="w-5 h-5" />}
+                     {isNot100 ? <FaExclamationTriangle className="w-5 h-5" /> : <FaCheckCircle className="w-5 h-5" />}
                   </div>
                   <div className="text-left">
                      <p className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-slate-400" : "text-slate-500"}`}>
@@ -135,14 +135,21 @@ const UpdateCategoryTypeAllocationsModal = ({ onClose }) => {
 
                <div className="text-right">
                   <span className={`text-2xl font-black ${
-                     isOver100
+                     isNot100
                         ? "text-red-500"
-                        : isDark ? "text-indigo-400" : "text-indigo-600"
+                        : isDark ? "text-emerald-400" : "text-emerald-600"
                   }`}>
                      {(totalAllocationPool * 100).toFixed(1)}%
                   </span>
-                  <p className={`text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                     ${Math.round(totalAllocationPool * totalUserIncome)} allocated
+                  <p className={`text-xs font-semibold ${
+                     isNot100
+                        ? "text-red-400"
+                        : isDark ? "text-emerald-400" : "text-emerald-600"
+                  }`}>
+                     {isNot100
+                        ? totalAllocationPool < 1.0 ? "Must equal 100% of income" : "Exceeds 100% of income"
+                        : "100% Fully Allocated"
+                     }
                   </p>
                </div>
             </div>
