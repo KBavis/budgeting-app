@@ -155,26 +155,26 @@ const CategoryType = ({
       >
          {/* Sticky Card Header */}
          <div
-            className={`sticky top-0 z-20 backdrop-blur-md p-4 sm:p-5 mb-4 border rounded-xl shadow-sm ${
+            className={`sticky top-0 z-20 backdrop-blur-md p-3.5 sm:p-5 mb-4 border rounded-xl shadow-sm ${
                isDark
                   ? "bg-slate-900/95 border-slate-800"
                   : "bg-white/95 border-slate-200"
             }`}
          >
-            <div className="flex justify-between items-center mb-3">
-               <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-brand-500/20 text-brand-400 rounded-xl border border-brand-500/30">
-                     <FaChartPie className="w-4 h-4" />
+            <div className="flex justify-between items-center gap-2 mb-3">
+               <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                  <div className="p-1.5 sm:p-2 bg-brand-500/20 text-brand-400 rounded-lg sm:rounded-xl border border-brand-500/30 flex-shrink-0">
+                     <FaChartPie className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
-                  <h3 className={`text-xl font-extrabold tracking-wide ${isDark ? "text-white" : "text-slate-900"}`}>
+                  <h3 className={`text-lg sm:text-xl font-extrabold tracking-wide truncate ${isDark ? "text-white" : "text-slate-900"}`}>
                      {categoryType.name}
                   </h3>
                </div>
 
-               <div className="flex items-center gap-2">
+               <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                   {/* Allocation Percentage Badge / Slider Trigger Control */}
                   {isEditingAllocation ? (
-                     <div className="flex items-center gap-1 bg-indigo-500/10 border border-indigo-500/40 px-2 py-0.5 rounded-xl">
+                     <div className="flex items-center gap-1 bg-indigo-500/10 border border-indigo-500/40 px-1.5 py-0.5 rounded-lg sm:rounded-xl">
                         <input
                            type="number"
                            min="0"
@@ -187,15 +187,15 @@ const CategoryType = ({
                               if (e.key === "Enter") handleConfirmAllocation();
                               if (e.key === "Escape") handleCancelAllocation();
                            }}
-                           className={`w-12 px-1 py-0.5 text-xs font-bold text-center rounded-lg border focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+                           className={`w-9 sm:w-12 px-1 py-0.5 text-[10px] sm:text-xs font-bold text-center rounded-md sm:rounded-lg border focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
                               isDark ? "bg-slate-900 border-indigo-500 text-white" : "bg-white border-indigo-500 text-slate-900"
                            }`}
                         />
-                        <span className="text-xs font-extrabold text-indigo-400">%</span>
+                        <span className="text-[10px] sm:text-xs font-extrabold text-indigo-400">%</span>
                         <button
                            type="button"
                            onClick={handleConfirmAllocation}
-                           className="p-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm ml-1"
+                           className="p-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm ml-0.5"
                            title="Save Allocation"
                         >
                            <FaCheck size={9} />
@@ -215,30 +215,30 @@ const CategoryType = ({
                      <button
                         type="button"
                         onClick={triggerAllocationModal}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer group ${
+                        className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold border transition-all cursor-pointer group ${
                            isDark
                               ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/30 hover:border-indigo-400"
                               : "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300 shadow-sm"
                         }`}
                         title="Click to adjust CategoryType income allocations with sliders"
                      >
-                        <FaSlidersH size={10} className="text-indigo-400" />
-                        <span>{allocationPct}% Allocated</span>
-                        <FaPen size={9} className="opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <FaSlidersH size={9} className="text-indigo-400 flex-shrink-0" />
+                        <span>{allocationPct}%<span className="hidden sm:inline"> Allocated</span></span>
+                        <FaPen size={8} className="opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                      </button>
                   )}
 
                   <button
                      type="button"
                      onClick={handleClick}
-                     className={`p-2 rounded-xl transition-colors ${
+                     className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-colors ${
                         isDark
                            ? "text-slate-400 hover:text-white hover:bg-slate-800"
                            : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
                      }`}
                      title="View detailed category type analysis"
                   >
-                     <FaExternalLinkAlt size={14} />
+                     <FaExternalLinkAlt size={12} className="sm:w-3.5 sm:h-3.5" />
                   </button>
                </div>
             </div>
