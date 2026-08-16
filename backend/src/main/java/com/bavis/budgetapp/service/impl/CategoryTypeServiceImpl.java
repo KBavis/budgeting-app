@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * @author Kellen Bavis
  *
- * Implementation of our CategoryType Service functionality
+ *         Implementation of our CategoryType Service functionality
  */
 @Service
 @Log4j2
@@ -121,7 +121,8 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 			effectivityService.applyVtUpdate(categoryType.getValidTimes(), updateVt, today);
 
 			List<Long> categoryIds = categoriesToUpdate.stream().map(Category::getCategoryId).toList();
-			log.info("Updated list of Category Ids corresponding to CategoryType {}: [{}]", categoryType.getCategoryTypeId(), categoryIds);
+			log.info("Updated list of Category Ids corresponding to CategoryType {}: [{}]",
+					categoryType.getCategoryTypeId(), categoryIds);
 			repository.save(categoryType);
 		}
 	}

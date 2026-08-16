@@ -6,7 +6,7 @@ import categoryContext from "../../context/category/categoryContext";
 import categoryTypeContext from "../../context/category/types/categoryTypeContext";
 import AlertContext from "../../context/alert/alertContext";
 import { getBudgetStatus } from "../../utils/budgetColors";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaCheck, FaTimes, FaPen } from "react-icons/fa";
 import ConfirmationModal from "../layout/ConfirmationModal";
 import { ThemeContext } from "../../context/theme/ThemeContext";
 
@@ -25,7 +25,7 @@ const Category = ({
 }) => {
    // Global State
    const { transactions, updateCategory, removeCategory } = useContext(transactionContext);
-   const { deleteCategory } = useContext(categoryContext);
+   const { deleteCategory, renameCategory } = useContext(categoryContext);
    const { fetchCategoryType, categoryTypes } = useContext(categoryTypeContext);
    const { setAlert } = useContext(AlertContext);
    const { theme } = useContext(ThemeContext);
@@ -39,6 +39,36 @@ const Category = ({
    const [budgetAllocation, setBudgetAllocation] = useState(0);
    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
+   // Local State for Seamless Inline Renaming
+   const [isEditingName, setIsEditingName] = useState(false);
+   const [editName, setEditName] = useState(category?.name || "");
+
+   useEffect(() => {
+      setEditName(category?.name || "");
+   }, [category?.name]);
+
+   const handleConfirmRename = async () => {
+      if (!editName || editName.trim() === "") {
+         setAlert("Please enter a valid category name", "danger");
+         setEditName(category.name);
+         setIsEditingName(false);
+         return;
+      }
+
+      if (editName.trim() !== category.name) {
+         await renameCategory({
+            categoryName: editName.trim(),
+            categoryId: category.categoryId,
+         });
+      }
+      setIsEditingName(false);
+   };
+
+   const handleCancelRename = () => {
+      setEditName(category.name);
+      setIsEditingName(false);
+   };
+
    // Functions
    const handleDeleteCategory = async () => {
       removeCategory(category.categoryId);
@@ -48,10 +78,6 @@ const Category = ({
       }
       setAlert("Category deleted successfully", "success");
       setShowConfirmDelete(false);
-   };
-
-   const handleRenameCategory = () => {
-      handleShowRenameCategoryModal(category);
    };
 
    const handleUpdateAllocations = () => {
@@ -113,33 +139,79 @@ const Category = ({
                   : canDrop ? "border-brand-500/50" : ""
             }`}
          >
-            {/* Header: Clickable Category Name + Trash Delete Icon */}
-            <div className="flex justify-between items-center mb-2">
-               <button
-                  type="button"
-                  onClick={handleRenameCategory}
-                  className={`text-base font-bold truncate px-2 py-0.5 -ml-2 rounded-lg transition-all text-left ${
-                     isDark
-                        ? "text-white hover:bg-slate-700/60"
-                        : "text-slate-900 hover:bg-slate-100"
-                  }`}
-                  title="Click to rename category"
-               >
-                  {category.name}
-               </button>
+            {/* Header: Clickable / Seamless Inline Edit Category Name + Trash Delete Icon */}
+            <div className="flex justify-between items-center mb-2 gap-2">
+               {isEditingName ? (
+                  <div className="flex items-center gap-1.5 flex-1 -ml-1">
+                     <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        placeholder={category.name}
+                        autoFocus
+                        onKeyDown={(e) => {
+                           if (e.key === "Enter") handleConfirmRename();
+                           if (e.key === "Escape") handleCancelRename();
+                        }}
+                        className={`w-full px-2 py-1 text-sm font-bold rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${
+                           isDark
+                              ? "bg-slate-900 border-indigo-500 text-white placeholder-slate-500"
+                              : "bg-white border-indigo-500 text-slate-900 placeholder-slate-400 shadow-sm"
+                        }`}
+                     />
+                     <button
+                        type="button"
+                        onClick={handleConfirmRename}
+                        className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm flex-shrink-0"
+                        title="Confirm rename"
+                     >
+                        <FaCheck className="w-3 h-3" />
+                     </button>
+                     <button
+                        type="button"
+                        onClick={handleCancelRename}
+                        className={`p-1.5 rounded-lg transition-all flex-shrink-0 ${
+                           isDark
+                              ? "bg-slate-700 hover:bg-slate-600 text-slate-300"
+                              : "bg-slate-200 hover:bg-slate-300 text-slate-700"
+                        }`}
+                        title="Cancel"
+                     >
+                        <FaTimes className="w-3 h-3" />
+                     </button>
+                  </div>
+               ) : (
+                  <div className="flex items-center gap-1.5 truncate -ml-2 group">
+                     <button
+                        type="button"
+                        onClick={() => setIsEditingName(true)}
+                        className={`text-base font-bold truncate px-2 py-0.5 rounded-lg transition-all text-left flex items-center gap-1.5 ${
+                           isDark
+                              ? "text-white hover:bg-slate-700/60"
+                              : "text-slate-900 hover:bg-slate-100"
+                        }`}
+                        title="Click to rename category inline"
+                     >
+                        <span>{category.name}</span>
+                        <FaPen className="w-2.5 h-2.5 opacity-0 group-hover:opacity-60 transition-opacity text-indigo-400" />
+                     </button>
+                  </div>
+               )}
 
-               <button
-                  type="button"
-                  onClick={() => setShowConfirmDelete(true)}
-                  className={`p-1.5 rounded-lg transition-colors ml-auto flex-shrink-0 opacity-60 hover:opacity-100 ${
-                     isDark
-                        ? "text-slate-400 hover:text-red-400 hover:bg-slate-700"
-                        : "text-slate-400 hover:text-red-500 hover:bg-slate-100"
-                  }`}
-                  title="Delete category"
-               >
-                  <FaTrash className="w-3.5 h-3.5" />
-               </button>
+               {!isEditingName && (
+                  <button
+                     type="button"
+                     onClick={() => setShowConfirmDelete(true)}
+                     className={`p-1.5 rounded-lg transition-colors ml-auto flex-shrink-0 opacity-60 hover:opacity-100 ${
+                        isDark
+                           ? "text-slate-400 hover:text-red-400 hover:bg-slate-700"
+                           : "text-slate-400 hover:text-red-500 hover:bg-slate-100"
+                     }`}
+                     title="Delete category"
+                  >
+                     <FaTrash className="w-3.5 h-3.5" />
+                  </button>
+               )}
             </div>
 
             {/* Clickable Budget Allocation Pill & Spent Display */}

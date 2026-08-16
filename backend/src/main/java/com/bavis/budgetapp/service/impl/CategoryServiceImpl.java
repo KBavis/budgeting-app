@@ -34,13 +34,13 @@ import java.util.stream.Collectors;
 /**
  * @author Kellen Bavis
  *
- * Implementation of our Category Service functionality
+ *         Implementation of our Category Service functionality
  */
 @Service
 @Log4j2
-public class CategoryServiceImpl implements CategoryService{
+public class CategoryServiceImpl implements CategoryService {
 
-	@Autowired 
+	@Autowired
 	private CategoryRepository categoryRepository;
 
 	@Autowired
@@ -177,7 +177,7 @@ public class CategoryServiceImpl implements CategoryService{
 		List<Category> updatedCategories = addCategoryDto.getUpdatedCategories().stream()
 				.map(updateCategoryDto -> updateCategoryAllocation(updateCategoryDto, categoryType))
 				.collect(Collectors.toList());
-        List<Category> categoriesToSave = new ArrayList<>(updatedCategories);
+		List<Category> categoriesToSave = new ArrayList<>(updatedCategories);
 		categoriesToSave.add(createdCategory);
 		categoryRepository.saveAllAndFlush(categoriesToSave);
 
@@ -190,7 +190,8 @@ public class CategoryServiceImpl implements CategoryService{
 					return active.getBudgetAmount();
 				})
 				.sum();
-		log.info("Total Budget Allocation for all Categories corresponding to CategoryType {} : {}", categoryType.getCategoryTypeId(), totalBudgetAmount);
+		log.info("Total Budget Allocation for all Categories corresponding to CategoryType {} : {}",
+				categoryType.getCategoryTypeId(), totalBudgetAmount);
 
 		if (totalBudgetAmount > getCategoryTypeBudgetAmount(categoryType)) {
 			throw new RuntimeException(
@@ -359,9 +360,12 @@ public class CategoryServiceImpl implements CategoryService{
 				.collect(Collectors.toMap(Category::getCategoryId, category -> category));
 
 		List<Category> mergedCategories = existingCategories.stream()
-				.map(existingCategory -> updatedCategoryMap.getOrDefault(existingCategory.getCategoryId(), existingCategory))
+				.map(existingCategory -> updatedCategoryMap.getOrDefault(existingCategory.getCategoryId(),
+						existingCategory))
 				.collect(Collectors.toList());
-	 	if(!mergedCategories.contains(newCategory) && newCategory != null)	{ mergedCategories.add(newCategory); }
+		if (!mergedCategories.contains(newCategory) && newCategory != null) {
+			mergedCategories.add(newCategory);
+		}
 
 		List<Long> categoryIds = mergedCategories.stream().map(Category::getCategoryId).toList();
 		log.info("Merged Category Ids : [{}]", categoryIds);

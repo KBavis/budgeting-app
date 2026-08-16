@@ -39,9 +39,8 @@ const RenameCategory = ({ onClose, category }) => {
                     To rename the category, please enter the new name below.
                 </p>
 
-                <div className={`flex items-center gap-3 p-3.5 border rounded-xl ${
-                    isDark ? "bg-slate-800/80 border-slate-700/50" : "bg-slate-50 border-slate-200"
-                }`}>
+                <div className={`flex items-center gap-3 p-3.5 border rounded-xl ${isDark ? "bg-slate-800/80 border-slate-700/50" : "bg-slate-50 border-slate-200"
+                    }`}>
                     <img
                         src={
                             category.logoUrl ||
@@ -58,19 +57,17 @@ const RenameCategory = ({ onClose, category }) => {
                     </div>
                 </div>
 
-                <div className={`p-4 border rounded-xl ${
-                    isDark ? "bg-slate-800/50 border-slate-700/60" : "bg-slate-50 border-slate-200"
-                }`}>
+                <div className={`p-4 border rounded-xl ${isDark ? "bg-slate-800/50 border-slate-700/60" : "bg-slate-50 border-slate-200"
+                    }`}>
                     <input
                         type="text"
                         value={newName}
                         onChange={handleInputChange}
                         placeholder="New Category Name"
-                        className={`w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${
-                            isDark
+                        className={`w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all ${isDark
                                 ? "bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500"
                                 : "bg-white border border-slate-300 text-slate-900 placeholder-slate-400"
-                        }`}
+                            }`}
                     />
                 </div>
 
@@ -78,11 +75,10 @@ const RenameCategory = ({ onClose, category }) => {
                     <button
                         type="button"
                         onClick={onClose}
-                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                            isDark
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isDark
                                 ? "text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700"
                                 : "text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200"
-                        }`}
+                            }`}
                     >
                         Cancel
                     </button>

@@ -36,24 +36,24 @@ export default (state, action) => {
       case REMOVE_CATEGORY:
          const removeCategoryCategoryTypes = state.categoryTypes
             ? state.categoryTypes.map((categoryType) => {
-                 if (
-                    categoryType.categoryTypeId ===
-                    action.payload.categoryTypeId
-                 ) {
-                    return {
-                       ...categoryType,
-                       categories: categoryType.categories //Remove Category from 'categories' attribute
-                          ? categoryType.categories.filter(
-                               (category) =>
-                                  category.categoryId !==
-                                  action.payload.categoryId
-                            )
-                          : [],
-                    };
-                 } else {
-                    return categoryType;
-                 }
-              })
+               if (
+                  categoryType.categoryTypeId ===
+                  action.payload.categoryTypeId
+               ) {
+                  return {
+                     ...categoryType,
+                     categories: categoryType.categories //Remove Category from 'categories' attribute
+                        ? categoryType.categories.filter(
+                           (category) =>
+                              category.categoryId !==
+                              action.payload.categoryId
+                        )
+                        : [],
+                  };
+               } else {
+                  return categoryType;
+               }
+            })
             : [];
 
          return {
