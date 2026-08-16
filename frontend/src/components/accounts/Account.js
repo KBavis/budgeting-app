@@ -51,64 +51,13 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
     const isNegative = account.balance < 0 || isLiability;
 
     return (
-        <div className={`relative border rounded-xl px-4 py-3 w-full transition-all duration-200 hover:scale-[1.01] group ${
+        <div className={`relative border rounded-xl p-3.5 sm:p-4 w-full transition-all duration-200 hover:scale-[1.01] group ${
             isDark
                 ? "bg-slate-800/80 border-slate-600/50 hover:bg-slate-700/80"
                 : "bg-white border-slate-200 hover:bg-slate-50 shadow-sm"
         }`}>
-            {/* Inner Content with pr-16 to prevent button overlap */}
-            <div className="flex items-center gap-3 pr-16">
-                {/* Institution Icon */}
-                <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${
-                    isLiability
-                        ? (isDark ? "bg-rose-500/20 border border-rose-400/20" : "bg-rose-50 border border-rose-100")
-                        : (isDark ? "bg-indigo-500/20 border border-indigo-400/20" : "bg-indigo-50 border border-indigo-100")
-                }`}>
-                    <FaUniversity className={`text-sm ${
-                        isLiability
-                            ? (isDark ? "text-rose-300" : "text-rose-500")
-                            : (isDark ? "text-indigo-300" : "text-indigo-500")
-                    }`} />
-                </div>
-
-                {/* Account Info */}
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                        <h3 className={`text-sm font-bold ${
-                            isDark ? "text-white" : "text-slate-900"
-                        }`}>
-                            {account.accountName}
-                        </h3>
-                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-semibold border ${badgeColor}`}>
-                            {badgeDef.label}
-                        </span>
-                    </div>
-                    <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                        {account.institutionName || 'Financial Institution'} {account.mask ? `•••${account.mask}` : ''}
-                    </p>
-                </div>
-
-                {/* Balance - Right aligned */}
-                <div className="flex-shrink-0 text-right">
-                    <p className={`text-base font-extrabold ${
-                        isLiability
-                            ? (isDark ? 'text-rose-400' : 'text-rose-600')
-                            : isNegative
-                            ? (isDark ? 'text-red-400' : 'text-red-600')
-                            : (isDark ? 'text-emerald-400' : 'text-emerald-600')
-                    }`}>
-                        {isLiability ? '-' : (isNegative ? '-' : '')}${Math.abs(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                    {isLiability && (
-                        <p className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
-                            Owed
-                        </p>
-                    )}
-                </div>
-            </div>
-
-            {/* Action buttons (Edit & Delete) positioned absolute right */}
-            <div className="absolute top-1/2 -translate-y-1/2 right-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition duration-200">
+            {/* Action buttons (Edit & Delete) - Positioned Top Right */}
+            <div className="absolute top-3 right-3 flex items-center gap-1 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition duration-200">
                 {handleOpenEditModal && (
                     <button
                         className={`p-1.5 rounded-lg transition duration-200 ${
@@ -117,7 +66,7 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                         onClick={() => handleOpenEditModal(account)}
                         title="Edit Account"
                     >
-                        <FaEdit size={13} />
+                        <FaEdit size={12} />
                     </button>
                 )}
                 <button
@@ -127,8 +76,64 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                     onClick={() => handleShowConfirmationModal(account)}
                     title="Remove Account"
                 >
-                    <FaTrashAlt size={13} />
+                    <FaTrashAlt size={12} />
                 </button>
+            </div>
+
+            {/* Main content container with right padding to clear top-right action buttons */}
+            <div className="flex items-start gap-3 pr-14 sm:pr-16">
+                {/* Institution Icon */}
+                <div className={`flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mt-0.5 ${
+                    isLiability
+                        ? (isDark ? "bg-rose-500/20 border border-rose-400/20" : "bg-rose-50 border border-rose-100")
+                        : (isDark ? "bg-indigo-500/20 border border-indigo-400/20" : "bg-indigo-50 border border-indigo-100")
+                }`}>
+                    <FaUniversity className={`text-sm sm:text-base ${
+                        isLiability
+                            ? (isDark ? "text-rose-300" : "text-rose-500")
+                            : (isDark ? "text-indigo-300" : "text-indigo-500")
+                    }`} />
+                </div>
+
+                {/* Account Details & Balance */}
+                <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
+                    {/* Account Name & Subtitle Info */}
+                    <div className="min-w-0 flex-1">
+                        <h3 className={`text-sm sm:text-base font-bold truncate ${
+                            isDark ? "text-white" : "text-slate-900"
+                        }`} title={account.accountName}>
+                            {account.accountName}
+                        </h3>
+
+                        {/* Badge & Institution details on sub-row */}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
+                                {badgeDef.label}
+                            </span>
+                            <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
+                                {account.institutionName || 'Financial Institution'} {account.mask ? `•••${account.mask}` : ''}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Balance Amount */}
+                    <div className="flex-shrink-0 text-left sm:text-right mt-1 sm:mt-0">
+                        <p className={`text-base sm:text-lg font-black tracking-tight ${
+                            isLiability
+                                ? (isDark ? 'text-rose-400' : 'text-rose-600')
+                                : isNegative
+                                ? (isDark ? 'text-red-400' : 'text-red-600')
+                                : (isDark ? 'text-emerald-400' : 'text-emerald-600')
+                        }`}>
+                            {isLiability ? '-' : (isNegative ? '-' : '')}${Math.abs(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                        {isLiability && (
+                            <span className={`block text-[10px] font-extrabold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
+                                Owed
+                            </span>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
