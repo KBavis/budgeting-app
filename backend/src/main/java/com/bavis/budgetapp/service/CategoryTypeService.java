@@ -17,14 +17,14 @@ import java.util.List;
  */
 public interface CategoryTypeService {
 	/**
-	 * Function to create a Category Type entity and return CategoryTypeResponseDto
+	 * Function to create a Category Type entity from a DTO and return CategoryTypeResponseDto
 	 *
-	 * @param categoryType
-	 * 			- Category Type to be persisted within our database
+	 * @param categoryTypeDto
+	 * 			- Category Type DTO containing creation attributes
 	 * @return
 	 * 			- Saved CategoryTypeResponseDto
 	 */
-	CategoryTypeResponseDto create(CategoryType categoryType);
+	CategoryTypeResponseDto create(CategoryTypeDto categoryTypeDto);
 
 	/**
 	 * Functionality to read all CategoryTypes pertaining to authenticated user as of a point-in-time date

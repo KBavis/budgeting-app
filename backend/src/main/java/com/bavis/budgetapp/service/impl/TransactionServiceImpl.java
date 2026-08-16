@@ -6,6 +6,8 @@ import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.request.AccountsDto;
 import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
 import com.bavis.budgetapp.dto.request.CategorySuggestionRequest;
+import com.bavis.budgetapp.dto.request.PlaidAccountDto;
+import com.bavis.budgetapp.dto.request.UpdateAccountDto;
 import com.bavis.budgetapp.dto.request.PlaidTransactionDto;
 import com.bavis.budgetapp.dto.request.SplitTransactionDto;
 import com.bavis.budgetapp.dto.request.TransactionDto;
@@ -22,8 +24,8 @@ import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.filter.TransactionFilters;
-import com.bavis.budgetapp.mapper.AccountMapperImpl;
 import com.bavis.budgetapp.mapper.TransactionMapper;
+import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -32,10 +34,12 @@ import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.HashSet;
@@ -70,7 +74,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final SuggestionEngineClient _suggestionEngineClient;
 
-    private final AccountMapperImpl _accountMapper;
+    private final EffectivityService _effectivityService;
 
     @Lazy
     private final CategoryServiceImpl categoryService;
@@ -82,7 +86,7 @@ public class TransactionServiceImpl implements TransactionService {
         List<Transaction> allModifiedOrAddedTransactions = new ArrayList<>();
         List<String> allRemovedTransactionIds = new ArrayList<>();
         List<Transaction> previousMonthTransactions = new ArrayList<>();
-        List<AccountDto> updatedAccounts = new ArrayList<>();
+        List<AccountResponseDto> updatedAccounts = new ArrayList<>();
 
         Set<String> pendingTransactionIds = new HashSet<>();
 
@@ -91,16 +95,14 @@ public class TransactionServiceImpl implements TransactionService {
         String accessToken;
         String previousCursor;
         String originalCursor;
-        Account account;
-        Connection accountConnection;
 
         //Sync Transaction for each specified Account
         for(String accountId: accountsDto.getAccounts()){
             try{
                 //Fetch relevant Account/Connection information
-                account = _accountService.read(accountId);
+                Account account = _accountService.findEntity(accountId, null);
                 log.info("Syncing Transactions for Account ID {}", account.getAccountId());
-                accountConnection = account.getConnection();
+                Connection accountConnection = account.getConnection();
                 originalCursor = accountConnection.getOriginalCursor();
                 accessToken = accountConnection.getAccessToken();
                 previousCursor = accountConnection.getPreviousCursor();
@@ -141,16 +143,44 @@ public class TransactionServiceImpl implements TransactionService {
                     }
 
                     // Update relevant Account with up-to-date balance information
+                    AccountVt currentVt = account.getValidTimes() != null && !account.getValidTimes().isEmpty()
+                            ? _effectivityService.getActiveVt(account.getValidTimes(), LocalDate.now()) : null;
                     if(syncResponseDto.getAccounts() != null && !syncResponseDto.getAccounts().isEmpty()) {
-                        account = _accountService.updateBalance(syncResponseDto.getAccounts(), account);
-                        updatedAccounts.add(_accountMapper.toDTO(account));
-                    } else if (account.getAccountType() == AccountType.INVESTMENT) {
+                        Double extractedBalance = syncResponseDto.getAccounts().stream()
+                                .filter(plaidAccountDto -> account.getAccountId().equals(plaidAccountDto.getAccountId()))
+                                .findFirst()
+                                .map(PlaidAccountDto::getBalances)
+                                .map(balances -> {
+                                    AccountType currentType = currentVt != null ? currentVt.getAccountType() : null;
+                                    if (currentType == AccountType.CREDIT || 
+                                        currentType == AccountType.LOAN || 
+                                        currentType == AccountType.INVESTMENT) {
+                                        return balances.getCurrent() != null ? balances.getCurrent() : balances.getAvailable();
+                                    }
+                                    return balances.getAvailable() != null ? balances.getAvailable() : balances.getCurrent();
+                                })
+                                .filter(Objects::nonNull)
+                                .map(BigDecimal::doubleValue)
+                                .orElse(null);
+
+                        if (extractedBalance != null) {
+                            UpdateAccountDto updateDto = UpdateAccountDto.builder()
+                                    .accountId(account.getAccountId())
+                                    .balance(extractedBalance)
+                                    .build();
+                            AccountResponseDto updatedDto = _accountService.update(updateDto);
+                            updatedAccounts.add(updatedDto);
+                        }
+                    } else if (currentVt != null && currentVt.getAccountType() == AccountType.INVESTMENT) {
                         // referesh balance via /accounts/balance/get for Investment Accounts
                         try {
                             double freshBalance = _plaidService.retrieveBalance(account.getAccountId(), accessToken);
-                            account.setBalance(freshBalance);
-                            account = _accountService.update(account);
-                            updatedAccounts.add(_accountMapper.toDTO(account));
+                            UpdateAccountDto updateDto = UpdateAccountDto.builder()
+                                    .accountId(account.getAccountId())
+                                    .balance(freshBalance)
+                                    .build();
+                            AccountResponseDto updatedDto = _accountService.update(updateDto);
+                            updatedAccounts.add(updatedDto);
                             log.info("Refreshed live balance for Investment account {}: ${}", account.getAccountId(), freshBalance);
                         } catch (Exception ex) {
                             log.warn("Could not retrieve live balance for investment account {}: {}", account.getAccountId(), ex.getMessage());
@@ -217,21 +247,20 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public FetchTransactionsDto readAll(){
-        log.info("Attempting to read all Transaction entities corresponding to authenticated user's added Accounts and the current month");
+    public FetchTransactionsDto getAll(LocalDate asOf) {
+        log.info(
+                "Attempting to read all Transaction entities corresponding to authenticated user's added Accounts and asOf [{}]",
+                asOf);
         User currentAuthUser = _userService.getCurrentAuthUser();
-        LocalDate currentDate = LocalDate.now();
+        LocalDate currentDate = asOf != null ? asOf : LocalDate.now();
         int currentMonth = currentDate.getMonthValue();
         int currentYear = currentDate.getYear();
 
-        List<Account> accounts = Optional.ofNullable(currentAuthUser.getAccounts())
-                .orElseGet(List::of)
-                .stream()
-                .filter(account -> account != null && !account.isDeleted())
-                .toList();
-        List<Category> categories = currentAuthUser.getCategories();
+        List<AccountResponseDto> accounts = _accountService.getAll(currentDate);
+        List<Category> categories = categoryService.findAllEntities(currentDate);
 
-        // lists to seperate current month transactions vs prev month transactions that are unassinged
+        // lists to seperate current month transactions vs prev month transactions that
+        // are unassinged
         List<Transaction> currentMonthTransactions = new ArrayList<>();
         List<Transaction> unassignedPreviousMonthTransactions = new ArrayList<>();
 
@@ -243,16 +272,18 @@ public class TransactionServiceImpl implements TransactionService {
                     .build();
         }
 
-        //Fetch All Transactions associated with User Accounts if user has added Accounts
-        if(!accounts.isEmpty()) {
+        // Fetch All Transactions associated with User Accounts if user has added
+        // Accounts
+        if (!accounts.isEmpty()) {
             List<String> accountIds = accounts.stream()
-                    .map(Account::getAccountId)
+                    .map(AccountResponseDto::getAccountId)
                     .collect(Collectors.toList());
 
             log.debug("Reading transactions that are within the same year/date as {} and corresponding to following account IDs: {}", currentDate, accountIds);
             List<Transaction> accountTransactions = _transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(accountIds, currentDate);
 
-            // split into current-month vs unassigned previous-month based on transaction date
+            // split into current-month vs unassigned previous-month based on transaction
+            // date
             for (Transaction t : accountTransactions) {
                 if (t.getDate() != null
                         && t.getDate().getMonthValue() == currentMonth
@@ -264,15 +295,20 @@ public class TransactionServiceImpl implements TransactionService {
             }
         }
 
-        //Fetch All Transactions associated with User Categories if user has added Categories (always current month)
-        if(categories != null){
+        // Fetch All Transactions associated with User Categories if user has added
+        // Categories (always current month)
+        if (categories != null) {
             List<Long> userCategoryIds = categories.stream()
                     .map(Category::getCategoryId)
                     .toList();
 
-            //Fetch All Transactions Corresponding to these Category IDs Where Account is set to Null
-            log.debug("Reading transactions that within the same year/date as {} and corresponding to the following Category IDs: {}", currentDate, userCategoryIds);
-            List<Transaction> userCreatedTransactions = _transactionRepository.findByCategoryIdsAndCurrentMonth(userCategoryIds, currentDate);
+            // Fetch All Transactions Corresponding to these Category IDs Where Account is
+            // set to Null
+            log.debug(
+                    "Reading transactions that within the same year/date as {} and corresponding to the following Category IDs: {}",
+                    currentDate, userCategoryIds);
+            List<Transaction> userCreatedTransactions = _transactionRepository
+                    .findByCategoryIdsAndCurrentMonth(userCategoryIds, currentDate);
             currentMonthTransactions.addAll(userCreatedTransactions);
         }
 
@@ -284,27 +320,36 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Transaction readById(String transactionId) throws RuntimeException{
+    public Transaction findEntity(String transactionId) throws RuntimeException {
         log.info("Attempting to read Transaction by the following ID: [{}]", transactionId);
         return _transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction with the following ID not found: " + transactionId));
     }
 
     @Override
-    public List<Transaction> fetchCategoryTransactions(long categoryId) {
-        return _transactionRepository.findByCategoryCategoryId(categoryId);
+    public List<Transaction> fetchCategoryTransactions(long categoryId, LocalDate asOf) {
+        LocalDate targetDate = (asOf != null) ? asOf : LocalDate.now();
+        return _transactionRepository.findByCategoryCategoryIdAndAsOf(categoryId, targetDate);
     }
 
     @Override
-    public Transaction reduceTransactionAmount(String transactionId, TransactionDto transactionDto) throws  RuntimeException {
-        log.info("Attempting to reduce the Transaction amount to {} for the following Transaction ID: {}", transactionDto.getUpdatedAmount(), transactionId);
+    public List<Transaction> fetchCategoryTransactions(long categoryId) {
+        return fetchCategoryTransactions(categoryId, LocalDate.now());
+    }
 
-        //Fetch Transaction
-        Transaction transaction = readById(transactionId);
+    @Override
+    public Transaction reduceTransactionAmount(String transactionId, TransactionDto transactionDto)
+            throws RuntimeException {
+        log.info("Attempting to reduce the Transaction amount to {} for the following Transaction ID: {}",
+                transactionDto.getUpdatedAmount(), transactionId);
 
-        //Ensure updated amount is less than original amount
-        if(transaction.getAmount() <= transactionDto.getUpdatedAmount()){
-            throw new RuntimeException("Invalid Transaction amount; The provided amount must be less than the original Transaction amount.");
+        // Fetch Transaction
+        Transaction transaction = findEntity(transactionId);
+
+        // Ensure updated amount is less than original amount
+        if (transaction.getAmount() <= transactionDto.getUpdatedAmount()) {
+            throw new RuntimeException(
+                    "Invalid Transaction amount; The provided amount must be less than the original Transaction amount.");
         }
 
         //Update Amount & Flag to indicate Transaction was updated, and persist
@@ -317,8 +362,8 @@ public class TransactionServiceImpl implements TransactionService {
     public Transaction updateTransactionName(String transactionId, String transactionName) throws RuntimeException{
         log.info("Updating Transaction with ID {} to have the following transactionName: {}", transactionId, transactionName);
 
-        //Fetch Transaction
-        Transaction transaction = readById(transactionId);
+        // Fetch Transaction
+        Transaction transaction = findEntity(transactionId);
 
         //Update Name/Flag & Persist
         transaction.setName(transactionName);
@@ -332,11 +377,11 @@ public class TransactionServiceImpl implements TransactionService {
     public Transaction assignCategory(AssignCategoryRequestDto assignCategoryRequestDto) throws RuntimeException{
         log.info("Attempting to assign the Category corresponding to ID {} to the Transaction corresponding to the ID {}", assignCategoryRequestDto.getCategoryId(), assignCategoryRequestDto.getTransactionId());
 
-        //Fetch Category
-        Category category = categoryService.read(Long.parseLong(assignCategoryRequestDto.getCategoryId()));
+        // Fetch Category
+        Category category = categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null);
 
-        //Fetch Transaction
-        Transaction transaction = readById(assignCategoryRequestDto.getTransactionId());
+        // Fetch Transaction
+        Transaction transaction = findEntity(assignCategoryRequestDto.getTransactionId());
 
         //Update & Persist Transaction (Updates Cascade to Category)
         transaction.setCategory(category);
@@ -366,8 +411,8 @@ public class TransactionServiceImpl implements TransactionService {
     public List<Transaction> splitTransaction(String transactionId, SplitTransactionDto splitTransactionDto) throws RuntimeException{
         log.info("Attempting to split out Transaction with the ID {}", transactionId);
 
-        //Fetch Original Transaction by ID
-        Transaction originalTransaction = readById(transactionId);
+        // Fetch Original Transaction by ID
+        Transaction originalTransaction = findEntity(transactionId);
         log.info("Original Transaction being split: [{}]", originalTransaction);
 
         //Update TransactionDto's with original Transaction properties
@@ -404,9 +449,9 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public void removeAssignedCategory(String transactionId) throws RuntimeException{
-        //Fetch
-        Transaction transaction = readById(transactionId);
+    public void removeAssignedCategory(String transactionId) throws RuntimeException {
+        // Fetch
+        Transaction transaction = findEntity(transactionId);
 
         //Update & Persist
         log.info("Removing Category associated with the following Transaction: [{}]", transaction);
@@ -416,11 +461,11 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public void deleteTransaction(String transactionId) throws RuntimeException {
-        //Fetch Transaction, or Throw Exception if Not Found
-        Transaction transaction = readById(transactionId);
+        // Fetch Transaction, or Throw Exception if Not Found
+        Transaction transaction = findEntity(transactionId);
 
-        // soft delete the transaction
-        transaction.setDeleted(true);
+        // soft delete the transaction by setting endDate to yesterday
+        transaction.setEndDate(LocalDate.now().minusDays(1));
         _transactionRepository.save(transaction);
     }
 
@@ -441,9 +486,13 @@ public class TransactionServiceImpl implements TransactionService {
      * @return
      *          - Transaction entities to be persisted
      */
-    private List<Transaction> mapAddedTransactions(List<PlaidTransactionDto> addedPlaidTransactions, Account account, Set<String> pendingTransactionIds) {
-        List<Transaction> addedTransactionEntities = Optional.ofNullable(addedPlaidTransactions).stream().flatMap(List::stream)
-                .filter(_transactionFilters.isPendingAndUserModified(pendingTransactionIds)) //filter out plaid transactions that have been modfiied by user
+    private List<Transaction> mapAddedTransactions(List<PlaidTransactionDto> addedPlaidTransactions, Account account,
+            Set<String> pendingTransactionIds) {
+        List<Transaction> addedTransactionEntities = Optional.ofNullable(addedPlaidTransactions).stream()
+                .flatMap(List::stream)
+                .filter(_transactionFilters.isPendingAndUserModified(pendingTransactionIds)) // filter out plaid
+                                                                                             // transactions that have
+                                                                                             // been modfiied by user
                 .map(_transactionMapper::toEntity)
                 .peek(transaction -> {
                     //TODO: Intelligently assign CategoryType & Category in future
@@ -476,8 +525,9 @@ public class TransactionServiceImpl implements TransactionService {
                 .map(_transactionMapper::toEntity)
                 .filter(_transactionFilters.modifiedTransactionFilters())
                 .peek(transaction -> {
-                    Transaction persistedTransaction = readById(transaction.getTransactionId());
-                    transaction.setCategory(persistedTransaction.getCategory());  // set category to modified transactions current category
+                    Transaction persistedTransaction = findEntity(transaction.getTransactionId());
+                    transaction.setCategory(persistedTransaction.getCategory()); // set category to modified
+                                                                                 // transactions current category
                     transaction.setAccount(account);
                 })
                 .toList();
@@ -489,12 +539,15 @@ public class TransactionServiceImpl implements TransactionService {
 
     /***
      * Map modified & added PlaidTransaction to Transaction entities.
-     * This is being done so users can correctly allocate Transactions to respective Categories for previous month & re-run Budget Performance logic
+     * This is being done so users can correctly allocate Transactions to respective
+     * Categories for previous month & re-run Budget Performance logic
      *
      * @param allModifiedAndAddedPlaidTransactions
-     *         - all modified or added Plaid Transactions
+     *                                             - all modified or added Plaid
+     *                                             Transactions
      * @param account
-     *         - account these Transactions are corresponding to
+     *                                             - account these Transactions are
+     *                                             corresponding to
      * @return
      *          - Transaction entities to persist and return
      */
@@ -521,11 +574,14 @@ public class TransactionServiceImpl implements TransactionService {
      * @param connection
      *          - Connection to update
      * @param originalCursor
-     *          - Cursor from first paginated syncTransactions response from PlaidAPI
+     *                             - Cursor from first paginated syncTransactions
+     *                             response from PlaidAPI
      * @param previousCursor
-     *          - Most recent cursor from paginated response from PlaidAPI
+     *                             - Most recent cursor from paginated response from
+     *                             PlaidAPI
      * @param updateOriginalCursor
-     *          - Flag to determine if we must persist original cursor or not
+     *                             - Flag to determine if we must persist original
+     *                             cursor or not
      */
     private void updateConnection(Connection connection, String originalCursor, String previousCursor, boolean updateOriginalCursor) {
         connection.setPreviousCursor(previousCursor);
@@ -560,7 +616,7 @@ public class TransactionServiceImpl implements TransactionService {
 
                 // check if prediction was made & assign
                 if (categoryId != null) {
-                    transaction.setSuggestedCategory(categoryService.read(categoryId));
+                    transaction.setSuggestedCategory(categoryService.findEntity(categoryId, null));
                 } else {
                     log.info("No Category suggestion for Transaction {}", metadata);
                 }

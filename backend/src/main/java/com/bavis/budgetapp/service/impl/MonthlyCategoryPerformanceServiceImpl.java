@@ -2,10 +2,12 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.dao.MonthlyCategoryPerformanceRepository;
 import com.bavis.budgetapp.entity.Category;
+import com.bavis.budgetapp.entity.CategoryVt;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.analysis.MerchantAnalysis;
 import com.bavis.budgetapp.entity.analysis.MonthlyCategoryPerformance;
 import com.bavis.budgetapp.model.MonthYear;
+import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.MonthlyCategoryPerformanceService;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.util.GeneralUtil;
@@ -16,6 +18,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -37,6 +40,9 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
     @Lazy
     private TransactionService transactionService;
 
+    @Autowired
+    private EffectivityService effectivityService;
+
     @Override
     @Transactional
     public void deleteMonthlyCategoryPerformances(Long userId, MonthYear monthYear) {
@@ -57,8 +63,10 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
         List<MonthlyCategoryPerformance> monthlyCategoryPerformances = new ArrayList<>();
         for (Category category : categories) {
             Long categoryId = category.getCategoryId();
-            Long categoryTypeId = category.getCategoryType().getCategoryTypeId();
-            Double totalAmountAllocated = category.getBudgetAmount();
+            LocalDate asOfDate = monthYear.toEndOfMonthDate();
+            CategoryVt catVt = effectivityService.getActiveVt(category.getValidTimes(), asOfDate);
+            Long categoryTypeId = catVt.getCategoryType() != null ? catVt.getCategoryType().getCategoryTypeId() : null;
+            Double totalAmountAllocated = catVt.getBudgetAmount();
 
             // fetch Transactions corresponding to month, year, and category
             List<Transaction> categoryTransactions = getCategoryTransactions(monthYear, categoryId);
@@ -121,11 +129,11 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
      *          - relevant Categories
      */
     public List<Transaction> getCategoryTransactions(MonthYear monthYear, Long categoryId) {
-        return Optional.ofNullable(transactionService.fetchCategoryTransactions(categoryId)).orElse(Collections.emptyList()).stream()
+        LocalDate asOfDate = monthYear.toEndOfMonthDate();
+        return Optional.ofNullable(transactionService.fetchCategoryTransactions(categoryId, asOfDate)).orElse(Collections.emptyList()).stream()
                 .filter(transaction -> GeneralUtil.isDateInMonthAndYear(transaction.getDate(), monthYear))
                 .toList();
     }
-
 
     /**
      * Retrieve the top 3 merchants based on monthly spending for month
@@ -171,7 +179,6 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
                     .build();
             merchantAnalyses.add(analysis);
         }
-
 
         // extract top 3 greatest spenders by merchant
         List<MerchantAnalysis> top3Spenders = merchantAnalyses.stream()

@@ -5,6 +5,8 @@ import com.bavis.budgetapp.dao.BudgetPerformanceRepository;
 import com.bavis.budgetapp.entity.analysis.BudgetPerformance;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
+import com.bavis.budgetapp.entity.CategoryTypeVt;
+import com.bavis.budgetapp.entity.CategoryVt;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.model.BudgetOverview;
@@ -13,6 +15,7 @@ import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.BudgetPerformanceService;
 import com.bavis.budgetapp.service.CategoryService;
 import com.bavis.budgetapp.service.CategoryTypeService;
+import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.MonthlyCategoryPerformanceService;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
@@ -48,10 +51,16 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
     private TransactionService transactionService;
 
     @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
     private CategoryTypeService categoryTypeService;
 
     @Autowired
     private MonthlyCategoryPerformanceService categoryPerformanceService;
+
+    @Autowired
+    private EffectivityService effectivityService;
 
     @Override
     public List<BudgetPerformance> fetchBudgetPerformances() {
@@ -59,20 +68,11 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
         return repository.findById_UserId(user.getUserId());
     }
 
-    /**
-     * Generate BudgetPerformance for all active users for a specific month and year
-     *
-     * TODO: Make this endpoint Admin User permissions only
-     *
-     * @param monthYear
-     *     - unique month/year to run Job for
-     */
     @Override
     @Transactional
     public void runGenerateBudgetPerformanceJob(MonthYear monthYear) {
 
-        //If no MonthYear passed in, use current MonthYear
-        if(monthYear == null) {
+        if (monthYear == null) {
             monthYear = new MonthYear();
             LocalDate currentDate = LocalDate.now();
             log.info("No MonthYear passed in; using current Month and Year");
@@ -80,29 +80,26 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
             monthYear.setYear(currentDate.getYear());
         }
 
-
-
-        //Fetch All Available User
         List<User> users = userService.readAll();
 
         List<BudgetPerformance> budgetPerformances = new ArrayList<>();
-        for(User user: users) {
-            //Skip all generating BudgetPerformance for users who already have a BudgetPerformance created for that Month/Year
-            if(repository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId()) != null){
-                log.info("BudgetPerformance for MonthYear {} and User {} already exists; skipping generation", monthYear, user.getUserId());
+        for (User user : users) {
+            if (repository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(),
+                    monthYear.getYear(), user.getUserId()).isPresent()) {
+                log.info("BudgetPerformance for MonthYear {} and User {} already exists; skipping generation",
+                        monthYear, user.getUserId());
                 continue;
             }
 
             BudgetPerformance budgetPerformance = new BudgetPerformance();
 
-            List<Category> categories = user.getCategories();
+            LocalDate asOfDate = monthYear.toEndOfMonthDate();
+            List<Category> categories = categoryService.findAllEntities(asOfDate);
 
-            //Generate General BudgetOverviews
             log.info("Calculating Budget Overviews for User {}", user.getUsername());
             HashMap<OverviewType, BudgetOverview> budgetOverviews = generateBudgetOverviews(categories, monthYear, user);
 
 
-            //Generate BudgetPerformanceId
             BudgetPerformanceId id = BudgetPerformanceId.builder()
                             .monthYear(monthYear)
                             .userId(user.getUserId())
@@ -119,30 +116,23 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
                 }
             }));
 
-            // Generate user's monthly category performance
             categoryPerformanceService.generateMonthlyCategoryPerformances(user.getUserId(), monthYear, categories);
 
-
-            //Add to List
             budgetPerformances.add(budgetPerformance);
         }
 
-        //Persist all BudgetPerformance Entities
-        if(!budgetPerformances.isEmpty()) { repository.saveAllAndFlush(budgetPerformances); }
+        if (!budgetPerformances.isEmpty()) {
+            repository.saveAllAndFlush(budgetPerformances);
+        }
     }
 
-    /**
-     * Fetch BudgetPerformance for specific MonthYear
-     *
-     * @param monthYear
-     *          - Month/Year to fetch BudgetPerformance for
-     * @return
-     *          - persisted BudgetPerformance
-     */
     @Override
     public BudgetPerformance fetchBudgetPerformance(MonthYear monthYear) {
         User user = userService.getCurrentAuthUser();
-        return repository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(), user.getUserId());
+        return repository
+                .findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(monthYear.getMonth(), monthYear.getYear(),
+                        user.getUserId())
+                .orElse(null);
     }
 
     @Override
@@ -160,20 +150,18 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
 
         log.info("Recalculating BudgetPerformance entity for UserId {} and MonthYear {}", user.getUserId(), monthYear);
 
-        // Delete existing BudgetPerformance entity for this monthYear & user if present
         BudgetPerformance existingPerformance = repository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(
-                monthYear.getMonth(), monthYear.getYear(), user.getUserId());
+                monthYear.getMonth(), monthYear.getYear(), user.getUserId()).orElse(null);
         if (existingPerformance != null) {
             log.info("Deleting existing BudgetPerformance entity for UserId {} and MonthYear {}", user.getUserId(), monthYear);
             repository.delete(existingPerformance);
             repository.flush();
         }
 
-        // Re-generate budget overviews for this user
-        List<Category> categories = user.getCategories();
+        LocalDate asOfDate = monthYear.toEndOfMonthDate();
+        List<Category> categories = categoryService.findAllEntities(asOfDate);
         HashMap<OverviewType, BudgetOverview> budgetOverviews = generateBudgetOverviews(categories, monthYear, user);
 
-        // Construct new BudgetPerformance entity
         BudgetPerformance newPerformance = new BudgetPerformance();
         BudgetPerformanceId id = BudgetPerformanceId.builder()
                 .monthYear(monthYear)
@@ -190,27 +178,20 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
             }
         });
 
-        // Re-generate monthly category performance records for this user
         categoryPerformanceService.generateMonthlyCategoryPerformances(user.getUserId(), monthYear, categories);
 
         return repository.saveAndFlush(newPerformance);
     }
 
-    /**
-     * Utility function to generate a BudgetOverview model
-     *
-     * @param userCategories
-     *          - List of Categories to generate Overview for
-     * @param monthYear
-     *          - Unique Month/Year to generate budget for
-     * @return
-     *          - BudgetOverview model
-     */
-    public HashMap<OverviewType, BudgetOverview> generateBudgetOverviews(List<Category> userCategories, MonthYear monthYear, User user) {
+    public HashMap<OverviewType, BudgetOverview> generateBudgetOverviews(List<Category> userCategories,
+            MonthYear monthYear, User user) {
+        LocalDate asOfDate = monthYear.toEndOfMonthDate();
+
         String categoryIds = userCategories.stream()
-                                .map(category -> String.valueOf(category.getCategoryId()))
-                                .collect(Collectors.joining(", "));
-        log.info("Generating Budget Overviews for the Categories [{}] and the Month {} and Year {}", categoryIds, monthYear.getMonth(), monthYear.getYear());
+                .map(category -> String.valueOf(category.getCategoryId()))
+                .collect(Collectors.joining(", "));
+        log.info("Generating Budget Overviews for the Categories [{}] and the Month {} and Year {} asOf {}",
+                categoryIds, monthYear.getMonth(), monthYear.getYear(), asOfDate);
 
         HashMap<OverviewType, BudgetOverview> budgetOverviews = new HashMap<>();
         List<OverviewType> overviewTypes = List.of(OverviewType.GENERAL, OverviewType.NEEDS, OverviewType.WANTS, OverviewType.INVESTMENTS);
@@ -221,7 +202,12 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
             //Filer Categories for Overview Type
             if(overviewType != OverviewType.GENERAL) {
                 String categoryTypeName = GeneralUtil.nullSafeToLowerCaseOrEmpty(overviewType.getType());
-                filteredCategories = userCategories.stream().filter(category -> categoryTypeName.equals(GeneralUtil.nullSafeToLowerCaseOrEmpty(category.getCategoryType().getName()))).toList();
+                filteredCategories = userCategories.stream().filter(category -> {
+                    CategoryVt catVt = effectivityService.getActiveVt(category.getValidTimes(), asOfDate);
+                    CategoryType catType = catVt.getCategoryType();
+                    CategoryTypeVt catTypeVt = catType != null ? effectivityService.getActiveVt(catType.getValidTimes(), asOfDate) : null;
+                    return catTypeVt != null && categoryTypeName.equals(GeneralUtil.nullSafeToLowerCaseOrEmpty(catTypeVt.getName()));
+                }).toList();
                 String filteredCategoryIds = filteredCategories.stream()
                         .map(category -> String.valueOf(category.getCategoryId()))
                         .collect(Collectors.joining(", "));
@@ -230,27 +216,28 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
 
             //Calculate Total Amount Allocated to Budget for CategoryType
             double totalAmountBudgeted = filteredCategories.stream()
-                                            .mapToDouble(Category::getBudgetAmount)
-                                            .sum();
+                    .mapToDouble(cat -> {
+                        CategoryVt catVt = effectivityService.getActiveVt(cat.getValidTimes(), asOfDate);
+                        return catVt.getBudgetAmount();
+                    })
+                    .sum();
 
             //Calculate Total Amount Spent on Budget for CategoryType
             double totalAmountSpent = filteredCategories.stream()
-                                            .map(category -> Optional.ofNullable(transactionService.fetchCategoryTransactions(category.getCategoryId())).orElse(Collections.emptyList())) //Fetch Transactions or use empty List
-                                            .flatMap(List::stream)
-                                            .filter(transaction -> GeneralUtil.isDateInMonthAndYear(transaction.getDate(), monthYear)) //Filter Transactions to verify ones in present month
-                                            .mapToDouble(Transaction::getAmount)
-                                            .sum();
+                    .map(category -> Optional.ofNullable(transactionService.fetchCategoryTransactions(category.getCategoryId(), asOfDate)).orElse(Collections.emptyList()))
+                    .flatMap(List::stream)
+                    .filter(transaction -> GeneralUtil.isDateInMonthAndYear(transaction.getDate(), monthYear))
+                    .mapToDouble(Transaction::getAmount)
+                    .sum();
 
             //Calculate Budget Utilization
             double totalBudgetUtilization = totalAmountSpent != 0 ? totalAmountSpent / totalAmountBudgeted : 0;
-            if(totalBudgetUtilization != 0) { totalBudgetUtilization = (double) Math.round(totalBudgetUtilization * 100) / 100; } //round to nearest hundredth
+            if (totalBudgetUtilization != 0) { totalBudgetUtilization = (double) Math.round(totalBudgetUtilization * 100) / 100; }
 
             //Calculate Savings
             log.info("Total Amount Budgeted {} and Total Amount Spent {}", totalAmountBudgeted, totalAmountSpent);
-            double difference = totalAmountBudgeted - totalAmountSpent; //amount over/under budget
-            double totalAmountSaved = calculateTotalAmountSaved(overviewType, totalAmountSpent, user);
-
-            // 
+            double difference = totalAmountBudgeted - totalAmountSpent;
+            double totalAmountSaved = calculateTotalAmountSaved(overviewType, totalAmountSpent, user, asOfDate);
 
             BudgetOverview budgetOverview = BudgetOverview.builder()
                     .overviewType(overviewType)
@@ -280,20 +267,28 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
      * @return
      *          - total amount saved for CategoryType
      */
-    public double calculateTotalAmountSaved(OverviewType overviewType, double totalAmountSpent, User user) {
-        log.info("Calculating the Total Amount Saved for OverviewType {} and Expenditure {}", overviewType.name(), totalAmountSpent);
+    public double calculateTotalAmountSaved(OverviewType overviewType, double totalAmountSpent, User user, LocalDate asOfDate) {
+        log.info("Calculating the Total Amount Saved for OverviewType {} and Expenditure {} asOf {}", overviewType.name(), totalAmountSpent, asOfDate);
 
         //Sum of all CategoryTypes 'budget_amount_allocated' MINUS total amount spent
-        if(overviewType == OverviewType.GENERAL) {
-            double allCategoryTypeAllocations = Optional.ofNullable(categoryTypeService.readAll(user)).orElse(Collections.emptyList()).stream()
-                    .mapToDouble(CategoryType::getBudgetAmount)
+        if (overviewType == OverviewType.GENERAL) {
+            List<CategoryType> types = Optional.ofNullable(categoryTypeService.findAllEntities(user, asOfDate)).orElse(Collections.emptyList());
+            double allCategoryTypeAllocations = types.stream()
+                    .mapToDouble(type -> {
+                        CategoryTypeVt ctVt = effectivityService.getActiveVt(type.getValidTimes(), asOfDate);
+                        return ctVt.getBudgetAmount();
+                    })
                     .sum();
             log.info("Total Amount Allocated for {} Overview : {}", overviewType.name(), allCategoryTypeAllocations);
             return allCategoryTypeAllocations - totalAmountSpent;
         }
 
-        CategoryType categoryType = categoryTypeService.readByName(overviewType.name(), user);
-        double categoryTypeAllocation = categoryType == null ? 0 : categoryType.getBudgetAmount();
+        CategoryType categoryType = categoryTypeService.findEntityByName(overviewType.name(), user, asOfDate);
+        double categoryTypeAllocation = 0.0;
+        if (categoryType != null) {
+            CategoryTypeVt ctVt = effectivityService.getActiveVt(categoryType.getValidTimes(), asOfDate);
+            categoryTypeAllocation = ctVt.getBudgetAmount();
+        }
         log.info("Total Amount Allocated for {} Overview: {}", overviewType.name(), categoryTypeAllocation);
         return categoryTypeAllocation - totalAmountSpent;
     }
