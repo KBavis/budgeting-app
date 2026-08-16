@@ -181,19 +181,19 @@ const Category = ({
                      </button>
                   </div>
                ) : (
-                  <div className="flex items-center gap-1.5 truncate -ml-2 group">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1 group">
                      <button
                         type="button"
                         onClick={() => setIsEditingName(true)}
-                        className={`text-base font-bold truncate px-2 py-0.5 rounded-lg transition-all text-left flex items-center gap-1.5 ${
+                        className={`text-base font-bold min-w-0 max-w-full truncate px-1.5 py-0.5 rounded-lg transition-all text-left flex items-center gap-1.5 ${
                            isDark
                               ? "text-white hover:bg-slate-700/60"
                               : "text-slate-900 hover:bg-slate-100"
                         }`}
                         title="Click to rename category inline"
                      >
-                        <span>{category.name}</span>
-                        <FaPen className="w-2.5 h-2.5 opacity-0 group-hover:opacity-60 transition-opacity text-indigo-400" />
+                        <span className="truncate min-w-0">{category.name}</span>
+                        <FaPen className="w-2.5 h-2.5 opacity-0 group-hover:opacity-60 transition-opacity text-indigo-400 flex-shrink-0" />
                      </button>
                   </div>
                )}

@@ -148,59 +148,80 @@ const IncomesPage = () => {
                   incomes.map((inc, index) => (
                      <div
                         key={inc.incomeId || index}
-                        className={`flex items-center justify-between p-4 border rounded-2xl transition-all ${
+                        className={`relative border rounded-2xl p-3.5 sm:p-4 w-full transition-all duration-200 hover:scale-[1.01] group ${
                            isDark
-                              ? "bg-slate-800/70 border-slate-700/70 hover:border-slate-600"
-                              : "bg-white border-slate-200 shadow-sm hover:border-slate-300"
+                              ? "bg-slate-800/80 border-slate-600/50 hover:bg-slate-700/80"
+                              : "bg-white border-slate-200 hover:bg-slate-50 shadow-sm"
                         }`}
                      >
-                        <div className="flex items-center gap-3">
-                           <div className={`p-2.5 rounded-xl border ${
+                        {/* Action buttons (Edit & Delete) - Positioned Top Right */}
+                        <div className="absolute top-3 right-3 flex items-center gap-1 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition duration-200">
+                           <button
+                              type="button"
+                              onClick={() => handleOpenEdit(inc)}
+                              className={`p-1.5 rounded-lg transition duration-200 ${
+                                 isDark
+                                    ? "text-slate-400 hover:text-indigo-300 bg-slate-700/80 hover:bg-indigo-500/20"
+                                    : "text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50"
+                              }`}
+                              title="Edit Income"
+                           >
+                              <FaEdit size={12} />
+                           </button>
+                           <button
+                              type="button"
+                              onClick={() => { setIncomeToDelete(inc); setShowConfirmModal(true); }}
+                              className={`p-1.5 rounded-lg transition duration-200 ${
+                                 isDark
+                                    ? "text-slate-400 hover:text-red-400 bg-slate-700/80 hover:bg-red-500/20"
+                                    : "text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50"
+                              }`}
+                              title="Delete Income"
+                           >
+                              <FaTrash size={12} />
+                           </button>
+                        </div>
+
+                        {/* Main content container with right padding to clear top-right action buttons */}
+                        <div className="flex items-start gap-3 pr-14 sm:pr-16">
+                           {/* Wallet Icon */}
+                           <div className={`flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mt-0.5 border ${
                               isDark
                                  ? "bg-brand-500/10 border-brand-500/20 text-brand-400"
                                  : "bg-brand-50 border-brand-100 text-brand-600"
                            }`}>
-                              <FaWallet className="w-4 h-4" />
+                              <FaWallet className="w-4 h-4 text-sm sm:text-base" />
                            </div>
-                           <div className="flex flex-col">
-                              <span className={`text-sm font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                                 {inc.description || inc.incomeSource || `Income Source ${index + 1}`}
-                              </span>
-                              <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-slate-400" : "text-brand-600"}`}>
-                                 {inc.incomeType || "Income"}{inc.incomeSource ? ` · ${inc.incomeSource}` : ""}
-                              </span>
-                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-3">
-                           <span className={`text-base font-extrabold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
-                              +${parseFloat(inc.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                           </span>
-                           <div className="flex items-center gap-1">
-                              <button
-                                 type="button"
-                                 onClick={() => handleOpenEdit(inc)}
-                                 className={`p-1.5 rounded-lg transition-colors ${
-                                    isDark
-                                       ? "text-slate-400 hover:text-white hover:bg-slate-700"
-                                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-                                 }`}
-                                 title="Edit Income"
-                              >
-                                 <FaEdit className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                 type="button"
-                                 onClick={() => { setIncomeToDelete(inc); setShowConfirmModal(true); }}
-                                 className={`p-1.5 rounded-lg transition-colors ${
-                                    isDark
-                                       ? "text-slate-400 hover:text-red-400 hover:bg-slate-700"
-                                       : "text-slate-500 hover:text-red-500 hover:bg-slate-100"
-                                 }`}
-                                 title="Delete Income"
-                              >
-                                 <FaTrash className="w-3.5 h-3.5" />
-                              </button>
+                           {/* Income Info & Amount */}
+                           <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
+                              {/* Description & Subtitle Details */}
+                              <div className="min-w-0 flex-1">
+                                 <h3 className={`text-sm sm:text-base font-bold truncate ${
+                                    isDark ? "text-slate-100" : "text-slate-900"
+                                 }`} title={inc.description || inc.incomeSource}>
+                                    {inc.description || inc.incomeSource || `Income Source ${index + 1}`}
+                                 </h3>
+                                 <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
+                                       isDark ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    }`}>
+                                       {inc.incomeType || "Income"}
+                                    </span>
+                                    {inc.incomeSource && (
+                                       <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
+                                          {inc.incomeSource}
+                                       </span>
+                                    )}
+                                 </div>
+                              </div>
+
+                              {/* Income Amount */}
+                              <div className="flex-shrink-0 text-left sm:text-right mt-1 sm:mt-0">
+                                 <p className={`text-base sm:text-lg font-black tracking-tight ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+                                    +${parseFloat(inc.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                 </p>
+                              </div>
                            </div>
                         </div>
                      </div>

@@ -169,28 +169,31 @@ const IncomeManagementModal = ({ isOpen, onClose }) => {
                   incomes.map((inc, index) => (
                      <div
                         key={inc.incomeId || index}
-                        className="flex items-center justify-between p-3.5 bg-slate-800/50 border border-slate-700/60 rounded-xl"
+                        className="relative p-3.5 bg-slate-800/50 border border-slate-700/60 rounded-xl"
                      >
-                        <div className="flex flex-col text-left">
-                           <span className="text-sm font-bold text-slate-100">
-                              {inc.description || inc.incomeSource || `Income Source ${index + 1}`}
-                           </span>
-                           <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                              {inc.incomeType || "Income"}
-                           </span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                           <span className="text-base font-bold text-emerald-400">
-                              +${parseFloat(inc.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                           </span>
-                           <button
-                              type="button"
-                              onClick={() => handleDelete(inc.incomeId)}
-                              className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-700 transition-colors"
-                              title="Delete Income"
-                           >
-                              <FaTrash className="w-3.5 h-3.5" />
-                           </button>
+                        <button
+                           type="button"
+                           onClick={() => handleDelete(inc.incomeId)}
+                           className="absolute top-3 right-3 p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-700 transition-colors z-10"
+                           title="Delete Income"
+                        >
+                           <FaTrash className="w-3.5 h-3.5" />
+                        </button>
+
+                        <div className="flex items-center justify-between pr-8">
+                           <div className="flex flex-col text-left min-w-0 flex-1 pr-2">
+                              <span className="text-sm font-bold text-slate-100 truncate">
+                                 {inc.description || inc.incomeSource || `Income Source ${index + 1}`}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
+                                 {inc.incomeType || "Income"}{inc.incomeSource ? ` · ${inc.incomeSource}` : ""}
+                              </span>
+                           </div>
+                           <div className="flex-shrink-0">
+                              <span className="text-base font-bold text-emerald-400">
+                                 +${parseFloat(inc.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                           </div>
                         </div>
                      </div>
                   ))
