@@ -12,6 +12,25 @@ import {
    REMOVE_CATEGORY,
 } from "./types";
 
+const CATEGORY_TYPE_ORDER = ["needs", "wants", "investments", "savings"];
+
+/**
+ * Helper to ensure CategoryTypes are always ordered: Needs, Wants, Investments, Savings
+ */
+const sortCategoryTypes = (types) => {
+   if (!types || !Array.isArray(types)) return [];
+   return [...types].sort((a, b) => {
+      const nameA = (a.name || "").toLowerCase();
+      const nameB = (b.name || "").toLowerCase();
+      const indexA = CATEGORY_TYPE_ORDER.indexOf(nameA);
+      const indexB = CATEGORY_TYPE_ORDER.indexOf(nameB);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return (a.categoryTypeId || 0) - (b.categoryTypeId || 0);
+   });
+};
+
 /**
  * Reducer to update CategoryType state based on specified actions
  */
@@ -21,7 +40,7 @@ export default (state, action) => {
       case FETCH_CATEGORY_TYPES_SUCCCESS:
          return {
             ...state,
-            categoryTypes: action.payload,
+            categoryTypes: sortCategoryTypes(action.payload),
             loading: false,
             error: null,
          };
@@ -36,29 +55,29 @@ export default (state, action) => {
       case REMOVE_CATEGORY:
          const removeCategoryCategoryTypes = state.categoryTypes
             ? state.categoryTypes.map((categoryType) => {
-                 if (
-                    categoryType.categoryTypeId ===
-                    action.payload.categoryTypeId
-                 ) {
-                    return {
-                       ...categoryType,
-                       categories: categoryType.categories //Remove Category from 'categories' attribute
-                          ? categoryType.categories.filter(
-                               (category) =>
-                                  category.categoryId !==
-                                  action.payload.categoryId
-                            )
-                          : [],
-                    };
-                 } else {
-                    return categoryType;
-                 }
-              })
+               if (
+                  categoryType.categoryTypeId ===
+                  action.payload.categoryTypeId
+               ) {
+                  return {
+                     ...categoryType,
+                     categories: categoryType.categories //Remove Category from 'categories' attribute
+                        ? categoryType.categories.filter(
+                           (category) =>
+                              category.categoryId !==
+                              action.payload.categoryId
+                        )
+                        : [],
+                  };
+               } else {
+                  return categoryType;
+               }
+            })
             : [];
 
          return {
             ...state,
-            categoryTypes: removeCategoryCategoryTypes,
+            categoryTypes: sortCategoryTypes(removeCategoryCategoryTypes),
          };
 
       case FETCH_CATEGORY_TYPE_SUCCESS:
@@ -69,7 +88,7 @@ export default (state, action) => {
 
          return {
             ...state,
-            categoryTypes: [...categoryTypes, action.payload],
+            categoryTypes: sortCategoryTypes([...categoryTypes, action.payload]),
          };
       case UPDATE_CATEGORY_TYPE_SUCCESS:
          //Filter Out CategoryTypes Other Than Once To Upate
@@ -80,7 +99,7 @@ export default (state, action) => {
 
          return {
             ...state,
-            categoryTypes: [...filteredCategoryTypes, action.payload],
+            categoryTypes: sortCategoryTypes([...filteredCategoryTypes, action.payload]),
             loading: false,
          };
       case CLEAR_ERRORS:

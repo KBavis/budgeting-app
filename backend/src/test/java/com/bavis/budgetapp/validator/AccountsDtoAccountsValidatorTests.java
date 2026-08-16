@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.AccountsDto;
+import com.bavis.budgetapp.dto.request.AccountsDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
@@ -75,8 +75,8 @@ public class AccountsDtoAccountsValidatorTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
-        when(accountService.read(accountIdTwo)).thenReturn(accountTwo);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdTwo, null)).thenReturn(accountTwo);
 
         //Act
         boolean valid = validator.isValid(validDto, context);
@@ -110,8 +110,8 @@ public class AccountsDtoAccountsValidatorTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
-        when(accountService.read(accountIdTwo)).thenThrow(new RuntimeException("Unable to located Account with ID " + accountOne));
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdTwo, null)).thenThrow(new RuntimeException("Unable to located Account with ID " + accountOne));
 
         //Act
         boolean valid = validator.isValid(invalidDto, context);
@@ -141,7 +141,7 @@ public class AccountsDtoAccountsValidatorTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountService.read(accountIdOne)).thenReturn(accountOne);
+        when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
 
         //Act
         boolean valid = validator.isValid(invalidDto, context);

@@ -1,9 +1,8 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.CategoryTypeDto;
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
-import com.bavis.budgetapp.entity.Category;
-import com.bavis.budgetapp.entity.CategoryType;
+import com.bavis.budgetapp.dto.request.CategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.response.CategoryTypeResponseDto;
 import com.bavis.budgetapp.service.impl.CategoryTypeServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,16 +17,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * TODO: Add tests for other functionality based on usage
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @WithMockUser
@@ -48,48 +43,45 @@ public class CategoryTypeControllerTests {
 
     @Test
     void testRead_Successful() throws Exception {
-        //Arrange
-        Category categoryOne = Category.builder()
-                .categoryId(1L)
-                .name("My Test Category")
-                .build();
-        CategoryType categoryType = CategoryType.builder()
+        // Arrange
+        CategoryTypeResponseDto categoryTypeResponseDto = CategoryTypeResponseDto.builder()
                 .categoryTypeId(10L)
-                .categories(List.of(categoryOne))
+                .name("Needs")
                 .budgetAmount(1000.0)
                 .budgetAllocationPercentage(.5)
                 .savedAmount(100.0)
                 .build();
 
-        //Mock
-        when(categoryTypeService.read(10L)).thenReturn(categoryType);
+        // Mock
+        when(categoryTypeService.get(eq(10L), any())).thenReturn(categoryTypeResponseDto);
 
-        //Act
-        ResultActions resultActions = mockMvc.perform(get("/category/type/" + categoryType.getCategoryTypeId()));
+        // Act
+        ResultActions resultActions = mockMvc.perform(get("/category/type/" + categoryTypeResponseDto.getCategoryTypeId()));
 
-        //Assert
+        // Assert
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.categoryTypeId").value(categoryType.getCategoryTypeId()))
-                .andExpect(jsonPath("$.budgetAmount").value(categoryType.getBudgetAmount()))
-                .andExpect(jsonPath("$.budgetAllocationPercentage").value(categoryType.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$.savedAmount").value(categoryType.getSavedAmount()));
+                .andExpect(jsonPath("$.categoryTypeId").value(categoryTypeResponseDto.getCategoryTypeId()))
+                .andExpect(jsonPath("$.name").value(categoryTypeResponseDto.getName()))
+                .andExpect(jsonPath("$.budgetAmount").value(categoryTypeResponseDto.getBudgetAmount()))
+                .andExpect(jsonPath("$.budgetAllocationPercentage").value(categoryTypeResponseDto.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$.savedAmount").value(categoryTypeResponseDto.getSavedAmount()));
     }
 
     @Test
     void testRead_IdNotFound_Failure() throws Exception {
-        //Arrange
+        // Arrange
         long categoryTypeId = 1L;
         RuntimeException runtimeException = new RuntimeException("Invalid category type id: " + categoryTypeId);
 
-        //Mock
-        when(categoryTypeService.read(1L)).thenThrow(runtimeException);
+        // Mock
+        when(categoryTypeService.get(eq(1L), any())).thenThrow(runtimeException);
 
-        //Act
+        // Act
         ResultActions resultActions = mockMvc.perform(get("/category/type/" + categoryTypeId));
 
-        //Assert
+        // Assert
         resultActions
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -98,54 +90,51 @@ public class CategoryTypeControllerTests {
 
     @Test
     void testReadAll_Successful() throws Exception {
-        //Arrange
-        CategoryType categoryTypeOne = CategoryType.builder()
+        // Arrange
+        CategoryTypeResponseDto dtoOne = CategoryTypeResponseDto.builder()
                 .categoryTypeId(10L)
                 .name("Needs")
                 .budgetAllocationPercentage(.5)
-                .categories(new ArrayList<>())
                 .build();
 
-        CategoryType categoryTypeTwo = CategoryType.builder()
+        CategoryTypeResponseDto dtoTwo = CategoryTypeResponseDto.builder()
                 .categoryTypeId(11L)
                 .name("Wants")
                 .budgetAllocationPercentage(.2)
-                .categories(new ArrayList<>())
                 .build();
 
-        CategoryType categoryTypeThree = CategoryType.builder()
+        CategoryTypeResponseDto dtoThree = CategoryTypeResponseDto.builder()
                 .categoryTypeId(12L)
                 .name("Investments")
                 .budgetAllocationPercentage(.3)
-                .categories(new ArrayList<>())
                 .build();
 
-        List<CategoryType> expectedCategoryTypes = List.of(categoryTypeOne, categoryTypeTwo, categoryTypeThree);
+        List<CategoryTypeResponseDto> expectedCategoryTypes = List.of(dtoOne, dtoTwo, dtoThree);
 
-        //Mock
-        when(categoryTypeService.readAll()).thenReturn(expectedCategoryTypes);
+        // Mock
+        when(categoryTypeService.getAll(any())).thenReturn(expectedCategoryTypes);
 
-        //Act & Assert
+        // Act & Assert
         ResultActions resultActions = mockMvc.perform(get("/category/type"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].categoryTypeId").value(categoryTypeOne.getCategoryTypeId()))
-                .andExpect(jsonPath("$[0].name").value(categoryTypeOne.getName()))
-                .andExpect(jsonPath("$[0].budgetAllocationPercentage").value(categoryTypeOne.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$[1].categoryTypeId").value(categoryTypeTwo.getCategoryTypeId()))
-                .andExpect(jsonPath("$[1].name").value(categoryTypeTwo.getName()))
-                .andExpect(jsonPath("$[1].budgetAllocationPercentage").value(categoryTypeTwo.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$[2].categoryTypeId").value(categoryTypeThree.getCategoryTypeId()))
-                .andExpect(jsonPath("$[2].name").value(categoryTypeThree.getName()))
-                .andExpect(jsonPath("$[2].budgetAllocationPercentage").value(categoryTypeThree.getBudgetAllocationPercentage()));
+                .andExpect(jsonPath("$[0].categoryTypeId").value(dtoOne.getCategoryTypeId()))
+                .andExpect(jsonPath("$[0].name").value(dtoOne.getName()))
+                .andExpect(jsonPath("$[0].budgetAllocationPercentage").value(dtoOne.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[1].categoryTypeId").value(dtoTwo.getCategoryTypeId()))
+                .andExpect(jsonPath("$[1].name").value(dtoTwo.getName()))
+                .andExpect(jsonPath("$[1].budgetAllocationPercentage").value(dtoTwo.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[2].categoryTypeId").value(dtoThree.getCategoryTypeId()))
+                .andExpect(jsonPath("$[2].name").value(dtoThree.getName()))
+                .andExpect(jsonPath("$[2].budgetAllocationPercentage").value(dtoThree.getBudgetAllocationPercentage()));
 
-        //Verify
-        verify(categoryTypeService, times(1)).readAll();
+        // Verify
+        verify(categoryTypeService, times(1)).getAll(any());
     }
 
     @Test
     public void testBulkCreateCategoryType_ValidRequest_Successful() throws Exception {
-        //Arrange
+        // Arrange
         CategoryTypeDto categoryTypeDto1 = CategoryTypeDto.builder()
                 .name("Category Type One")
                 .budgetAllocationPercentage(.5)
@@ -162,175 +151,125 @@ public class CategoryTypeControllerTests {
                 .build();
         List<CategoryTypeDto> categoryTypeDtos = List.of(categoryTypeDto1, categoryTypeDto2, categoryTypeDto3);
 
-
-        CategoryType categoryType1 = CategoryType.builder()
+        CategoryTypeResponseDto dto1 = CategoryTypeResponseDto.builder()
+                .categoryTypeId(1L)
                 .name("Category Type One")
                 .budgetAllocationPercentage(.5)
                 .budgetAmount(5000)
-                .categories(new ArrayList<>())
                 .build();
 
-        CategoryType categoryType2 = CategoryType.builder()
+        CategoryTypeResponseDto dto2 = CategoryTypeResponseDto.builder()
+                .categoryTypeId(2L)
                 .name("Category Type Two")
                 .budgetAllocationPercentage(.25)
                 .budgetAmount(2500)
-                .categories(new ArrayList<>())
                 .build();
 
-        CategoryType categoryType3 = CategoryType.builder()
+        CategoryTypeResponseDto dto3 = CategoryTypeResponseDto.builder()
+                .categoryTypeId(3L)
                 .name("Category Type Three")
                 .budgetAllocationPercentage(.25)
                 .budgetAmount(2500)
-                .categories(new ArrayList<>())
                 .build();
 
-        List<CategoryType> categoryTypes = List.of(categoryType1, categoryType2, categoryType3);
+        List<CategoryTypeResponseDto> responseDtos = List.of(dto1, dto2, dto3);
 
+        // Mock
+        when(categoryTypeService.createMany(categoryTypeDtos)).thenReturn(responseDtos);
 
-        //Mock
-        when(categoryTypeService.createMany(categoryTypeDtos)).thenReturn(categoryTypes);
-
-        //Act
+        // Act
         ResultActions resultActions = mockMvc.perform(post("/category/type/bulk")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(categoryTypeDtos)));
 
-        //Assert
+        // Assert
         resultActions.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].categoryTypeId").value(categoryType1.getCategoryTypeId()))
-                .andExpect(jsonPath("$[0].name").value(categoryType1.getName()))
-                .andExpect(jsonPath("$[0].budgetAmount").value(categoryType1.getBudgetAmount()))
-                .andExpect(jsonPath("$[0].budgetAllocationPercentage").value(categoryType1.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$[0].categories").value(categoryType1.getCategories()))
-                .andExpect(jsonPath("$[1].categoryTypeId").value(categoryType2.getCategoryTypeId()))
-                .andExpect(jsonPath("$[1].name").value(categoryType2.getName()))
-                .andExpect(jsonPath("$[1].budgetAmount").value(categoryType2.getBudgetAmount()))
-                .andExpect(jsonPath("$[1].budgetAllocationPercentage").value(categoryType2.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$[1].categories").value(categoryType2.getCategories()))
-                .andExpect(jsonPath("$[2].categoryTypeId").value(categoryType3.getCategoryTypeId()))
-                .andExpect(jsonPath("$[2].name").value(categoryType3.getName()))
-                .andExpect(jsonPath("$[2].budgetAmount").value(categoryType3.getBudgetAmount()))
-                .andExpect(jsonPath("$[2].budgetAllocationPercentage").value(categoryType3.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$[2].categories").value(categoryType3.getCategories()));
+                .andExpect(jsonPath("$[0].categoryTypeId").value(dto1.getCategoryTypeId()))
+                .andExpect(jsonPath("$[0].name").value(dto1.getName()))
+                .andExpect(jsonPath("$[0].budgetAmount").value(dto1.getBudgetAmount()))
+                .andExpect(jsonPath("$[0].budgetAllocationPercentage").value(dto1.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[1].categoryTypeId").value(dto2.getCategoryTypeId()))
+                .andExpect(jsonPath("$[1].name").value(dto2.getName()))
+                .andExpect(jsonPath("$[1].budgetAmount").value(dto2.getBudgetAmount()))
+                .andExpect(jsonPath("$[1].budgetAllocationPercentage").value(dto2.getBudgetAllocationPercentage()))
+                .andExpect(jsonPath("$[2].categoryTypeId").value(dto3.getCategoryTypeId()))
+                .andExpect(jsonPath("$[2].name").value(dto3.getName()))
+                .andExpect(jsonPath("$[2].budgetAmount").value(dto3.getBudgetAmount()))
+                .andExpect(jsonPath("$[2].budgetAllocationPercentage").value(dto3.getBudgetAllocationPercentage()));
     }
 
     @Test
     void testUpdateCategoryType_ValidRequest_Success() throws Exception {
-        //Arrange
+        // Arrange
         Long categoryTypeId = 10L;
         UpdateCategoryTypeDto updateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100)
                 .budgetAllocationPercentage(.5)
-                .savedAmount(15)
                 .build();
 
-        CategoryType expectedCategoryType = CategoryType.builder()
+        CategoryTypeResponseDto expectedResponseDto = CategoryTypeResponseDto.builder()
                 .categoryTypeId(categoryTypeId)
-                .categories(null)
-                .savedAmount(15)
+                .savedAmount(15.0)
                 .budgetAllocationPercentage(.5)
-                .budgetAmount(100)
+                .budgetAmount(100.0)
                 .build();
 
-        //Mock
-        when(categoryTypeService.update(updateCategoryTypeDto, categoryTypeId)).thenReturn(expectedCategoryType);
+        // Mock
+        when(categoryTypeService.update(updateCategoryTypeDto, categoryTypeId)).thenReturn(expectedResponseDto);
 
-        //Act
+        // Act
         ResultActions resultActions = mockMvc.perform(put("/category/type/" + categoryTypeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateCategoryTypeDto)));
 
-        //Assert
+        // Assert
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.categoryTypeId").value(categoryTypeId))
-                .andExpect(jsonPath("$.savedAmount").value(updateCategoryTypeDto.getSavedAmount()))
-                .andExpect(jsonPath("$.budgetAllocationPercentage").value(updateCategoryTypeDto.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$.budgetAmount").value(updateCategoryTypeDto.getAmountAllocated()));
+                .andExpect(jsonPath("$.savedAmount").value(15.0))
+                .andExpect(jsonPath("$.budgetAllocationPercentage").value(0.5))
+                .andExpect(jsonPath("$.budgetAmount").value(100.0));
 
-        //Verify
+        // Verify
         verify(categoryTypeService, times(1)).update(updateCategoryTypeDto, categoryTypeId);
     }
 
     @Test
-    void testUpdateCategoryType_NotFound_Failure() throws  Exception {
-        //Arrange
+    void testUpdateCategoryType_NotFound_Failure() throws Exception {
+        // Arrange
         Long invalidCategoryTypeId = 10L;
         UpdateCategoryTypeDto updateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100)
                 .budgetAllocationPercentage(.5)
-                .savedAmount(15)
                 .build();
 
-        //Mock
+        // Mock
         when(categoryTypeService.update(updateCategoryTypeDto, invalidCategoryTypeId)).thenThrow(new RuntimeException("CategoryType with ID " + invalidCategoryTypeId + " not found"));
 
-        //Act & Assert
+        // Act & Assert
         mockMvc.perform(put("/category/type/" + invalidCategoryTypeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateCategoryTypeDto)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("CategoryType with ID " + invalidCategoryTypeId + " not found"));
 
-        //Verify
+        // Verify
         verify(categoryTypeService, times(1)).update(updateCategoryTypeDto, invalidCategoryTypeId);
     }
 
     @Test
-    void testUpdateCategoryType_InvalidPercentage_Failure() throws Exception{
-        //Arrange
+    void testUpdateCategoryType_InvalidPercentage_Failure() throws Exception {
+        // Arrange
         Long categoryTypeId = 10L;
         UpdateCategoryTypeDto invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100)
-                .budgetAllocationPercentage(0)
-                .savedAmount(15)
+                .budgetAllocationPercentage(-0.1)
                 .build();
 
-        //Act & Assert
+        // Act & Assert
         mockMvc.perform(put("/category/type/" + categoryTypeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidUpdateCategoryTypeDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("The provided CategoryType percent allocation is invalid"));
     }
-
-    @Test
-    void testUpdateCategoryType_InvalidSavedAmount_Failure() throws Exception{
-        //Arrange
-        Long categoryTypeId = 10L;
-        UpdateCategoryTypeDto invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100)
-                .budgetAllocationPercentage(.5)
-                .savedAmount(-1)
-                .build();
-
-        //Act & Assert
-        mockMvc.perform(put("/category/type/" + categoryTypeId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidUpdateCategoryTypeDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("The provided CategoryType saved amount is invalid"));
-    }
-
-    @Test
-    void testUpdateCategoryType_InvalidAmountAllocated_Failure() throws Exception{
-        //Arrange
-        Long categoryTypeId = 10L;
-        UpdateCategoryTypeDto invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(-1)
-                .budgetAllocationPercentage(.5)
-                .savedAmount(0)
-                .build();
-
-        //Act & Assert
-        mockMvc.perform(put("/category/type/" + categoryTypeId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidUpdateCategoryTypeDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("The provided CategoryType allocation amount is invalid"));
-    }
-
 }

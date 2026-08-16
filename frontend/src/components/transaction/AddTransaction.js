@@ -71,7 +71,7 @@ const AddTransaction = ({ onClose }) => {
       if (!ct) return [];
 
       return (categories || []).filter(
-         (c) => c.name !== "Miscellaneous" && c.categoryType && (c.categoryType.categoryTypeId === ct.categoryTypeId || c.categoryType.name === ct.name)
+         (c) => c.name !== "Miscellaneous" && c.categoryTypeId === ct.categoryTypeId
       );
    })();
 

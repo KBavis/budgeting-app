@@ -1,9 +1,9 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.exception.AccountConnectionException;
-import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
+import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +27,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -46,7 +47,7 @@ public class AccountControllerTests {
     private ObjectMapper objectMapper;
 
     private ConnectAccountRequestDto connectAccountRequestDto;
-    private AccountDto accountDTO;
+    private AccountResponseDto accountResponseDto;
     @BeforeEach
     void setup() {
         connectAccountRequestDto = ConnectAccountRequestDto.builder()
@@ -56,7 +57,7 @@ public class AccountControllerTests {
                 .publicToken("public-token")
                 .build();
 
-        accountDTO = AccountDto.builder()
+        accountResponseDto = AccountResponseDto.builder()
                 .accountType(AccountType.CHECKING)
                 .balance(1000.0)
                 .accountName("Test Account")
@@ -93,7 +94,7 @@ public class AccountControllerTests {
     @Test
     public void testConnectAccount_ValidRequest_Successful() throws Exception {
         //Mock
-        when(accountService.connectAccount(any(ConnectAccountRequestDto.class))).thenReturn(accountDTO);
+        when(accountService.connectAccount(any(ConnectAccountRequestDto.class))).thenReturn(accountResponseDto);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/account")
@@ -103,22 +104,22 @@ public class AccountControllerTests {
         //Assert
         resultActions.andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.accountName").value(accountDTO.getAccountName()))
-                .andExpect(jsonPath("$.balance").value(accountDTO.getBalance()))
+                .andExpect(jsonPath("$.accountName").value(accountResponseDto.getAccountName()))
+                .andExpect(jsonPath("$.balance").value(accountResponseDto.getBalance()))
                 .andExpect(jsonPath("$.accountType").value("CHECKING"));
     }
 
     @Test
     void testReadAll_Successful() throws Exception{
         //Arrange
-        AccountDto accountDtoOne = AccountDto.builder()
+        AccountResponseDto accountDtoOne = AccountResponseDto.builder()
                 .accountId("123XYZ")
                 .accountName("Account One")
                 .accountType(AccountType.CHECKING)
                 .balance(1000.0)
                 .build();
 
-        AccountDto accountDtoTwo = AccountDto.builder()
+        AccountResponseDto accountDtoTwo = AccountResponseDto.builder()
                 .accountId("123XYZ")
                 .accountName("Account One")
                 .accountType(AccountType.CHECKING)
@@ -126,17 +127,17 @@ public class AccountControllerTests {
                 .build();
 
 
-        AccountDto accountDtoThree = AccountDto.builder()
+        AccountResponseDto accountDtoThree = AccountResponseDto.builder()
                 .accountId("123XYZ")
                 .accountName("Account One")
                 .accountType(AccountType.CHECKING)
                 .balance(1000.0)
                 .build();
 
-        List<AccountDto> accountDtos = List.of(accountDtoOne, accountDtoTwo, accountDtoThree);
+        List<AccountResponseDto> accountDtos = List.of(accountDtoOne, accountDtoTwo, accountDtoThree);
 
         //Mock
-        when(accountService.readAll()).thenReturn(accountDtos);
+        when(accountService.getAll(null)).thenReturn(accountDtos);
 
         //Act & Assert
         ResultActions resultActions = mockMvc.perform(get("/account"))
@@ -156,7 +157,7 @@ public class AccountControllerTests {
                 .andExpect(jsonPath("$[2].balance").value(accountDtoThree.getBalance()));
 
         //Verify
-        verify(accountService, times(1)).readAll();
+        verify(accountService, times(1)).getAll(null);
     }
 
 
@@ -254,5 +255,32 @@ public class AccountControllerTests {
         //Assert
         resultActions.andExpect(status().isConflict())
                 .andExpect(content().string(containsString(expectedErrorMsg)));
+    }
+
+    @Test
+    void testUpdate_Success() throws Exception {
+        com.bavis.budgetapp.dto.request.UpdateAccountDto updateDto = com.bavis.budgetapp.dto.request.UpdateAccountDto.builder()
+                .accountId("account-id")
+                .accountName("Updated Account")
+                .accountType(AccountType.SAVING)
+                .balance(5000.0)
+                .build();
+
+        AccountResponseDto updatedResponse = AccountResponseDto.builder()
+                .accountId("account-id")
+                .accountName("Updated Account")
+                .accountType(AccountType.SAVING)
+                .balance(5000.0)
+                .build();
+
+        when(accountService.update(any(com.bavis.budgetapp.dto.request.UpdateAccountDto.class))).thenReturn(updatedResponse);
+
+        mockMvc.perform(put("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountName").value("Updated Account"))
+                .andExpect(jsonPath("$.balance").value(5000.0))
+                .andExpect(jsonPath("$.accountType").value("SAVING"));
     }
 }

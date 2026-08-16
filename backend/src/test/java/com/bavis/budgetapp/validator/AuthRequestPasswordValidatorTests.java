@@ -1,8 +1,7 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.AuthRequestDto;
+import com.bavis.budgetapp.dto.request.AuthRequestDto;
 import jakarta.validation.ConstraintValidatorContext;
-import org.apache.tomcat.util.bcel.Const;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,67 +38,67 @@ public class AuthRequestPasswordValidatorTests {
 
     @Test
     void testIsValid_ValidPassword_Successful() {
-        //Mock
+        // Mock
         ConstraintValidatorContext constraintValidatorContext = mock(ConstraintValidatorContext.class);
 
-        //Act
+        // Act
         boolean valid = validator.isValid(validDto, constraintValidatorContext);
 
-        //Assert
+        // Assert
         assertTrue(valid);
     }
 
     @Test
     void testIsValid_InvalidPassword_Length_Failure() {
-        //Mock
+        // Mock
         ConstraintValidatorContext constraintValidatorContext = mock(ConstraintValidatorContext.class);
 
-        //Act
+        // Act
         boolean valid = validator.isValid(invalidDto, constraintValidatorContext);
 
-        //Assert
+        // Assert
         assertFalse(valid);
     }
 
     @Test
     void testIsValid_InvalidPassword_NoSpecialCharacter_Failure() {
-        //Arrange
+        // Arrange
         invalidDto.setPasswordOne("TestPassword1");
-        //Mock
+        // Mock
         ConstraintValidatorContext constraintValidatorContext = mock(ConstraintValidatorContext.class);
 
-        //Act
+        // Act
         boolean valid = validator.isValid(invalidDto, constraintValidatorContext);
 
-        //Assert
+        // Assert
         assertFalse(valid);
     }
 
     @Test
     void testIsValid_EmptyPassword_Failure() {
-        //Arrange
+        // Arrange
         invalidDto.setPasswordOne("");
-        //Mock
+        // Mock
         ConstraintValidatorContext constraintValidatorContext = mock(ConstraintValidatorContext.class);
 
-        //Act
+        // Act
         boolean valid = validator.isValid(invalidDto, constraintValidatorContext);
 
-        //Assert
+        // Assert
         assertFalse(valid);
     }
 
     @Test
     void testIsValid_NullPassword_Failure() {
-        //Arrange
+        // Arrange
         invalidDto.setPasswordOne(null);
-        //Mock
+        // Mock
         ConstraintValidatorContext constraintValidatorContext = mock(ConstraintValidatorContext.class);
 
-        //Act
+        // Act
         boolean valid = validator.isValid(invalidDto, constraintValidatorContext);
 
-        //Assert
+        // Assert
         assertFalse(valid);
     }
 

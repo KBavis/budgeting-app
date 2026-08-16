@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.AssignCategoryRequestValidUser;
-import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.Transaction;
@@ -47,8 +47,8 @@ public class AssignCategoryRequestUserValidator implements ConstraintValidator<A
 
 
         try {
-            Category category = categoryService.read(categoryId);
-            Transaction transaction = transactionService.readById(transactionId);
+            Category category = categoryService.findEntity(categoryId, null);
+            Transaction transaction = transactionService.findEntity(transactionId);
             if(category == null || transaction == null || category.getUser() == null) {
                 log.debug("Invalid AssignCategoryRequestDto! Users do not correspond to Auth User");
                 return false;

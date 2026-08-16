@@ -1,15 +1,17 @@
 package com.bavis.budgetapp.service.impl;
 
-import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.ConnectionStatus;
-import com.bavis.budgetapp.dto.PlaidAccountDto;
+import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
+import com.bavis.budgetapp.dto.request.UpdateAccountDto;
+import com.bavis.budgetapp.entity.AccountVt;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.entity.Connection;
-import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.ConnectionService;
+import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
@@ -24,10 +26,10 @@ import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.service.AccountService;
 import com.bavis.budgetapp.constants.AccountType;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Kellen Bavis
@@ -57,26 +59,37 @@ public class AccountServiceImpl implements AccountService{
 	@Lazy
 	private TransactionService _transactionService;
 
+	@Autowired
+	private EffectivityService _effectivityService;
 
+	/**
+	 * Functionality to connect a user's financial institution
+	 *
+	 * @param connectAccountRequestDto
+	 * 			- DTO to house needed information for connecting a User to a financial institution
+	 * @return
+	 * 			- Relevant information regarding the connected account
+	 * @throws AccountConnectionException
+	 * 			- thrown in the case that an error occurs during account connection process
+	 */
 	@Override
 	@Transactional
-	public AccountDto connectAccount(ConnectAccountRequestDto connectAccountRequestDto) throws AccountConnectionException{
+	public AccountResponseDto connectAccount(ConnectAccountRequestDto connectAccountRequestDto) throws AccountConnectionException {
 
 		log.debug("Attempting To ConnectAccount via ConnectAccountRequest: [{}]", connectAccountRequestDto);
 
 		double balance;
 		String accessToken;
 
-		try{
-			//Exchange Public Token With Access Token & Log
+		try {
 			accessToken = _plaidService.exchangeToken(connectAccountRequestDto.getPublicToken());
 			if(!accessToken.isBlank()) {
 				log.debug("Successfully retrieved access token for Connect Account Request: [{}]", connectAccountRequestDto);
 			} else {
 				log.error("Failed to retrieve access token via Connect Account Request : [{}]", connectAccountRequestDto);
+				throw new PlaidServiceException("Unable to exchange publicToken for accessToken");
 			}
 
-			//Retrieve Balance Pertaining To Account
 			balance = _plaidService.retrieveBalance(connectAccountRequestDto.getPlaidAccountId(), accessToken);
 			log.debug("Balance Retrieved From Plaid Service: [{}]", balance);
 
@@ -85,18 +98,21 @@ public class AccountServiceImpl implements AccountService{
 			throw new AccountConnectionException(exception.getMessage());
 		}
 
-
-		// Initialize Account to be persisted
 		Account newAccount = Account.builder()
 				.accountId(connectAccountRequestDto.getPlaidAccountId())
-				.accountName(connectAccountRequestDto.getAccountName())
-				.balance(balance)
-				.accountType(connectAccountRequestDto.getAccountType())
 				.user(_userService.getCurrentAuthUser())
+				.validTimes(new ArrayList<>())
 				.build();
 
+		AccountVt initialVt = AccountVt.builder()
+				.account(newAccount)
+				.accountName(connectAccountRequestDto.getAccountName())
+				.accountType(connectAccountRequestDto.getAccountType())
+				.balance(balance)
+				.build();
 
-		// Initialize Connection to be persisted
+		_effectivityService.applyVtUpdate(newAccount.getValidTimes(), initialVt, LocalDate.now());
+
 		Connection newConnection = Connection.builder()
 				.connectionStatus(ConnectionStatus.CONNECTED)
 				.accessToken(accessToken)
@@ -104,88 +120,130 @@ public class AccountServiceImpl implements AccountService{
 				.lastSyncTime(LocalDateTime.now())
 				.build();
 
-		//Set Connection in the Account
 		newAccount.setConnection(newConnection);
 
-		//Save Entities
 		Connection savedConnection = _connectionService.create(newConnection);
 		Account savedAccount = _accountRepository.save(newAccount);
 
-		//Log Saved Connection/Account
 		log.debug("Saved Connection: [{}]", savedConnection.toString());
 		log.debug("Saved Account: [{}]", savedAccount.toString());
 
-		//Map Account to AccountDTO
-        return _accountMapper.toDTO(newAccount);
+		AccountVt activeVt = _effectivityService.getActiveVt(newAccount.getValidTimes(), LocalDate.now());
+		return _accountMapper.toResponseDto(newAccount, activeVt);
 	}
 
+	/**
+	 * Functionality to delete a specific user Account
+	 *
+	 * @param accountId
+	 * 			- Account ID of relevant Account to be deleted
+	 */
 	@Override
 	public void delete(String accountId) {
 		log.info("Attempting to delete account with ID {}", accountId);
 
-		//Fetch Corresponding Account
-		Account accountToDelete = read(accountId);
+		Account accountToDelete = findEntity(accountId, null);
 		Connection connection = accountToDelete.getConnection();
 		String accessToken = connection.getAccessToken();
 
-		//Remove Via Plaid Service
-		try{
+		try {
 			_plaidService.removeAccount(accessToken);
 		} catch (PlaidServiceException e) {
-			// only throw exception if it's not a retry deletion (aka Plaid Item is deleted, but our Account is not)
 			if (!e.getMessage().contains("The Item you requested cannot be found")) {
 				throw e;
 			}
 		}
 
-		accountToDelete.setDeleted(true);
+		accountToDelete.setEndDate(LocalDate.now());
 		_accountRepository.save(accountToDelete);
 	}
 
+	/**
+	 * Functionality to update an existing user Account
+	 *
+	 * @param updateAccountDto
+	 * 			- DTO containing updated Account attributes
+	 * @return
+	 * 			- AccountResponseDto containing updated Account data
+	 */
 	@Override
-	public Account updateBalance(List<PlaidAccountDto> plaidAccounts, Account account) {
-        plaidAccounts.stream()
-				.filter(plaidAccountDto -> account.getAccountId().equals(plaidAccountDto.getAccountId()))
-				.findFirst()
-				.map(PlaidAccountDto::getBalances)
-				.map(balances -> {
-					// default to "current" balance for CREDIT / LOAN / INVESTMENT accounts
-					if (account.getAccountType() == AccountType.CREDIT || 
-						account.getAccountType() == AccountType.LOAN || 
-						account.getAccountType() == AccountType.INVESTMENT) {
-						return balances.getCurrent() != null ? balances.getCurrent() : balances.getAvailable();
-					}
-					return balances.getAvailable() != null ? balances.getAvailable() : balances.getCurrent();
-				})
-				.filter(Objects::nonNull)
-				.map(BigDecimal::doubleValue)
-				.ifPresent(account::setBalance);
+	public AccountResponseDto update(UpdateAccountDto updateAccountDto) {
+		log.info("Attempting to update Account via updateAccountDto: {}", updateAccountDto);
+		Account accountToUpdate = findEntity(updateAccountDto.getAccountId(), null);
 
-		log.info("Updating Account {} ({}) with balance ${}", account.getAccountId(), account.getAccountType(), account.getBalance());
-		return _accountRepository.save(account);
-    }
+		AccountVt active = _effectivityService.getActiveVt(accountToUpdate.getValidTimes(), LocalDate.now());
+		AccountType currentType = active.getAccountType();
+		String currentName = active.getAccountName();
+		Double currentBalance = active.getBalance();
 
-	@Override
-	public Account read(String accountId) throws RuntimeException{
-		log.info("Attempting to read a Account entity with the ID {}", accountId);
-		return  _accountRepository.findByAccountId(accountId)
-				.orElseThrow(() -> new RuntimeException("Unable to locate Account with ID " + accountId));
+		String newName = updateAccountDto.getAccountName() != null ? updateAccountDto.getAccountName() : currentName;
+		AccountType newType = updateAccountDto.getAccountType() != null ? updateAccountDto.getAccountType() : currentType;
+		Double newBalance = currentBalance;
+
+		AccountVt updateVt = AccountVt.builder()
+				.account(accountToUpdate)
+				.accountName(newName)
+				.accountType(newType)
+				.balance(newBalance)
+				.build();
+
+		_effectivityService.applyVtUpdate(accountToUpdate.getValidTimes(), updateVt, LocalDate.now());
+
+		Account saved = _accountRepository.save(accountToUpdate);
+		AccountVt activeVt = _effectivityService.getActiveVt(saved.getValidTimes(), LocalDate.now());
+		return _accountMapper.toResponseDto(saved, activeVt);
 	}
 
 	@Override
-	public List<AccountDto> readAll() {
-		log.info("Attempting to read all accounts associated with current authenticated user");
-		User currentAuthUser = _userService.getCurrentAuthUser();
-        return _accountRepository.findByUserUserId(currentAuthUser.getUserId()).stream()
-				.filter(account -> !account.isDeleted())
-				.map(_accountMapper::toDTO)
+	public AccountResponseDto get(String accountId, LocalDate asOf) throws RuntimeException {
+		Account account = findEntity(accountId, asOf);
+		AccountVt activeVt = _effectivityService.getActiveVt(account.getValidTimes(), (asOf != null) ? asOf : LocalDate.now());
+		return _accountMapper.toResponseDto(account, activeVt);
+	}
+
+	/**
+	 * Functionality to fetch a specific Account as of a point-in-time date
+	 *
+	 * @param accountId
+	 * 			- Account ID corresponding to Account to be fetched
+	 * @param asOf
+	 * 			- Point-in-time date
+	 * @return
+	 * 			- Fetched Account
+	 */
+	@Override
+	public Account findEntity(String accountId, LocalDate asOf) throws RuntimeException {
+		log.info("Attempting to read an Account entity with ID {} asOf [{}]", accountId, asOf);
+		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
+		return _accountRepository.findByAccountIdAndAsOf(accountId, target)
+				.orElseThrow(() -> new RuntimeException("Unable to locate Account with ID " + accountId));
+	}
+
+	/**
+	 * Functionality to retrieve all account DTOs associated with authenticated user as of a point-in-time date
+	 *
+	 * @param asOf
+	 * 			- Point-in-time date
+	 * @return
+	 * 		- all account DTOs associated with authenticated user as of date
+	 */
+	@Override
+	public List<AccountResponseDto> getAll(LocalDate asOf) {
+		log.info("Attempting to read all account DTOs associated with current authenticated user asOf [{}]", asOf);
+		return findAllEntities(asOf).stream()
+				.map(account -> {
+					LocalDate target = (asOf != null) ? asOf : LocalDate.now();
+					AccountVt activeVt = _effectivityService.getActiveVt(account.getValidTimes(), target);
+					return _accountMapper.toResponseDto(account, activeVt);
+				})
 				.toList();
 	}
 
 	@Override
-	public Account update(Account account) {
-		log.info("Updating Account with ID {}", account.getAccountId());
-		return _accountRepository.save(account);
+	public List<Account> findAllEntities(LocalDate asOf) {
+		log.info("Attempting to read all Account entities associated with current authenticated user asOf [{}]", asOf);
+		User currentAuthUser = _userService.getCurrentAuthUser();
+		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
+		return _accountRepository.findByUserUserIdAndAsOf(currentAuthUser.getUserId(), target);
 	}
-
 }

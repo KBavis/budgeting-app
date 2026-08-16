@@ -1,11 +1,20 @@
 package com.bavis.budgetapp.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.bavis.budgetapp.constants.ConnectionStatus;
+import com.bavis.budgetapp.constants.TemporalConstants;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +25,7 @@ import lombok.Setter;
  * 
  * @author Kellen Bavis
  * 
- *  Entity Used To Establish a Connection With an Account and a Specified User
+ * Entity Used To Establish a Connection With an Account and a Specified User
  *
  */
 
@@ -33,6 +42,14 @@ public class Connection {
 	@JsonProperty("connection_id")
 	private Long connectionId;
 
+	@Builder.Default
+	@Column(name = "start_date", nullable = false)
+	private LocalDate startDate = TemporalConstants.BEGINNING_OF_TIME;
+
+	@Builder.Default
+	@Column(name = "end_date", nullable = false)
+	private LocalDate endDate = TemporalConstants.END_OF_TIME;
+
 	@Column(nullable = false)
 	private String accessToken;
 
@@ -47,7 +64,7 @@ public class Connection {
 	private LocalDateTime lastSyncTime;
 
 	@Column
-	private String previousCursor; //stores Plaid API's cursor value for Transaction Sync
+	private String previousCursor;
 
 	@Column
 	private String originalCursor;

@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useRef, useState, useMemo } from "react";
 import { FaPlus, FaTrash, FaWallet, FaEdit } from "react-icons/fa";
 import IncomeContext from "../context/income/incomeContext";
+import CategoryTypeContext from "../context/category/types/categoryTypeContext";
+import CategoryContext from "../context/category/categoryContext";
 import alertContext from "../context/alert/alertContext";
 import ConfirmationModal from "../components/layout/ConfirmationModal";
 import Modal from "../components/layout/Modal";
@@ -11,6 +13,8 @@ import { ThemeContext } from "../context/theme/ThemeContext";
  */
 const IncomesPage = () => {
    const { incomes, fetchIncomes, addIncome, updateIncome, removeIncome, setLoading } = useContext(IncomeContext);
+   const { fetchCategoryTypes } = useContext(CategoryTypeContext);
+   const { fetchCategories } = useContext(CategoryContext);
    const { setAlert } = useContext(alertContext);
    const { theme } = useContext(ThemeContext);
 
@@ -49,13 +53,15 @@ const IncomesPage = () => {
       setShowEditModal(true);
    };
 
-   const handleSubmitAdd = (e) => {
+   const handleSubmitAdd = async (e) => {
       e.preventDefault();
       if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
          setAlert("Please enter a valid positive income amount", "danger");
          return;
       }
-      addIncome({ amount: parseFloat(amount), incomeSource, incomeType, description });
+      await addIncome({ amount: parseFloat(amount), incomeSource, incomeType, description });
+      if (fetchCategoryTypes) fetchCategoryTypes();
+      if (fetchCategories) fetchCategories();
       setAlert("Income source added successfully", "success");
       setAmount("");
       setDescription("");
@@ -64,13 +70,15 @@ const IncomesPage = () => {
       setShowAddModal(false);
    };
 
-   const handleSaveEdit = (e) => {
+   const handleSaveEdit = async (e) => {
       e.preventDefault();
       if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
          setAlert("Please enter a valid income amount", "danger");
          return;
       }
-      updateIncome({ incomeId: incomeToEdit.incomeId, amount: parseFloat(amount) });
+      await updateIncome({ incomeId: incomeToEdit.incomeId, amount: parseFloat(amount) });
+      if (fetchCategoryTypes) fetchCategoryTypes();
+      if (fetchCategories) fetchCategories();
       setAlert("Income updated successfully", "success");
       setShowEditModal(false);
       setIncomeToEdit(null);
@@ -82,6 +90,8 @@ const IncomesPage = () => {
             const id = incomeToDelete.incomeId || incomeToDelete.id;
             await removeIncome(id);
             await fetchIncomes();
+            if (fetchCategoryTypes) fetchCategoryTypes();
+            if (fetchCategories) fetchCategories();
             setAlert("Income source removed", "success");
          } catch (err) {
             console.error(err);

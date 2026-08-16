@@ -1,7 +1,8 @@
 package com.bavis.budgetapp.filter;
 
+import com.bavis.budgetapp.constants.TemporalConstants;
 import com.bavis.budgetapp.dao.TransactionRepository;
-import com.bavis.budgetapp.dto.PlaidTransactionDto;
+import com.bavis.budgetapp.dto.request.PlaidTransactionDto;
 import com.bavis.budgetapp.entity.Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ public class TransactionFilterTests {
         sampleTransaction.setTransactionId("tx123");
         sampleTransaction.setAmount(100.0);
         sampleTransaction.setDate(LocalDate.now());
-        sampleTransaction.setDeleted(false);
+        sampleTransaction.setEndDate(TemporalConstants.END_OF_TIME);
         sampleTransaction.setUpdatedByUser(false);
     }
 
@@ -60,7 +61,7 @@ public class TransactionFilterTests {
     @Test
     void testPrevMonthTransactionFilters_shouldFail_ifDeleted() {
         sampleTransaction.setDate(LocalDate.now().minusMonths(1));
-        sampleTransaction.setDeleted(true);
+        sampleTransaction.setEndDate(LocalDate.now().minusDays(1));
 
         boolean result = transactionFilters.prevMonthTransactionFilters(Collections.emptyList()).test(sampleTransaction);
 
@@ -122,7 +123,7 @@ public class TransactionFilterTests {
 
     @Test
     void testModifiedTransactionFilters_shouldFail_ifDeleted() {
-        sampleTransaction.setDeleted(true);
+        sampleTransaction.setEndDate(LocalDate.now().minusDays(1));
 
         boolean result = transactionFilters.modifiedTransactionFilters().test(sampleTransaction);
 

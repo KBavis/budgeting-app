@@ -5,6 +5,7 @@ import com.bavis.budgetapp.model.BudgetPerformanceId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * JPA Repository for working with BudgetPerformance entities
@@ -34,6 +35,6 @@ public interface BudgetPerformanceRepository extends JpaRepository<BudgetPerform
      * @return
      *          - BudgetPerformance entity
      */
-    BudgetPerformance findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(String month, int year, Long userId);
+    Optional<BudgetPerformance> findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(String month, int year, Long userId);
 }
 

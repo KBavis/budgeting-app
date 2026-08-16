@@ -1,8 +1,8 @@
 package com.bavis.budgetapp.clients;
 
 
-import com.bavis.budgetapp.dto.CategorySuggestionRequest;
-import com.bavis.budgetapp.dto.TransactionMetadata;
+import com.bavis.budgetapp.dto.request.CategorySuggestionRequest;
+import com.bavis.budgetapp.dto.response.TransactionMetadata;
 import com.bavis.budgetapp.model.PlaidDetailedCategory;
 import com.bavis.budgetapp.model.PlaidPrimaryCategory;
 import mockwebserver3.MockResponse;

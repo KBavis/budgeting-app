@@ -41,7 +41,7 @@ export const ThemeProvider = ({ children }) => {
       let categoryTypeIds = categoryTypes.map((type) => type.categoryTypeId);
 
       categories.forEach((category) => {
-         const id = category.categoryType?.categoryTypeId;
+         const id = category.categoryTypeId;
          categoryTypeIds = categoryTypeIds.filter((typeId) => typeId !== id);
       });
 

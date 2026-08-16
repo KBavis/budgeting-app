@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.service.impl.CategoryServiceImpl;
 import com.bavis.budgetapp.service.impl.TransactionServiceImpl;
@@ -45,7 +45,6 @@ public class AssignCategoryRequestValidatorTests {
 
         Category category = Category.builder()
                 .categoryId(10L)
-                .name("Category One")
                 .user(user)
                 .build();
 
@@ -67,8 +66,8 @@ public class AssignCategoryRequestValidatorTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
-        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
-        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
+        when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
+        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
 
         //Act
         boolean valid = validator.isValid(assignCategoryRequestDto, constraintValidatorContext);
@@ -78,8 +77,8 @@ public class AssignCategoryRequestValidatorTests {
 
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
-        verify(categoryService, times(1)).read(category.getCategoryId());
-        verify(transactionService, times(1)).readById(transaction.getTransactionId());
+        verify(categoryService, times(1)).findEntity(category.getCategoryId(), null);
+        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
     }
 
     @Test
@@ -92,7 +91,6 @@ public class AssignCategoryRequestValidatorTests {
 
         Category category = Category.builder()
                 .categoryId(10L)
-                .name("Category One")
                 .user(user)
                 .build();
 
@@ -113,8 +111,8 @@ public class AssignCategoryRequestValidatorTests {
                 .build();
 
         //Mock
-        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(null);
-        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
+        when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(null);
+        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
 
         //Act
         boolean valid = validator.isValid(assignCategoryRequestDto, constraintValidatorContext);
@@ -123,8 +121,8 @@ public class AssignCategoryRequestValidatorTests {
         assertFalse(valid);
 
         //Verify
-        verify(categoryService, times(1)).read(Long.valueOf(assignCategoryRequestDto.getCategoryId()));
-        verify(transactionService, times(1)).readById(transaction.getTransactionId());
+        verify(categoryService, times(1)).findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null);
+        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
     }
 
     @Test
@@ -137,7 +135,6 @@ public class AssignCategoryRequestValidatorTests {
 
         Category category = Category.builder()
                 .categoryId(10L)
-                .name("Category One")
                 .user(user)
                 .build();
 
@@ -158,8 +155,8 @@ public class AssignCategoryRequestValidatorTests {
                 .build();
 
         //Mock
-        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
-        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenThrow(new RuntimeException("Invalid Transaction ID"));
+        when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
+        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenThrow(new RuntimeException("Invalid Transaction ID"));
 
         //Act
         boolean valid = validator.isValid(assignCategoryRequestDto, constraintValidatorContext);
@@ -168,8 +165,8 @@ public class AssignCategoryRequestValidatorTests {
         assertFalse(valid);
 
         //Verify
-        verify(categoryService, times(1)).read(Long.valueOf(assignCategoryRequestDto.getCategoryId()));
-        verify(transactionService, times(1)).readById(transaction.getTransactionId());
+        verify(categoryService, times(1)).findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null);
+        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
     }
 
     @Test
@@ -187,7 +184,6 @@ public class AssignCategoryRequestValidatorTests {
 
         Category category = Category.builder()
                 .categoryId(10L)
-                .name("Category One")
                 .user(user)
                 .build();
 
@@ -208,8 +204,8 @@ public class AssignCategoryRequestValidatorTests {
                 .build();
 
         //Mock
-        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
-        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
+        when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
+        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
         //Act
@@ -219,8 +215,8 @@ public class AssignCategoryRequestValidatorTests {
         assertFalse(valid);
 
         //Verify
-        verify(categoryService, times(1)).read(Long.valueOf(assignCategoryRequestDto.getCategoryId()));
-        verify(transactionService, times(1)).readById(transaction.getTransactionId());
+        verify(categoryService, times(1)).findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null);
+        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
         verify(userService, times(1)).getCurrentAuthUser();
     }
 
@@ -239,7 +235,6 @@ public class AssignCategoryRequestValidatorTests {
 
         Category category = Category.builder()
                 .categoryId(10L)
-                .name("Category One")
                 .user(user)
                 .build();
 
@@ -260,8 +255,8 @@ public class AssignCategoryRequestValidatorTests {
                 .build();
 
         //Mock
-        when(categoryService.read(Long.valueOf(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
-        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
+        when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
+        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
         //Act
@@ -271,8 +266,8 @@ public class AssignCategoryRequestValidatorTests {
         assertFalse(valid);
 
         //Verify
-        verify(categoryService, times(1)).read(Long.valueOf(assignCategoryRequestDto.getCategoryId()));
-        verify(transactionService, times(1)).readById(transaction.getTransactionId());
+        verify(categoryService, times(1)).findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null);
+        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
         verify(userService, times(1)).getCurrentAuthUser();
     }
 

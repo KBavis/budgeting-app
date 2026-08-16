@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.AuthRequestValidPassword;
-import com.bavis.budgetapp.dto.AuthRequestDto;
+import com.bavis.budgetapp.dto.request.AuthRequestDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

@@ -1,11 +1,14 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.dto.AccountDto;
-import com.bavis.budgetapp.dto.PlaidAccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
+import com.bavis.budgetapp.dto.request.PlaidAccountDto;
+import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.entity.Account;
-import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 
+import com.bavis.budgetapp.dto.request.UpdateAccountDto;
+
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -25,7 +28,7 @@ public interface AccountService {
 	 * @throws AccountConnectionException
 	 * 			- thrown in the case that an error occurs during account connection process
 	 */
-	AccountDto connectAccount(ConnectAccountRequestDto connectAccountRequestDto) throws AccountConnectionException;
+	AccountResponseDto connectAccount(ConnectAccountRequestDto connectAccountRequestDto) throws AccountConnectionException;
 
 	/**
 	 * Functionality to delete a specific user Account
@@ -36,42 +39,56 @@ public interface AccountService {
 	void delete(String accountId);
 
 	/**
-	 * Functionality to update an existing user Account
-	 *
-	 * @param account
-	 * 			- persisted account to update
-	 * @param plaidAccounts
-	 * 			- plaid APIs accounts
-	 * @return
-	 * 			- Updated Account
-	 */
-	Account updateBalance(List<PlaidAccountDto> plaidAccounts, Account account);
-
-	/**
-	 *  Functionality to fetch a specific Account
+	 * Functionality to fetch a specific Account as of a point-in-time date mapped to response DTO
 	 *
 	 * @param accountId
 	 * 			- Account ID corresponding to Account to be fetched
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
+	 * @return
+	 * 			- AccountResponseDto
+	 */
+	AccountResponseDto get(String accountId, LocalDate asOf);
+
+	/**
+	 * Functionality to fetch a specific Account as of a point-in-time date
+	 *
+	 * @param accountId
+	 * 			- Account ID corresponding to Account to be fetched
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
 	 * @return
 	 * 			- Fetched Account
 	 */
-	Account read(String accountId);
+	Account findEntity(String accountId, LocalDate asOf);
 
 	/**
-	 * Functionality to retrieve all accounts associated with authenticated user
+	 * Functionality to retrieve all account DTOs associated with authenticated user as of a point-in-time date
 	 *
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
 	 * @return
-	 * 		- all accounts associated with authenticated user
+	 * 		- all account DTOs associated with authenticated user as of date
 	 */
-	List<AccountDto> readAll();
+	List<AccountResponseDto> getAll(LocalDate asOf);
 
 	/**
-	 * Functionality to update/save a specific Account
+	 * Functionality to retrieve all Account entities associated with authenticated user as of a point-in-time date
 	 *
-	 * @param account
-	 * 			- Account to be updated/saved
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
 	 * @return
-	 * 			- Updated Account
+	 * 		- all Account entities associated with authenticated user as of date
 	 */
-	Account update(Account account);
+	List<Account> findAllEntities(LocalDate asOf);
+
+	/**
+	 * Functionality to update an existing user Account
+	 *
+	 * @param updateAccountDto
+	 * 			- DTO containing updated Account attributes
+	 * @return
+	 * 			- AccountResponseDto containing updated Account data
+	 */
+	AccountResponseDto update(UpdateAccountDto updateAccountDto);
 }

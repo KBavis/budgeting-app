@@ -4,18 +4,32 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import com.bavis.budgetapp.constants.TemporalConstants;
 import com.bavis.budgetapp.model.PlaidConfidenceLevel;
 import com.bavis.budgetapp.model.PlaidDetailedCategory;
 import com.bavis.budgetapp.model.PlaidPrimaryCategory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * 
  * @author Kellen Bavis
  * 
- *  Transaction Entity To Hold Information Regarding What User Spends Money On
+ * Transaction Entity To Hold Information Regarding What User Spends Money On
  *
  */
 @Entity
@@ -37,8 +51,8 @@ public class Transaction {
 		@Column(name = "postal_code")
 		private String postalCode;
 		private String country;
-		private String lat; //latitude
-		private String lon; //longitude
+		private String lat; // latitude
+		private String lon; // longitude
 	}
 
 	@Embeddable
@@ -63,14 +77,20 @@ public class Transaction {
 
 	@Id
 	private String transactionId;
+
+	@Builder.Default
+	@Column(name = "start_date", nullable = false)
+	private LocalDate startDate = TemporalConstants.BEGINNING_OF_TIME;
+
+	@Builder.Default
+	@Column(name = "end_date", nullable = false)
+	private LocalDate endDate = TemporalConstants.END_OF_TIME;
+
 	private String name;
 	private double amount;
 	private LocalDate date;
 	private LocalDateTime dateTime;
 	private String logoUrl;
-
-	@Column(name = "is_deleted", columnDefinition = "boolean default false")
-	private boolean isDeleted;
 
 	@Column(name = "updated_by_user", columnDefinition = "boolean default false")
 	private boolean updatedByUser;
@@ -105,7 +125,7 @@ public class Transaction {
 	@ManyToOne
 	@JoinColumn(name = "categoryId", referencedColumnName = "categoryId")
 	private Category category;
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

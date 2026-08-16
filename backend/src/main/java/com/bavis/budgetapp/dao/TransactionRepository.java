@@ -26,15 +26,27 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
      *          - all Transactions corresponding to current year/month or unassigned from previous month
      */
 
-    @Query("SELECT t FROM Transaction t WHERE t.account.accountId IN :accountIds AND t.isDeleted = FALSE AND t.date IS NOT NULL AND (" +
-           "(EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date))) " +
-           "OR " +
-           "(t.category IS NULL AND (" +
-             "(EXTRACT(MONTH FROM CAST(:currentDate AS date)) > 1 AND EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) - 1 AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date))) " +
-             "OR " +
-             "(EXTRACT(MONTH FROM CAST(:currentDate AS date)) = 1 AND EXTRACT(MONTH FROM CAST(t.date AS date)) = 12 AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date)) - 1)" +
-           "))" +
-           ")")
+    @Query("""
+            SELECT t FROM Transaction t 
+            WHERE t.account.accountId IN :accountIds 
+              AND t.startDate <= :currentDate AND t.endDate >= :currentDate 
+              AND t.startDate <= t.endDate 
+              AND t.date IS NOT NULL 
+              AND (
+                (EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) 
+                 AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date))) 
+                OR 
+                (t.category IS NULL AND (
+                  (EXTRACT(MONTH FROM CAST(:currentDate AS date)) > 1 
+                   AND EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) - 1 
+                   AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date))) 
+                  OR 
+                  (EXTRACT(MONTH FROM CAST(:currentDate AS date)) = 1 
+                   AND EXTRACT(MONTH FROM CAST(t.date AS date)) = 12 
+                   AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date)) - 1)
+                ))
+              )
+            """)
     List<Transaction> findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(@Param("accountIds") List<String> accountIds, @Param("currentDate") LocalDate currentDate);
 
     /**
@@ -58,22 +70,36 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
      *          - all Transactions corresponding to current year/month, specified Category IDs, and no account associated with it
      */
 
-    @Query("SELECT t FROM Transaction t WHERE t.category.categoryId IN :categoryIds " +
-            "AND t.account IS NULL " +
-            "AND (t.date IS NOT NULL AND EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) " +
-            "AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date)))")
+    @Query("""
+            SELECT t FROM Transaction t 
+            WHERE t.category.categoryId IN :categoryIds 
+              AND t.account IS NULL 
+              AND t.startDate <= :currentDate AND t.endDate >= :currentDate 
+              AND t.startDate <= t.endDate 
+              AND t.date IS NOT NULL 
+              AND EXTRACT(MONTH FROM CAST(t.date AS date)) = EXTRACT(MONTH FROM CAST(:currentDate AS date)) 
+              AND EXTRACT(YEAR FROM CAST(t.date AS date)) = EXTRACT(YEAR FROM CAST(:currentDate AS date))
+            """)
     List<Transaction> findByCategoryIdsAndCurrentMonth(@Param("categoryIds") List<Long> categoryIds, @Param("currentDate") LocalDate currentDate);
 
 
     /**
-     * Retrieve all Transactions for a given Category ID
+     * Retrieve all Transactions for a given Category ID active as of target date
      *
      * @param categoryId
      *          - Category ID to fetch Transactions for
+     * @param asOf
+     *          - Date to validate transaction activity
      * @return
-     *          - List of Transaction entities corresponding to Category ID
+     *          - List of Transaction entities corresponding to Category ID as of target date
      */
-    List<Transaction> findByCategoryCategoryId(long categoryId);
+    @Query("""
+            SELECT t FROM Transaction t 
+            WHERE t.category.categoryId = :categoryId 
+              AND t.startDate <= :asOf AND t.endDate >= :asOf 
+              AND t.startDate <= t.endDate
+            """)
+    List<Transaction> findByCategoryCategoryIdAndAsOf(@Param("categoryId") long categoryId, @Param("asOf") LocalDate asOf);
 
 
     /**

@@ -1,163 +1,417 @@
 package com.bavis.budgetapp.service.impl;
 
-import com.bavis.budgetapp.dto.CategoryTypeDto;
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dao.CategoryRepository;
+import com.bavis.budgetapp.dao.CategoryTypeRepository;
+import com.bavis.budgetapp.dto.request.CategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.response.CategoryTypeResponseDto;
 import com.bavis.budgetapp.entity.Category;
+import com.bavis.budgetapp.entity.CategoryType;
+import com.bavis.budgetapp.entity.CategoryTypeVt;
+import com.bavis.budgetapp.entity.CategoryVt;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.mapper.CategoryTypeMapper;
+import com.bavis.budgetapp.service.CategoryTypeService;
+import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.IncomeService;
 import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
-import com.bavis.budgetapp.dao.CategoryTypeRepository;
-import com.bavis.budgetapp.entity.CategoryType;
-import com.bavis.budgetapp.service.CategoryTypeService;
-
-
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Kellen Bavis
  *
- * Implementation of our CategoryType Service functionality
+ *         Implementation of our CategoryType Service functionality
  */
 @Service
 @Log4j2
 public class CategoryTypeServiceImpl implements CategoryTypeService {
-	private CategoryTypeRepository repository;
+	private final CategoryTypeRepository repository;
+	private final UserService userService;
+	private final IncomeService incomeService;
+	private final EffectivityService effectivityService;
+	private final CategoryTypeMapper categoryTypeMapper;
+	private final CategoryRepository categoryRepository;
 
-	private UserService userService;
-
-	private CategoryTypeMapper categoryTypeMapper;
-
-	private IncomeService incomeService;
-
-	public CategoryTypeServiceImpl(CategoryTypeRepository repository, UserService userService, CategoryTypeMapper categoryTypeMapper, IncomeService incomeService){
+	public CategoryTypeServiceImpl(CategoryTypeRepository repository, UserService userService,
+			IncomeService incomeService, EffectivityService effectivityService, CategoryTypeMapper categoryTypeMapper,
+			CategoryRepository categoryRepository) {
 		this.repository = repository;
 		this.userService = userService;
-		this.categoryTypeMapper = categoryTypeMapper;
 		this.incomeService = incomeService;
+		this.effectivityService = effectivityService;
+		this.categoryTypeMapper = categoryTypeMapper;
+		this.categoryRepository = categoryRepository;
 	}
 
-
-	//TODO: Update this to use DTO
-	//todo: finish this logic and add logging
+	/**
+	 * Function to create a Category Type entity from a CategoryTypeDto
+	 *
+	 * @param categoryTypeDto
+	 *                        - Category Type DTO containing creation attributes
+	 * @return
+	 *         - Saved CategoryTypeResponseDto
+	 */
 	@Override
-	public CategoryType create(CategoryType categoryType) {
-		//Fetch Auth User to Associate To CategoryType
-		User authUser = userService.getCurrentAuthUser();
-		categoryType.setUser(authUser);
+	public CategoryTypeResponseDto create(CategoryTypeDto categoryTypeDto) {
+		log.info("Creating CategoryType from DTO [{}]", categoryTypeDto);
+		User currentAuthUser = userService.getCurrentAuthUser();
+		double userTotalIncome = incomeService.findUserTotalIncomeAmount(currentAuthUser.getUserId(), null);
 
-		log.info("Creating CategoryType [{}]", categoryType);
-		return repository.save(categoryType);
+		CategoryType ct = new CategoryType();
+		ct.setUser(currentAuthUser);
+		ct.setCategories(new ArrayList<>());
+
+		CategoryTypeVt initialVt = CategoryTypeVt.builder()
+				.categoryType(ct)
+				.name(categoryTypeDto.getName())
+				.budgetAllocationPercentage(categoryTypeDto.getBudgetAllocationPercentage())
+				.budgetAmount(userTotalIncome * categoryTypeDto.getBudgetAllocationPercentage())
+				.savedAmount(0.0)
+				.build();
+		effectivityService.applyVtUpdate(ct.getValidTimes(), initialVt, LocalDate.now());
+
+		CategoryType saved = repository.save(ct);
+		CategoryTypeVt activeVt = effectivityService.getActiveVt(saved.getValidTimes(), LocalDate.now());
+		return categoryTypeMapper.toResponseDto(saved, activeVt);
 	}
 
-
+	/**
+	 * Function to remove a particular Category from a CategoryType entity
+	 *
+	 * @param category
+	 *                 - Category to be removed
+	 */
 	@Override
 	public void removeCategory(Category category) {
-		if(category == null) return; //Ensure Not-Null
+		if (category == null)
+			return;
 
+		LocalDate today = LocalDate.now();
 		log.info("Removing Category {} from corresponding CategoryType", category.getCategoryId());
-		CategoryType categoryType = category.getCategoryType();
-		if(categoryType != null) {
-			List<Category> categoriesToUpdate = categoryType.getCategories() != null ?
-				new ArrayList<>(categoryType.getCategories()) :
-				new ArrayList<>();
+		CategoryVt catVt = effectivityService.getActiveVt(category.getValidTimes(), today);
+		CategoryType categoryType = catVt.getCategoryType();
+		if (categoryType != null) {
+			List<Category> categoriesToUpdate = categoryType.getCategories() != null
+					? new ArrayList<>(categoryType.getCategories())
+					: new ArrayList<>();
 			categoriesToUpdate.remove(category);
 			categoryType.setCategories(categoriesToUpdate);
 
-			//Calculate new savedAmount value
-			double totalCategoryAllocations = categoriesToUpdate.stream().mapToDouble(Category::getBudgetAmount).sum();
-			log.info("CategoryType {} updated saved amount after removal of Category {} : ${}", categoryType.getCategoryTypeId(), category.getCategoryId(), categoryType.getBudgetAmount() - totalCategoryAllocations);
-			categoryType.setSavedAmount(categoryType.getBudgetAmount() - totalCategoryAllocations);
+			double totalCategoryAllocations = categoriesToUpdate.stream()
+					.mapToDouble(cat -> {
+						CategoryVt cv = effectivityService.getActiveVt(cat.getValidTimes(), today);
+						return cv.getBudgetAmount();
+					})
+					.sum();
+			CategoryTypeVt active = effectivityService.getActiveVt(categoryType.getValidTimes(), today);
+			double currentBudgetAmount = active.getBudgetAmount();
+			double newSavedAmount = currentBudgetAmount - totalCategoryAllocations;
+			log.info("CategoryType {} updated saved amount after removal of Category {} : ${}",
+					categoryType.getCategoryTypeId(), category.getCategoryId(), newSavedAmount);
+
+			CategoryTypeVt updateVt = CategoryTypeVt.builder()
+					.categoryType(categoryType)
+					.name(active.getName())
+					.budgetAllocationPercentage(active.getBudgetAllocationPercentage())
+					.budgetAmount(currentBudgetAmount)
+					.savedAmount(newSavedAmount)
+					.build();
+			effectivityService.applyVtUpdate(categoryType.getValidTimes(), updateVt, today);
 
 			List<Long> categoryIds = categoriesToUpdate.stream().map(Category::getCategoryId).toList();
-			log.info("Updated list of Category Ids corresponding to CategoryType {}: [{}]", categoryType.getCategoryTypeId(), categoryIds);
+			log.info("Updated list of Category Ids corresponding to CategoryType {}: [{}]",
+					categoryType.getCategoryTypeId(), categoryIds);
 			repository.save(categoryType);
 		}
 	}
 
+	/**
+	 * Function to create multiple Category Type entities in a singular request
+	 *
+	 * @param categoryTypeDtos
+	 *                         - List of Category Type DTOs utilized to persist
+	 *                         CategoryType entities
+	 * @return
+	 *         - List of persisted CategoryTypeResponseDtos
+	 */
 	@Override
-	public List<CategoryType> createMany(List<CategoryTypeDto> categoryTypeDtos) {
+	public List<CategoryTypeResponseDto> createMany(List<CategoryTypeDto> categoryTypeDtos) {
 		log.info("Attempting to create many Categories: [{}]", categoryTypeDtos);
 
 		User currentAuthUser = userService.getCurrentAuthUser();
-		double userTotalIncome = incomeService.findUserTotalIncomeAmount(currentAuthUser.getUserId());
+		double userTotalIncome = incomeService.findUserTotalIncomeAmount(currentAuthUser.getUserId(), null);
 		log.debug("Total Income for user [{}] is [{}]", currentAuthUser, userTotalIncome);
 
-		List<CategoryType> categoryTypes =
-				categoryTypeDtos.stream().map((categoryTypeDto -> categoryTypeMapper.toEntity(categoryTypeDto)))
-						.peek(categoryType -> categoryType.setUser(currentAuthUser))
-						.peek(categoryType -> categoryType.setCategories(new ArrayList<>()))
-						.peek(categoryType -> categoryType.setBudgetAmount(userTotalIncome * categoryType.getBudgetAllocationPercentage()))
-						.toList();
+		List<CategoryType> categoryTypes = categoryTypeDtos.stream()
+				.map(dto -> {
+					CategoryType ct = new CategoryType();
+					ct.setUser(currentAuthUser);
+					ct.setCategories(new ArrayList<>());
+					CategoryTypeVt initialVt = CategoryTypeVt.builder()
+							.categoryType(ct)
+							.name(dto.getName())
+							.budgetAllocationPercentage(dto.getBudgetAllocationPercentage())
+							.budgetAmount(userTotalIncome * dto.getBudgetAllocationPercentage())
+							.savedAmount(0.0)
+							.build();
+					effectivityService.applyVtUpdate(ct.getValidTimes(), initialVt, LocalDate.now());
+					return ct;
+				})
+				.toList();
 		log.debug("Successfully mapped CategoryTypes to corresponding user and correctly allocated amounts of income");
-		return repository.saveAllAndFlush(categoryTypes);
+		List<CategoryType> savedList = repository.saveAllAndFlush(categoryTypes);
+		return savedList.stream()
+				.map(ct -> {
+					CategoryTypeVt activeVt = effectivityService.getActiveVt(ct.getValidTimes(), LocalDate.now());
+					return categoryTypeMapper.toResponseDto(ct, activeVt);
+				})
+				.toList();
 	}
 
+	/**
+	 * Functionality to read all CategoryTypes pertaining to authenticated user as
+	 * of date
+	 *
+	 * @param asOf
+	 *             - Point-in-time date
+	 * @return
+	 *         - all CategoryTypes corresponding to authenticated user as of date
+	 */
 	@Override
-	public List<CategoryType> readAll() {
-		log.info("Attempting to read all CategoryTypes for the current authenticated user");
+	public List<CategoryType> findAllEntities(LocalDate asOf) {
 		User currentAuthUser = userService.getCurrentAuthUser();
-		return repository.findByUserUserId(currentAuthUser.getUserId());
+		return findAllEntities(currentAuthUser, asOf);
 	}
 
 	@Override
-	public List<CategoryType> readAll(User user) {
-		log.info("Attempting to read all CategoryTypes for the User {}", user.getUserId());
-		return repository.findByUserUserId(user.getUserId());
+	public List<CategoryTypeResponseDto> getAll(LocalDate asOf) {
+		List<CategoryType> categoryTypes = findAllEntities(asOf);
+		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
+		return categoryTypes.stream()
+				.map(ct -> {
+					CategoryTypeVt activeVt = effectivityService.getActiveVt(ct.getValidTimes(), target);
+					return categoryTypeMapper.toResponseDto(ct, activeVt);
+				})
+				.toList();
+	}
+
+	/**
+	 * Functionality to read all CategoryTypes pertaining to a specific User as of
+	 * date
+	 *
+	 * @param user
+	 *             - User to fetch all CategoryTypes for
+	 * @param asOf
+	 *             - Point-in-time date
+	 * @return
+	 *         - all CategoryTypes corresponding to user as of date
+	 */
+	@Override
+	public List<CategoryType> findAllEntities(User user, LocalDate asOf) {
+		log.info("Attempting to read all CategoryTypes for User {} asOf [{}]", user.getUserId(), asOf);
+		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
+		return repository.findByUserUserIdAndAsOf(user.getUserId(), target);
+	}
+
+	/**
+	 * Function to update a CategoryType with updated properties
+	 *
+	 * @param updateCategoryTypeDto
+	 *                              - DTO containing relevant CategoryType updates
+	 * @param id
+	 *                              - ID corresponding to CategoryType to be updated
+	 * @return
+	 *         - Updated and saved CategoryTypeResponseDto
+	 */
+	@Override
+	public CategoryTypeResponseDto update(UpdateCategoryTypeDto updateCategoryTypeDto, Long id) {
+		CategoryType categoryType = findEntity(id, null);
+		log.info("CategoryType [{}] updates via the following UpdateCategoryTypeDto [{}]", categoryType,
+				updateCategoryTypeDto);
+
+		LocalDate today = LocalDate.now();
+		CategoryTypeVt active = effectivityService.getActiveVt(categoryType.getValidTimes(), today);
+		double allocPct = updateCategoryTypeDto.getBudgetAllocationPercentage() != null
+				? updateCategoryTypeDto.getBudgetAllocationPercentage()
+				: active.getBudgetAllocationPercentage();
+
+		double userTotalIncome = incomeService.findUserTotalIncomeAmount(categoryType.getUser().getUserId(), null);
+		double budgetAmt = userTotalIncome * allocPct;
+
+		if (Double.compare(allocPct, active.getBudgetAllocationPercentage()) == 0
+				&& Double.compare(budgetAmt, active.getBudgetAmount()) == 0) {
+			log.info("CategoryType [{}] allocation percentage [{}] and budget amount [{}] unchanged; performing no-op update",
+					id, allocPct, budgetAmt);
+			return categoryTypeMapper.toResponseDto(categoryType, active);
+		}
+
+		// recompute Category budget_amounts based on increase/decrease in CategoryType
+		// income percentage
+		List<Category> childCategories = categoryRepository.findByCategoryTypeIdAndAsOf(id, today);
+		double totalCategoryAllocations = 0.0;
+		if (childCategories != null && !childCategories.isEmpty()) {
+			for (Category cat : childCategories) {
+				CategoryVt cv = effectivityService.getActiveVt(cat.getValidTimes(), today);
+				if (cv != null) {
+					double updatedCatBudgetAmt = cv.getBudgetAllocationPercentage() * budgetAmt;
+					CategoryVt newCatVt = CategoryVt.builder()
+							.category(cat)
+							.name(cv.getName())
+							.budgetAllocationPercentage(cv.getBudgetAllocationPercentage())
+							.budgetAmount(updatedCatBudgetAmt)
+							.categoryType(categoryType)
+							.build();
+					effectivityService.applyVtUpdate(cat.getValidTimes(), newCatVt, today);
+					totalCategoryAllocations += updatedCatBudgetAmt;
+				}
+			}
+			categoryRepository.saveAll(childCategories);
+		}
+
+		double savedAmt = budgetAmt - totalCategoryAllocations;
+
+		CategoryTypeVt updateVt = CategoryTypeVt.builder()
+				.categoryType(categoryType)
+				.name(active.getName())
+				.budgetAllocationPercentage(allocPct)
+				.budgetAmount(budgetAmt)
+				.savedAmount(savedAmt)
+				.build();
+
+		effectivityService.applyVtUpdate(categoryType.getValidTimes(), updateVt, today);
+
+		CategoryType saved = repository.save(categoryType);
+		CategoryTypeVt activeVt = effectivityService.getActiveVt(saved.getValidTimes(), today);
+		return categoryTypeMapper.toResponseDto(saved, activeVt);
 	}
 
 	@Override
-	public CategoryType update(UpdateCategoryTypeDto updateCategoryTypeDto, Long id) {
-		//Fetch CategoryType or throw NotFoundException
-		CategoryType categoryType = read(id);
-		log.info("CategoryType [{}] updates via the following UpdateCategoryTypeDto [{}]", categoryType, updateCategoryTypeDto);
+	public CategoryTypeResponseDto recalculateSavedAmount(Long categoryTypeId) {
+		CategoryType categoryType = findEntity(categoryTypeId, null);
+		LocalDate today = LocalDate.now();
+		CategoryTypeVt active = effectivityService.getActiveVt(categoryType.getValidTimes(), today);
 
-		//Update CategoryType
-		categoryType.setSavedAmount(updateCategoryTypeDto.getSavedAmount());
-		categoryType.setBudgetAllocationPercentage(updateCategoryTypeDto.getBudgetAllocationPercentage());
-		categoryType.setBudgetAmount(updateCategoryTypeDto.getAmountAllocated());
+		double userTotalIncome = incomeService.findUserTotalIncomeAmount(categoryType.getUser().getUserId(), null);
+		double budgetAmt = userTotalIncome * active.getBudgetAllocationPercentage();
 
-		//Persist Updates
-		return repository.save(categoryType);
+		List<Category> childCategories = categoryRepository.findByCategoryTypeIdAndAsOf(categoryTypeId, today);
+		double totalCategoryAllocations = childCategories != null
+				? childCategories.stream()
+						.mapToDouble(cat -> {
+							CategoryVt cv = effectivityService.getActiveVt(cat.getValidTimes(), today);
+							return cv != null ? cv.getBudgetAmount() : 0.0;
+						})
+						.sum()
+				: 0.0;
+
+		double savedAmt = budgetAmt - totalCategoryAllocations;
+
+		if (Double.compare(savedAmt, active.getSavedAmount()) == 0
+				&& Double.compare(budgetAmt, active.getBudgetAmount()) == 0) {
+			log.info("CategoryType [{}] saved amount [{}] and budget amount [{}] unchanged; skipping recalculateSavedAmount update as no-op",
+					categoryTypeId, savedAmt, budgetAmt);
+			return categoryTypeMapper.toResponseDto(categoryType, active);
+		}
+
+		CategoryTypeVt updateVt = CategoryTypeVt.builder()
+				.categoryType(categoryType)
+				.name(active.getName())
+				.budgetAllocationPercentage(active.getBudgetAllocationPercentage())
+				.budgetAmount(budgetAmt)
+				.savedAmount(savedAmt)
+				.build();
+
+		effectivityService.applyVtUpdate(categoryType.getValidTimes(), updateVt, today);
+
+		CategoryType saved = repository.save(categoryType);
+		CategoryTypeVt activeVt = effectivityService.getActiveVt(saved.getValidTimes(), today);
+		return categoryTypeMapper.toResponseDto(saved, activeVt);
 	}
 
 	@Override
-	public CategoryType read(Long categoryTypeId) {
-		log.info("Reading CategoryType with id [{}]", categoryTypeId);
+	public CategoryTypeResponseDto get(Long categoryTypeId, LocalDate asOf) {
+		CategoryType ct = findEntity(categoryTypeId, asOf);
+		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
+		CategoryTypeVt activeVt = effectivityService.getActiveVt(ct.getValidTimes(), target);
+		return categoryTypeMapper.toResponseDto(ct, activeVt);
+	}
 
-        return repository.findById(categoryTypeId).orElseThrow(
+	/**
+	 * Function to fetch a particular CategoryType as of date
+	 *
+	 * @param categoryTypeId
+	 *                       - ID corresponding to CategoryType to be fetched
+	 * @param asOf
+	 *                       - Point-in-time date
+	 * @return
+	 *         - Fetched CategoryType entity
+	 */
+	@Override
+	public CategoryType findEntity(Long categoryTypeId, LocalDate asOf) {
+		log.info("Reading CategoryType with id [{}] asOf [{}]", categoryTypeId, asOf);
+		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
+		return repository.findByCategoryTypeIdAndAsOf(categoryTypeId, target).orElseThrow(
 				() -> (new RuntimeException("Invalid category type id: " + categoryTypeId)));
 	}
 
+	/**
+	 * Functionality to retrieve a user's CategoryType corresponding to a particular
+	 * name as of date
+	 *
+	 * @param categoryTypeName
+	 *                         - CategoryType name to fetch
+	 * @param asOf
+	 *                         - Point-in-time date
+	 * @return
+	 *         - retrieved CategoryType
+	 */
 	@Override
-	public CategoryType readByName(String categoryTypeName) {
+	public CategoryType findEntityByName(String categoryTypeName, LocalDate asOf) {
 		User currentAuthUser = userService.getCurrentAuthUser();
-		long userId = currentAuthUser.getUserId();
-		String normalCaseType = GeneralUtil.toNormalCase(categoryTypeName);
-		log.info("Attempting to fetch Category Type with the name {} for User {}", normalCaseType, userId);
-		return repository.findByNameAndUserUserId(normalCaseType, userId);
+		return findEntityByName(categoryTypeName, currentAuthUser, asOf);
 	}
 
+	/**
+	 * Functionality to retrieve a user's CategoryType corresponding to a particular
+	 * name as of date
+	 *
+	 * @param categoryTypeName
+	 *                         - CategoryType name to fetch
+	 * @param user
+	 *                         - User to fetch CategoryType by name for
+	 * @param asOf
+	 *                         - Point-in-time date
+	 * @return
+	 *         - retrieved CategoryType
+	 */
 	@Override
-	public CategoryType readByName(String categoryTypeName, User user) {
+	public CategoryType findEntityByName(String categoryTypeName, User user, LocalDate asOf) {
 		long userId = user.getUserId();
 		String normalCaseType = GeneralUtil.toNormalCase(categoryTypeName);
-		log.info("Attempting to fetch Category Type with the name {} for User {}", normalCaseType, userId);
-		return repository.findByNameAndUserUserId(normalCaseType, userId);
+		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
+		log.info("Attempting to fetch Category Type with the name {} for User {} asOf [{}]", normalCaseType, userId,
+				target);
+		return repository.findByNameAndUserUserIdAndAsOf(normalCaseType, userId, target).orElse(null);
 	}
 
-
-
-	//todo: finish this logic and add logging
+	/**
+	 * Function to remove a particular CategoryType from our database
+	 *
+	 * @param categoryTypeId
+	 *                       - ID corresponding to CategoryType to be deleted
+	 */
 	@Override
 	public void delete(Long categoryTypeId) {
 		log.info("Deleting Category Type with id [{}]", categoryTypeId);
-		repository.deleteById(categoryTypeId);
+		CategoryType categoryType = findEntity(categoryTypeId, null);
+		categoryType.setEndDate(LocalDate.now().minusDays(1));
+		repository.save(categoryType);
 	}
 
 }

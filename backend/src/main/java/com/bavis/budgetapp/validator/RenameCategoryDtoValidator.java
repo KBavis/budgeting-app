@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.RenameCategoryDtoValidName;
-import com.bavis.budgetapp.dto.RenameCategoryDto;
+import com.bavis.budgetapp.dto.request.RenameCategoryDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

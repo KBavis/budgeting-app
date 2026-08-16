@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.UpdateCategoryTypeValidPercentAllocated;
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -18,7 +18,10 @@ public class UpdateCategoryTypeDtoPercentAllocatedValidator implements Constrain
 
     @Override
     public boolean isValid(UpdateCategoryTypeDto updateCategoryTypeDto, ConstraintValidatorContext constraintValidatorContext) {
+        if (updateCategoryTypeDto == null || updateCategoryTypeDto.getBudgetAllocationPercentage() == null) {
+            return true;
+        }
         double percentAllocation = updateCategoryTypeDto.getBudgetAllocationPercentage();
-        return percentAllocation > 0 && percentAllocation < 1;
+        return percentAllocation >= 0.0 && percentAllocation <= 1.0;
     }
 }

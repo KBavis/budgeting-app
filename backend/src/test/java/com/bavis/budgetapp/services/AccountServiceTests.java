@@ -1,19 +1,18 @@
 package com.bavis.budgetapp.services;
 
-
 import com.bavis.budgetapp.dao.AccountRepository;
-import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.constants.ConnectionStatus;
-import com.bavis.budgetapp.dto.PlaidAccountDto;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.entity.User;
-import com.bavis.budgetapp.dto.ConnectAccountRequestDto;
+import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.service.ConnectionService;
+import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.PlaidService;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
@@ -26,19 +25,20 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,6 +64,9 @@ public class AccountServiceTests {
     @Mock
     TransactionService transactionService;
 
+    @Spy
+    EffectivityService effectivityService = new EffectivityService();
+
     @InjectMocks
     AccountServiceImpl accountService;
 
@@ -81,7 +84,7 @@ public class AccountServiceTests {
                 .accountType(AccountType.CHECKING)
                 .build();
 
-        //Arrange
+        // Arrange
         accountId = "account-id";
         accessToken = "access-token";
         Connection expectedConnection = Connection.builder()
@@ -91,22 +94,20 @@ public class AccountServiceTests {
         expectedAccount = Account.builder()
                 .accountId(accountId)
                 .connection(expectedConnection)
+                .validTimes(new ArrayList<>())
                 .build();
-
-
-
     }
 
     @Test
     void testDelete_CallsPlaidService() {
-        //Mock
-        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        // Mock
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
         doNothing().when(plaidService).removeAccount(accessToken);
 
-        //Act
+        // Act
         accountService.delete(accountId);
 
-        //Verify
+        // Verify
         Mockito.verify(plaidService, times(1)).removeAccount(accessToken);
     }
 
@@ -114,24 +115,24 @@ public class AccountServiceTests {
     void testDelete_softDeletesAccount() {
         ArgumentCaptor<Account> argumentCaptor = ArgumentCaptor.forClass(Account.class);
 
-        //Mock
-        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        // Mock
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
         doNothing().when(plaidService).removeAccount(accessToken);
 
-        //Act
+        // Act
         accountService.delete(accountId);
 
-        //Verify
+        // Verify
         Mockito.verify(accountRepository, times(1)).save(argumentCaptor.capture());
 
         Account savedAccount = argumentCaptor.getValue();
-        assertTrue(savedAccount.isDeleted());
+        assertEquals(LocalDate.now(), savedAccount.getEndDate());
     }
 
     @Test
     void testDelete_plaidServicException_throwsException_nonRetry() {
         doThrow(new PlaidServiceException("Random exception")).when(plaidService).removeAccount(any());
-        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
 
         PlaidServiceException e = assertThrows(PlaidServiceException.class, () -> {
             accountService.delete(accountId);
@@ -142,21 +143,21 @@ public class AccountServiceTests {
     @Test
     void testDelete_plaidServicException_skipsThrowingException_retry() {
         doThrow(new PlaidServiceException("The Item you requested cannot be found")).when(plaidService).removeAccount(any());
-        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
 
         assertDoesNotThrow(() -> accountService.delete(accountId));
     }
 
     @Test
     void testDelete_NullUserOnAccount_NoUserFetch() {
-        //Mock
-        when(accountRepository.findByAccountId(accountId)).thenReturn(Optional.of(expectedAccount));
+        // Mock
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
         doNothing().when(plaidService).removeAccount(accessToken);
 
-        //Act
+        // Act
         accountService.delete(accountId);
 
-        //Verify
+        // Verify
         Mockito.verify(userService, times(0)).readById(any(Long.class));
     }
 
@@ -165,8 +166,8 @@ public class AccountServiceTests {
      */
     @Test
     public void testConnectAccount_Success() {
-        //Arrange
-        AccountDto accountDTO = AccountDto.builder()
+        // Arrange
+        AccountResponseDto accountResponseDto = AccountResponseDto.builder()
                 .accountName(connectAccountRequestDto.getAccountName())
                 .balance(1000.0)
                 .accountType(connectAccountRequestDto.getAccountType())
@@ -185,51 +186,49 @@ public class AccountServiceTests {
                 .build();
         Account account = Account.builder()
                 .accountId("account-id")
-                .accountName("account-name")
-                .accountType(connectAccountRequestDto.getAccountType())
                 .connection(connection)
-                .balance(accountDTO.getBalance())
+                .validTimes(new ArrayList<>())
                 .build();
         double balance = 1000.0;
 
-        //Mock
+        // Mock
         when(plaidService.exchangeToken(connectAccountRequestDto.getPublicToken())).thenReturn(accessToken);
         when(plaidService.retrieveBalance(connectAccountRequestDto.getPlaidAccountId(), accessToken)).thenReturn(balance);
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(connectionService.create(any(Connection.class))).thenReturn(connection);
         when(accountRepository.save(any(Account.class))).thenReturn(account);
-        when(accountMapper.toDTO(any(Account.class))).thenReturn(accountDTO);
+        when(accountMapper.toResponseDto(any(Account.class), any())).thenReturn(accountResponseDto);
 
-        //Act
-        AccountDto createdAccountDto = accountService.connectAccount(connectAccountRequestDto);
+        // Act
+        AccountResponseDto createdAccountDto = accountService.connectAccount(connectAccountRequestDto);
 
-        //Assert
+        // Assert
         assertNotNull(createdAccountDto);
-        assertEquals(AccountType.CHECKING, accountDTO.getAccountType());
-        assertEquals(balance, accountDTO.getBalance());
-        assertEquals("account-name", accountDTO.getAccountName());
+        assertEquals(AccountType.CHECKING, createdAccountDto.getAccountType());
+        assertEquals(balance, createdAccountDto.getBalance());
+        assertEquals("account-name", createdAccountDto.getAccountName());
 
-        //Verify
+        // Verify
         verify(plaidService, times(1)).exchangeToken(connectAccountRequestDto.getPublicToken());
         verify(plaidService, times(1)).retrieveBalance(connectAccountRequestDto.getPlaidAccountId(), accessToken);
         verify(userService, times(1)).getCurrentAuthUser();
         verify(connectionService, times(1)).create(any(Connection.class));
         verify(accountRepository, times(1)).save(any(Account.class));
-        verify(accountMapper, times(1)).toDTO(any(Account.class));
+        verify(accountMapper, times(1)).toResponseDto(any(Account.class), any());
     }
 
     /**
      * Validates our connect account method correctly handles invalid exchange of token
      */
     @Test
-    public void testConnectAccount_PlaidServiceException_ExchangeToken_Failure(){
-        //Arrange
+    public void testConnectAccount_PlaidServiceException_ExchangeToken_Failure() {
+        // Arrange
         String plaidServiceExceptionMsg = "PlaidServiceException: [Invalid Response Code When Exchanging Public Token Via Plaid Client: [404]]";
         String connectAccountExceptionMsg = "An error occurred when creating an account: [" + plaidServiceExceptionMsg + "]";
-       //Mock
-       when(plaidService.exchangeToken(connectAccountRequestDto.getPublicToken())).thenThrow(new PlaidServiceException("Invalid Response Code When Exchanging Public Token Via Plaid Client: [404]"));
+        // Mock
+        when(plaidService.exchangeToken(connectAccountRequestDto.getPublicToken())).thenThrow(new PlaidServiceException("Invalid Response Code When Exchanging Public Token Via Plaid Client: [404]"));
 
-       //Act & Assert
+        // Act & Assert
         AccountConnectionException runtimeException = assertThrows(AccountConnectionException.class, () -> {
             accountService.connectAccount(connectAccountRequestDto);
         });
@@ -240,15 +239,15 @@ public class AccountServiceTests {
      * Validates our connect account method correctly handles invalid retrieval of balance
      */
     @Test
-    public void testConnectAccount_PlaidServiceException_RetrieveBalance_Failure(){
-        //Arrange
+    public void testConnectAccount_PlaidServiceException_RetrieveBalance_Failure() {
+        // Arrange
         String plaidServiceExceptionMsg = "Invalid Response Code When Retrieving Balance Via PlaidClient: [404]";
         String connectAccountExceptionMsg = "An error occurred when creating an account: [PlaidServiceException: [" + plaidServiceExceptionMsg + "]]";
 
-        //Mock
+        // Mock
         when(plaidService.exchangeToken(connectAccountRequestDto.getPublicToken())).thenThrow(new PlaidServiceException(plaidServiceExceptionMsg));
 
-        //Act & Assert
+        // Act & Assert
         AccountConnectionException runtimeException = assertThrows(AccountConnectionException.class, () -> {
             accountService.connectAccount(connectAccountRequestDto);
         });
@@ -258,19 +257,20 @@ public class AccountServiceTests {
 
     @Test
     void testReadAll_Successful() {
-        //Arrange
+        // Arrange
         Account accountOne = Account.builder()
                 .accountId("123XYZ")
+                .validTimes(new ArrayList<>())
                 .build();
 
-
-        Account accountTwo= Account.builder()
+        Account accountTwo = Account.builder()
                 .accountId("123XYZ")
+                .validTimes(new ArrayList<>())
                 .build();
-
 
         Account accountThree = Account.builder()
                 .accountId("123XYZ")
+                .validTimes(new ArrayList<>())
                 .build();
 
         List<Account> expectedAccounts = List.of(accountThree, accountOne, accountTwo);
@@ -280,22 +280,20 @@ public class AccountServiceTests {
                 .username("auth-user")
                 .build();
 
-        //Mock
-        when(accountRepository.findByUserUserId(authUser.getUserId())).thenReturn(expectedAccounts);
+        // Mock
+        when(accountRepository.findByUserUserIdAndAsOf(eq(authUser.getUserId()), any())).thenReturn(expectedAccounts);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountMapper.toDTO(any(Account.class))).thenAnswer(invocationOnMock -> {
+        when(accountMapper.toResponseDto(any(Account.class), any())).thenAnswer(invocationOnMock -> {
             Account account = invocationOnMock.getArgument(0);
-            return AccountDto.builder()
+            return AccountResponseDto.builder()
                     .accountId(account.getAccountId())
-                    .accountType(account.getAccountType())
-                    .accountName(account.getAccountName())
                     .build();
         });
 
-        //Act
-        List<AccountDto> actualAccounts = accountService.readAll();
+        // Act
+        List<AccountResponseDto> actualAccounts = accountService.getAll(null);
 
-        //Assert
+        // Assert
         assertNotNull(actualAccounts);
         assertEquals(3, actualAccounts.size());
         assertTrue(actualAccounts.stream().anyMatch(accountDto -> accountDto.getAccountId().equals(accountOne.getAccountId())));
@@ -305,153 +303,19 @@ public class AccountServiceTests {
 
     @Test
     void testReadAll_NoAccounts_Successful() {
-        //Arrrange
+        // Arrange
         User user = User.builder()
                 .userId(1L)
                 .username("auth-user")
                 .build();
-       //Mock
-       when(userService.getCurrentAuthUser()).thenReturn(user);
-       when(accountRepository.findByUserUserId(user.getUserId())).thenReturn(new ArrayList<>());
+        // Mock
+        when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(accountRepository.findByUserUserIdAndAsOf(eq(user.getUserId()), any())).thenReturn(new ArrayList<>());
 
-       //Act
-        List<AccountDto> actualAccounts = accountService.readAll();
+        // Act
+        List<AccountResponseDto> actualAccounts = accountService.getAll(null);
 
-        //Assert
+        // Assert
         assertTrue(actualAccounts.isEmpty());
-    }
-
-
-    @Test
-    void test_updateBalance_updatesAccountBalance() {
-        // arrange
-        String accountId = "123XYZ";
-        PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
-        balance.setAvailable(BigDecimal.valueOf(2046.00));
-        balance.setCurrent(BigDecimal.valueOf(2046.00));
-
-        PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
-                .accountId(accountId)
-                .balances(balance)
-                .build();
-        List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
-
-        Account account = new Account();
-        account.setAccountId(accountId);
-        account.setBalance(500.00);
-
-        // mock
-        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-
-        // act
-        Account updatedAccount = accountService.updateBalance(plaidAccountDtos, account);
-
-        // assert
-        assertEquals(2046.00, updatedAccount.getBalance());
-    }
-
-    @Test
-    void test_updateBalance_handlesNull() {
-        // arrange
-        String accountId = "123XYZ";
-
-        Account account = new Account();
-        account.setAccountId(accountId);
-        account.setBalance(500.00);
-
-        // mock
-        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-
-        // act
-        Account updatedAccount = accountService.updateBalance(Collections.emptyList(), account);
-
-        // assert
-        assertEquals(account, updatedAccount); // no difference in account
-    }
-
-    @Test
-    void test_updateBalance_handlesMissngAccount() {
-        // arrange
-        String accountId = "123XYZ";
-        PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
-        balance.setAvailable(BigDecimal.valueOf(1000.00));
-        balance.setCurrent(BigDecimal.valueOf(2046.00));
-
-        PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
-                .accountId(accountId)
-                .balances(balance)
-                .build();
-        List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
-
-        Account account = new Account();
-        account.setAccountId("123");
-        account.setBalance(500.00);
-
-        // mock
-        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-
-        // act
-        Account updatedAccount = accountService.updateBalance(plaidAccountDtos, account);
-
-        // assert
-        assertEquals(account, updatedAccount); // no difference in account
-    }
-
-    @Test
-    void test_updateBalance_creditAccount_prioritizesCurrentBalance() {
-        // arrange
-        String accountId = "credit123";
-        PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
-        balance.setAvailable(BigDecimal.valueOf(8000.00)); // remaining limit
-        balance.setCurrent(BigDecimal.valueOf(2000.00));   // amount spent/owed
-
-        PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
-                .accountId(accountId)
-                .balances(balance)
-                .build();
-        List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
-
-        Account account = new Account();
-        account.setAccountId(accountId);
-        account.setAccountType(AccountType.CREDIT);
-        account.setBalance(500.00);
-
-        // mock
-        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-
-        // act
-        Account updatedAccount = accountService.updateBalance(plaidAccountDtos, account);
-
-        // assert
-        assertEquals(2000.00, updatedAccount.getBalance());
-    }
-
-    @Test
-    void test_updateBalance_investmentAccount_prioritizesCurrentBalance() {
-        // arrange
-        String accountId = "inv123";
-        PlaidAccountDto.Balance balance = new PlaidAccountDto.Balance();
-        balance.setAvailable(null); // available is null for investment accounts
-        balance.setCurrent(BigDecimal.valueOf(15000.00)); // NAV
-
-        PlaidAccountDto plaidAccountDto = PlaidAccountDto.builder()
-                .accountId(accountId)
-                .balances(balance)
-                .build();
-        List<PlaidAccountDto> plaidAccountDtos = Collections.singletonList(plaidAccountDto);
-
-        Account account = new Account();
-        account.setAccountId(accountId);
-        account.setAccountType(AccountType.INVESTMENT);
-        account.setBalance(10000.00);
-
-        // mock
-        when(accountRepository.save(account)).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-
-        // act
-        Account updatedAccount = accountService.updateBalance(plaidAccountDtos, account);
-
-        // assert
-        assertEquals(15000.00, updatedAccount.getBalance());
     }
 }

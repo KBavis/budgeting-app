@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.TransactionDtoValidAmount;
-import com.bavis.budgetapp.dto.TransactionDto;
+import com.bavis.budgetapp.dto.request.TransactionDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.extern.log4j.Log4j2;

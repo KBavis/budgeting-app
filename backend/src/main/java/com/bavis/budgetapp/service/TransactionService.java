@@ -1,13 +1,14 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
-import com.bavis.budgetapp.dto.FetchTransactionsDto;
-import com.bavis.budgetapp.dto.SplitTransactionDto;
-import com.bavis.budgetapp.dto.SyncTransactionsDto;
-import com.bavis.budgetapp.dto.TransactionDto;
-import com.bavis.budgetapp.dto.AccountsDto;
+import com.bavis.budgetapp.dto.request.AccountsDto;
+import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.request.SplitTransactionDto;
+import com.bavis.budgetapp.dto.request.TransactionDto;
+import com.bavis.budgetapp.dto.response.FetchTransactionsDto;
+import com.bavis.budgetapp.dto.response.SyncTransactionsDto;
 import com.bavis.budgetapp.entity.Transaction;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -28,18 +29,30 @@ public interface TransactionService {
     SyncTransactionsDto syncTransactions(AccountsDto accountsDto);
 
     /**
-     * Functionality to fetch all Transaction entities corresponding to authenticated User.
-     * Returns current-month transactions and unassigned previous-month transactions separately,
-     * so that only unassigned prior-month transactions are surfaced for categorization.
+     * Functionality to fetch all Transaction entities corresponding to authenticated User with explicit point-in-time evaluation.
      *
+     * @param asOf
+     *      - Optional point-in-time date to evaluate accounts and categories state (defaults to today if null)
      * @return
      *      - FetchTransactionsDto containing currentMonthTransactions and unassignedPreviousMonthTransactions
      */
-    FetchTransactionsDto readAll();
+    FetchTransactionsDto getAll(LocalDate asOf);
 
 
     /**
-     * Functionality for fetching all relevant Transaction entities corresponding to a particular Category
+     * Functionality for fetching all relevant Transaction entities corresponding to a particular Category active as of target date
+     *
+     * @param categoryId
+     *          - CategoryId pertaining to Category to fetch Transactions for
+     * @param asOf
+     *          - Date to validate transaction activity (defaults to today if null)
+     * @return
+     *          - all Transactions corresponding to passed in Category ID
+     */
+    List<Transaction> fetchCategoryTransactions(long categoryId, LocalDate asOf);
+
+    /**
+     * Functionality for fetching all relevant Transaction entities corresponding to a particular Category active as of today
      *
      * @param categoryId
      *          - CategoryId pertaining to Category to fetch Transactions for
@@ -115,7 +128,7 @@ public interface TransactionService {
      * @return
      *          - Transaction corresponding to ID
      */
-    Transaction readById(String transactionId);
+    Transaction findEntity(String transactionId);
 
     /**
      * Functionality to remove an assigned Category from a Transaction

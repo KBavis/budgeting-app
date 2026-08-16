@@ -1,7 +1,8 @@
 package com.bavis.budgetapp.mapper;
 
-import com.bavis.budgetapp.dto.AccountDto;
+import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.entity.Account;
+import com.bavis.budgetapp.entity.AccountVt;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -14,9 +15,11 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface AccountMapper {
 
-    @Mapping(target = "accountName", source = "accountName")
-    @Mapping(target = "balance", source = "balance")
-    @Mapping(target = "accountType", source = "accountType")
-    @Mapping(target = "accountId", source = "accountId")
-    AccountDto toDTO(Account account);
+    @Mapping(target = "accountId", source = "account.accountId")
+    @Mapping(target = "startDate", source = "account.startDate")
+    @Mapping(target = "endDate", source = "account.endDate")
+    @Mapping(target = "accountName", source = "activeVt.accountName")
+    @Mapping(target = "accountType", source = "activeVt.accountType")
+    @Mapping(target = "balance", source = "activeVt.balance")
+    AccountResponseDto toResponseDto(Account account, AccountVt activeVt);
 }

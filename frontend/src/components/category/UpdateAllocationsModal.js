@@ -31,9 +31,7 @@ const UpdateAllocationsModal = ({ categoryType, onClose }) => {
          // Filter and deduplicate categories corresponding to this CategoryType
          const filtered = categories
             .filter(
-               (cat) =>
-                  cat.categoryType &&
-                  cat.categoryType.categoryTypeId === categoryType.categoryTypeId
+               (cat) => cat.categoryTypeId === categoryType.categoryTypeId
             )
             .map((cat) => ({
                ...cat,

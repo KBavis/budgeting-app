@@ -1,11 +1,13 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.dto.AddCategoryDto;
-import com.bavis.budgetapp.dto.BulkCategoryDto;
-import com.bavis.budgetapp.dto.EditCategoryDto;
-import com.bavis.budgetapp.dto.RenameCategoryDto;
+import com.bavis.budgetapp.dto.request.AddCategoryDto;
+import com.bavis.budgetapp.dto.request.BulkCategoryDto;
+import com.bavis.budgetapp.dto.request.EditCategoryDto;
+import com.bavis.budgetapp.dto.request.RenameCategoryDto;
+import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.entity.Category;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -20,9 +22,9 @@ public interface CategoryService {
 	 * @param categories
 	 * 			- DTO to store information needed to create multiple Category entities
 	 * @return
-	 * 			- List of created Category entities
+	 * 			- List of created CategoryResponseDtos
 	 */
-	List<Category> bulkCreate(BulkCategoryDto categories);
+	List<CategoryResponseDto> bulkCreate(BulkCategoryDto categories);
 
 	/**
 	 * Function to create a single Category entity
@@ -30,9 +32,9 @@ public interface CategoryService {
 	 * @param addCategoryDto
 	 * 			- DTO used to create new Category and update existing Category allocations
 	 * @return
-	 * 			- Created Category entity
+	 * 			- Created CategoryResponseDto
 	 */
-	Category create(AddCategoryDto addCategoryDto);
+	CategoryResponseDto create(AddCategoryDto addCategoryDto);
 
 	/**
 	 * Function to update Category allocations
@@ -40,10 +42,9 @@ public interface CategoryService {
 	 * @param editCategoryDto
 	 * 			- DTO containing updated category allocations
 	 * @return
-	 * 			- Updated Categories
+	 * 			- Updated CategoryResponseDtos
 	 */
-	List<Category> updateCategoryAllocations(EditCategoryDto editCategoryDto);
-
+	List<CategoryResponseDto> updateCategoryAllocations(EditCategoryDto editCategoryDto);
 
 	/**
 	 * Function to rename a Category
@@ -51,27 +52,53 @@ public interface CategoryService {
 	 * @param renameCategoryDto
 	 * 			- DTO containing CategoryId to update and updated name
 	 * @return
-	 * 			- updated Category
+	 * 			- updated CategoryResponseDto
 	 */
-	Category renameCategory(RenameCategoryDto renameCategoryDto);
+	CategoryResponseDto renameCategory(RenameCategoryDto renameCategoryDto);
 
 	/**
-	 * Function to fetch a specific Category
+	 * Function to fetch a specific Category as of a point-in-time date mapped to response DTO
 	 *
 	 * @param categoryId
 	 * 			- Category ID corresponding to specific Category to be fetched
+	 * @param asOf
+	 * 			- Point-in-time evaluation date (defaults to today if null)
 	 * @return
-	 * 			- fetched Category
+	 * 			- fetched CategoryResponseDto
 	 */
-	Category read(Long categoryId);
+	CategoryResponseDto get(Long categoryId, LocalDate asOf);
 
 	/**
-	 * Function to fetch all Categories pertaining to authenticated user
+	 * Function to fetch a specific Category entity as of a point-in-time date
 	 *
+	 * @param categoryId
+	 * 			- Category ID corresponding to specific Category to be fetched
+	 * @param asOf
+	 * 			- Point-in-time evaluation date (defaults to today if null)
 	 * @return
-	 * 		- all Categories corresponding to auth user
+	 * 			- fetched Category entity
 	 */
-	List<Category> readAll();
+	Category findEntity(Long categoryId, LocalDate asOf);
+
+	/**
+	 * Function to fetch all Category entities pertaining to authenticated user as of a point-in-time date
+	 *
+	 * @param asOf
+	 * 			- Point-in-time evaluation date (defaults to today if null)
+	 * @return
+	 * 		- all Categories corresponding to auth user as of date
+	 */
+	List<Category> findAllEntities(LocalDate asOf);
+
+	/**
+	 * Function to fetch all CategoryResponseDtos pertaining to authenticated user as of a point-in-time date
+	 *
+	 * @param asOf
+	 * 			- Point-in-time evaluation date (defaults to today if null)
+	 * @return
+	 * 		- all CategoryResponseDtos corresponding to auth user as of date
+	 */
+	List<CategoryResponseDto> getAll(LocalDate asOf);
 
 	/**
 	 * Function to delete a specific Category

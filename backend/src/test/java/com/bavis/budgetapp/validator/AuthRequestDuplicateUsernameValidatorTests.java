@@ -1,9 +1,7 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.AuthRequestDto;
-import com.bavis.budgetapp.service.UserService;
+import com.bavis.budgetapp.dto.request.AuthRequestDto;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
-import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,23 +30,24 @@ public class AuthRequestDuplicateUsernameValidatorTests {
     AuthRequestDto emptyUsernameAuthRequestDto;
 
     AuthRequestDto nullUsernameAuthRequestDto;
+
     @BeforeEach
     void setup() {
-       validAuthRequestDto = AuthRequestDto.builder()
-               .username("Test-User")
-               .name("Test User")
-               .passwordOne("password")
-               .passwordTwo("password")
-               .build();
+        validAuthRequestDto = AuthRequestDto.builder()
+                .username("Test-User")
+                .name("Test User")
+                .passwordOne("password")
+                .passwordTwo("password")
+                .build();
 
-       emptyUsernameAuthRequestDto = AuthRequestDto.builder()
-               .username(null)
-               .name("Test User")
-               .passwordOne("password")
-               .passwordTwo("password")
-               .build();
+        emptyUsernameAuthRequestDto = AuthRequestDto.builder()
+                .username(null)
+                .name("Test User")
+                .passwordOne("password")
+                .passwordTwo("password")
+                .build();
 
-       nullUsernameAuthRequestDto = AuthRequestDto.builder()
+        nullUsernameAuthRequestDto = AuthRequestDto.builder()
                 .username(null)
                 .name("Test User")
                 .passwordOne("password")
@@ -58,51 +57,51 @@ public class AuthRequestDuplicateUsernameValidatorTests {
 
     @Test
     public void testIsValid_ValidUsername_Successful() {
-        //Mock
+        // Mock
         when(userService.existsByUsername(validAuthRequestDto.getUsername())).thenReturn(false);
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
 
-        //Act
+        // Act
         boolean valid = validator.isValid(validAuthRequestDto, context);
 
-        //Assert
+        // Assert
         assertTrue(valid);
     }
 
     @Test
     public void testIsValid_UsernameTaken_Failure() {
-        //Mock
+        // Mock
         when(userService.existsByUsername(validAuthRequestDto.getUsername())).thenReturn(true);
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
 
-        //Act
+        // Act
         boolean valid = validator.isValid(validAuthRequestDto, context);
 
-        //Assert
+        // Assert
         assertFalse(valid);
     }
-
 
     @Test
     public void testIsValid_NullUsername_Failure() {
-        //Mock
+        // Mock
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
 
-        //Act
+        // Act
         boolean valid = validator.isValid(nullUsernameAuthRequestDto, context);
 
-        //Assert
+        // Assert
         assertFalse(valid);
     }
+
     @Test
     public void testIsValid_EmptyUsername_Failure() {
-        //Mock
+        // Mock
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
 
-        //Act
+        // Act
         boolean valid = validator.isValid(emptyUsernameAuthRequestDto, context);
 
-        //Assert
+        // Assert
         assertFalse(valid);
     }
 }

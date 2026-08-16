@@ -9,6 +9,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.YearMonth;
 
 @Data
 @NoArgsConstructor
@@ -20,4 +23,11 @@ import java.io.Serializable;
 public class MonthYear implements Serializable {
     private String month;
     private int year;
+
+    public LocalDate toEndOfMonthDate() {
+        if (month == null || year == 0) return LocalDate.now();
+        Month m = Month.valueOf(month.toUpperCase());
+        YearMonth ym = YearMonth.of(year, m);
+        return ym.atEndOfMonth();
+    }
 }

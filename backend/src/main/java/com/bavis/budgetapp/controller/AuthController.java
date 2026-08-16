@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AuthRequestDto;
-import com.bavis.budgetapp.dto.AuthResponseDto;
+import com.bavis.budgetapp.dto.request.AuthRequestDto;
+import com.bavis.budgetapp.dto.response.AuthResponseDto;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.service.impl.AuthServiceImpl;
 import com.bavis.budgetapp.service.impl.UserServiceImpl;
@@ -12,7 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Kellen Bavis

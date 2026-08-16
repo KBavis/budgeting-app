@@ -1,11 +1,15 @@
 import React, { useContext, useState } from "react";
 import IncomeContext from "../../context/income/incomeContext";
+import CategoryTypeContext from "../../context/category/types/categoryTypeContext";
+import CategoryContext from "../../context/category/categoryContext";
 import AlertContext from "../../context/alert/alertContext";
 import Modal from "../layout/Modal";
 import { FaPlus, FaPencilAlt } from "react-icons/fa";
 
 const EditIncomeModal = ({ onClose }) => {
   const { incomes, addIncome, updateIncome } = useContext(IncomeContext);
+  const { fetchCategoryTypes } = useContext(CategoryTypeContext);
+  const { fetchCategories } = useContext(CategoryContext);
   const { setAlert } = useContext(AlertContext);
 
   const [editingId, setEditingId] = useState(null);
@@ -34,36 +38,40 @@ const EditIncomeModal = ({ onClose }) => {
     setEditDescription(income.description || "");
   };
 
-  const handleSaveEdit = (income) => {
+  const handleSaveEdit = async (income) => {
     const parsedAmount = parseFloat(editAmount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       setAlert("Please enter a valid positive income amount.", "danger");
       return;
     }
-    updateIncome({
+    await updateIncome({
       incomeId: income.incomeId,
       amount: parsedAmount,
       description: editDescription,
       incomeType: income.incomeType,
       incomeSource: income.incomeSource,
     });
+    if (fetchCategoryTypes) fetchCategoryTypes();
+    if (fetchCategories) fetchCategories();
     setEditingId(null);
     setAlert("Income updated successfully!", "success");
   };
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
     const parsedAmount = parseFloat(newAmount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       setAlert("Please enter a valid positive income amount.", "danger");
       return;
     }
-    addIncome({
+    await addIncome({
       amount: parsedAmount,
       incomeSource: newSource,
       incomeType: newType,
       description: newDescription,
     });
+    if (fetchCategoryTypes) fetchCategoryTypes();
+    if (fetchCategories) fetchCategories();
     setNewAmount("");
     setNewDescription("");
     setIsAdding(false);

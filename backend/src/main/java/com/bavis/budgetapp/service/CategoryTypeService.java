@@ -1,11 +1,13 @@
 package com.bavis.budgetapp.service;
 
-import com.bavis.budgetapp.dto.CategoryTypeDto;
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.request.CategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.response.CategoryTypeResponseDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.User;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -15,55 +17,72 @@ import java.util.List;
  */
 public interface CategoryTypeService {
 	/**
-	 * Function to create a Category Type entity
+	 * Function to create a Category Type entity from a DTO and return CategoryTypeResponseDto
 	 *
-	 * @param categoryType
-	 * 			- Category Type to be persisted within our database
+	 * @param categoryTypeDto
+	 * 			- Category Type DTO containing creation attributes
 	 * @return
-	 * 			- Saved Category Type
+	 * 			- Saved CategoryTypeResponseDto
 	 */
-	CategoryType create(CategoryType categoryType);
+	CategoryTypeResponseDto create(CategoryTypeDto categoryTypeDto);
 
 	/**
-	 * Functionality to read all Categories pertaining to the authenticated user
+	 * Functionality to read all CategoryTypes pertaining to authenticated user as of a point-in-time date
 	 *
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
 	 * @return
-	 * 		- all Category entities corresponding to authenticated user
+	 * 		- all CategoryTypes corresponding to authenticated user as of date
 	 */
-	List<CategoryType> readAll();
+	List<CategoryType> findAllEntities(LocalDate asOf);
 
 	/**
-	 * Functionality to read all Categories pertaining to a specific User
+	 * Functionality to read all CategoryTypeResponseDtos pertaining to authenticated user as of a point-in-time date
+	 *
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
+	 * @return
+	 * 		- all CategoryTypeResponseDtos corresponding to authenticated user as of date
+	 */
+	List<CategoryTypeResponseDto> getAll(LocalDate asOf);
+
+	/**
+	 * Functionality to read all CategoryTypes pertaining to a specific User as of a point-in-time date
 	 *
 	 * @param user
 	 * 			- User to fetch all CategoryTypes for
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
 	 * @return
-	 * 		- all Category entities corresponding to authenticated user
+	 * 		- all CategoryTypes corresponding to user as of date
 	 */
-	List<CategoryType> readAll(User user);
-
+	List<CategoryType> findAllEntities(User user, LocalDate asOf);
 
 	/**
-	 * Functionality to retrieve a user's CategoryType corresponding to a particular name
+	 * Functionality to retrieve a user's CategoryType corresponding to a particular name as of date
 	 *
 	 * @param categoryTypeName
 	 * 			- CategoryType name to fetch
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
 	 * @return
 	 * 			- retrieved CategoryType
 	 */
-	CategoryType readByName(String categoryTypeName);
+	CategoryType findEntityByName(String categoryTypeName, LocalDate asOf);
 
 	/**
-	 * Functionality to retrieve a user's CategoryType corresponding to a particular name
+	 * Functionality to retrieve a user's CategoryType corresponding to a particular name as of date
 	 *
 	 * @param categoryTypeName
 	 * 			- CategoryType name to fetch
 	 * @param user
 	 * 			- User to fetch CategoryType by name for
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
 	 * @return
 	 * 			- retrieved CategoryType
 	 */
-	CategoryType readByName(String categoryTypeName, User user);
+	CategoryType findEntityByName(String categoryTypeName, User user, LocalDate asOf);
 
 	/**
 	 * Function to create multiple Category Type entities in a singular request
@@ -71,9 +90,9 @@ public interface CategoryTypeService {
 	 * @param categoryTypeDtos
 	 * 			- List of Category Type DTOs utilized to persist CategoryType entities
 	 * @return
-	 * 			- List of persisted CategoryType entities
+	 * 			- List of persisted CategoryTypeResponseDtos
 	 */
-	List<CategoryType> createMany(List<CategoryTypeDto> categoryTypeDtos);
+	List<CategoryTypeResponseDto> createMany(List<CategoryTypeDto> categoryTypeDtos);
 
 	/**
 	 * Function to update a CategoryType with updated properties
@@ -83,24 +102,38 @@ public interface CategoryTypeService {
 	 * @param id
 	 * 			- ID corresponding to CategoryType to be updated
 	 * @return
-	 * 			- Updated and saved CategoryType entity
+	 * 			- Updated and saved CategoryTypeResponseDto
 	 */
-	CategoryType update(UpdateCategoryTypeDto updateCategoryTypeDto, Long id);
+	CategoryTypeResponseDto update(UpdateCategoryTypeDto updateCategoryTypeDto, Long id);
 
 	/**
-	 * Function to fetch a particular CategoryType from our database
+	 * Function to fetch a particular CategoryType Response DTO as of a point-in-time date
 	 *
 	 * @param categoryTypeId
 	 * 			- ID corresponding to CategoryType to be fetched
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
+	 * @return
+	 * 			- Fetched CategoryTypeResponseDto
+	 */
+	CategoryTypeResponseDto get(Long categoryTypeId, LocalDate asOf);
+
+	/**
+	 * Function to fetch a particular CategoryType as of a point-in-time date
+	 *
+	 * @param categoryTypeId
+	 * 			- ID corresponding to CategoryType to be fetched
+	 * @param asOf
+	 * 			- Point-in-time date (defaults to today if null)
 	 * @return
 	 * 			- Fetched CategoryType entity
 	 */
-	CategoryType read(Long categoryTypeId);
+	CategoryType findEntity(Long categoryTypeId, LocalDate asOf);
 
 	/**
 	 * Function to remove a particular CategoryType from our database
 	 *
- 	 * @param categoryTypeId
+	 * @param categoryTypeId
 	 * 			- ID corresponding to CategoryType to be deleted
 	 */
 	void delete(Long categoryTypeId);
@@ -112,4 +145,14 @@ public interface CategoryTypeService {
 	 * 			- Category to be removed
 	 */
 	void removeCategory(Category category);
+
+	/**
+	 * Recalculates and updates the saved amount for a CategoryType based on current child category allocations.
+	 *
+	 * @param categoryTypeId
+	 * 			- ID corresponding to CategoryType to be updated
+	 * @return
+	 * 			- Updated CategoryTypeResponseDto
+	 */
+	CategoryTypeResponseDto recalculateSavedAmount(Long categoryTypeId);
 }

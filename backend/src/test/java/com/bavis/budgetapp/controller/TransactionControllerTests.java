@@ -1,11 +1,11 @@
 package com.bavis.budgetapp.controller;
 
-import com.bavis.budgetapp.dto.AssignCategoryRequestDto;
-import com.bavis.budgetapp.dto.FetchTransactionsDto;
-import com.bavis.budgetapp.dto.SplitTransactionDto;
-import com.bavis.budgetapp.dto.SyncTransactionsDto;
-import com.bavis.budgetapp.dto.TransactionDto;
-import com.bavis.budgetapp.dto.AccountsDto;
+import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
+import com.bavis.budgetapp.dto.response.FetchTransactionsDto;
+import com.bavis.budgetapp.dto.request.SplitTransactionDto;
+import com.bavis.budgetapp.dto.response.SyncTransactionsDto;
+import com.bavis.budgetapp.dto.request.TransactionDto;
+import com.bavis.budgetapp.dto.request.AccountsDto;
 import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
 import com.bavis.budgetapp.service.impl.CategoryServiceImpl;
@@ -174,8 +174,8 @@ public class TransactionControllerTests {
         //Mock
         when(transactionService.syncTransactions(validTransactionSyncRequest)).thenReturn(syncTransactionsDto);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountService.read(accountOneId)).thenReturn(accountOne);
-        when(accountService.read(accountTwoId)).thenReturn(accountTwo);
+        when(accountService.findEntity(accountOneId, null)).thenReturn(accountOne);
+        when(accountService.findEntity(accountTwoId, null)).thenReturn(accountTwo);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/transactions/sync")
@@ -212,8 +212,8 @@ public class TransactionControllerTests {
         //Verify
         verify(transactionService, times(1)).syncTransactions(validTransactionSyncRequest);
         verify(userService, times(2)).getCurrentAuthUser();
-        verify(accountService, times(1)).read(accountOneId);
-        verify(accountService, times(1)).read(accountTwoId);
+        verify(accountService, times(1)).findEntity(accountOneId, null);
+        verify(accountService, times(1)).findEntity(accountTwoId, null);
     }
 
     @Test
@@ -228,7 +228,7 @@ public class TransactionControllerTests {
                 .build();
 
         //Mock
-        when(transactionService.readAll()).thenReturn(fetchDto);
+        when(transactionService.getAll(null)).thenReturn(fetchDto);
 
         //Act
         ResultActions resultActions = mockMvc.perform(get("/transactions"));
@@ -261,7 +261,7 @@ public class TransactionControllerTests {
                 .build();
 
         //Mock
-        when(transactionService.readAll()).thenReturn(fetchDto);
+        when(transactionService.getAll(null)).thenReturn(fetchDto);
 
         //Act
         ResultActions resultActions = mockMvc.perform(get("/transactions"));
@@ -282,7 +282,7 @@ public class TransactionControllerTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountService.read(invalidAccountIdOne)).thenThrow(new RuntimeException("Unable to locate Account with ID " + invalidAccountIdOne));
+        when(accountService.findEntity(invalidAccountIdOne, null)).thenThrow(new RuntimeException("Unable to locate Account with ID " + invalidAccountIdOne));
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/transactions/sync")
@@ -295,7 +295,7 @@ public class TransactionControllerTests {
                 .andExpect(jsonPath("$.error").value("The provided list of Account ID's contains at least one invalid entry"));
 
         //Verify
-        verify(accountService, times(1)).read(invalidAccountIdOne);
+        verify(accountService, times(1)).findEntity(invalidAccountIdOne, null);
     }
 
     @Test
@@ -312,7 +312,7 @@ public class TransactionControllerTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(accountService.read(invalidAccountIdOne)).thenReturn(accountWithNonAuthUser);
+        when(accountService.findEntity(invalidAccountIdOne, null)).thenReturn(accountWithNonAuthUser);
 
         //Act
         ResultActions resultActions = mockMvc.perform(post("/transactions/sync")
@@ -325,26 +325,15 @@ public class TransactionControllerTests {
                 .andExpect(jsonPath("$.error").value("The provided list of Account ID's contains at least one invalid entry"));
 
         //Verify
-        verify(accountService, times(1)).read(invalidAccountIdOne);
+        verify(accountService, times(1)).findEntity(invalidAccountIdOne, null);
         verify(userService, times(1)).getCurrentAuthUser();
     }
 
     @Test
     void testAssignCategory_ValidRequest_Success() throws Exception {
         //Arrange
-        CategoryType categoryType = CategoryType.builder()
-                .categoryTypeId(10L)
-                .categories(new ArrayList<>())
-                .budgetAmount(1000.0)
-                .budgetAllocationPercentage(.5)
-                .build();
-
         Category category = Category.builder()
-                .categoryType(categoryType)
                 .user(authUser)
-                .name("Category")
-                .budgetAllocationPercentage(.5)
-                .budgetAmount(1000.0)
                 .categoryId(10L)
                 .build();
 
@@ -358,8 +347,8 @@ public class TransactionControllerTests {
         //Mock
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(categoryService.read(Long.parseLong(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
-        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
+        when(categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
+        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act
         ResultActions resultActions = mockMvc.perform(put("/transactions/category")
@@ -374,13 +363,7 @@ public class TransactionControllerTests {
                 .andExpect(jsonPath("$.amount").value(transactionOne.getAmount()))
                 .andExpect(jsonPath("$.name").value(transactionOne.getName()))
                 .andExpect(jsonPath("$.logoUrl").value(transactionOne.getLogoUrl()))
-                .andExpect(jsonPath("$.category.name").value(category.getName()))
-                .andExpect(jsonPath("$.category.budgetAllocationPercentage").value(category.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$.category.budgetAmount").value(category.getBudgetAmount()))
-                .andExpect(jsonPath("$.category.categoryType.name").value(categoryType.getName()))
-                .andExpect(jsonPath("$.category.categoryType.budgetAllocationPercentage").value(categoryType.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$.category.categoryType.budgetAmount").value(categoryType.getBudgetAmount()))
-                .andExpect(jsonPath("$.category.categoryType.categoryTypeId").value(categoryType.getCategoryTypeId()));
+                .andExpect(jsonPath("$.category.categoryId").value(category.getCategoryId()));
     }
 
     @Test
@@ -391,19 +374,8 @@ public class TransactionControllerTests {
                 .username("username")
                 .build();
 
-        CategoryType categoryType = CategoryType.builder()
-                .categoryTypeId(10L)
-                .categories(new ArrayList<>())
-                .budgetAmount(1000.0)
-                .budgetAllocationPercentage(.5)
-                .build();
-
         Category category = Category.builder()
-                .categoryType(categoryType)
                 .user(unAuthUser)
-                .name("Category")
-                .budgetAllocationPercentage(.5)
-                .budgetAmount(1000.0)
                 .categoryId(10L)
                 .build();
 
@@ -417,8 +389,8 @@ public class TransactionControllerTests {
         //Mock
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
-        when(categoryService.read(Long.parseLong(assignCategoryRequestDto.getCategoryId()))).thenReturn(category);
-        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
+        when(categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
+        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act
         ResultActions resultActions = mockMvc.perform(put("/transactions/category")

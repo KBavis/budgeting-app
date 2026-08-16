@@ -146,4 +146,39 @@ public class GeneralUtil {
         return input != null ? input.toLowerCase() : "";
     }
 
+    /**
+     * Determines if a valid time range (startDate to endDate) is active as of a target date.
+     * Active condition: targetDate >= startDate && targetDate <= endDate
+     *
+     * @param startDate
+     *          - Start date of temporal record
+     * @param endDate
+     *          - End date of temporal record
+     * @param targetDate
+     *          - Point-in-time evaluation date (defaults to today if null)
+     * @return
+     *          - true if targetDate is between startDate and endDate inclusive
+     */
+    public static boolean isActive(LocalDate startDate, LocalDate endDate, LocalDate targetDate) {
+        if (startDate == null || endDate == null) {
+            return false;
+        }
+        LocalDate target = (targetDate != null) ? targetDate : LocalDate.now();
+        return !target.isBefore(startDate) && !target.isAfter(endDate);
+    }
+
+    /**
+     * Determines if a valid time range (startDate to endDate) is active as of today.
+     *
+     * @param startDate
+     *          - Start date of temporal record
+     * @param endDate
+     *          - End date of temporal record
+     * @return
+     *          - true if today is between startDate and endDate inclusive
+     */
+    public static boolean isActive(LocalDate startDate, LocalDate endDate) {
+        return isActive(startDate, endDate, LocalDate.now());
+    }
+
 }

@@ -1,6 +1,6 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.dto.UpdateCategoryTypeDto;
+import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ public class UpdateCategoryTypePercentAllocationValidatorTests {
     @BeforeEach
     void setup() {
         invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .budgetAllocationPercentage(0)
+                .budgetAllocationPercentage(-0.1)
                 .build();
 
         validUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
@@ -43,8 +43,9 @@ public class UpdateCategoryTypePercentAllocationValidatorTests {
     }
 
     @Test
-    void testValidate_InvalidUpdateCategoryTypeDto_ZeroPercentage_Failure() {
-        assertFalse(validator.isValid(invalidUpdateCategoryTypeDto, context));
+    void testValidate_ValidUpdateCategoryTypeDto_ZeroPercentage_Success() {
+        validUpdateCategoryTypeDto.setBudgetAllocationPercentage(0.0);
+        assertTrue(validator.isValid(validUpdateCategoryTypeDto, context));
     }
 
     @Test
@@ -55,7 +56,7 @@ public class UpdateCategoryTypePercentAllocationValidatorTests {
 
     @Test
     void testValidate_InvalidUpdateCategoryTypeDto_Over100Percent_Failure() {
-        invalidUpdateCategoryTypeDto.setBudgetAllocationPercentage(1);
+        invalidUpdateCategoryTypeDto.setBudgetAllocationPercentage(1.01);
         assertFalse(validator.isValid(invalidUpdateCategoryTypeDto, context));
     }
 }

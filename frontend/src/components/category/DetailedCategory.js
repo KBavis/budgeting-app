@@ -7,7 +7,7 @@ import AlertContext from "../../context/alert/alertContext";
 import ConfirmationModal from "../layout/ConfirmationModal";
 import { ThemeContext } from "../../context/theme/ThemeContext";
 import { getBudgetStatus } from "../../utils/budgetColors";
-import { FaTrashAlt, FaPen, FaSlidersH, FaSearch, FaTimes } from "react-icons/fa";
+import { FaTrashAlt, FaPen, FaSlidersH, FaSearch, FaTimes, FaCheck } from "react-icons/fa";
 
 const DetailedCategory = ({
    category,
@@ -41,12 +41,42 @@ const DetailedCategory = ({
 
    // Global State
    const { transactions, removeCategory } = useContext(transactionContext);
-   const { deleteCategory } = useContext(categoryContext);
-   const { fetchCategoryType } = useContext(categoryTypeContext);
+   const { deleteCategory, renameCategory } = useContext(categoryContext);
+   const { fetchCategoryType, categoryTypes } = useContext(categoryTypeContext);
    const { setAlert } = useContext(AlertContext);
    const { theme } = useContext(ThemeContext);
 
    const isDark = theme === "dark";
+
+   // Local State for Seamless Inline Renaming
+   const [isEditingName, setIsEditingName] = useState(false);
+   const [editName, setEditName] = useState(category?.name || "");
+
+   useEffect(() => {
+      setEditName(category?.name || "");
+   }, [category?.name]);
+
+   const handleConfirmRename = async () => {
+      if (!editName || editName.trim() === "") {
+         setAlert("Please enter a valid category name", "danger");
+         setEditName(category.name);
+         setIsEditingName(false);
+         return;
+      }
+
+      if (editName.trim() !== category.name) {
+         await renameCategory({
+            categoryName: editName.trim(),
+            categoryId: category.categoryId,
+         });
+      }
+      setIsEditingName(false);
+   };
+
+   const handleCancelRename = () => {
+      setEditName(category.name);
+      setIsEditingName(false);
+   };
 
    useEffect(() => {
       if (transactions) {
@@ -73,16 +103,15 @@ const DetailedCategory = ({
       setShowConfirmDelete(false);
       removeCategory(category.categoryId);
       await deleteCategory(category.categoryId);
-      await fetchCategoryType(category.categoryType.categoryTypeId);
+      if (category.categoryTypeId) {
+         await fetchCategoryType(category.categoryTypeId);
+      }
       setAlert("Category deleted successfully", "success");
    };
 
-   const handleRenameCategory = () => {
-      handleShowRenameCategoryModal(category);
-   };
-
    const handleUpdateAllocations = () => {
-      handleShowUpdateAllocationsModal(category.categoryType);
+      const ct = (categoryTypes || []).find((t) => t.categoryTypeId === category.categoryTypeId);
+      handleShowUpdateAllocationsModal(ct);
    };
 
    const activeFilterCount = [
@@ -157,16 +186,57 @@ const DetailedCategory = ({
 
          {/* Category Header: Click-to-Edit Name */}
          <div className="flex flex-col items-center justify-center mb-4">
-            <h3
-               onClick={handleRenameCategory}
-               className={`text-2xl md:text-3xl font-extrabold flex items-center gap-2 cursor-pointer transition-colors group ${
-                  isDark ? "text-white hover:text-indigo-400" : "text-slate-900 hover:text-indigo-600"
-               }`}
-               title="Click to rename category"
-            >
-               {category.name}
-               <FaPen size={12} className="opacity-0 group-hover:opacity-100 text-indigo-500 transition-opacity" />
-            </h3>
+            {isEditingName ? (
+               <div className="flex items-center gap-2 max-w-md w-full justify-center">
+                  <input
+                     type="text"
+                     value={editName}
+                     onChange={(e) => setEditName(e.target.value)}
+                     placeholder={category.name}
+                     autoFocus
+                     onKeyDown={(e) => {
+                        if (e.key === "Enter") handleConfirmRename();
+                        if (e.key === "Escape") handleCancelRename();
+                     }}
+                     className={`w-full max-w-xs px-3 py-1 text-xl font-extrabold rounded-xl border text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${
+                        isDark
+                           ? "bg-slate-900 border-indigo-500 text-white placeholder-slate-500"
+                           : "bg-white border-indigo-500 text-slate-900 placeholder-slate-400 shadow-sm"
+                     }`}
+                  />
+                  <button
+                     type="button"
+                     onClick={handleConfirmRename}
+                     className="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-md flex-shrink-0"
+                     title="Confirm rename"
+                  >
+                     <FaCheck size={14} />
+                  </button>
+                  <button
+                     type="button"
+                     onClick={handleCancelRename}
+                     className={`p-2 rounded-xl transition-all flex-shrink-0 ${
+                        isDark
+                           ? "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
+                           : "bg-slate-200 hover:bg-slate-300 text-slate-700 border border-slate-300"
+                     }`}
+                     title="Cancel"
+                  >
+                     <FaTimes size={14} />
+                  </button>
+               </div>
+            ) : (
+               <h3
+                  onClick={() => setIsEditingName(true)}
+                  className={`text-2xl md:text-3xl font-extrabold flex items-center gap-2 cursor-pointer transition-colors group ${
+                     isDark ? "text-white hover:text-indigo-400" : "text-slate-900 hover:text-indigo-600"
+                  }`}
+                  title="Click to rename category inline"
+               >
+                  {category.name}
+                  <FaPen size={12} className="opacity-0 group-hover:opacity-100 text-indigo-500 transition-opacity" />
+               </h3>
+            )}
          </div>
 
          {/* Spent & Clickable Allocation Target Pill */}

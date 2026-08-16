@@ -7,6 +7,8 @@ import {
    CLEAR_ERRORS,
    SET_LOADING, REMOVE_ACCOUNT_SUCCESS, REMOVE_ACCOUNT_FAILURE,
    UPDATE_ACCOUNT_BALANCE,
+   UPDATE_ACCOUNT_SUCCESS,
+   UPDATE_ACCOUNT_FAILURE,
 } from "./types";
 
 /**
@@ -54,10 +56,22 @@ export default (state, action) => {
          };
       case ACCOUNT_FAILED_CREATED:
       case REMOVE_ACCOUNT_FAILURE:
+      case UPDATE_ACCOUNT_FAILURE:
          return {
             ...state,
             loading: false,
             error: action.payload,
+         };
+      case UPDATE_ACCOUNT_SUCCESS:
+         return {
+            ...state,
+            accounts: state.accounts
+               ? state.accounts.map((account) =>
+                    account.accountId === action.payload.accountId ? action.payload : account
+                 )
+               : [action.payload],
+            loading: false,
+            error: null,
          };
       case ACCOUNTS_FETCH_FAILED:
       case ACCOUNT_FAILED_DELETED:

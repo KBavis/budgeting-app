@@ -1,11 +1,9 @@
 package com.bavis.budgetapp.validator;
 
-import com.bavis.budgetapp.annotation.CategoryDtoValidBudgetAmount;
 import com.bavis.budgetapp.annotation.CategoryDtoValidName;
-import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.request.CategoryDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
 /**

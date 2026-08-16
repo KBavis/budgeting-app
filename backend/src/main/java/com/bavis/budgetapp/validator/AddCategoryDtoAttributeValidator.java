@@ -1,7 +1,7 @@
 package com.bavis.budgetapp.validator;
 
 import com.bavis.budgetapp.annotation.AddCategoryDtoValidAttributes;
-import com.bavis.budgetapp.dto.AddCategoryDto;
+import com.bavis.budgetapp.dto.request.AddCategoryDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
