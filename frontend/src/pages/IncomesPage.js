@@ -154,14 +154,14 @@ const IncomesPage = () => {
                               : "bg-white border-slate-200 hover:bg-slate-50 shadow-sm"
                         }`}
                      >
-                        {/* Action buttons (Edit & Delete) - Positioned Top Right */}
-                        <div className="absolute top-3 right-3 flex items-center gap-1 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition duration-200">
+                        {/* Action buttons (Edit & Delete) - Positioned Top Right & Always Visible */}
+                        <div className="absolute top-3.5 right-3.5 flex items-center gap-1 z-10 opacity-100">
                            <button
                               type="button"
                               onClick={() => handleOpenEdit(inc)}
                               className={`p-1.5 rounded-lg transition duration-200 ${
                                  isDark
-                                    ? "text-slate-400 hover:text-indigo-300 bg-slate-700/80 hover:bg-indigo-500/20"
+                                    ? "text-slate-400 hover:text-indigo-300 bg-slate-700/60 hover:bg-indigo-500/20"
                                     : "text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50"
                               }`}
                               title="Edit Income"
@@ -173,7 +173,7 @@ const IncomesPage = () => {
                               onClick={() => { setIncomeToDelete(inc); setShowConfirmModal(true); }}
                               className={`p-1.5 rounded-lg transition duration-200 ${
                                  isDark
-                                    ? "text-slate-400 hover:text-red-400 bg-slate-700/80 hover:bg-red-500/20"
+                                    ? "text-slate-400 hover:text-red-400 bg-slate-700/60 hover:bg-red-500/20"
                                     : "text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50"
                               }`}
                               title="Delete Income"
@@ -182,10 +182,10 @@ const IncomesPage = () => {
                            </button>
                         </div>
 
-                        {/* Main content container */}
-                        <div className="flex items-start gap-3">
+                        {/* Main content container (pr-16/pr-20 clears always-visible top-right action icons) */}
+                        <div className="flex items-center gap-3 pr-16 sm:pr-20">
                            {/* Wallet Icon */}
-                           <div className={`flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mt-0.5 border ${
+                           <div className={`flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border ${
                               isDark
                                  ? "bg-brand-500/10 border-brand-500/20 text-brand-400"
                                  : "bg-brand-50 border-brand-100 text-brand-600"
@@ -194,36 +194,34 @@ const IncomesPage = () => {
                            </div>
 
                            {/* Income Info & Amount Container */}
-                           <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
-                              {/* Top Row: Description (pr-14/16 clears top-right Edit/Delete buttons) */}
-                              <div className="pr-14 sm:pr-16">
+                           <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                              {/* Top Row: Description (left) & Income Amount (right, aligned on top row!) */}
+                              <div className="flex items-center justify-between gap-2 min-w-0">
                                  <h3 className={`text-sm sm:text-base font-bold truncate ${
                                     isDark ? "text-slate-100" : "text-slate-900"
                                  }`} title={inc.description || inc.incomeSource}>
                                     {inc.description || inc.incomeSource || `Income Source ${index + 1}`}
                                  </h3>
-                              </div>
-
-                              {/* Subtitle Row: Type Badge & Source (left) & Income Amount (right, under Edit/Trash icons) */}
-                              <div className="flex items-center justify-between gap-2 min-w-0">
-                                 <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
-                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
-                                       isDark ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30" : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                    }`}>
-                                       {inc.incomeType || "Income"}
-                                    </span>
-                                    {inc.incomeSource && (
-                                       <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
-                                          {inc.incomeSource}
-                                       </span>
-                                    )}
-                                 </div>
 
                                  <div className="flex-shrink-0 text-right whitespace-nowrap">
                                     <span className={`text-sm sm:text-base font-black tracking-tight ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
                                        +${parseFloat(inc.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                  </div>
+                              </div>
+
+                              {/* Subtitle Row: Type Badge & Source */}
+                              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                                 <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
+                                    isDark ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                 }`}>
+                                    {inc.incomeType || "Income"}
+                                 </span>
+                                 {inc.incomeSource && (
+                                    <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
+                                       {inc.incomeSource}
+                                    </span>
+                                 )}
                               </div>
                            </div>
                         </div>

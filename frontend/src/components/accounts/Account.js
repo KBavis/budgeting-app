@@ -56,12 +56,12 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                 ? "bg-slate-800/80 border-slate-600/50 hover:bg-slate-700/80"
                 : "bg-white border-slate-200 hover:bg-slate-50 shadow-sm"
         }`}>
-            {/* Action buttons (Edit & Delete) - Positioned Top Right */}
-            <div className="absolute top-3 right-3 flex items-center gap-1 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition duration-200">
+            {/* Action buttons (Edit & Delete) - Positioned Top Right & Always Visible */}
+            <div className="absolute top-3.5 right-3.5 flex items-center gap-1 z-10 opacity-100">
                 {handleOpenEditModal && (
                     <button
                         className={`p-1.5 rounded-lg transition duration-200 ${
-                            isDark ? "text-slate-400 hover:text-indigo-300 bg-slate-700/80 hover:bg-indigo-500/20" : "text-slate-400 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50"
+                            isDark ? "text-slate-400 hover:text-indigo-300 bg-slate-700/60 hover:bg-indigo-500/20" : "text-slate-400 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50"
                         }`}
                         onClick={() => handleOpenEditModal(account)}
                         title="Edit Account"
@@ -71,7 +71,7 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                 )}
                 <button
                     className={`p-1.5 rounded-lg transition duration-200 ${
-                        isDark ? "text-slate-400 hover:text-red-400 bg-slate-700/80 hover:bg-red-500/20" : "text-slate-400 hover:text-red-600 bg-slate-100 hover:bg-red-50"
+                        isDark ? "text-slate-400 hover:text-red-400 bg-slate-700/60 hover:bg-red-500/20" : "text-slate-400 hover:text-red-600 bg-slate-100 hover:bg-red-50"
                     }`}
                     onClick={() => handleShowConfirmationModal(account)}
                     title="Remove Account"
@@ -80,10 +80,10 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                 </button>
             </div>
 
-            {/* Main content container */}
-            <div className="flex items-start gap-3">
+            {/* Main content container (pr-16/pr-20 clears always-visible top-right action icons) */}
+            <div className="flex items-center gap-3 pr-16 sm:pr-20">
                 {/* Institution Icon */}
-                <div className={`flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mt-0.5 ${
+                <div className={`flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center ${
                     isLiability
                         ? (isDark ? "bg-rose-500/20 border border-rose-400/20" : "bg-rose-50 border border-rose-100")
                         : (isDark ? "bg-indigo-500/20 border border-indigo-400/20" : "bg-indigo-50 border border-indigo-100")
@@ -96,31 +96,14 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                 </div>
 
                 {/* Account Details & Balance Area */}
-                <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
-                    {/* Top Row: Account Name (pr-14/16 clears top-right Edit/Delete icons) */}
-                    <div className="pr-14 sm:pr-16">
+                <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                    {/* Top Row: Account Name (left) & Balance Amount (right, aligned on top row!) */}
+                    <div className="flex items-center justify-between gap-2 min-w-0">
                         <h3 className={`text-sm sm:text-base font-bold truncate ${
                             isDark ? "text-white" : "text-slate-900"
                         }`} title={account.accountName}>
                             {account.accountName}
                         </h3>
-                    </div>
-
-                    {/* Subtitle Row: Badge + Institution details (left) & Balance Amount (right, under Edit/Trash icons) */}
-                    <div className="flex items-center justify-between gap-2 min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
-                                {badgeDef.label}
-                            </span>
-                            <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
-                                {account.institutionName || 'Financial Institution'} {account.mask ? `•••${account.mask}` : ''}
-                            </span>
-                            {isLiability && (
-                                <span className={`text-[10px] font-extrabold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
-                                    Owed
-                                </span>
-                            )}
-                        </div>
 
                         <div className="flex-shrink-0 text-right whitespace-nowrap">
                             <span className={`text-sm sm:text-base font-black tracking-tight ${
@@ -133,6 +116,21 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                                 {isLiability ? '-' : (isNegative ? '-' : '')}${Math.abs(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                         </div>
+                    </div>
+
+                    {/* Subtitle Row: Badge + Institution details */}
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
+                            {badgeDef.label}
+                        </span>
+                        <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
+                            {account.institutionName || 'Financial Institution'} {account.mask ? `•••${account.mask}` : ''}
+                        </span>
+                        {isLiability && (
+                            <span className={`ml-auto text-[10px] font-extrabold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
+                                Owed
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
