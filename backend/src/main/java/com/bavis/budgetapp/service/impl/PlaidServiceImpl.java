@@ -99,8 +99,8 @@ public class PlaidServiceImpl implements PlaidService{
         //Build Request
         AccountRemovalRequestDto accountRemovalRequestDto = AccountRemovalRequestDto.builder()
                 .secret(_plaidConfig.getSecretKey())
-                .client_id(_plaidConfig.getClientId())
-                .access_token(accessToken)
+                .clientId(_plaidConfig.getClientId())
+                .accessToken(accessToken)
                 .build();
 
 

@@ -3,7 +3,6 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.request.CategoryTypeDto;
 import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.dto.response.CategoryTypeResponseDto;
-import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.service.CategoryTypeService;
 import com.bavis.budgetapp.validator.group.UpdateCategoryTypeDtoValidationGroup;
 import lombok.extern.log4j.Log4j2;
@@ -50,10 +49,10 @@ public class CategoryTypeController {
 	 * 			- Created CategoryTypeResponseDto
 	 */
 	@PostMapping
-	public CategoryTypeResponseDto createCategoryType(@RequestBody CategoryType categoryType) {
-		log.info("Received Category Type creation request for [{}]", categoryType);
+	public CategoryTypeResponseDto createCategoryType(@RequestBody CategoryTypeDto categoryTypeDto) {
+		log.info("Received Category Type creation request for [{}]", categoryTypeDto);
 		try {
-			return _categoryTypeService.create(categoryType);
+			return _categoryTypeService.create(categoryTypeDto);
 		} catch (Exception e) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access - unable to create category type");
 		}
