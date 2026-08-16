@@ -31,11 +31,11 @@ public class UpdateCategoryTypeAmountAllocationValidatorTests {
     @BeforeEach
     void setup() {
         invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(0)
+                .amountAllocated(0.0)
                 .build();
 
         validUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100)
+                .amountAllocated(100.0)
                 .build();
     }
 

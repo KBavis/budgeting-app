@@ -1,7 +1,9 @@
 package com.bavis.budgetapp.mapper;
 
-import com.bavis.budgetapp.dto.CategoryDto;
+import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.entity.Category;
+import com.bavis.budgetapp.entity.CategoryType;
+import com.bavis.budgetapp.entity.CategoryVt;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
@@ -12,7 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 @ContextConfiguration(classes = {CategoryMapperImpl.class})
 @ExtendWith(SpringExtension.class)
@@ -22,25 +24,32 @@ public class CategoryMapperTests {
     @Autowired
     private CategoryMapper categoryMapper;
 
-
     @Test
-    public void testToEntity_Successful() {
+    public void testToResponseDto_Successful() {
         //Arrange
-        CategoryDto categoryDto= CategoryDto.builder()
+        CategoryType categoryType = CategoryType.builder()
                 .categoryTypeId(10L)
+                .build();
+        Category category = Category.builder()
+                .categoryId(1L)
+                .build();
+        CategoryVt categoryVt = CategoryVt.builder()
+                .category(category)
+                .categoryType(categoryType)
                 .name("Restaurants")
                 .budgetAmount(1000.0)
                 .budgetAllocationPercentage(.60)
                 .build();
-        Category target = new Category();
 
         //Act
-        target = categoryMapper.toEntity(categoryDto);
+        CategoryResponseDto responseDto = categoryMapper.toResponseDto(category, categoryVt);
 
         //Assert
-        assertEquals(categoryDto.getName(), target.getName());
-        assertEquals(categoryDto.getBudgetAmount(), target.getBudgetAmount(), .001);
-        assertEquals(categoryDto.getBudgetAllocationPercentage(), target.getBudgetAllocationPercentage(), .001);
-        assertNull(target.getCategoryType()); //validate that category type was not mapped
+        assertNotNull(responseDto);
+        assertEquals(category.getCategoryId(), responseDto.getCategoryId());
+        assertEquals(categoryVt.getName(), responseDto.getName());
+        assertEquals(categoryVt.getBudgetAmount(), responseDto.getBudgetAmount(), .001);
+        assertEquals(categoryVt.getBudgetAllocationPercentage(), responseDto.getBudgetAllocationPercentage(), .001);
+        assertEquals(Long.valueOf(10L), responseDto.getCategoryTypeId());
     }
 }

@@ -33,7 +33,7 @@ public class UpdateCategoryTypeSavedAmountValidatorTests {
                 .build();
 
         validUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(0)
+                .amountAllocated(0.0)
                 .build();
     }
 

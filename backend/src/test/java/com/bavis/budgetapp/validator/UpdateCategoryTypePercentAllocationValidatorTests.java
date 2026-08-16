@@ -29,7 +29,7 @@ public class UpdateCategoryTypePercentAllocationValidatorTests {
     @BeforeEach
     void setup() {
         invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .budgetAllocationPercentage(0)
+                .budgetAllocationPercentage(0.0)
                 .build();
 
         validUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
@@ -55,7 +55,7 @@ public class UpdateCategoryTypePercentAllocationValidatorTests {
 
     @Test
     void testValidate_InvalidUpdateCategoryTypeDto_Over100Percent_Failure() {
-        invalidUpdateCategoryTypeDto.setBudgetAllocationPercentage(1);
+        invalidUpdateCategoryTypeDto.setBudgetAllocationPercentage(1.01);
         assertFalse(validator.isValid(invalidUpdateCategoryTypeDto, context));
     }
 }

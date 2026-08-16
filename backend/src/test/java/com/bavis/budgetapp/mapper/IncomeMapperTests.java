@@ -1,9 +1,10 @@
 package com.bavis.budgetapp.mapper;
 
-import com.bavis.budgetapp.dto.request.IncomeDto;
 import com.bavis.budgetapp.constants.IncomeSource;
 import com.bavis.budgetapp.constants.IncomeType;
+import com.bavis.budgetapp.dto.response.IncomeResponseDto;
 import com.bavis.budgetapp.entity.Income;
+import com.bavis.budgetapp.entity.IncomeVt;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @ContextConfiguration(classes = {IncomeMapperImpl.class})
 @ExtendWith(SpringExtension.class)
@@ -25,23 +28,28 @@ public class IncomeMapperTests {
     private IncomeMapper incomeMapper;
 
     @Test
-    public void testToIncome_Successful() {
+    public void testToResponseDto_Successful() {
         //Arrange
-        IncomeDto incomeDto = IncomeDto.builder()
+        Income income = Income.builder()
+                .incomeId(1L)
+                .build();
+        IncomeVt incomeVt = IncomeVt.builder()
+                .income(income)
                 .incomeSource(IncomeSource.EMPLOYER)
                 .incomeType(IncomeType.CAPITAL_GAINS)
                 .amount(1000.0)
                 .description("Income Description")
                 .build();
-        Income income = new Income();
 
         //Act
-        income = incomeMapper.toIncome(incomeDto);
+        IncomeResponseDto responseDto = incomeMapper.toResponseDto(income, incomeVt);
 
         //Assert
-        Assertions.assertEquals(incomeDto.getAmount(), income.getAmount(), .001);
-        assertEquals(incomeDto.getIncomeSource(), income.getIncomeSource());
-        assertEquals(incomeDto.getIncomeType(), income.getIncomeType());
-        assertEquals(incomeDto.getDescription(), income.getDescription());
+        assertNotNull(responseDto);
+        assertEquals(income.getIncomeId(), responseDto.getIncomeId());
+        Assertions.assertEquals(incomeVt.getAmount(), responseDto.getAmount(), .001);
+        assertEquals(incomeVt.getIncomeSource(), responseDto.getIncomeSource());
+        assertEquals(incomeVt.getIncomeType(), responseDto.getIncomeType());
+        assertEquals(incomeVt.getDescription(), responseDto.getDescription());
     }
 }

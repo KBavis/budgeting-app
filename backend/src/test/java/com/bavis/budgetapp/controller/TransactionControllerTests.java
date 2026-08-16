@@ -228,7 +228,7 @@ public class TransactionControllerTests {
                 .build();
 
         //Mock
-        when(transactionService.readAll()).thenReturn(fetchDto);
+        when(transactionService.getAll(null)).thenReturn(fetchDto);
 
         //Act
         ResultActions resultActions = mockMvc.perform(get("/transactions"));
@@ -261,7 +261,7 @@ public class TransactionControllerTests {
                 .build();
 
         //Mock
-        when(transactionService.readAll()).thenReturn(fetchDto);
+        when(transactionService.getAll(null)).thenReturn(fetchDto);
 
         //Act
         ResultActions resultActions = mockMvc.perform(get("/transactions"));
@@ -332,19 +332,8 @@ public class TransactionControllerTests {
     @Test
     void testAssignCategory_ValidRequest_Success() throws Exception {
         //Arrange
-        CategoryType categoryType = CategoryType.builder()
-                .categoryTypeId(10L)
-                .categories(new ArrayList<>())
-                .budgetAmount(1000.0)
-                .budgetAllocationPercentage(.5)
-                .build();
-
         Category category = Category.builder()
-                .categoryType(categoryType)
                 .user(authUser)
-                .name("Category")
-                .budgetAllocationPercentage(.5)
-                .budgetAmount(1000.0)
                 .categoryId(10L)
                 .build();
 
@@ -359,7 +348,7 @@ public class TransactionControllerTests {
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
         when(categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
-        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
+        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act
         ResultActions resultActions = mockMvc.perform(put("/transactions/category")
@@ -374,13 +363,7 @@ public class TransactionControllerTests {
                 .andExpect(jsonPath("$.amount").value(transactionOne.getAmount()))
                 .andExpect(jsonPath("$.name").value(transactionOne.getName()))
                 .andExpect(jsonPath("$.logoUrl").value(transactionOne.getLogoUrl()))
-                .andExpect(jsonPath("$.category.name").value(category.getName()))
-                .andExpect(jsonPath("$.category.budgetAllocationPercentage").value(category.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$.category.budgetAmount").value(category.getBudgetAmount()))
-                .andExpect(jsonPath("$.category.categoryType.name").value(categoryType.getName()))
-                .andExpect(jsonPath("$.category.categoryType.budgetAllocationPercentage").value(categoryType.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$.category.categoryType.budgetAmount").value(categoryType.getBudgetAmount()))
-                .andExpect(jsonPath("$.category.categoryType.categoryTypeId").value(categoryType.getCategoryTypeId()));
+                .andExpect(jsonPath("$.category.categoryId").value(category.getCategoryId()));
     }
 
     @Test
@@ -391,19 +374,8 @@ public class TransactionControllerTests {
                 .username("username")
                 .build();
 
-        CategoryType categoryType = CategoryType.builder()
-                .categoryTypeId(10L)
-                .categories(new ArrayList<>())
-                .budgetAmount(1000.0)
-                .budgetAllocationPercentage(.5)
-                .build();
-
         Category category = Category.builder()
-                .categoryType(categoryType)
                 .user(unAuthUser)
-                .name("Category")
-                .budgetAllocationPercentage(.5)
-                .budgetAmount(1000.0)
                 .categoryId(10L)
                 .build();
 
@@ -418,7 +390,7 @@ public class TransactionControllerTests {
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
         when(categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
-        when(transactionService.readById(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
+        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act
         ResultActions resultActions = mockMvc.perform(put("/transactions/category")

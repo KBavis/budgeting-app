@@ -204,16 +204,16 @@ public class CategoryTypeControllerTests {
         // Arrange
         Long categoryTypeId = 10L;
         UpdateCategoryTypeDto updateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100)
+                .amountAllocated(100.0)
                 .budgetAllocationPercentage(.5)
-                .savedAmount(15)
+                .savedAmount(15.0)
                 .build();
 
         CategoryTypeResponseDto expectedResponseDto = CategoryTypeResponseDto.builder()
                 .categoryTypeId(categoryTypeId)
-                .savedAmount(15)
+                .savedAmount(15.0)
                 .budgetAllocationPercentage(.5)
-                .budgetAmount(100)
+                .budgetAmount(100.0)
                 .build();
 
         // Mock
@@ -242,9 +242,9 @@ public class CategoryTypeControllerTests {
         // Arrange
         Long invalidCategoryTypeId = 10L;
         UpdateCategoryTypeDto updateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100)
+                .amountAllocated(100.0)
                 .budgetAllocationPercentage(.5)
-                .savedAmount(15)
+                .savedAmount(15.0)
                 .build();
 
         // Mock
@@ -266,9 +266,9 @@ public class CategoryTypeControllerTests {
         // Arrange
         Long categoryTypeId = 10L;
         UpdateCategoryTypeDto invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100)
-                .budgetAllocationPercentage(0)
-                .savedAmount(15)
+                .amountAllocated(100.0)
+                .budgetAllocationPercentage(0.0)
+                .savedAmount(15.0)
                 .build();
 
         // Act & Assert
@@ -284,9 +284,9 @@ public class CategoryTypeControllerTests {
         // Arrange
         Long categoryTypeId = 10L;
         UpdateCategoryTypeDto invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100)
+                .amountAllocated(100.0)
                 .budgetAllocationPercentage(.5)
-                .savedAmount(-1)
+                .savedAmount(-1.0)
                 .build();
 
         // Act & Assert
@@ -302,9 +302,9 @@ public class CategoryTypeControllerTests {
         // Arrange
         Long categoryTypeId = 10L;
         UpdateCategoryTypeDto invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(-1)
+                .amountAllocated(-1.0)
                 .budgetAllocationPercentage(.5)
-                .savedAmount(0)
+                .savedAmount(0.0)
                 .build();
 
         // Act & Assert
