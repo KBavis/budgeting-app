@@ -31,7 +31,7 @@ import java.util.List;
 
 @RestController
 @Log4j2
-@RequestMapping("/category-type")
+@RequestMapping("/category/type")
 public class CategoryTypeController {
 
 	private final CategoryTypeService _categoryTypeService;

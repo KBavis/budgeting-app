@@ -56,7 +56,7 @@ public class CategoryTypeControllerTests {
         when(categoryTypeService.get(eq(10L), any())).thenReturn(categoryTypeResponseDto);
 
         // Act
-        ResultActions resultActions = mockMvc.perform(get("/category-type/" + categoryTypeResponseDto.getCategoryTypeId()));
+        ResultActions resultActions = mockMvc.perform(get("/category/type/" + categoryTypeResponseDto.getCategoryTypeId()));
 
         // Assert
         resultActions
@@ -79,7 +79,7 @@ public class CategoryTypeControllerTests {
         when(categoryTypeService.get(eq(1L), any())).thenThrow(runtimeException);
 
         // Act
-        ResultActions resultActions = mockMvc.perform(get("/category-type/" + categoryTypeId));
+        ResultActions resultActions = mockMvc.perform(get("/category/type/" + categoryTypeId));
 
         // Assert
         resultActions
@@ -115,7 +115,7 @@ public class CategoryTypeControllerTests {
         when(categoryTypeService.getAll(any())).thenReturn(expectedCategoryTypes);
 
         // Act & Assert
-        ResultActions resultActions = mockMvc.perform(get("/category-type"))
+        ResultActions resultActions = mockMvc.perform(get("/category/type"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].categoryTypeId").value(dtoOne.getCategoryTypeId()))
@@ -178,7 +178,7 @@ public class CategoryTypeControllerTests {
         when(categoryTypeService.createMany(categoryTypeDtos)).thenReturn(responseDtos);
 
         // Act
-        ResultActions resultActions = mockMvc.perform(post("/category-type/bulk")
+        ResultActions resultActions = mockMvc.perform(post("/category/type/bulk")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(categoryTypeDtos)));
 
@@ -220,7 +220,7 @@ public class CategoryTypeControllerTests {
         when(categoryTypeService.update(updateCategoryTypeDto, categoryTypeId)).thenReturn(expectedResponseDto);
 
         // Act
-        ResultActions resultActions = mockMvc.perform(put("/category-type/" + categoryTypeId)
+        ResultActions resultActions = mockMvc.perform(put("/category/type/" + categoryTypeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateCategoryTypeDto)));
 
@@ -251,7 +251,7 @@ public class CategoryTypeControllerTests {
         when(categoryTypeService.update(updateCategoryTypeDto, invalidCategoryTypeId)).thenThrow(new RuntimeException("CategoryType with ID " + invalidCategoryTypeId + " not found"));
 
         // Act & Assert
-        mockMvc.perform(put("/category-type/" + invalidCategoryTypeId)
+        mockMvc.perform(put("/category/type/" + invalidCategoryTypeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateCategoryTypeDto)))
                 .andExpect(status().isInternalServerError())
@@ -272,7 +272,7 @@ public class CategoryTypeControllerTests {
                 .build();
 
         // Act & Assert
-        mockMvc.perform(put("/category-type/" + categoryTypeId)
+        mockMvc.perform(put("/category/type/" + categoryTypeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidUpdateCategoryTypeDto)))
                 .andExpect(status().isBadRequest())
@@ -290,7 +290,7 @@ public class CategoryTypeControllerTests {
                 .build();
 
         // Act & Assert
-        mockMvc.perform(put("/category-type/" + categoryTypeId)
+        mockMvc.perform(put("/category/type/" + categoryTypeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidUpdateCategoryTypeDto)))
                 .andExpect(status().isBadRequest())
@@ -308,7 +308,7 @@ public class CategoryTypeControllerTests {
                 .build();
 
         // Act & Assert
-        mockMvc.perform(put("/category-type/" + categoryTypeId)
+        mockMvc.perform(put("/category/type/" + categoryTypeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidUpdateCategoryTypeDto)))
                 .andExpect(status().isBadRequest())
