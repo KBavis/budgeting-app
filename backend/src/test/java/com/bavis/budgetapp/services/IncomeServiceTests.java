@@ -268,8 +268,6 @@ public class IncomeServiceTests {
 
         UpdateCategoryTypeDto expectedDto = UpdateCategoryTypeDto.builder()
                 .budgetAllocationPercentage(ctVt.getBudgetAllocationPercentage())
-                .amountAllocated(updateIncomeDto.getAmount() * ctVt.getBudgetAllocationPercentage())
-                .savedAmount((updateIncomeDto.getAmount() * ctVt.getBudgetAllocationPercentage()) - (ctVt.getBudgetAmount() - ctVt.getSavedAmount()))
                 .build();
 
         //Mock

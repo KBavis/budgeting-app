@@ -145,4 +145,14 @@ public interface CategoryTypeService {
 	 * 			- Category to be removed
 	 */
 	void removeCategory(Category category);
+
+	/**
+	 * Recalculates and updates the saved amount for a CategoryType based on current child category allocations.
+	 *
+	 * @param categoryTypeId
+	 * 			- ID corresponding to CategoryType to be updated
+	 * @return
+	 * 			- Updated CategoryTypeResponseDto
+	 */
+	CategoryTypeResponseDto recalculateSavedAmount(Long categoryTypeId);
 }

@@ -4,6 +4,7 @@ import categoryContext from "../context/category/categoryContext";
 import DetailedCategory from "../components/category/DetailedCategory";
 import authContext from "../context/auth/authContext";
 import transactionContext from "../context/transaction/transactionContext";
+import AlertContext from "../context/alert/alertContext";
 import SplitTransactionModal from "../components/transaction/SplitTransaction";
 import ReduceTransaction from "../components/transaction/ReduceTransaction";
 import RenameTransaction from "../components/transaction/RenameTransaction";
@@ -12,17 +13,20 @@ import UpdateAllocationsModal from "../components/category/UpdateAllocationsModa
 import RenameCategory from "../components/category/RenameCategory";
 import Loading from "../components/util/Loading";
 import { ThemeContext } from "../context/theme/ThemeContext";
-import { FaSearch, FaTimes, FaSlidersH } from "react-icons/fa";
+import { FaSearch, FaTimes, FaSlidersH, FaCheck, FaPen } from "react-icons/fa";
+
+import UpdateCategoryTypeAllocationsModal from "../components/category/types/UpdateCategoryTypeAllocationsModal";
 
 /**
  * CategoryType Page for all corresponding Categories
  * associated with CategoryType with full Light/Dark mode support
  */
 const CategoryTypePage = ({ categoryType }) => {
-   const { categoryTypes, fetchCategoryTypes } = useContext(categoryTypeContext);
+   const { categoryTypes, fetchCategoryTypes, updateCategoryType } = useContext(categoryTypeContext);
    const { categories, fetchCategories } = useContext(categoryContext);
    const { user, fetchAuthenticatedUser } = useContext(authContext);
    const { transactions, fetchTransactions } = useContext(transactionContext);
+   const { setAlert } = useContext(AlertContext);
    const { theme } = useContext(ThemeContext);
 
    const isDark = theme === "dark";
@@ -38,9 +42,49 @@ const CategoryTypePage = ({ categoryType }) => {
    const [showAssignCategoryModal, setShowAssignCategoryModal] = useState(false);
    const [showUpdateAllocationsModal, setShowUpdateAllocationsModal] = useState(false);
    const [showRenameCategoryModal, setShowRenameCategoryModal] = useState(false);
+   const [showUpdateCategoryTypeAllocationsModal, setShowUpdateCategoryTypeAllocationsModal] = useState(false);
    const [currentTransaction, setCurrentTransaction] = useState(null);
    const [selectedCategory, setSelectedCategory] = useState(null);
    const [isLoading, setIsLoading] = useState(true);
+
+   const currentCategoryType = (categoryTypes || []).find(
+       (ct) => ct.name.toLowerCase() === categoryType.toLowerCase()
+   );
+
+   const rawAllocationPct = currentCategoryType?.budgetAllocationPercentage || 0;
+   const allocationPct = Math.round(
+      rawAllocationPct > 1 ? rawAllocationPct : rawAllocationPct * 100
+   );
+   const [isEditingAllocation, setIsEditingAllocation] = useState(false);
+   const [editPct, setEditPct] = useState(allocationPct);
+
+   useEffect(() => {
+      setEditPct(allocationPct);
+   }, [allocationPct]);
+
+   const handleConfirmAllocation = async () => {
+      if (!currentCategoryType) return;
+      const parsedPct = parseFloat(editPct);
+      if (isNaN(parsedPct) || parsedPct < 0 || parsedPct > 100) {
+         setAlert("Please enter a valid allocation percentage between 0 and 100", "danger");
+         setEditPct(allocationPct);
+         setIsEditingAllocation(false);
+         return;
+      }
+
+      if (parsedPct !== allocationPct) {
+         await updateCategoryType(currentCategoryType.categoryTypeId, {
+            budgetAllocationPercentage: parsedPct / 100.0,
+         });
+         setAlert(`Updated ${currentCategoryType.name} allocation to ${parsedPct}%`, "success");
+      }
+      setIsEditingAllocation(false);
+   };
+
+   const handleCancelAllocation = () => {
+      setEditPct(allocationPct);
+      setIsEditingAllocation(false);
+   };
 
    const initialFetchRef = useRef(false);
 
@@ -171,9 +215,65 @@ const CategoryTypePage = ({ categoryType }) => {
                 <h2 className={`text-4xl md:text-5xl font-black mb-3 ${isDark ? "text-white" : "text-slate-900"}`}>
                    Explore <span className={isDark ? "text-indigo-400" : "text-indigo-600"}>{categoryType}</span>
                 </h2>
-                <p className={`text-xs md:text-sm font-medium mb-8 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                <p className={`text-xs md:text-sm font-medium mb-4 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                    View and manage categories and assigned transactions under your {categoryType} allocation.
                 </p>
+
+                <div className="flex items-center justify-center gap-2 mb-6">
+                   {isEditingAllocation ? (
+                      <div className="flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/40 px-3 py-1 rounded-xl">
+                         <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="1"
+                            value={editPct}
+                            onChange={(e) => setEditPct(e.target.value)}
+                            autoFocus
+                            onKeyDown={(e) => {
+                               if (e.key === "Enter") handleConfirmAllocation();
+                               if (e.key === "Escape") handleCancelAllocation();
+                            }}
+                            className={`w-16 px-2 py-0.5 text-xs font-bold text-center rounded-lg border focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+                               isDark ? "bg-slate-900 border-indigo-500 text-white" : "bg-white border-indigo-500 text-slate-900"
+                            }`}
+                         />
+                         <span className="text-xs font-extrabold text-indigo-400">%</span>
+                         <button
+                            type="button"
+                            onClick={handleConfirmAllocation}
+                            className="p-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm ml-1"
+                            title="Save Allocation"
+                         >
+                            <FaCheck size={10} />
+                         </button>
+                         <button
+                            type="button"
+                            onClick={handleCancelAllocation}
+                            className={`p-1 rounded-md transition-all ${
+                               isDark ? "bg-slate-800 text-slate-400 hover:text-white" : "bg-slate-200 text-slate-600 hover:text-slate-900"
+                            }`}
+                            title="Cancel"
+                         >
+                            <FaTimes size={10} />
+                         </button>
+                      </div>
+                   ) : (
+                      <button
+                         type="button"
+                         onClick={() => setIsEditingAllocation(true)}
+                         className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer group ${
+                            isDark
+                               ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/30 hover:border-indigo-400"
+                               : "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300 shadow-sm"
+                         }`}
+                         title="Click to edit target allocation percentage"
+                      >
+                         <span>{allocationPct}% Target Income Allocation</span>
+                         <FaPen size={10} className="opacity-60 group-hover:opacity-100 transition-opacity" />
+                      </button>
+                   )}
+                </div>
 
                 {/* Dropdown-style Filter Toggle Button */}
                 <div className="flex flex-col items-center justify-center relative">
@@ -238,20 +338,22 @@ const CategoryTypePage = ({ categoryType }) => {
                    <Loading />
                 </div>
              ) : (
-                <div className="flex flex-col items-center w-full space-y-6 max-w-5xl">
+                <div className="w-full max-w-7xl xl:max-w-[1600px] flex-1 pb-16">
                    {filteredCategoriesByQuery.length > 0 ? (
-                       filteredCategoriesByQuery.map((category) => (
-                           <DetailedCategory
-                               key={category.categoryId}
-                               category={category}
-                               handleShowSplitTransactionModal={handleShowSplitTransactionModal}
-                               handleShowReduceTransactionModal={handleShowReduceTransactionModal}
-                               handleShowRenameTransactionModal={handleShowRenameTransactionModal}
-                               handleShowAssignCategoryModal={handleShowAssignCategoryModal}
-                               handleShowUpdateAllocationsModal={handleShowUpdateAllocationsModal}
-                               handleShowRenameCategoryModal={handleShowRenameCategoryModal}
-                           />
-                       ))
+                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                           {filteredCategoriesByQuery.map((category) => (
+                               <DetailedCategory
+                                   key={category.categoryId}
+                                   category={category}
+                                   handleShowSplitTransactionModal={handleShowSplitTransactionModal}
+                                   handleShowReduceTransactionModal={handleShowReduceTransactionModal}
+                                   handleShowRenameTransactionModal={handleShowRenameTransactionModal}
+                                   handleShowAssignCategoryModal={handleShowAssignCategoryModal}
+                                   handleShowUpdateAllocationsModal={handleShowUpdateAllocationsModal}
+                                   handleShowRenameCategoryModal={handleShowRenameCategoryModal}
+                               />
+                           ))}
+                       </div>
                    ) : (
                        <div className={`flex flex-col items-center justify-center w-full max-w-xl py-12 px-6 text-center rounded-2xl border ${
                           isDark ? "bg-slate-900/40 border-slate-800 text-slate-400" : "bg-white border-slate-200 text-slate-500 shadow-sm"
@@ -303,6 +405,11 @@ const CategoryTypePage = ({ categoryType }) => {
               <RenameCategory
                   onClose={handleCloseRenameCategoryModal}
                   category={selectedCategory}
+              />
+          )}
+          {showUpdateCategoryTypeAllocationsModal && (
+              <UpdateCategoryTypeAllocationsModal
+                  onClose={() => setShowUpdateCategoryTypeAllocationsModal(false)}
               />
           )}
        </div>

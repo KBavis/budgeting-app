@@ -204,9 +204,7 @@ public class CategoryTypeControllerTests {
         // Arrange
         Long categoryTypeId = 10L;
         UpdateCategoryTypeDto updateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100.0)
                 .budgetAllocationPercentage(.5)
-                .savedAmount(15.0)
                 .build();
 
         CategoryTypeResponseDto expectedResponseDto = CategoryTypeResponseDto.builder()
@@ -229,9 +227,9 @@ public class CategoryTypeControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.categoryTypeId").value(categoryTypeId))
-                .andExpect(jsonPath("$.savedAmount").value(updateCategoryTypeDto.getSavedAmount()))
-                .andExpect(jsonPath("$.budgetAllocationPercentage").value(updateCategoryTypeDto.getBudgetAllocationPercentage()))
-                .andExpect(jsonPath("$.budgetAmount").value(updateCategoryTypeDto.getAmountAllocated()));
+                .andExpect(jsonPath("$.savedAmount").value(15.0))
+                .andExpect(jsonPath("$.budgetAllocationPercentage").value(0.5))
+                .andExpect(jsonPath("$.budgetAmount").value(100.0));
 
         // Verify
         verify(categoryTypeService, times(1)).update(updateCategoryTypeDto, categoryTypeId);
@@ -242,9 +240,7 @@ public class CategoryTypeControllerTests {
         // Arrange
         Long invalidCategoryTypeId = 10L;
         UpdateCategoryTypeDto updateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100.0)
                 .budgetAllocationPercentage(.5)
-                .savedAmount(15.0)
                 .build();
 
         // Mock
@@ -266,9 +262,7 @@ public class CategoryTypeControllerTests {
         // Arrange
         Long categoryTypeId = 10L;
         UpdateCategoryTypeDto invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100.0)
-                .budgetAllocationPercentage(0.0)
-                .savedAmount(15.0)
+                .budgetAllocationPercentage(-0.1)
                 .build();
 
         // Act & Assert
@@ -277,41 +271,5 @@ public class CategoryTypeControllerTests {
                 .content(objectMapper.writeValueAsString(invalidUpdateCategoryTypeDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("The provided CategoryType percent allocation is invalid"));
-    }
-
-    @Test
-    void testUpdateCategoryType_InvalidSavedAmount_Failure() throws Exception {
-        // Arrange
-        Long categoryTypeId = 10L;
-        UpdateCategoryTypeDto invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(100.0)
-                .budgetAllocationPercentage(.5)
-                .savedAmount(-1.0)
-                .build();
-
-        // Act & Assert
-        mockMvc.perform(put("/category/type/" + categoryTypeId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidUpdateCategoryTypeDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("The provided CategoryType saved amount is invalid"));
-    }
-
-    @Test
-    void testUpdateCategoryType_InvalidAmountAllocated_Failure() throws Exception {
-        // Arrange
-        Long categoryTypeId = 10L;
-        UpdateCategoryTypeDto invalidUpdateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .amountAllocated(-1.0)
-                .budgetAllocationPercentage(.5)
-                .savedAmount(0.0)
-                .build();
-
-        // Act & Assert
-        mockMvc.perform(put("/category/type/" + categoryTypeId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidUpdateCategoryTypeDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("The provided CategoryType allocation amount is invalid"));
     }
 }

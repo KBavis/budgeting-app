@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.dao.CategoryRepository;
 import com.bavis.budgetapp.dao.CategoryTypeRepository;
 import com.bavis.budgetapp.dto.request.CategoryTypeDto;
 import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
@@ -35,14 +36,17 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 	private final IncomeService incomeService;
 	private final EffectivityService effectivityService;
 	private final CategoryTypeMapper categoryTypeMapper;
+	private final CategoryRepository categoryRepository;
 
 	public CategoryTypeServiceImpl(CategoryTypeRepository repository, UserService userService,
-			IncomeService incomeService, EffectivityService effectivityService, CategoryTypeMapper categoryTypeMapper) {
+			IncomeService incomeService, EffectivityService effectivityService, CategoryTypeMapper categoryTypeMapper,
+			CategoryRepository categoryRepository) {
 		this.repository = repository;
 		this.userService = userService;
 		this.incomeService = incomeService;
 		this.effectivityService = effectivityService;
 		this.categoryTypeMapper = categoryTypeMapper;
+		this.categoryRepository = categoryRepository;
 	}
 
 	/**
@@ -231,15 +235,45 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 		log.info("CategoryType [{}] updates via the following UpdateCategoryTypeDto [{}]", categoryType,
 				updateCategoryTypeDto);
 
-		CategoryTypeVt active = effectivityService.getActiveVt(categoryType.getValidTimes(), LocalDate.now());
+		LocalDate today = LocalDate.now();
+		CategoryTypeVt active = effectivityService.getActiveVt(categoryType.getValidTimes(), today);
 		double allocPct = updateCategoryTypeDto.getBudgetAllocationPercentage() != null
 				? updateCategoryTypeDto.getBudgetAllocationPercentage()
 				: active.getBudgetAllocationPercentage();
-		double budgetAmt = updateCategoryTypeDto.getAmountAllocated() != null
-				? updateCategoryTypeDto.getAmountAllocated()
-				: active.getBudgetAmount();
-		double savedAmt = updateCategoryTypeDto.getSavedAmount() != null ? updateCategoryTypeDto.getSavedAmount()
-				: active.getSavedAmount();
+
+		double userTotalIncome = incomeService.findUserTotalIncomeAmount(categoryType.getUser().getUserId(), null);
+		double budgetAmt = userTotalIncome * allocPct;
+
+		if (Double.compare(allocPct, active.getBudgetAllocationPercentage()) == 0
+				&& Double.compare(budgetAmt, active.getBudgetAmount()) == 0) {
+			log.info("CategoryType [{}] allocation percentage [{}] and budget amount [{}] unchanged; performing no-op update",
+					id, allocPct, budgetAmt);
+			return categoryTypeMapper.toResponseDto(categoryType, active);
+		}
+
+		// recompute Category budget_amounts based on increase/decrease in CategoryType
+		// income percentage
+		double totalCategoryAllocations = 0.0;
+		if (categoryType.getCategories() != null && !categoryType.getCategories().isEmpty()) {
+			for (Category cat : categoryType.getCategories()) {
+				CategoryVt cv = effectivityService.getActiveVt(cat.getValidTimes(), today);
+				if (cv != null) {
+					double updatedCatBudgetAmt = cv.getBudgetAllocationPercentage() * budgetAmt;
+					CategoryVt newCatVt = CategoryVt.builder()
+							.category(cat)
+							.name(cv.getName())
+							.budgetAllocationPercentage(cv.getBudgetAllocationPercentage())
+							.budgetAmount(updatedCatBudgetAmt)
+							.categoryType(categoryType)
+							.build();
+					effectivityService.applyVtUpdate(cat.getValidTimes(), newCatVt, today);
+					totalCategoryAllocations += updatedCatBudgetAmt;
+				}
+			}
+			categoryRepository.saveAll(categoryType.getCategories());
+		}
+
+		double savedAmt = budgetAmt - totalCategoryAllocations;
 
 		CategoryTypeVt updateVt = CategoryTypeVt.builder()
 				.categoryType(categoryType)
@@ -249,10 +283,52 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 				.savedAmount(savedAmt)
 				.build();
 
-		effectivityService.applyVtUpdate(categoryType.getValidTimes(), updateVt, LocalDate.now());
+		effectivityService.applyVtUpdate(categoryType.getValidTimes(), updateVt, today);
 
 		CategoryType saved = repository.save(categoryType);
-		CategoryTypeVt activeVt = effectivityService.getActiveVt(saved.getValidTimes(), LocalDate.now());
+		CategoryTypeVt activeVt = effectivityService.getActiveVt(saved.getValidTimes(), today);
+		return categoryTypeMapper.toResponseDto(saved, activeVt);
+	}
+
+	@Override
+	public CategoryTypeResponseDto recalculateSavedAmount(Long categoryTypeId) {
+		CategoryType categoryType = findEntity(categoryTypeId, null);
+		LocalDate today = LocalDate.now();
+		CategoryTypeVt active = effectivityService.getActiveVt(categoryType.getValidTimes(), today);
+
+		double userTotalIncome = incomeService.findUserTotalIncomeAmount(categoryType.getUser().getUserId(), null);
+		double budgetAmt = userTotalIncome * active.getBudgetAllocationPercentage();
+
+		double totalCategoryAllocations = categoryType.getCategories() != null
+				? categoryType.getCategories().stream()
+						.mapToDouble(cat -> {
+							CategoryVt cv = effectivityService.getActiveVt(cat.getValidTimes(), today);
+							return cv != null ? cv.getBudgetAmount() : 0.0;
+						})
+						.sum()
+				: 0.0;
+
+		double savedAmt = budgetAmt - totalCategoryAllocations;
+
+		if (Double.compare(savedAmt, active.getSavedAmount()) == 0
+				&& Double.compare(budgetAmt, active.getBudgetAmount()) == 0) {
+			log.info("CategoryType [{}] saved amount [{}] and budget amount [{}] unchanged; skipping recalculateSavedAmount update as no-op",
+					categoryTypeId, savedAmt, budgetAmt);
+			return categoryTypeMapper.toResponseDto(categoryType, active);
+		}
+
+		CategoryTypeVt updateVt = CategoryTypeVt.builder()
+				.categoryType(categoryType)
+				.name(active.getName())
+				.budgetAllocationPercentage(active.getBudgetAllocationPercentage())
+				.budgetAmount(budgetAmt)
+				.savedAmount(savedAmt)
+				.build();
+
+		effectivityService.applyVtUpdate(categoryType.getValidTimes(), updateVt, today);
+
+		CategoryType saved = repository.save(categoryType);
+		CategoryTypeVt activeVt = effectivityService.getActiveVt(saved.getValidTimes(), today);
 		return categoryTypeMapper.toResponseDto(saved, activeVt);
 	}
 

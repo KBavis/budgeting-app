@@ -7,7 +7,6 @@ import com.bavis.budgetapp.dto.request.CategoryDto;
 import com.bavis.budgetapp.dto.request.EditCategoryDto;
 import com.bavis.budgetapp.dto.request.RenameCategoryDto;
 import com.bavis.budgetapp.dto.request.UpdateCategoryDto;
-import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
 import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryType;
@@ -95,19 +94,10 @@ public class CategoryServiceImpl implements CategoryService {
 				.toList();
 		log.info("Successfully set User, CategoryType, and budget amount for each Category");
 
-		double totalCategoryAllocations = categories.stream()
-				.mapToDouble(cat -> {
-					CategoryVt active = effectivityService.getActiveVt(cat.getValidTimes(), LocalDate.now());
-					return active.getBudgetAmount();
-				})
-				.sum();
-		double savedAmount = getCategoryTypeBudgetAmount(categoryType) - totalCategoryAllocations;
-		categoryTypeService.update(UpdateCategoryTypeDto.builder().savedAmount(savedAmount).build(),
-				categoryType.getCategoryTypeId());
-		log.info("CategoryType {} total saved amount based on newly added Categories: {}",
-				categoryType.getCategoryTypeId(), savedAmount);
-
 		List<Category> savedCategories = categoryRepository.saveAllAndFlush(categories);
+
+		categoryTypeService.recalculateSavedAmount(categoryType.getCategoryTypeId());
+
 		return savedCategories.stream()
 				.map(cat -> {
 					CategoryVt activeVt = effectivityService.getActiveVt(cat.getValidTimes(), LocalDate.now());
@@ -199,9 +189,7 @@ public class CategoryServiceImpl implements CategoryService {
 							+ categoryType.getCategoryTypeId() + ": " + getCategoryTypeBudgetAmount(categoryType));
 		}
 
-		double savedAmount = getCategoryTypeBudgetAmount(categoryType) - totalBudgetAmount;
-		categoryTypeService.update(UpdateCategoryTypeDto.builder().savedAmount(savedAmount).build(),
-				categoryType.getCategoryTypeId());
+		categoryTypeService.recalculateSavedAmount(categoryType.getCategoryTypeId());
 
 		CategoryVt activeVt = effectivityService.getActiveVt(createdCategory.getValidTimes(), LocalDate.now());
 		return categoryMapper.toResponseDto(createdCategory, activeVt);
@@ -247,9 +235,9 @@ public class CategoryServiceImpl implements CategoryService {
 							+ categoryType.getCategoryTypeId() + ": " + getCategoryTypeBudgetAmount(categoryType));
 		}
 
-		double updatedSavedAmount = getCategoryTypeBudgetAmount(categoryType) - totalBudgetAmount;
-		categoryTypeService.update(UpdateCategoryTypeDto.builder().savedAmount(updatedSavedAmount).build(),
-				categoryType.getCategoryTypeId());
+		categoryRepository.saveAllAndFlush(updatedCategories);
+
+		categoryTypeService.recalculateSavedAmount(categoryType.getCategoryTypeId());
 
 		return updatedCategories.stream()
 				.map(cat -> {

@@ -189,27 +189,6 @@ public class IncomeServiceImpl implements IncomeService {
             throw new RuntimeException("Unable to update user Income due to user not being owner of specified income");
         }
 
-        List<CategoryType> categoryTypes = _categoryTypeService.findAllEntities(null);
-
-        for (CategoryType type : categoryTypes) {
-            CategoryTypeVt ctActive = _effectivityService.getActiveVt(type.getValidTimes(), LocalDate.now());
-            double currentBudgetAmount = ctActive.getBudgetAmount();
-            double currentSavedAmount = ctActive.getSavedAmount();
-            double currentAllocPct = ctActive.getBudgetAllocationPercentage();
-
-            double totalCategoryAmount = currentBudgetAmount - currentSavedAmount;
-            double newBudgetAmount = currentAllocPct * incomeDto.getAmount();
-            double newSavedAmount = newBudgetAmount - totalCategoryAmount;
-
-            UpdateCategoryTypeDto categoryTypeDto = UpdateCategoryTypeDto.builder()
-                    .savedAmount(newSavedAmount)
-                    .budgetAllocationPercentage(currentAllocPct)
-                    .amountAllocated(newBudgetAmount)
-                    .build();
-
-            _categoryTypeService.update(categoryTypeDto, type.getCategoryTypeId());
-        }
-
         incomeToUpdate.setUpdatedAt(LocalDateTime.now());
         IncomeVt active = _effectivityService.getActiveVt(incomeToUpdate.getValidTimes(), LocalDate.now());
 
@@ -222,7 +201,21 @@ public class IncomeServiceImpl implements IncomeService {
                 .build();
 
         _effectivityService.applyVtUpdate(incomeToUpdate.getValidTimes(), updateVt, LocalDate.now());
-        Income saved = _incomeRepository.save(incomeToUpdate);
+        Income saved = _incomeRepository.saveAndFlush(incomeToUpdate);
+
+        List<CategoryType> categoryTypes = _categoryTypeService.findAllEntities(null);
+
+        for (CategoryType type : categoryTypes) {
+            CategoryTypeVt ctActive = _effectivityService.getActiveVt(type.getValidTimes(), LocalDate.now());
+            double currentAllocPct = ctActive.getBudgetAllocationPercentage();
+
+            UpdateCategoryTypeDto categoryTypeDto = UpdateCategoryTypeDto.builder()
+                    .budgetAllocationPercentage(currentAllocPct)
+                    .build();
+
+            _categoryTypeService.update(categoryTypeDto, type.getCategoryTypeId());
+        }
+
         IncomeVt activeVt = _effectivityService.getActiveVt(saved.getValidTimes(), LocalDate.now());
         return _incomeMapper.toResponseDto(saved, activeVt);
     }

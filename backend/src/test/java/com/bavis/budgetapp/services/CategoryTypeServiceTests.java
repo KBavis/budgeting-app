@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.services;
 
+import com.bavis.budgetapp.dao.CategoryRepository;
 import com.bavis.budgetapp.dao.CategoryTypeRepository;
 import com.bavis.budgetapp.dto.request.CategoryTypeDto;
 import com.bavis.budgetapp.dto.request.UpdateCategoryTypeDto;
@@ -57,6 +58,9 @@ public class CategoryTypeServiceTests {
 
     @Mock
     CategoryTypeRepository repository;
+
+    @Mock
+    CategoryRepository categoryRepository;
 
     @Spy
     EffectivityService effectivityService = new EffectivityService();
@@ -515,8 +519,7 @@ public class CategoryTypeServiceTests {
         double savedAmount = 0;
 
         UpdateCategoryTypeDto updateCategoryTypeDto = UpdateCategoryTypeDto.builder()
-                .savedAmount(savedAmount)
-                .amountAllocated(budgetAmount)
+                .budgetAllocationPercentage(budgetAllocationPercentage)
                 .build();
 
         CategoryType expectedCategoryType = CategoryType.builder()

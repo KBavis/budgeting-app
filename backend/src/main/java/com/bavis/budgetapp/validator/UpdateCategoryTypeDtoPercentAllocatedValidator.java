@@ -18,7 +18,10 @@ public class UpdateCategoryTypeDtoPercentAllocatedValidator implements Constrain
 
     @Override
     public boolean isValid(UpdateCategoryTypeDto updateCategoryTypeDto, ConstraintValidatorContext constraintValidatorContext) {
+        if (updateCategoryTypeDto == null || updateCategoryTypeDto.getBudgetAllocationPercentage() == null) {
+            return true;
+        }
         double percentAllocation = updateCategoryTypeDto.getBudgetAllocationPercentage();
-        return percentAllocation > 0 && percentAllocation < 1;
+        return percentAllocation >= 0.0 && percentAllocation <= 1.0;
     }
 }
