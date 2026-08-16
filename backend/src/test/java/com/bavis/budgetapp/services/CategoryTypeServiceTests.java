@@ -525,6 +525,7 @@ public class CategoryTypeServiceTests {
         CategoryType expectedCategoryType = CategoryType.builder()
                 .categoryTypeId(categoryTypeId)
                 .categories(null)
+                .user(user)
                 .build();
         CategoryTypeVt ctVt = CategoryTypeVt.builder()
                 .categoryType(expectedCategoryType)
@@ -544,6 +545,7 @@ public class CategoryTypeServiceTests {
 
         // Mock
         when(repository.findByCategoryTypeIdAndAsOf(eq(categoryTypeId), any())).thenReturn(Optional.of(expectedCategoryType));
+        when(categoryRepository.findByCategoryTypeIdAndAsOf(eq(categoryTypeId), any())).thenReturn(Collections.emptyList());
         when(repository.save(expectedCategoryType)).thenReturn(expectedCategoryType);
         when(categoryTypeMapper.toResponseDto(any(), any())).thenReturn(expectedResponse);
 

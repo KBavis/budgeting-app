@@ -774,8 +774,14 @@ public class TransactionServiceTests {
         List<Transaction> expectedAccountTransactions = List.of(transactionOne, transactionTwo, transactionThree);
         List<Transaction> expectedUserCreatedTransactions = List.of(transactionFour);
 
+        AccountResponseDto accountResponseDto = AccountResponseDto.builder()
+                .accountId("account-1")
+                .build();
+
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(accountService.getAll(any())).thenReturn(List.of(accountResponseDto));
+        when(categoryService.findAllEntities(any())).thenReturn(List.of(category));
         when(transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(any(), any())).thenReturn(expectedAccountTransactions);
         when(transactionRepository.findByCategoryIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserCreatedTransactions);
 
@@ -810,6 +816,8 @@ public class TransactionServiceTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(accountService.getAll(any())).thenReturn(Collections.emptyList());
+        when(categoryService.findAllEntities(any())).thenReturn(null);
 
         //Act
         FetchTransactionsDto result = transactionService.getAll(null);
@@ -847,6 +855,8 @@ public class TransactionServiceTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(accountService.getAll(any())).thenReturn(Collections.emptyList());
+        when(categoryService.findAllEntities(any())).thenReturn(List.of(category));
         when(transactionRepository.findByCategoryIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserCreatedTransactions);
 
         //Act
@@ -872,6 +882,10 @@ public class TransactionServiceTests {
                 .accountId("account-id")
                 .build();
 
+        AccountResponseDto accountResponseDto = AccountResponseDto.builder()
+                .accountId("account-id")
+                .build();
+
         Transaction transaction = Transaction.builder()
                 .category(null)
                 .transactionId("transaction-id")
@@ -889,6 +903,8 @@ public class TransactionServiceTests {
 
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
+        when(accountService.getAll(any())).thenReturn(List.of(accountResponseDto));
+        when(categoryService.findAllEntities(any())).thenReturn(null);
         when(transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(any(), any())).thenReturn(expectedUserAccountTransactions);
 
         //Act

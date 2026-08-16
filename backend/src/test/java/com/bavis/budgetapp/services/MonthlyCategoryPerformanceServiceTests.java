@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.services;
 
+import com.bavis.budgetapp.constants.TemporalConstants;
 import com.bavis.budgetapp.dao.MonthlyCategoryPerformanceRepository;
 import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryVt;
@@ -8,6 +9,7 @@ import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.analysis.MerchantAnalysis;
 import com.bavis.budgetapp.entity.analysis.MonthlyCategoryPerformance;
 import com.bavis.budgetapp.model.MonthYear;
+import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.impl.MonthlyCategoryPerformanceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -49,6 +53,9 @@ public class MonthlyCategoryPerformanceServiceTests {
 
     @Mock
     private TransactionService transactionServiceMock;
+
+    @Spy
+    private EffectivityService effectivityService = new EffectivityService();
 
     @InjectMocks
     @Spy
@@ -82,13 +89,15 @@ public class MonthlyCategoryPerformanceServiceTests {
                 .category(zeroAllocation)
                 .budgetAmount(0.0)
                 .categoryType(new CategoryType())
+                .startDate(TemporalConstants.BEGINNING_OF_TIME)
+                .endDate(TemporalConstants.END_OF_TIME)
                 .build();
         zeroAllocation.getValidTimes().add(zeroAllocationVt);
         List<Category> zeroAllocationList = List.of(zeroAllocation);
 
         // mocks
-        when(categoryPerformanceService.getTotalSpend(anyList())).thenReturn(600.00);
-        when(categoryPerformanceService.getCategoryTransactions(any(MonthYear.class), any(Long.class))).thenReturn(getTransactions());
+        doReturn(600.00).when(categoryPerformanceService).getTotalSpend(anyList());
+        doReturn(getTransactions()).when(categoryPerformanceService).getCategoryTransactions(any(MonthYear.class), any(Long.class));
 
         // act
         RuntimeException e = assertThrows(RuntimeException.class, () ->  categoryPerformanceService.generateMonthlyCategoryPerformances(userId, monthYear, zeroAllocationList));
@@ -227,7 +236,7 @@ public class MonthlyCategoryPerformanceServiceTests {
                 .date(now.minusMonths(1))
                 .build();
 
-        when(transactionServiceMock.fetchCategoryTransactions(categoryId)).thenReturn(List.of(activeTransaction, nonActiveTransaction));
+        when(transactionServiceMock.fetchCategoryTransactions(eq(categoryId), any())).thenReturn(List.of(activeTransaction, nonActiveTransaction));
 
         List<Transaction> actualTransactions = categoryPerformanceService.getCategoryTransactions(currentMonthYear, categoryId);
 
@@ -238,7 +247,7 @@ public class MonthlyCategoryPerformanceServiceTests {
     @Test
     void testGetCategoryTransactions_handlesNullTransactions() {
 
-        when(transactionServiceMock.fetchCategoryTransactions(any(Long.class))).thenReturn(null);
+        when(transactionServiceMock.fetchCategoryTransactions(any(Long.class), any())).thenReturn(null);
 
         List<Transaction> actualTransactions = categoryPerformanceService.getCategoryTransactions(monthYear, 1L);
         assertEquals(Collections.emptyList(), actualTransactions);
@@ -275,6 +284,8 @@ public class MonthlyCategoryPerformanceServiceTests {
                 .category(category1)
                 .categoryType(categoryType)
                 .budgetAmount(200.00)
+                .startDate(TemporalConstants.BEGINNING_OF_TIME)
+                .endDate(TemporalConstants.END_OF_TIME)
                 .build();
 
         category1.getValidTimes().add(vt1);
