@@ -95,40 +95,39 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                     }`} />
                 </div>
 
-                {/* Account Details & Balance */}
-                <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
-                    {/* Account Name & Subtitle Info */}
-                    <div className="min-w-0 flex-1">
+                {/* Account Details & Balance Container */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                    {/* Top Row: Account Name + Adjacent Balance Amount */}
+                    <div className="flex items-center justify-between gap-2 min-w-0">
                         <h3 className={`text-sm sm:text-base font-bold truncate ${
                             isDark ? "text-white" : "text-slate-900"
                         }`} title={account.accountName}>
                             {account.accountName}
                         </h3>
 
-                        {/* Badge & Institution details on sub-row */}
-                        <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
-                                {badgeDef.label}
-                            </span>
-                            <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
-                                {account.institutionName || 'Financial Institution'} {account.mask ? `•••${account.mask}` : ''}
+                        <div className="flex-shrink-0 text-right whitespace-nowrap">
+                            <span className={`text-sm sm:text-base font-black tracking-tight ${
+                                isLiability
+                                    ? (isDark ? 'text-rose-400' : 'text-rose-600')
+                                    : isNegative
+                                    ? (isDark ? 'text-red-400' : 'text-red-600')
+                                    : (isDark ? 'text-emerald-400' : 'text-emerald-600')
+                            }`}>
+                                {isLiability ? '-' : (isNegative ? '-' : '')}${Math.abs(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                         </div>
                     </div>
 
-                    {/* Balance Amount */}
-                    <div className="flex-shrink-0 text-left sm:text-right mt-1 sm:mt-0">
-                        <p className={`text-base sm:text-lg font-black tracking-tight ${
-                            isLiability
-                                ? (isDark ? 'text-rose-400' : 'text-rose-600')
-                                : isNegative
-                                ? (isDark ? 'text-red-400' : 'text-red-600')
-                                : (isDark ? 'text-emerald-400' : 'text-emerald-600')
-                        }`}>
-                            {isLiability ? '-' : (isNegative ? '-' : '')}${Math.abs(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </p>
+                    {/* Subtitle Row: Badge + Institution details */}
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
+                            {badgeDef.label}
+                        </span>
+                        <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
+                            {account.institutionName || 'Financial Institution'} {account.mask ? `•••${account.mask}` : ''}
+                        </span>
                         {isLiability && (
-                            <span className={`block text-[10px] font-extrabold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
+                            <span className={`ml-auto text-[10px] font-extrabold uppercase tracking-wider ${isDark ? 'text-rose-400/80' : 'text-rose-500'}`}>
                                 Owed
                             </span>
                         )}

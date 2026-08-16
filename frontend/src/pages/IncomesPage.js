@@ -193,34 +193,35 @@ const IncomesPage = () => {
                               <FaWallet className="w-4 h-4 text-sm sm:text-base" />
                            </div>
 
-                           {/* Income Info & Amount */}
-                           <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
-                              {/* Description & Subtitle Details */}
-                              <div className="min-w-0 flex-1">
+                           {/* Income Info & Amount Container */}
+                           <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                              {/* Top Row: Description & Adjacent Amount */}
+                              <div className="flex items-center justify-between gap-2 min-w-0">
                                  <h3 className={`text-sm sm:text-base font-bold truncate ${
                                     isDark ? "text-slate-100" : "text-slate-900"
                                  }`} title={inc.description || inc.incomeSource}>
                                     {inc.description || inc.incomeSource || `Income Source ${index + 1}`}
                                  </h3>
-                                 <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
-                                       isDark ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30" : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                    }`}>
-                                       {inc.incomeType || "Income"}
+
+                                 <div className="flex-shrink-0 text-right whitespace-nowrap">
+                                    <span className={`text-sm sm:text-base font-black tracking-tight ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+                                       +${parseFloat(inc.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
-                                    {inc.incomeSource && (
-                                       <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
-                                          {inc.incomeSource}
-                                       </span>
-                                    )}
                                  </div>
                               </div>
 
-                              {/* Income Amount */}
-                              <div className="flex-shrink-0 text-left sm:text-right mt-1 sm:mt-0">
-                                 <p className={`text-base sm:text-lg font-black tracking-tight ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
-                                    +${parseFloat(inc.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                 </p>
+                              {/* Subtitle Row: Type Badge & Source */}
+                              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                                 <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold border ${
+                                    isDark ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                 }`}>
+                                    {inc.incomeType || "Income"}
+                                 </span>
+                                 {inc.incomeSource && (
+                                    <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"} truncate`}>
+                                       {inc.incomeSource}
+                                    </span>
+                                 )}
                               </div>
                            </div>
                         </div>
