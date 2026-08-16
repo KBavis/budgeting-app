@@ -317,8 +317,17 @@ public class CategoryServiceImpl implements CategoryService {
 		log.info("Deleting Category with id [{}]", categoryId);
 
 		Category categoryToDelete = findEntity(categoryId, null);
+		CategoryVt activeVt = effectivityService.getActiveVt(categoryToDelete.getValidTimes(), LocalDate.now());
+		Long categoryTypeId = activeVt != null && activeVt.getCategoryType() != null
+				? activeVt.getCategoryType().getCategoryTypeId()
+				: null;
+
 		categoryToDelete.setEndDate(LocalDate.now().minusDays(1));
-		categoryRepository.save(categoryToDelete);
+		categoryRepository.saveAndFlush(categoryToDelete);
+
+		if (categoryTypeId != null) {
+			categoryTypeService.recalculateSavedAmount(categoryTypeId);
+		}
 	}
 
 	private Category updateCategoryAllocation(UpdateCategoryDto updateCategoryDto, CategoryType categoryType) {
