@@ -161,7 +161,7 @@ public class TransactionServiceTests {
                         .build();
 
         //Mock
-        when(transactionRepository.findByCategoryCategoryId(1L)).thenReturn(List.of(transaction));
+        when(transactionRepository.findByCategoryCategoryIdAndAsOf(eq(1L), any(LocalDate.class))).thenReturn(List.of(transaction));
 
         //Act
         List<Transaction> actualTransactions = transactionService.fetchCategoryTransactions(1L);
@@ -175,7 +175,7 @@ public class TransactionServiceTests {
     @Test
     void testFetchCategoryTransactions_Null_Success() {
         //Mock
-        when(transactionRepository.findByCategoryCategoryId(1L)).thenReturn(Collections.emptyList());
+        when(transactionRepository.findByCategoryCategoryIdAndAsOf(eq(1L), any(LocalDate.class))).thenReturn(Collections.emptyList());
 
         //Act
         List<Transaction> actualTransactions = transactionService.fetchCategoryTransactions(1L);
@@ -187,7 +187,7 @@ public class TransactionServiceTests {
     @Test
     void testFetchCategoryTransactions_DataAccessException_Fail() {
         //Mock
-        when(transactionRepository.findByCategoryCategoryId(1L)).thenThrow(new DataRetrievalFailureException("Failed to retrieve"));
+        when(transactionRepository.findByCategoryCategoryIdAndAsOf(eq(1L), any(LocalDate.class))).thenThrow(new DataRetrievalFailureException("Failed to retrieve"));
 
         //Act & Assert
         DataRetrievalFailureException exception = assertThrows(DataRetrievalFailureException.class, () -> {
@@ -780,7 +780,7 @@ public class TransactionServiceTests {
         when(transactionRepository.findByCategoryIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserCreatedTransactions);
 
         //Act
-        FetchTransactionsDto result = transactionService.readAll();
+        FetchTransactionsDto result = transactionService.getAll(null);
 
         //Assert
         assertNotNull(result);
@@ -812,7 +812,7 @@ public class TransactionServiceTests {
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
         //Act
-        FetchTransactionsDto result = transactionService.readAll();
+        FetchTransactionsDto result = transactionService.getAll(null);
 
         //Assert
         assertNotNull(result);
@@ -850,7 +850,7 @@ public class TransactionServiceTests {
         when(transactionRepository.findByCategoryIdsAndCurrentMonth(any(), any())).thenReturn(expectedUserCreatedTransactions);
 
         //Act
-        FetchTransactionsDto result = transactionService.readAll();
+        FetchTransactionsDto result = transactionService.getAll(null);
 
         //Assert
         assertNotNull(result);
@@ -892,7 +892,7 @@ public class TransactionServiceTests {
         when(transactionRepository.findByAccountIdsAndCurrentMonthOrUnassignedPreviousMonth(any(), any())).thenReturn(expectedUserAccountTransactions);
 
         //Act
-        FetchTransactionsDto result = transactionService.readAll();
+        FetchTransactionsDto result = transactionService.getAll(null);
 
         //Assert
         assertNotNull(result);
@@ -1017,7 +1017,7 @@ public class TransactionServiceTests {
         when(transactionRepository.findById(expectedTransaction.getTransactionId())).thenReturn(Optional.of(expectedTransaction));
 
         //Act
-        Transaction transaction = transactionService.readById(expectedTransaction.getTransactionId());
+        Transaction transaction = transactionService.findEntity(expectedTransaction.getTransactionId());
 
         //Assert
         assertNotNull(transaction);
@@ -1038,7 +1038,7 @@ public class TransactionServiceTests {
 
         //Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            transactionService.readById(invalidTransactionId);
+            transactionService.findEntity(invalidTransactionId);
         });
         assertNotNull(exception);
         assertEquals(exceptionMessage, exception.getMessage());
@@ -1132,7 +1132,6 @@ public class TransactionServiceTests {
         String transactionId = "valid-transaction-id";
         Category category = Category.builder()
                 .categoryId(10L)
-                .budgetAmount(1000.0)
                 .build();
         Transaction transaction = Transaction.builder()
                 .transactionId(transactionId)
@@ -1298,7 +1297,6 @@ public class TransactionServiceTests {
         Transaction transaction = Transaction.builder()
                 .transactionId(transactionId)
                 .amount(2000.0)
-                .isDeleted(false)
                 .build();
 
         ArgumentCaptor<Transaction> captor = ArgumentCaptor.forClass(Transaction.class);
@@ -1318,7 +1316,7 @@ public class TransactionServiceTests {
         Transaction capturedTransaction = captor.getValue();
 
         // Assert soft deletion
-        assertTrue(capturedTransaction.isDeleted(), "Transaction should be marked as deleted");
+        assertEquals(LocalDate.now().minusDays(1), capturedTransaction.getEndDate(), "Transaction end date should be set to yesterday");
     }
 
     @Test
