@@ -27,6 +27,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -254,5 +255,32 @@ public class AccountControllerTests {
         //Assert
         resultActions.andExpect(status().isConflict())
                 .andExpect(content().string(containsString(expectedErrorMsg)));
+    }
+
+    @Test
+    void testUpdate_Success() throws Exception {
+        com.bavis.budgetapp.dto.request.UpdateAccountDto updateDto = com.bavis.budgetapp.dto.request.UpdateAccountDto.builder()
+                .accountId("account-id")
+                .accountName("Updated Account")
+                .accountType(AccountType.SAVING)
+                .balance(5000.0)
+                .build();
+
+        AccountResponseDto updatedResponse = AccountResponseDto.builder()
+                .accountId("account-id")
+                .accountName("Updated Account")
+                .accountType(AccountType.SAVING)
+                .balance(5000.0)
+                .build();
+
+        when(accountService.update(any(com.bavis.budgetapp.dto.request.UpdateAccountDto.class))).thenReturn(updatedResponse);
+
+        mockMvc.perform(put("/account")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountName").value("Updated Account"))
+                .andExpect(jsonPath("$.balance").value(5000.0))
+                .andExpect(jsonPath("$.accountType").value("SAVING"));
     }
 }

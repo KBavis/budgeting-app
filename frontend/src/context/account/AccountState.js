@@ -10,7 +10,9 @@ import {
    ACCOUNTS_FETCH_FAILED,
    CLEAR_ERRORS,
    SET_LOADING, REMOVE_ACCOUNT_FAILURE, REMOVE_ACCOUNT_SUCCESS,
-   UPDATE_ACCOUNT_BALANCE
+   UPDATE_ACCOUNT_BALANCE,
+   UPDATE_ACCOUNT_SUCCESS,
+   UPDATE_ACCOUNT_FAILURE
 } from "./types";
 import setAuthToken from "../../utils/setAuthToken";
 import AccountContext from "./accountContext";
@@ -127,6 +129,41 @@ const AccountState = (props) => {
          })
    }
 
+   /**
+    * Functionality to update an existing Account via REST API
+    *
+    * @param updateAccountDto
+    *          - DTO containing updated Account attributes
+    */
+   const updateAccount = async (updateAccountDto) => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      const config = {
+         headers: {
+            "Content-Type": "application/json",
+         },
+      };
+
+      try {
+         const res = await axios.put(`${apiUrl}/account`, updateAccountDto, config);
+         dispatch({
+            type: UPDATE_ACCOUNT_SUCCESS,
+            payload: res.data,
+         });
+         setAlert("Account updated successfully", "success");
+         return res.data;
+      } catch (err) {
+         console.error(err);
+         dispatch({
+            type: UPDATE_ACCOUNT_FAILURE,
+            payload: err.response?.data?.error || "Failed to update account",
+         });
+         setAlert(err.response?.data?.error || "Failed to update account", "danger");
+      }
+   };
+
    return (
       <AccountContext.Provider
          value={{
@@ -138,6 +175,7 @@ const AccountState = (props) => {
             fetchAccounts,
             setLoading,
             removeAccount,
+            updateAccount,
             updateAccountBalance
          }}
       >

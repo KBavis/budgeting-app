@@ -178,7 +178,7 @@ public class AccountServiceImpl implements AccountService{
 
 		String newName = updateAccountDto.getAccountName() != null ? updateAccountDto.getAccountName() : currentName;
 		AccountType newType = updateAccountDto.getAccountType() != null ? updateAccountDto.getAccountType() : currentType;
-		Double newBalance = updateAccountDto.getBalance() != null ? updateAccountDto.getBalance() : currentBalance;
+		Double newBalance = currentBalance;
 
 		AccountVt updateVt = AccountVt.builder()
 				.account(accountToUpdate)

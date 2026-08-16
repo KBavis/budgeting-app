@@ -95,6 +95,14 @@ public class AccountController {
 		return ResponseEntity.ok(_accountService.update(updateAccountDto));
 	}
 
+	@PutMapping("/{accountId}")
+	public ResponseEntity<AccountResponseDto> updateWithId(@PathVariable(value = "accountId") String accountId,
+														   @Valid @RequestBody UpdateAccountDto updateAccountDto) {
+		updateAccountDto.setAccountId(accountId);
+		log.info("Received request to update account with ID {}: [{}]", accountId, updateAccountDto);
+		return ResponseEntity.ok(_accountService.update(updateAccountDto));
+	}
+
 	/**
 	 * Delete a specific Account
 	 *

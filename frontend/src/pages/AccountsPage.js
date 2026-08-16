@@ -6,6 +6,7 @@ import { FaPlus, FaWallet, FaCreditCard, FaArrowUp, FaArrowDown } from "react-ic
 import { PlaidLink } from "react-plaid-link";
 import Account from "../components/accounts/Account";
 import ConfirmationModal from "../components/layout/ConfirmationModal";
+import Modal from "../components/layout/Modal";
 import transactionContext from "../context/transaction/transactionContext";
 import { ThemeContext } from "../context/theme/ThemeContext";
 
@@ -13,7 +14,7 @@ import { ThemeContext } from "../context/theme/ThemeContext";
  * Page to display the current user's connected Accounts with full Light/Dark mode support
  */
 const AccountsPage = () => {
-    const { accounts, fetchAccounts, setLoading, createAccount, removeAccount, error } = useContext(accountContext);
+    const { accounts, fetchAccounts, setLoading, createAccount, updateAccount, removeAccount, error } = useContext(accountContext);
     const { setAlert } = useContext(alertContext);
     const { refreshLinkToken, user } = useContext(authContext);
     const { fetchTransactions } = useContext(transactionContext);
@@ -28,6 +29,12 @@ const AccountsPage = () => {
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [accountToDelete, setAccountToDelete] = useState(null);
 
+    // Edit modal states
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [accountToEdit, setAccountToEdit] = useState(null);
+    const [editAccountName, setEditAccountName] = useState("");
+    const [editAccountType, setEditAccountType] = useState("CHECKING");
+
     const handleShowConfirmationModal = (account) => {
         setAccountToDelete(account);
         setShowConfirmationModal(true);
@@ -36,6 +43,36 @@ const AccountsPage = () => {
     const handleCloseConfirmationModal = () => {
         setShowConfirmationModal(false);
         setAccountToDelete(null);
+    };
+
+    const handleOpenEditModal = (account) => {
+        setAccountToEdit(account);
+        setEditAccountName(account.accountName || "");
+        setEditAccountType(account.accountType || "CHECKING");
+        setShowEditModal(true);
+    };
+
+    const handleSaveEditAccount = async (e) => {
+        e.preventDefault();
+        if (!editAccountName.trim()) {
+            setAlert("Account name cannot be empty", "danger");
+            return;
+        }
+
+        try {
+            await updateAccount({
+                accountId: accountToEdit.accountId,
+                accountName: editAccountName.trim(),
+                accountType: editAccountType
+            });
+            setShowEditModal(false);
+            setAccountToEdit(null);
+            await fetchAccounts();
+            await fetchTransactions();
+        } catch (err) {
+            console.error(err);
+            setAlert("Failed to update account", "danger");
+        }
     };
 
     const handleConfirm = async () => {
@@ -230,6 +267,7 @@ const AccountsPage = () => {
                                                 key={account.accountId}
                                                 account={account}
                                                 handleShowConfirmationModal={handleShowConfirmationModal}
+                                                handleOpenEditModal={handleOpenEditModal}
                                             />
                                         ))}
                                     </div>
@@ -251,6 +289,7 @@ const AccountsPage = () => {
                                                 key={account.accountId}
                                                 account={account}
                                                 handleShowConfirmationModal={handleShowConfirmationModal}
+                                                handleOpenEditModal={handleOpenEditModal}
                                             />
                                         ))}
                                     </div>
@@ -283,6 +322,72 @@ const AccountsPage = () => {
                     </PlaidLink>
                 </div>
             </div>
+
+            {/* Edit Account Modal */}
+            {showEditModal && accountToEdit && (
+                <Modal isOpen={true} onClose={() => setShowEditModal(false)} title="Edit Account Details" size="md">
+                    <form onSubmit={handleSaveEditAccount} className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            <label className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                                Account Name
+                            </label>
+                            <input
+                                type="text"
+                                value={editAccountName}
+                                onChange={(e) => setEditAccountName(e.target.value)}
+                                placeholder="e.g. Primary Checking"
+                                className={`px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
+                                    isDark
+                                        ? "bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500"
+                                        : "bg-white border border-slate-300 text-slate-900 placeholder-slate-400"
+                                }`}
+                                required
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                            <label className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                                Account Type
+                            </label>
+                            <select
+                                value={editAccountType}
+                                onChange={(e) => setEditAccountType(e.target.value)}
+                                className={`px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
+                                    isDark
+                                        ? "bg-slate-900 border border-slate-700 text-slate-100"
+                                        : "bg-white border border-slate-300 text-slate-900"
+                                }`}
+                            >
+                                <option value="CHECKING">Checking</option>
+                                <option value="SAVING">Savings</option>
+                                <option value="CREDIT">Credit</option>
+                                <option value="LOAN">Loan</option>
+                                <option value="INVESTMENT">Investment</option>
+                            </select>
+                        </div>
+
+                        <div className={`flex justify-end gap-3 pt-3 border-t ${isDark ? "border-slate-800" : "border-slate-200"}`}>
+                            <button
+                                type="button"
+                                onClick={() => setShowEditModal(false)}
+                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                    isDark
+                                        ? "text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700"
+                                        : "text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200"
+                                }`}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="px-5 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-md"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </Modal>
+            )}
 
             {/* Confirmation Modal */}
             {showConfirmationModal && accountToDelete && (
