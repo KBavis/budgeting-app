@@ -328,7 +328,8 @@ public class CategoryServiceImpl implements CategoryService{
 		log.info("Deleting Category with id [{}]", categoryId);
 
 		Category categoryToDelete = findEntity(categoryId, null);
-		categoryRepository.delete(categoryToDelete);
+		categoryToDelete.setEndDate(LocalDate.now().minusDays(1));
+		categoryRepository.save(categoryToDelete);
 	}
 
 	private Category updateCategoryAllocation(UpdateCategoryDto updateCategoryDto, CategoryType categoryType) {
