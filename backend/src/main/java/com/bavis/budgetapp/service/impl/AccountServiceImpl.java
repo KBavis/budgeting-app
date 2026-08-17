@@ -154,7 +154,7 @@ public class AccountServiceImpl implements AccountService{
 			}
 		}
 
-		accountToDelete.setEndDate(LocalDate.now());
+		accountToDelete.setEndDate(LocalDate.now().minusDays(1));
 		_accountRepository.save(accountToDelete);
 	}
 

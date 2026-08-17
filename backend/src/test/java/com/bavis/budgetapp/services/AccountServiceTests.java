@@ -128,7 +128,7 @@ public class AccountServiceTests {
         Mockito.verify(accountRepository, times(1)).save(argumentCaptor.capture());
 
         Account savedAccount = argumentCaptor.getValue();
-        assertEquals(LocalDate.now(), savedAccount.getEndDate());
+        assertEquals(LocalDate.now().minusDays(1), savedAccount.getEndDate());
     }
 
     @Test
