@@ -44,6 +44,12 @@ public class RenameCategoryDtoValidatorTests {
     }
 
     @Test
+    void testIsValid_AmpersandInName_Success() {
+        validDto.setCategoryName("Food & Dining");
+        assertTrue(validator.isValid(validDto, context));
+    }
+
+    @Test
     void testIsValid_NameTooLong_Fail() {
         invalidDto.setCategoryName("iiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvkkkkkkkkkkkkkkkkkkkkkkllll");
         assertFalse(validator.isValid(invalidDto, context));

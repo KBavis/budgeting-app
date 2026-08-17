@@ -21,7 +21,7 @@ public class RenameCategoryDtoValidator implements ConstraintValidator<RenameCat
     public boolean isValid(RenameCategoryDto renameCategoryDto, ConstraintValidatorContext constraintValidatorContext) {
         if(renameCategoryDto == null || renameCategoryDto.getCategoryName() == null) { return false; }
 
-        String regex = "^[a-zA-Z\s]{1,30}$";
+        String regex = "^[a-zA-Z&\\s]{1,30}$";
         return renameCategoryDto.getCategoryName().matches(regex);
     }
 }
