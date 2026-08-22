@@ -83,7 +83,7 @@ public class Transaction {
 
 	@Builder.Default
 	@Column(name = "start_date", nullable = false)
-	private LocalDate startDate = TemporalConstants.BEGINNING_OF_TIME;
+	private LocalDate startDate = LocalDate.now();
 
 	@Builder.Default
 	@Column(name = "end_date", nullable = false)
