@@ -17,7 +17,10 @@ import com.bavis.budgetapp.entity.*;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.filter.TransactionFilters;
 import com.bavis.budgetapp.mapper.AccountMapperImpl;
+import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.mapper.TransactionMapper;
+import com.bavis.budgetapp.dto.response.CategoryResponseDto;
+import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.model.PlaidConfidenceLevel;
 import com.bavis.budgetapp.model.PlaidDetailedCategory;
 import com.bavis.budgetapp.model.PlaidPrimaryCategory;
@@ -78,6 +81,12 @@ public class TransactionServiceTests {
 
     @Mock
     private SuggestionEngineClient suggestionEngineClient;
+
+    @Mock
+    private EffectivityService effectivityService;
+
+    @Mock
+    private CategoryMapper categoryMapper;
 
     @Spy
     @InjectMocks
@@ -1418,6 +1427,19 @@ public class TransactionServiceTests {
 
     @Test
     void testPredictCategories_updatesSuggestedCategory() throws JsonProcessingException {
+        CategoryType categoryType = CategoryType.builder().categoryTypeId(1L).build();
+        CategoryVt activeVt = CategoryVt.builder()
+                .name("Food")
+                .budgetAllocationPercentage(0.5)
+                .budgetAmount(500.0)
+                .categoryType(categoryType)
+                .build();
+        Category category = Category.builder()
+                .categoryId(1L)
+                .validTimes(new ArrayList<>(List.of(activeVt)))
+                .build();
+        activeVt.setCategory(category);
+
         Transaction transaction = Transaction.builder()
                 .amount(1000.00)
                 .dateTime(LocalDateTime.now())
@@ -1431,11 +1453,20 @@ public class TransactionServiceTests {
                 .merchantName("Dunkin'")
                 .build();
         List<Transaction> transactions = List.of(transaction);
-        Category category = new Category();
+
+        CategoryResponseDto expectedDto = CategoryResponseDto.builder()
+                .categoryId(1L)
+                .name("Food")
+                .budgetAllocationPercentage(0.5)
+                .budgetAmount(500.0)
+                .categoryTypeId(1L)
+                .build();
 
         // mocks
         when(suggestionEngineClient.predictCategory(any())).thenReturn(1L);
         when(categoryService.findEntity(1L, null)).thenReturn(category);
+        when(effectivityService.getActiveVt(any(), any())).thenReturn(activeVt);
+        when(categoryMapper.toResponseDto(category, activeVt)).thenReturn(expectedDto);
 
         // act
         transactionService.predictCategories(transactions, 1L);
@@ -1445,6 +1476,9 @@ public class TransactionServiceTests {
 
         // assert
         assertEquals(transaction.getSuggestedCategory(), category);
+        assertNotNull(transaction.getSuggestedCategoryDto());
+        assertEquals("Food", transaction.getSuggestedCategoryDto().getName());
+        assertEquals(1L, transaction.getSuggestedCategoryDto().getCategoryTypeId());
     }
 
     @Test

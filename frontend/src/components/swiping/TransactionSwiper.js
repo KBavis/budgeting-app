@@ -519,46 +519,50 @@ const TransactionSwiper = ({ transactions = [], categories = [], categoryTypes =
             <div className="flex flex-col gap-4">
               {/* ML Suggested Category (Accept / Reject) */}
               {showSuggestion && (
-                <div className="bg-gradient-to-br from-indigo-950/70 via-purple-950/50 to-slate-900/60 border border-indigo-500/40 rounded-2xl p-4 shadow-lg ai-recommend-glow">
+                <div className="bg-gradient-to-br from-indigo-950/80 via-purple-950/60 to-slate-900/80 border border-indigo-500/50 rounded-2xl p-3.5 sm:p-4 shadow-xl ai-recommend-glow">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <FaMagic className="w-3.5 h-3.5 text-amber-400" />
-                      <span className="text-xs font-extrabold text-indigo-300 uppercase tracking-wider">
+                      <FaMagic className="w-4 h-4 text-amber-400 animate-pulse" />
+                      <span className="text-[11px] sm:text-xs font-black text-indigo-200 uppercase tracking-widest">
                         ML Suggested Category
                       </span>
                     </div>
                     {selectedCategory?.categoryId === suggestedCategory.categoryId && (
-                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        Selected
+                      <span className="text-[10px] sm:text-xs font-extrabold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/40 shadow-sm flex items-center gap-1">
+                        <FaCheck className="w-2.5 h-2.5" /> Selected
                       </span>
                     )}
                   </div>
 
-                  <div className="bg-slate-900/70 rounded-xl border border-indigo-500/20 p-3 mb-3">
-                    <span className="text-[11px] font-bold text-indigo-300/70 uppercase tracking-wider block mb-0.5">
-                      {((categoryTypes || []).find(ct => ct.categoryTypeId === suggestedCategory.categoryTypeId)?.name) || 'Category'}
+                  <div className="bg-slate-900/90 rounded-xl border border-indigo-400/30 p-3 mb-3 shadow-inner">
+                    <span className="text-[10px] sm:text-[11px] font-extrabold text-indigo-300/80 uppercase tracking-wider block mb-1">
+                      {((categoryTypes || []).find(ct => ct.categoryTypeId === suggestedCategory.categoryTypeId)?.name) || 'Suggested Category'}
                     </span>
-                    <span className="text-xl font-black text-white block">
-                      {suggestedCategory.name}
+                    <span className="text-lg sm:text-xl font-black text-white block truncate tracking-tight">
+                      {suggestedCategory.name || 'Unmapped Category'}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <button
                       onClick={handleAcceptSuggestion}
-                      className={`flex-1 py-2.5 font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 border ${selectedCategory?.categoryId === suggestedCategory.categoryId
-                        ? 'bg-emerald-600 border-emerald-500 text-white ring-2 ring-emerald-400/40'
-                        : 'bg-indigo-600/80 hover:bg-indigo-600 border-indigo-500 text-white'
+                      className={`flex-1 py-2.5 px-3 font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 border ${selectedCategory?.categoryId === suggestedCategory.categoryId
+                        ? 'bg-emerald-600 border-emerald-400 text-white ring-2 ring-emerald-400/50'
+                        : 'bg-indigo-600 hover:bg-indigo-500 border-indigo-400 text-white active:scale-98'
                         }`}
                     >
-                      <FaCheck className="w-3.5 h-3.5" />
-                      <span>{selectedCategory?.categoryId === suggestedCategory.categoryId ? 'Selected' : 'Use ML Suggestion'}</span>
+                      <FaCheck className="w-3.5 h-3.5 shrink-0 text-emerald-200" />
+                      <span className="truncate">
+                        {selectedCategory?.categoryId === suggestedCategory.categoryId
+                          ? `Selected: ${suggestedCategory.name || 'Suggestion'}`
+                          : `Accept "${suggestedCategory.name || 'Suggestion'}"`}
+                      </span>
                     </button>
                     <button
                       onClick={handleDenySuggestion}
-                      className="py-2.5 px-4 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-sm rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-2"
+                      className="py-2.5 px-3 bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs sm:text-sm rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-1.5 shrink-0 active:scale-98"
                     >
-                      <FaTimes className="w-3.5 h-3.5" />
+                      <FaTimes className="w-3.5 h-3.5 shrink-0" />
                       <span>Choose Other</span>
                     </button>
                   </div>

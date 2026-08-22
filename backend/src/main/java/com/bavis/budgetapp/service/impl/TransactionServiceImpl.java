@@ -15,6 +15,7 @@ import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.dto.response.FetchTransactionsDto;
 import com.bavis.budgetapp.dto.response.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.dto.response.SyncTransactionsDto;
+import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.dto.response.TransactionMetadata;
 import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.AccountVt;
@@ -23,7 +24,9 @@ import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.exception.PlaidServiceException;
+import com.bavis.budgetapp.entity.CategoryVt;
 import com.bavis.budgetapp.filter.TransactionFilters;
+import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.mapper.TransactionMapper;
 import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.TransactionService;
@@ -75,6 +78,8 @@ public class TransactionServiceImpl implements TransactionService {
     private final SuggestionEngineClient _suggestionEngineClient;
 
     private final EffectivityService _effectivityService;
+
+    private final CategoryMapper _categoryMapper;
 
     @Lazy
     private final CategoryServiceImpl categoryService;
@@ -311,6 +316,10 @@ public class TransactionServiceImpl implements TransactionService {
                     .findByCategoryIdsAndCurrentMonth(userCategoryIds, currentDate);
             currentMonthTransactions.addAll(userCreatedTransactions);
         }
+
+        // Populate suggestedCategoryDto for all fetched transactions
+        populateSuggestedCategoryDtos(currentMonthTransactions);
+        populateSuggestedCategoryDtos(unassignedPreviousMonthTransactions);
 
         log.info("Fetched {} current-month and {} unassigned previous-month transactions for UserID {}", currentMonthTransactions.size(), unassignedPreviousMonthTransactions.size(), currentAuthUser.getUserId());
         return FetchTransactionsDto.builder()
@@ -616,7 +625,13 @@ public class TransactionServiceImpl implements TransactionService {
 
                 // check if prediction was made & assign
                 if (categoryId != null) {
-                    transaction.setSuggestedCategory(categoryService.findEntity(categoryId, null));
+                    Category suggestedCategory = categoryService.findEntity(categoryId, null);
+                    transaction.setSuggestedCategory(suggestedCategory);
+
+                    // Build CategoryResponseDto via EffectivityService + CategoryMapper
+                    CategoryVt activeVt = _effectivityService.getActiveVt(suggestedCategory.getValidTimes(), LocalDate.now());
+                    CategoryResponseDto dto = _categoryMapper.toResponseDto(suggestedCategory, activeVt);
+                    transaction.setSuggestedCategoryDto(dto);
                 } else {
                     log.info("No Category suggestion for Transaction {}", metadata);
                 }
@@ -625,6 +640,27 @@ public class TransactionServiceImpl implements TransactionService {
             }
 
 
+        }
+    }
+
+    /**
+     * Populates the @Transient suggestedCategoryDto field for transactions loaded from the DB.
+     * Uses EffectivityService + CategoryMapper to resolve the active VT snapshot.
+     *
+     * @param transactions
+     *          - List of transactions to populate suggestedCategoryDto for
+     */
+    private void populateSuggestedCategoryDtos(List<Transaction> transactions) {
+        for (Transaction transaction : transactions) {
+            Category suggested = transaction.getSuggestedCategory();
+            if (suggested != null && suggested.getValidTimes() != null && !suggested.getValidTimes().isEmpty()) {
+                try {
+                    CategoryVt activeVt = _effectivityService.getActiveVt(suggested.getValidTimes(), LocalDate.now());
+                    transaction.setSuggestedCategoryDto(_categoryMapper.toResponseDto(suggested, activeVt));
+                } catch (Exception e) {
+                    log.warn("Unable to resolve suggestedCategoryDto for transaction {}: {}", transaction.getTransactionId(), e.getMessage());
+                }
+            }
         }
     }
 

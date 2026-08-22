@@ -5,10 +5,12 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 import com.bavis.budgetapp.constants.TemporalConstants;
+import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.model.PlaidConfidenceLevel;
 import com.bavis.budgetapp.model.PlaidDetailedCategory;
 import com.bavis.budgetapp.model.PlaidPrimaryCategory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
@@ -19,6 +21,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -102,12 +105,21 @@ public class Transaction {
 	private PersonalFinanceCategory personalFinanceCategory;
 
 	/**
-	 * Suggested category based on Model prediction
+	 * Suggested category based on Model prediction (JPA FK preserved for persistence)
 	 */
 	@ToString.Exclude
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "suggestedCategoryId", referencedColumnName = "categoryId")
 	private Category suggestedCategory;
+
+	/**
+	 * Fully-resolved CategoryResponseDto for the suggestedCategory.
+	 * Populated in the service layer via EffectivityService + CategoryMapper.
+	 */
+	@Transient
+	@JsonProperty("suggestedCategory")
+	private CategoryResponseDto suggestedCategoryDto;
 
 	/**
 	 * Many Transactions To One Account
@@ -141,3 +153,4 @@ public class Transaction {
 				&& Objects.equals(name, other.name);
 	}
 }
+
