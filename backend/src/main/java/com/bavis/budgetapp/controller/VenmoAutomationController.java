@@ -65,4 +65,15 @@ public class VenmoAutomationController {
         venmoEmailService.disableAutomation();
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Mark Venmo automation as verified after user confirms forwarding in Gmail.
+     *
+     * @return - updated VenmoAutomationDto with verified=true
+     */
+    @PostMapping("/verify")
+    public ResponseEntity<VenmoAutomationDto> verify() {
+        VenmoAutomationDto dto = venmoEmailService.verifyAutomation();
+        return ResponseEntity.ok(dto);
+    }
 }

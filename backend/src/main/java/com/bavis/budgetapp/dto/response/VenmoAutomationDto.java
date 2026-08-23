@@ -25,4 +25,5 @@ public class VenmoAutomationDto {
     private int enrichedCount;
     private String verificationCode;
     private String verificationLink;
+    private boolean verified;
 }

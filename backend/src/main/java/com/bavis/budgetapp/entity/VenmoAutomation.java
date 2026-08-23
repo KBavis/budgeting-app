@@ -80,4 +80,11 @@ public class VenmoAutomation {
      */
     @Column(columnDefinition = "TEXT")
     private String verificationLink;
+
+    /**
+     * Indicates whether email forwarding has been verified and confirmed by the user.
+     */
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean verified = false;
 }

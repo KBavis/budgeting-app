@@ -24,6 +24,7 @@ const VenmoAutomationPage = () => {
     const [copied, setCopied] = useState(false);
     const [showGmailSteps, setShowGmailSteps] = useState(false);
     const [showOutlookSteps, setShowOutlookSteps] = useState(false);
+    const [showDetails, setShowDetails] = useState(false);
 
     const fetchSettings = useCallback(async () => {
         try {
@@ -90,6 +91,16 @@ const VenmoAutomationPage = () => {
         } catch (err) {
             console.error("Failed to enable Venmo automation", err);
             setAlert("Failed to enable Venmo automation", "danger");
+        }
+    };
+
+    const handleVerify = async () => {
+        try {
+            const res = await axios.post(`${apiUrl}/venmo/automation/verify`);
+            setSettings(res.data);
+            setAlert("Venmo automation verified!", "success");
+        } catch (err) {
+            console.error("Failed to verify Venmo automation", err);
         }
     };
 
@@ -194,8 +205,8 @@ const VenmoAutomationPage = () => {
                         </div>
                     ) : (
                         <>
-                            {/* Enabled Status Banner */}
-                            <div className={`border rounded-3xl p-5 shadow-xl backdrop-blur-sm ${
+                            {/* Enabled & Verified Status Card */}
+                            <div className={`border rounded-3xl p-6 shadow-xl backdrop-blur-sm ${
                                 settings.enabled
                                     ? isDark
                                         ? "bg-emerald-950/30 border-emerald-800/40"
@@ -205,34 +216,55 @@ const VenmoAutomationPage = () => {
                                         : "bg-white/90 border-slate-200"
                             }`}>
                                 <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2.5">
-                                        <div className={`w-2.5 h-2.5 rounded-full ${
-                                            settings.enabled ? "bg-emerald-400 animate-pulse" : "bg-slate-500"
-                                        }`} />
-                                        <span className={`text-sm font-bold ${
-                                            settings.enabled
-                                                ? isDark ? "text-emerald-300" : "text-emerald-700"
-                                                : isDark ? "text-slate-400" : "text-slate-600"
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                                            settings.enabled && settings.verified
+                                                ? "bg-emerald-500/20 text-emerald-400"
+                                                : settings.enabled
+                                                    ? "bg-amber-500/20 text-amber-400"
+                                                    : "bg-slate-700 text-slate-400"
                                         }`}>
-                                            {settings.enabled ? "Active" : "Disabled"}
-                                        </span>
+                                            <FaCheck className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-base font-extrabold ${
+                                                    settings.enabled
+                                                        ? isDark ? "text-emerald-300" : "text-emerald-700"
+                                                        : isDark ? "text-slate-400" : "text-slate-600"
+                                                }`}>
+                                                    {settings.enabled
+                                                        ? settings.verified
+                                                            ? "Verified & Connected"
+                                                            : "Forwarding Configured"
+                                                        : "Automation Disabled"}
+                                                </span>
+                                            </div>
+                                            <p className={`text-xs opacity-75 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                                                {settings.enabled
+                                                    ? settings.verified
+                                                        ? "Venmo emails are automatically parsed and enriched."
+                                                        : "Complete forwarding setup in Gmail to start automatic enrichment."
+                                                    : "Re-enable automation at any time to resume enrichment."}
+                                            </p>
+                                        </div>
                                     </div>
 
                                     {/* Toggle Button */}
                                     <button
                                         onClick={settings.enabled ? handleDisable : handleReEnable}
-                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
                                             settings.enabled
                                                 ? isDark
                                                     ? "text-slate-400 hover:text-rose-400 bg-slate-800 hover:bg-rose-950/50"
                                                     : "text-slate-600 hover:text-rose-600 bg-slate-100 hover:bg-rose-50"
-                                                : "text-white bg-indigo-600 hover:bg-indigo-500"
+                                                : "text-white bg-indigo-600 hover:bg-indigo-500 shadow-md"
                                         }`}
                                     >
                                         {settings.enabled ? (
-                                            <><FaToggleOn className="w-3.5 h-3.5" /> Disable</>
+                                            <><FaToggleOn className="w-4 h-4" /> Disable</>
                                         ) : (
-                                            <><FaToggleOff className="w-3.5 h-3.5" /> Enable</>
+                                            <><FaToggleOff className="w-4 h-4" /> Enable</>
                                         )}
                                     </button>
                                 </div>
@@ -266,8 +298,8 @@ const VenmoAutomationPage = () => {
                                 )}
                             </div>
 
-                            {/* Forwarding Address Card */}
-                            {settings.enabled && (
+                            {/* Forwarding Address Card (Shown during onboarding or when expanded) */}
+                            {settings.enabled && (!settings.verified || showDetails) && (
                                 <div className={`border rounded-3xl p-5 shadow-xl backdrop-blur-sm ${
                                     isDark
                                         ? "bg-slate-800/80 border-slate-700/60"
@@ -312,8 +344,8 @@ const VenmoAutomationPage = () => {
                                 </div>
                             )}
 
-                            {/* Gmail Verification Banner (Auto-Captured) */}
-                            {settings.enabled && (settings.verificationCode || settings.verificationLink) && (
+                            {/* Gmail Verification Banner (Shown only when NOT verified) */}
+                            {settings.enabled && !settings.verified && (settings.verificationCode || settings.verificationLink) && (
                                 <div className={`border rounded-3xl p-5 shadow-xl backdrop-blur-sm ${
                                     isDark
                                         ? "bg-amber-950/40 border-amber-500/50 text-amber-200"
@@ -359,16 +391,24 @@ const VenmoAutomationPage = () => {
                                             href={settings.verificationLink}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs py-2.5 px-4 rounded-xl hover:brightness-110 transition-all shadow-md"
+                                            onClick={handleVerify}
+                                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs py-2.5 px-4 rounded-xl hover:brightness-110 transition-all shadow-md mb-3"
                                         >
                                             Confirm Directly in Gmail ↗
                                         </a>
                                     )}
+
+                                    <button
+                                        onClick={handleVerify}
+                                        className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md"
+                                    >
+                                        <FaCheck className="w-3.5 h-3.5" /> I've Confirmed Setup in Gmail
+                                    </button>
                                 </div>
                             )}
 
-                            {/* Setup Instructions */}
-                            {settings.enabled && (
+                            {/* Setup Instructions (Shown during onboarding or when expanded) */}
+                            {settings.enabled && (!settings.verified || showDetails) && (
                                 <div className={`border rounded-3xl p-5 shadow-xl backdrop-blur-sm ${
                                     isDark
                                         ? "bg-slate-800/80 border-slate-700/60"
@@ -469,6 +509,17 @@ const VenmoAutomationPage = () => {
                                         </p>
                                     </div>
                                 </div>
+                            )}
+                            {/* Toggle Details for Verified Users */}
+                            {settings.enabled && settings.verified && (
+                                <button
+                                    onClick={() => setShowDetails(!showDetails)}
+                                    className={`w-full py-2.5 text-center text-xs font-bold transition-all opacity-70 hover:opacity-100 ${
+                                        isDark ? "text-indigo-300" : "text-indigo-600"
+                                    }`}
+                                >
+                                    {showDetails ? "Hide Forwarding Address & Setup Details ▲" : "Show Forwarding Address & Setup Details ▼"}
+                                </button>
                             )}
                         </>
                     )}

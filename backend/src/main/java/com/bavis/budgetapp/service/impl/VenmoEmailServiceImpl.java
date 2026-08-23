@@ -306,16 +306,30 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
         }
     }
 
+    @Override
+    @Transactional
+    public VenmoAutomationDto verifyAutomation() {
+        User currentUser = userService.getCurrentAuthUser();
+        Optional<VenmoAutomation> existing = venmoAutomationRepository.findByUserUserId(currentUser.getUserId());
+        if (existing.isPresent()) {
+            VenmoAutomation automation = existing.get();
+            automation.setVerified(true);
+            venmoAutomationRepository.save(automation);
+            log.info("Marked Venmo automation verified for user ID: {}", currentUser.getUserId());
+            return toDto(automation);
+        }
+        return null;
+    }
+
     /**
      * Parse and store Gmail forwarding confirmation code/link from Google's
      * automated email.
      */
     private void handleGmailVerificationEmail(VenmoAutomation automation, String bodyPlain, String bodyHtml) {
-        String content = bodyPlain != null ? bodyPlain : (bodyHtml != null ? bodyHtml : "");
+        String content = (bodyPlain != null ? bodyPlain : "") + "\n" + (bodyHtml != null ? bodyHtml : "");
 
-        // Pattern 1: Gmail Confirmation Code (e.g. "Confirmation code: 123456789" or
-        // "code: 123456789")
-        Pattern codePattern = Pattern.compile("(?:confirmation code|code):?\\s*([0-9]{7,12})",
+        // Pattern 1: Gmail Confirmation Code (handles multiline / HTML / spaces between "code" and numbers)
+        Pattern codePattern = Pattern.compile("(?:confirmation code|verification code|code)[^0-9]{1,30}([0-9]{6,15})",
                 Pattern.CASE_INSENSITIVE);
         Matcher codeMatcher = codePattern.matcher(content);
         if (codeMatcher.find()) {
@@ -324,8 +338,7 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
                     codeMatcher.group(1));
         }
 
-        // Pattern 2: Gmail Confirmation Link (e.g.
-        // https://mail-settings.google.com/mail/vf-...)
+        // Pattern 2: Gmail Confirmation Link (e.g. https://mail-settings.google.com/mail/vf-...)
         Pattern linkPattern = Pattern.compile("(https://mail-settings\\.google\\.com/[^\\s\"'>]+)");
         Matcher linkMatcher = linkPattern.matcher(content);
         if (linkMatcher.find()) {
@@ -350,6 +363,7 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
                 .enrichedCount(automation.getEnrichedCount())
                 .verificationCode(automation.getVerificationCode())
                 .verificationLink(automation.getVerificationLink())
+                .verified(automation.isVerified())
                 .build();
     }
 

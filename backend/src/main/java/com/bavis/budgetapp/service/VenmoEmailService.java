@@ -57,11 +57,18 @@ public interface VenmoEmailService {
     void disableAutomation();
 
     /**
+     * Mark Venmo automation as verified for the currently authenticated user.
+     *
+     * @return
+     *          - updated automation settings with verified=true
+     */
+    VenmoAutomationDto verifyAutomation();
+
+    /**
      * Get the current Venmo automation settings for the authenticated user.
      *
      * @return
      *          - automation settings or null if not configured
      */
     VenmoAutomationDto getAutomationSettings();
-
 }
