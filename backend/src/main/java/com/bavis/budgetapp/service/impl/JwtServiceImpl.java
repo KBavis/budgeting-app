@@ -42,7 +42,7 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String generateToken(User user) throws JwtServiceException {
-        log.info("Generating JWT Token for User [{}]", user);
+        log.info("Generating JWT Token for User [{}]", user.getUsername());
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime expirationTime = GeneralUtil.addTimeToDate(currentTime,3, TimeType.HOURS);
 
@@ -53,7 +53,7 @@ public class JwtServiceImpl implements JwtService {
                     .withExpiresAt(GeneralUtil.localDateTimeToDate(expirationTime))
                     .sign(_algorithm);
         } catch (Exception e) {
-            log.error("Failed to generated JWT Token for User [{}]", user.toString());
+            log.error("Failed to generate JWT Token for User [{}]", user.getUsername());
             throw new JwtServiceException("Failed to Generate JWT Token: " + e.getMessage());
         }
     }

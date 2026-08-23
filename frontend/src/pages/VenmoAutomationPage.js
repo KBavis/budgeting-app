@@ -86,10 +86,10 @@ const VenmoAutomationPage = () => {
         try {
             const res = await axios.post(`${apiUrl}/venmo/automation/enable`);
             setSettings(res.data);
-            setAlert("Venmo automation re-enabled!", "success");
+            setAlert("Venmo automation enabled!", "success");
         } catch (err) {
-            console.error("Failed to re-enable Venmo automation", err);
-            setAlert("Failed to re-enable Venmo automation", "danger");
+            console.error("Failed to enable Venmo automation", err);
+            setAlert("Failed to enable Venmo automation", "danger");
         }
     };
 
@@ -232,36 +232,38 @@ const VenmoAutomationPage = () => {
                                         {settings.enabled ? (
                                             <><FaToggleOn className="w-3.5 h-3.5" /> Disable</>
                                         ) : (
-                                            <><FaToggleOff className="w-3.5 h-3.5" /> Re-enable</>
+                                            <><FaToggleOff className="w-3.5 h-3.5" /> Enable</>
                                         )}
                                     </button>
                                 </div>
 
-                                {/* Stats Row */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className={`p-3 rounded-xl ${
-                                        isDark ? "bg-slate-800/80" : "bg-white/80 border border-slate-100"
-                                    }`}>
-                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${
-                                            isDark ? "text-slate-500" : "text-slate-400"
-                                        }`}>Enriched</p>
-                                        <p className={`text-xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
-                                            {settings.enrichedCount}
-                                        </p>
+                                {/* Stats Row (only shown when enabled) */}
+                                {settings.enabled && (
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className={`p-3 rounded-xl ${
+                                            isDark ? "bg-slate-800/80" : "bg-white/80 border border-slate-100"
+                                        }`}>
+                                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${
+                                                isDark ? "text-slate-500" : "text-slate-400"
+                                            }`}>Enriched</p>
+                                            <p className={`text-xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
+                                                {settings.enrichedCount}
+                                            </p>
+                                        </div>
+                                        <div className={`p-3 rounded-xl ${
+                                            isDark ? "bg-slate-800/80" : "bg-white/80 border border-slate-100"
+                                        }`}>
+                                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${
+                                                isDark ? "text-slate-500" : "text-slate-400"
+                                            }`}>Last Processed</p>
+                                            <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                                                {settings.lastProcessedAt
+                                                    ? new Date(settings.lastProcessedAt).toLocaleDateString()
+                                                    : "Never"}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className={`p-3 rounded-xl ${
-                                        isDark ? "bg-slate-800/80" : "bg-white/80 border border-slate-100"
-                                    }`}>
-                                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${
-                                            isDark ? "text-slate-500" : "text-slate-400"
-                                        }`}>Last Processed</p>
-                                        <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
-                                            {settings.lastProcessedAt
-                                                ? new Date(settings.lastProcessedAt).toLocaleDateString()
-                                                : "Never"}
-                                        </p>
-                                    </div>
-                                </div>
+                                )}
                             </div>
 
                             {/* Forwarding Address Card */}
