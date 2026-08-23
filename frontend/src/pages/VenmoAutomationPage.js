@@ -2,9 +2,8 @@ import React, { useState, useEffect, useContext, useCallback } from "react";
 import axios from "axios";
 import apiUrl from "../utils/url";
 import alertContext from "../context/alert/alertContext";
-import authContext from "../context/auth/authContext";
 import { ThemeContext } from "../context/theme/ThemeContext";
-import { FaEnvelope, FaCheck, FaCopy, FaToggleOn, FaToggleOff, FaArrowRight, FaClock, FaCheckCircle, FaSlidersH, FaExternalLinkAlt } from "react-icons/fa";
+import { FaEnvelope, FaCheck, FaCopy, FaToggleOn, FaToggleOff, FaClock, FaCheckCircle, FaSlidersH, FaExternalLinkAlt, FaListOl, FaCog } from "react-icons/fa";
 
 /**
  * Venmo Automation Settings Page
@@ -150,6 +149,43 @@ const VenmoAutomationPage = () => {
     const isComplete = currentPhase === "COMPLETE" && settings?.enabled;
     const provider = settings?.emailProvider || selectedProvider;
 
+    // Phase 2 provider-specific instructions helper
+    const renderPhase2Steps = () => {
+        switch (provider) {
+            case "GMAIL":
+                return [
+                    { step: 1, label: "Open Gmail", desc: "Click the Search Options slider icon on the right side of the search bar." },
+                    { step: 2, label: "Set Filters", desc: "Set From: venmo@venmo.com and Has the words / Subject: You paid." },
+                    { step: 3, label: "Click Create Filter", desc: "Click 'Create filter' at the bottom of the popup window." },
+                    { step: 4, label: "Set Forwarding Action", desc: "Check 'Forward it to:' and select your unique forwarding address." },
+                    { step: 5, label: "Save", desc: "Click 'Create filter' to finalize the rule." }
+                ];
+            case "OUTLOOK":
+                return [
+                    { step: 1, label: "Open Outlook Settings", desc: "Click Settings (gear icon) -> Mail -> Rules." },
+                    { step: 2, label: "Add New Rule", desc: "Click 'Add new rule' and title it 'Venmo Automation'." },
+                    { step: 3, label: "Add Sender Condition", desc: "Add Condition: From -> venmo@venmo.com." },
+                    { step: 4, label: "Add Subject Condition", desc: "Add Condition: Subject includes -> You paid." },
+                    { step: 5, label: "Set Action & Save", desc: "Add Action: Forward to -> paste your forwarding address, then click Save." }
+                ];
+            case "YAHOO":
+                return [
+                    { step: 1, label: "Open Yahoo Settings", desc: "Click Settings (gear icon) -> More Settings -> Filters." },
+                    { step: 2, label: "Create Filter", desc: "Click 'Add new filters' and title it 'Venmo Automation'." },
+                    { step: 3, label: "Set Match Rules", desc: "Set From contains: venmo@venmo.com AND Subject contains: You paid." },
+                    { step: 4, label: "Set Action", desc: "Choose your unique forwarding address as the forwarding destination." },
+                    { step: 5, label: "Save Filter", desc: "Click 'Save' to activate rule." }
+                ];
+            default:
+                return [
+                    { step: 1, label: "Open Email Settings", desc: "Go to your mail client's Filter Rules or Forwarding Settings." },
+                    { step: 2, label: "Define Filter Rule", desc: "Set condition: Sender = venmo@venmo.com AND Subject contains 'You paid'." },
+                    { step: 3, label: "Set Forward Action", desc: "Set action to forward matching emails to your unique address." },
+                    { step: 4, label: "Save Rule", desc: "Save the filter rule to begin automated email forwarding." }
+                ];
+        }
+    };
+
     return (
         <div className={`flex flex-col min-h-screen ${
             isDark
@@ -288,7 +324,7 @@ const VenmoAutomationPage = () => {
                                             }`}>
                                                 {settings.enabled
                                                     ? isComplete
-                                                        ? "Verified & Fully Connected"
+                                                        ? "Connected & Operational"
                                                         : `Setup In Progress (${currentPhase === "FORWARDING_VERIFICATION" ? "Phase 1" : "Phase 2"})`
                                                     : "Automation Disabled"}
                                             </span>
@@ -394,12 +430,12 @@ const VenmoAutomationPage = () => {
                                         <h3 className={`text-sm font-black uppercase tracking-wider ${
                                             isDark ? "text-white" : "text-slate-900"
                                         }`}>
-                                            Setup Progress
+                                            Setup Instructions
                                         </h3>
                                         <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                                             isDark ? "bg-indigo-900/50 text-indigo-300" : "bg-indigo-100 text-indigo-700"
                                         }`}>
-                                            {provider === "GMAIL" ? "Gmail Workflow" : "Standard Email Workflow"}
+                                            {provider} Guide
                                         </span>
                                     </div>
 
@@ -419,63 +455,85 @@ const VenmoAutomationPage = () => {
                                                         ? isDark ? "text-slate-300" : "text-slate-700"
                                                         : isDark ? "text-white" : "text-slate-900"
                                                 }`}>
-                                                    Phase 1: Verify Forwarding Address
+                                                    Phase 1: Register Forwarding Address
                                                 </h4>
-                                                <p className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                                                    {provider === "GMAIL" 
-                                                        ? "Gmail requires adding and confirming the forwarding address in Gmail Settings -> Forwarding."
-                                                        : "Non-Gmail providers do not require address verification. You can proceed to Phase 2."}
-                                                </p>
 
-                                                {/* Gmail Verification Banner */}
-                                                {provider === "GMAIL" && currentPhase === "FORWARDING_VERIFICATION" && (
-                                                    <div className="mt-3">
-                                                        {settings.verificationLink ? (
-                                                            <div className={`p-4 rounded-2xl border ${
-                                                                isDark ? "bg-amber-950/40 border-amber-500/50 text-amber-200" : "bg-amber-50 border-amber-300 text-amber-900"
-                                                            }`}>
-                                                                <p className="text-xs font-bold mb-2">
-                                                                    📩 Gmail Confirmation Link Received!
+                                                {/* Detailed Instructions for Phase 1 */}
+                                                {currentPhase === "FORWARDING_VERIFICATION" ? (
+                                                    <div className={`mt-3 p-4 rounded-2xl border ${
+                                                        isDark ? "bg-slate-900/80 border-slate-700" : "bg-slate-50 border-slate-200"
+                                                    }`}>
+                                                        {provider === "GMAIL" ? (
+                                                            <>
+                                                                <p className={`text-xs font-bold mb-3 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                                                                    📍 Follow these steps in Gmail:
                                                                 </p>
-                                                                <p className="text-xs opacity-90 mb-3">
-                                                                    Click the link below to confirm the forwarding address with Google:
-                                                                </p>
-                                                                <a
-                                                                    href={settings.verificationLink}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    onClick={handleVerifyGmail}
-                                                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold text-xs rounded-xl hover:brightness-110 transition-all shadow"
-                                                                >
-                                                                    <span>Confirm Forwarding in Gmail</span>
-                                                                    <FaExternalLinkAlt className="w-2.5 h-2.5" />
-                                                                </a>
-                                                            </div>
+                                                                <ol className={`text-xs space-y-2 mb-4 list-decimal pl-4 ${
+                                                                    isDark ? "text-slate-300" : "text-slate-600"
+                                                                }`}>
+                                                                    <li>Open <strong>Gmail</strong> and click the <strong>Settings (gear icon)</strong> <FaCog className="inline w-3 h-3 text-slate-400" /> &rarr; <strong>See all settings</strong>.</li>
+                                                                    <li>Select the <strong>Forwarding and POP/IMAP</strong> tab.</li>
+                                                                    <li>Click <strong>Add a forwarding address</strong> and paste your unique forwarding address (copied above).</li>
+                                                                    <li>Click <strong>Next &rarr; Proceed &rarr; OK</strong>. Google will send a confirmation link to us.</li>
+                                                                </ol>
+
+                                                                {/* Waiting / Confirmation link box */}
+                                                                {settings.verificationLink ? (
+                                                                    <div className={`p-4 rounded-xl border ${
+                                                                        isDark ? "bg-amber-950/40 border-amber-500/50 text-amber-200" : "bg-amber-50 border-amber-300 text-amber-900"
+                                                                    }`}>
+                                                                        <p className="text-xs font-bold mb-1">
+                                                                            📩 Confirmation Email Received!
+                                                                        </p>
+                                                                        <p className="text-xs opacity-90 mb-3">
+                                                                            Click the button below to authorize forwarding in Google settings:
+                                                                        </p>
+                                                                        <a
+                                                                            href={settings.verificationLink}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            onClick={handleVerifyGmail}
+                                                                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold text-xs rounded-xl hover:brightness-110 transition-all shadow"
+                                                                        >
+                                                                            <span>Confirm Forwarding in Gmail</span>
+                                                                            <FaExternalLinkAlt className="w-2.5 h-2.5" />
+                                                                        </a>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className={`flex items-center gap-2.5 p-3 rounded-xl border ${
+                                                                        isDark ? "bg-slate-900/60 border-slate-700 text-slate-400" : "bg-white border-slate-200 text-slate-600"
+                                                                    }`}>
+                                                                        <FaClock className="w-4 h-4 animate-spin text-amber-400 flex-shrink-0" />
+                                                                        <span className="text-xs leading-relaxed">
+                                                                            Waiting for Google's confirmation email... Add the address in Gmail settings to trigger it.
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </>
                                                         ) : (
-                                                            <div className={`flex items-center gap-2 p-3 rounded-xl border ${
-                                                                isDark ? "bg-slate-900/60 border-slate-700 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-600"
-                                                            }`}>
-                                                                <FaClock className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                                                                <span className="text-xs">
-                                                                    Add the forwarding address in Gmail settings. Waiting for Google's confirmation email...
-                                                                </span>
-                                                            </div>
+                                                            <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                                                                Your email provider ({provider}) does not require a verification handshake. You can proceed directly to Phase 2.
+                                                            </p>
                                                         )}
                                                     </div>
+                                                ) : (
+                                                    <p className={`text-xs mt-1 ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+                                                        Forwarding address registered & verified.
+                                                    </p>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* STEP 2: Filter & Rule Setup */}
-                                    <div className="mb-6">
+                                    <div className="mb-4">
                                         <div className="flex items-start gap-3">
                                             <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 ${
                                                 currentPhase === "FILTER_SETUP"
                                                     ? "bg-indigo-600 text-white ring-4 ring-indigo-500/20"
                                                     : "bg-slate-700 text-slate-400"
                                             }`}>
-                                                "2"
+                                                2
                                             </div>
                                             <div className="flex-1">
                                                 <h4 className={`text-sm font-bold ${
@@ -483,10 +541,10 @@ const VenmoAutomationPage = () => {
                                                         ? isDark ? "text-white" : "text-slate-900"
                                                         : isDark ? "text-slate-400" : "text-slate-500"
                                                 }`}>
-                                                    Phase 2: Set Up Forwarding Filter
+                                                    Phase 2: Set Up Email Forwarding Filter Rule
                                                 </h4>
                                                 <p className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                                                    Create an email filter / rule in your inbox to forward all Venmo notification emails.
+                                                    Create an automated rule in your inbox to forward all Venmo transaction emails.
                                                 </p>
 
                                                 {/* Filter Instructions Card (Active when in FILTER_SETUP phase) */}
@@ -494,30 +552,47 @@ const VenmoAutomationPage = () => {
                                                     <div className={`mt-3 p-4 rounded-2xl border ${
                                                         isDark ? "bg-slate-900/80 border-slate-700" : "bg-slate-50 border-slate-200"
                                                     }`}>
-                                                        <div className="text-xs space-y-2 mb-4">
+                                                        {/* Exact parameters box */}
+                                                        <div className={`p-3 rounded-xl border mb-4 text-xs space-y-2 ${
+                                                            isDark ? "bg-slate-950/60 border-slate-800 text-slate-300" : "bg-white border-slate-200 text-slate-700"
+                                                        }`}>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="font-bold w-16">1. From:</span>
-                                                                <code className={`px-2 py-0.5 rounded font-mono ${
+                                                                <span className="font-bold w-20 text-slate-400">1. From:</span>
+                                                                <code className={`px-2 py-0.5 rounded font-mono font-bold ${
                                                                     isDark ? "bg-slate-800 text-indigo-300" : "bg-indigo-50 text-indigo-700"
                                                                 }`}>venmo@venmo.com</code>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="font-bold w-16">2. Subject:</span>
-                                                                <code className={`px-2 py-0.5 rounded font-mono ${
+                                                                <span className="font-bold w-20 text-slate-400">2. Subject:</span>
+                                                                <code className={`px-2 py-0.5 rounded font-mono font-bold ${
                                                                     isDark ? "bg-slate-800 text-indigo-300" : "bg-indigo-50 text-indigo-700"
                                                                 }`}>You paid</code>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="font-bold w-16">3. Action:</span>
-                                                                <span>Forward to unique address above</span>
+                                                                <span className="font-bold w-20 text-slate-400">3. Action:</span>
+                                                                <span className="font-bold">Forward to your unique address</span>
                                                             </div>
                                                         </div>
+
+                                                        {/* Detailed Step-by-Step for Provider */}
+                                                        <p className={`text-xs font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                                                            📍 How to create this rule in {provider === "GMAIL" ? "Gmail" : provider === "OUTLOOK" ? "Outlook" : provider === "YAHOO" ? "Yahoo" : "your email client"}:
+                                                        </p>
+                                                        <ol className={`text-xs space-y-2 mb-5 list-decimal pl-4 ${
+                                                            isDark ? "text-slate-300" : "text-slate-600"
+                                                        }`}>
+                                                            {renderPhase2Steps().map((item) => (
+                                                                <li key={item.step}>
+                                                                    <strong>{item.label}:</strong> {item.desc}
+                                                                </li>
+                                                            ))}
+                                                        </ol>
 
                                                         {/* Complete Filter Setup Action Button */}
                                                         <button
                                                             onClick={handleCompleteFilterSetup}
                                                             disabled={completingPhase2}
-                                                            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 px-4 text-xs font-black transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-60"
+                                                            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3.5 px-4 text-xs font-black transition-all duration-300 shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/35 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
                                                         >
                                                             {completingPhase2 ? (
                                                                 <span>Saving...</span>
