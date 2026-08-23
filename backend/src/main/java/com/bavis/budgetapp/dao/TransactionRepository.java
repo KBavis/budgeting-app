@@ -102,40 +102,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     List<Transaction> findByCategoryCategoryIdAndAsOf(@Param("categoryId") long categoryId, @Param("asOf") LocalDate asOf);
 
 
-    /**
-     * Find unmatched Venmo transactions for email enrichment.
-     * Matches by user's account IDs, approximate amount, and date window.
-     * Only returns transactions whose name has not yet been enriched.
-     *
-     * @param accountIds
-     *          - the user's account IDs to scope the search
-     * @param amount
-     *          - the amount parsed from the Venmo email
-     * @param tolerance
-     *          - amount tolerance (e.g., 0.02) to account for rounding
-     * @param startDate
-     *          - start of the date matching window
-     * @param endDate
-     *          - end of the date matching window
-     * @return
-     *          - list of candidate transactions ordered by date (most recent first)
-     */
-    @Query("""
-            SELECT t FROM Transaction t 
-            WHERE t.account.accountId IN :accountIds 
-              AND (LOWER(t.merchantName) = 'venmo' OR LOWER(t.name) = 'venmo') 
-              AND ABS(t.amount - :amount) <= :tolerance 
-              AND t.date BETWEEN :startDate AND :endDate 
-              AND (t.name IS NULL OR LOWER(t.name) = 'venmo' OR LOWER(t.name) = LOWER(t.merchantName)) 
-            ORDER BY t.date DESC
-            """)
-    List<Transaction> findUnmatchedVenmoTransactions(
-            @Param("accountIds") List<String> accountIds,
-            @Param("amount") double amount,
-            @Param("tolerance") double tolerance,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
-
 
     /**
      * Removal of all Transactions corresponding to a particular Account ID
