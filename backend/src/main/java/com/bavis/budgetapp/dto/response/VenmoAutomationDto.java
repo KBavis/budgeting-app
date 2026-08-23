@@ -24,5 +24,6 @@ public class VenmoAutomationDto {
     private LocalDateTime lastProcessedAt;
     private int enrichedCount;
     private String verificationLink;
-    private boolean verified;
+    private String emailProvider;
+    private String setupPhase;
 }

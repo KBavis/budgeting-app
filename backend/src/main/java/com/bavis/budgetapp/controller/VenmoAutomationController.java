@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -48,8 +49,9 @@ public class VenmoAutomationController {
      * @return - the automation settings including the forwarding email address
      */
     @PostMapping("/enable")
-    public ResponseEntity<VenmoAutomationDto> enable() {
-        VenmoAutomationDto dto = venmoEmailService.enableAutomation();
+    public ResponseEntity<VenmoAutomationDto> enable(
+            @RequestParam(value = "emailProvider", defaultValue = "OTHER") String emailProvider) {
+        VenmoAutomationDto dto = venmoEmailService.enableAutomation(emailProvider);
         return ResponseEntity.ok(dto);
     }
 
@@ -67,13 +69,26 @@ public class VenmoAutomationController {
     }
 
     /**
-     * Mark Venmo automation as verified after user confirms forwarding in Gmail.
+     * Mark phase 1 (forwarding address verification) as complete in Gmail.
+     * Advances setupPhase from FORWARDING_VERIFICATION to FILTER_SETUP.
      *
-     * @return - updated VenmoAutomationDto with verified=true
+     * @return - updated VenmoAutomationDto with setupPhase=FILTER_SETUP
      */
-    @PostMapping("/verify")
-    public ResponseEntity<VenmoAutomationDto> verify() {
-        VenmoAutomationDto dto = venmoEmailService.verifyAutomation();
+    @PostMapping("/complete-forwarding-verification")
+    public ResponseEntity<VenmoAutomationDto> completeForwardingVerification() {
+        VenmoAutomationDto dto = venmoEmailService.completeForwardingVerification();
+        return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * Mark Phase 2 (email filter/rule setup) as complete.
+     * Transitions setupPhase to COMPLETE, making the automation fully operational.
+     *
+     * @return - updated VenmoAutomationDto with setupPhase=COMPLETE
+     */
+    @PostMapping("/complete-filter-setup")
+    public ResponseEntity<VenmoAutomationDto> completeFilterSetup() {
+        VenmoAutomationDto dto = venmoEmailService.completeFilterSetup();
         return ResponseEntity.ok(dto);
     }
 }

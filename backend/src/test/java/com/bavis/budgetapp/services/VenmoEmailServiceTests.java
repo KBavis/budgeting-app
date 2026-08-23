@@ -133,7 +133,7 @@ public class VenmoEmailServiceTests {
         when(venmoAutomationRepository.save(any(VenmoAutomation.class))).thenReturn(testAutomation);
         when(mailgunConfig.getIngestDomain()).thenReturn("mail.bavisbudgeting.com");
 
-        VenmoAutomationDto result = venmoEmailService.enableAutomation();
+        VenmoAutomationDto result = venmoEmailService.enableAutomation("GMAIL");
 
         assertNotNull(result);
         assertTrue(result.isEnabled());

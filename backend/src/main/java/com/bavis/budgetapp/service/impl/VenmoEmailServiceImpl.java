@@ -152,26 +152,42 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
 
     @Override
     @Transactional
-    public VenmoAutomationDto enableAutomation() {
+    public VenmoAutomationDto enableAutomation(String emailProvider) {
         User currentUser = userService.getCurrentAuthUser();
         Long userId = currentUser.getUserId();
+
+        String normalizedProvider = (emailProvider != null) ? emailProvider.toUpperCase().trim() : "OTHER";
+
+        // Determine initial setup phase based on email provider.
+        // Gmail requires forwarding address verification; others skip to filter setup.
+        VenmoAutomation.SetupPhase initialPhase = "GMAIL".equals(normalizedProvider)
+                ? VenmoAutomation.SetupPhase.FORWARDING_VERIFICATION
+                : VenmoAutomation.SetupPhase.FILTER_SETUP;
 
         // Check if already exists
         Optional<VenmoAutomation> existing = venmoAutomationRepository.findByUserUserId(userId);
         if (existing.isPresent()) {
             VenmoAutomation automation = existing.get();
             automation.setEnabled(true);
+            automation.setEmailProvider(normalizedProvider);
+            // Only reset phase if automation was previously incomplete or re-enabling
+            if (automation.getSetupPhase() != VenmoAutomation.SetupPhase.COMPLETE) {
+                automation.setSetupPhase(initialPhase);
+            }
             venmoAutomationRepository.save(automation);
-            log.info("Re-enabled Venmo automation for user ID: {}", userId);
+            log.info("Re-enabled Venmo automation for user ID: {} with provider: {}", userId, normalizedProvider);
             return toDto(automation);
         }
 
         // Create new
         VenmoAutomation automation = VenmoAutomation.builder()
                 .user(currentUser)
+                .emailProvider(normalizedProvider)
+                .setupPhase(initialPhase)
                 .build();
         automation = venmoAutomationRepository.save(automation);
-        log.info("Created Venmo automation for user ID: {} with token: {}", userId, automation.getIngestToken());
+        log.info("Created Venmo automation for user ID: {} with token: {} and provider: {}",
+                userId, automation.getIngestToken(), normalizedProvider);
         return toDto(automation);
     }
 
@@ -308,14 +324,32 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
 
     @Override
     @Transactional
-    public VenmoAutomationDto verifyAutomation() {
+    public VenmoAutomationDto completeForwardingVerification() {
         User currentUser = userService.getCurrentAuthUser();
         Optional<VenmoAutomation> existing = venmoAutomationRepository.findByUserUserId(currentUser.getUserId());
         if (existing.isPresent()) {
             VenmoAutomation automation = existing.get();
-            automation.setVerified(true);
+            // Transition from FORWARDING_VERIFICATION -> FILTER_SETUP
+            automation.setSetupPhase(VenmoAutomation.SetupPhase.FILTER_SETUP);
             venmoAutomationRepository.save(automation);
-            log.info("Marked Venmo automation verified for user ID: {}", currentUser.getUserId());
+            log.info("Marked Venmo automation forwarding verified for user ID: {} — advancing to FILTER_SETUP",
+                    currentUser.getUserId());
+            return toDto(automation);
+        }
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public VenmoAutomationDto completeFilterSetup() {
+        User currentUser = userService.getCurrentAuthUser();
+        Optional<VenmoAutomation> existing = venmoAutomationRepository.findByUserUserId(currentUser.getUserId());
+        if (existing.isPresent()) {
+            VenmoAutomation automation = existing.get();
+            automation.setSetupPhase(VenmoAutomation.SetupPhase.COMPLETE);
+            venmoAutomationRepository.save(automation);
+            log.info("Completed filter setup for user ID: {} — automation fully operational",
+                    currentUser.getUserId());
             return toDto(automation);
         }
         return null;
@@ -351,7 +385,8 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
                 .lastProcessedAt(automation.getLastProcessedAt())
                 .enrichedCount(automation.getEnrichedCount())
                 .verificationLink(automation.getVerificationLink())
-                .verified(automation.isVerified())
+                .emailProvider(automation.getEmailProvider())
+                .setupPhase(automation.getSetupPhase().name())
                 .build();
     }
 

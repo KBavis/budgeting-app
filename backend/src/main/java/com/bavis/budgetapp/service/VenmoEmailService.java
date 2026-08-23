@@ -46,10 +46,12 @@ public interface VenmoEmailService {
      * Enable Venmo automation for the currently authenticated user.
      * Creates a new VenmoAutomation record with a unique ingest token.
      *
+     * @param emailProvider
+     *          - the user's email provider (e.g., "GMAIL", "OUTLOOK", "YAHOO", "OTHER")
      * @return
      *          - the created automation settings including the ingest email address
      */
-    VenmoAutomationDto enableAutomation();
+    VenmoAutomationDto enableAutomation(String emailProvider);
 
     /**
      * Disable Venmo automation for the currently authenticated user.
@@ -57,12 +59,13 @@ public interface VenmoEmailService {
     void disableAutomation();
 
     /**
-     * Mark Venmo automation as verified for the currently authenticated user.
+     * Mark phase 1 (forwarding address verification) as complete.
+     * Transitions setupPhase from FORWARDING_VERIFICATION to FILTER_SETUP.
      *
      * @return
-     *          - updated automation settings with verified=true
+     *          - updated automation settings
      */
-    VenmoAutomationDto verifyAutomation();
+    VenmoAutomationDto completeForwardingVerification();
 
     /**
      * Get the current Venmo automation settings for the authenticated user.
@@ -71,4 +74,13 @@ public interface VenmoEmailService {
      *          - automation settings or null if not configured
      */
     VenmoAutomationDto getAutomationSettings();
+
+    /**
+     * Mark Phase 2 (filter/rule setup) as complete for the currently authenticated user.
+     * Transitions setupPhase from FILTER_SETUP to COMPLETE.
+     *
+     * @return
+     *          - updated automation settings with setupPhase=COMPLETE
+     */
+    VenmoAutomationDto completeFilterSetup();
 }

@@ -2,6 +2,8 @@ package com.bavis.budgetapp.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,6 +34,23 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class VenmoAutomation {
+
+    /**
+     * Tracks which phase of the two-phase setup the user is currently in.
+     *
+     * FORWARDING_VERIFICATION — User must verify the forwarding address with their
+     *                           email provider (e.g., Gmail sends a confirmation email).
+     *                           Providers that don't require this step skip directly
+     *                           to FILTER_SETUP.
+     * FILTER_SETUP             — User must create a filter/rule in their email client
+     *                           to forward emails with subject "You paid" from Venmo.
+     * COMPLETE                 — Both phases are done; automation is fully operational.
+     */
+    public enum SetupPhase {
+        FORWARDING_VERIFICATION,
+        FILTER_SETUP,
+        COMPLETE
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,9 +95,19 @@ public class VenmoAutomation {
     private String verificationLink;
 
     /**
-     * Indicates whether email forwarding has been verified and confirmed by the user.
+     * The user's email provider, used to determine which setup phases are required.
+     * Examples: "GMAIL", "OUTLOOK", "YAHOO", "OTHER".
+     * Providers like Gmail require forwarding verification; others may not.
+     */
+    @Column(length = 50)
+    private String emailProvider;
+
+    /**
+     * Current phase of the two-phase setup process.
+     * Defaults to FORWARDING_VERIFICATION for providers that require it.
      */
     @Builder.Default
-    @Column(nullable = false)
-    private boolean verified = false;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private SetupPhase setupPhase = SetupPhase.FORWARDING_VERIFICATION;
 }
