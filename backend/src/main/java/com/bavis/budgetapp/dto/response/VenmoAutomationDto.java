@@ -23,7 +23,6 @@ public class VenmoAutomationDto {
     private LocalDateTime createdAt;
     private LocalDateTime lastProcessedAt;
     private int enrichedCount;
-    private String verificationCode;
     private String verificationLink;
     private boolean verified;
 }

@@ -322,23 +322,12 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
     }
 
     /**
-     * Parse and store Gmail forwarding confirmation code/link from Google's
-     * automated email.
+     * Parse and store Gmail forwarding confirmation link from Google's automated email.
      */
     private void handleGmailVerificationEmail(VenmoAutomation automation, String bodyPlain, String bodyHtml) {
         String content = (bodyPlain != null ? bodyPlain : "") + "\n" + (bodyHtml != null ? bodyHtml : "");
 
-        // Pattern 1: Gmail Confirmation Code (handles multiline / HTML / spaces between "code" and numbers)
-        Pattern codePattern = Pattern.compile("(?:confirmation code|verification code|code)[^0-9]{1,30}([0-9]{6,15})",
-                Pattern.CASE_INSENSITIVE);
-        Matcher codeMatcher = codePattern.matcher(content);
-        if (codeMatcher.find()) {
-            automation.setVerificationCode(codeMatcher.group(1));
-            log.info("Extracted Gmail verification code for user ID {}: {}", automation.getUser().getUserId(),
-                    codeMatcher.group(1));
-        }
-
-        // Pattern 2: Gmail Confirmation Link (e.g. https://mail-settings.google.com/mail/vf-...)
+        // Gmail Confirmation Link (e.g. https://mail-settings.google.com/mail/vf-...)
         Pattern linkPattern = Pattern.compile("(https://mail-settings\\.google\\.com/[^\\s\"'>]+)");
         Matcher linkMatcher = linkPattern.matcher(content);
         if (linkMatcher.find()) {
@@ -361,7 +350,6 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
                 .createdAt(automation.getCreatedAt())
                 .lastProcessedAt(automation.getLastProcessedAt())
                 .enrichedCount(automation.getEnrichedCount())
-                .verificationCode(automation.getVerificationCode())
                 .verificationLink(automation.getVerificationLink())
                 .verified(automation.isVerified())
                 .build();

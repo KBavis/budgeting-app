@@ -344,8 +344,8 @@ const VenmoAutomationPage = () => {
                                 </div>
                             )}
 
-                            {/* Gmail Verification Banner (Shown only when NOT verified) */}
-                            {settings.enabled && !settings.verified && (settings.verificationCode || settings.verificationLink) && (
+                            {/* Gmail Verification Banner (Shown only when NOT verified and link received) */}
+                            {settings.enabled && !settings.verified && settings.verificationLink && (
                                 <div className={`border rounded-3xl p-5 shadow-xl backdrop-blur-sm ${
                                     isDark
                                         ? "bg-amber-950/40 border-amber-500/50 text-amber-200"
@@ -358,52 +358,19 @@ const VenmoAutomationPage = () => {
                                         </h3>
                                     </div>
                                     <p className="text-xs leading-relaxed mb-4 opacity-90">
-                                        Gmail sent a confirmation email to your forwarding address to verify setup.
-                                        Use the code or link below to complete setup in Gmail:
+                                        Gmail sent a confirmation email to your forwarding address.
+                                        Click the button below to confirm forwarding in Google:
                                     </p>
 
-                                    {settings.verificationCode && (
-                                        <div className={`flex items-center justify-between p-3 rounded-xl mb-3 ${
-                                            isDark ? "bg-slate-900/80 border border-amber-500/30" : "bg-white border border-amber-200"
-                                        }`}>
-                                            <div>
-                                                <span className="text-[10px] font-bold uppercase tracking-wider block opacity-70">
-                                                    Gmail Confirmation Code
-                                                </span>
-                                                <span className="text-lg font-mono font-black tracking-widest text-amber-400">
-                                                    {settings.verificationCode}
-                                                </span>
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(settings.verificationCode);
-                                                    setAlert("Confirmation code copied!", "success");
-                                                }}
-                                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors"
-                                            >
-                                                Copy Code
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {settings.verificationLink && (
-                                        <a
-                                            href={settings.verificationLink}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            onClick={handleVerify}
-                                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs py-2.5 px-4 rounded-xl hover:brightness-110 transition-all shadow-md mb-3"
-                                        >
-                                            Confirm Directly in Gmail ↗
-                                        </a>
-                                    )}
-
-                                    <button
+                                    <a
+                                        href={settings.verificationLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         onClick={handleVerify}
-                                        className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md"
+                                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs py-3 px-4 rounded-xl hover:brightness-110 transition-all shadow-md"
                                     >
-                                        <FaCheck className="w-3.5 h-3.5" /> I've Confirmed Setup in Gmail
-                                    </button>
+                                        Confirm Forwarding in Gmail ↗
+                                    </a>
                                 </div>
                             )}
 

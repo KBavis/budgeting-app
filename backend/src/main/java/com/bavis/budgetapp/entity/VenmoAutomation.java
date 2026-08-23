@@ -70,12 +70,6 @@ public class VenmoAutomation {
     private int enrichedCount = 0;
 
     /**
-     * Confirmation code extracted from Google's forwarding verification email (if using Gmail).
-     */
-    @Column
-    private String verificationCode;
-
-    /**
      * Direct verification URL extracted from Google's forwarding verification email.
      */
     @Column(columnDefinition = "TEXT")
