@@ -2,12 +2,9 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.config.MailgunConfig;
 import com.bavis.budgetapp.dao.StagedVenmoPaymentRepository;
-import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dao.VenmoAutomationRepository;
 import com.bavis.budgetapp.dto.response.VenmoAutomationDto;
-import com.bavis.budgetapp.entity.Account;
 import com.bavis.budgetapp.entity.StagedVenmoPayment;
-import com.bavis.budgetapp.entity.Transaction;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.entity.VenmoAutomation;
 import com.bavis.budgetapp.service.VenmoEmailService;
@@ -19,9 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,8 +55,6 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
      */
     private static final Pattern NOTE_PATTERN_QUOTED = Pattern.compile(
             "[\"\\u201C](.+?)[\"\\u201D]", Pattern.DOTALL);
-
-
 
     @Override
     public boolean verifyMailgunSignature(String timestamp, String token, String signature) {
@@ -112,8 +105,10 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
         }
 
         // 3. Handle Gmail Auto-Forwarding Verification Email
-        if (from != null && (from.toLowerCase().contains("google.com") || (subject != null && subject.toLowerCase().contains("gmail forwarding")))) {
-            log.info("Received Google Gmail Forwarding Verification Email for user ID: {}", automation.getUser().getUserId());
+        if (from != null && (from.toLowerCase().contains("google.com")
+                || (subject != null && subject.toLowerCase().contains("gmail forwarding")))) {
+            log.info("Received Google Gmail Forwarding Verification Email for user ID: {}",
+                    automation.getUser().getUserId());
             handleGmailVerificationEmail(automation, bodyPlain, bodyHtml);
             return;
         }
@@ -299,8 +294,6 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
         return null;
     }
 
-
-
     /**
      * Parse an amount string like "25.00" or "1,250.00" to a double.
      */
@@ -314,20 +307,25 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
     }
 
     /**
-     * Parse and store Gmail forwarding confirmation code/link from Google's automated email.
+     * Parse and store Gmail forwarding confirmation code/link from Google's
+     * automated email.
      */
     private void handleGmailVerificationEmail(VenmoAutomation automation, String bodyPlain, String bodyHtml) {
         String content = bodyPlain != null ? bodyPlain : (bodyHtml != null ? bodyHtml : "");
 
-        // Pattern 1: Gmail Confirmation Code (e.g. "Confirmation code: 123456789" or "code: 123456789")
-        Pattern codePattern = Pattern.compile("(?:confirmation code|code):?\\s*([0-9]{7,12})", Pattern.CASE_INSENSITIVE);
+        // Pattern 1: Gmail Confirmation Code (e.g. "Confirmation code: 123456789" or
+        // "code: 123456789")
+        Pattern codePattern = Pattern.compile("(?:confirmation code|code):?\\s*([0-9]{7,12})",
+                Pattern.CASE_INSENSITIVE);
         Matcher codeMatcher = codePattern.matcher(content);
         if (codeMatcher.find()) {
             automation.setVerificationCode(codeMatcher.group(1));
-            log.info("Extracted Gmail verification code for user ID {}: {}", automation.getUser().getUserId(), codeMatcher.group(1));
+            log.info("Extracted Gmail verification code for user ID {}: {}", automation.getUser().getUserId(),
+                    codeMatcher.group(1));
         }
 
-        // Pattern 2: Gmail Confirmation Link (e.g. https://mail-settings.google.com/mail/vf-...)
+        // Pattern 2: Gmail Confirmation Link (e.g.
+        // https://mail-settings.google.com/mail/vf-...)
         Pattern linkPattern = Pattern.compile("(https://mail-settings\\.google\\.com/[^\\s\"'>]+)");
         Matcher linkMatcher = linkPattern.matcher(content);
         if (linkMatcher.find()) {
