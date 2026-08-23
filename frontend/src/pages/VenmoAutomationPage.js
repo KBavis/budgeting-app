@@ -24,7 +24,6 @@ const VenmoAutomationPage = () => {
     const [copied, setCopied] = useState(false);
     const [showGmailSteps, setShowGmailSteps] = useState(false);
     const [showOutlookSteps, setShowOutlookSteps] = useState(false);
-    const [showDetails, setShowDetails] = useState(false);
 
     const fetchSettings = useCallback(async () => {
         try {
@@ -298,8 +297,8 @@ const VenmoAutomationPage = () => {
                                 )}
                             </div>
 
-                            {/* Forwarding Address Card (Shown during onboarding or when expanded) */}
-                            {settings.enabled && (!settings.verified || showDetails) && (
+                            {/* Forwarding Address Card (Shown only during onboarding) */}
+                            {settings.enabled && !settings.verified && (
                                 <div className={`border rounded-3xl p-5 shadow-xl backdrop-blur-sm ${
                                     isDark
                                         ? "bg-slate-800/80 border-slate-700/60"
@@ -374,8 +373,8 @@ const VenmoAutomationPage = () => {
                                 </div>
                             )}
 
-                            {/* Setup Instructions (Shown during onboarding or when expanded) */}
-                            {settings.enabled && (!settings.verified || showDetails) && (
+                            {/* Setup Instructions (Shown only during onboarding) */}
+                            {settings.enabled && !settings.verified && (
                                 <div className={`border rounded-3xl p-5 shadow-xl backdrop-blur-sm ${
                                     isDark
                                         ? "bg-slate-800/80 border-slate-700/60"
@@ -476,17 +475,6 @@ const VenmoAutomationPage = () => {
                                         </p>
                                     </div>
                                 </div>
-                            )}
-                            {/* Toggle Details for Verified Users */}
-                            {settings.enabled && settings.verified && (
-                                <button
-                                    onClick={() => setShowDetails(!showDetails)}
-                                    className={`w-full py-2.5 text-center text-xs font-bold transition-all opacity-70 hover:opacity-100 ${
-                                        isDark ? "text-indigo-300" : "text-indigo-600"
-                                    }`}
-                                >
-                                    {showDetails ? "Hide Forwarding Address & Setup Details ▲" : "Show Forwarding Address & Setup Details ▼"}
-                                </button>
                             )}
                         </>
                     )}
