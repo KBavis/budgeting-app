@@ -99,7 +99,8 @@ public class VenmoEmailServiceTests {
         when(stagedVenmoPaymentRepository.save(any(StagedVenmoPayment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        venmoEmailService.processInboundEmail(recipient, from, subject, bodyPlain, null);
+        String bodyHtml = "<p class=\"transaction-note secondary-text\">Dinner at Italian place</p>";
+        venmoEmailService.processInboundEmail(recipient, from, subject, bodyPlain, bodyHtml);
 
         ArgumentCaptor<StagedVenmoPayment> captor = ArgumentCaptor.forClass(StagedVenmoPayment.class);
         verify(stagedVenmoPaymentRepository, times(1)).save(captor.capture());
@@ -150,5 +151,37 @@ public class VenmoEmailServiceTests {
 
         assertFalse(testAutomation.isEnabled());
         verify(venmoAutomationRepository, times(1)).save(testAutomation);
+    }
+
+    @Test
+    void testProcessInboundEmail_ExactVenmoHtmlPayload() {
+        String recipient = "venmo-token123@mail.bavisbudgeting.com";
+        String from = "Venmo <venmo@venmo.com>";
+        String subject = "You paid Jane Smith $15.50";
+        String htmlPayload = """
+            <!DOCTYPE html>
+            <html>
+              <body>
+                <p class="text-center secondary-text title">You paid Jane Smith</p>
+                <div class="amount-container">$15.50</div>
+                <p class="transaction-note secondary-text">Coffee & Bakery</p>
+              </body>
+            </html>
+            """;
+
+        when(venmoAutomationRepository.findByIngestToken("token123")).thenReturn(Optional.of(testAutomation));
+        when(stagedVenmoPaymentRepository.save(any(StagedVenmoPayment.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        venmoEmailService.processInboundEmail(recipient, from, subject, null, htmlPayload);
+
+        ArgumentCaptor<StagedVenmoPayment> captor = ArgumentCaptor.forClass(StagedVenmoPayment.class);
+        verify(stagedVenmoPaymentRepository, times(1)).save(captor.capture());
+
+        StagedVenmoPayment saved = captor.getValue();
+        assertEquals(15.50, saved.getAmount());
+        assertEquals("Jane Smith", saved.getCounterparty());
+        assertEquals("Coffee & Bakery", saved.getDescription());
+        assertEquals("Coffee & Bakery (Jane Smith)", saved.getEnrichedName());
     }
 }

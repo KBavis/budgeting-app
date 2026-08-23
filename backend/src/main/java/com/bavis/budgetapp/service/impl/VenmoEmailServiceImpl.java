@@ -48,13 +48,16 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
     private static final Pattern SUBJECT_YOU_PAID = Pattern.compile(
             "You paid (.+?) \\$([\\d,]+\\.\\d{2})", Pattern.CASE_INSENSITIVE);
 
+
+
     /**
-     * Pattern to extract the note/description from the plain-text email body.
-     * Venmo emails typically include the note after a dash or in a clearly
-     * delimited section. We try multiple patterns defensively.
+     * Pattern targeting Venmo's exact HTML note element by class:
+     * <p class="transaction-note secondary-text"...>Note Text</p>
+     * Handles both raw HTML and Quoted-Printable format (class=3D"transaction-note...").
      */
-    private static final Pattern NOTE_PATTERN_QUOTED = Pattern.compile(
-            "[\"\\u201C](.+?)[\"\\u201D]", Pattern.DOTALL);
+    private static final Pattern VENMO_TRANSACTION_NOTE_CLASS_PATTERN = Pattern.compile(
+            "<p[^>]*class=(?:3D)?[\"'][^\"']*transaction-note[^\"']*[\"'][^>]*>(.*?)</p>",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     @Override
     public boolean verifyMailgunSignature(String timestamp, String token, String signature) {
@@ -270,43 +273,17 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
     }
 
     /**
-     * Extract the Venmo note/description from the email body.
-     * In Venmo emails, the note is deterministically placed on the line immediately
-     * following the amount line and preceding the "See transaction" section.
+     * Extract the Venmo note/description from the email body deterministically.
+     * Uses Venmo's official email HTML element class (<p class="transaction-note...">).
      */
     String extractDescription(String bodyPlain, String bodyHtml) {
-        if (bodyPlain == null || bodyPlain.isBlank()) {
-            return null;
-        }
-
-        String[] lines = bodyPlain.split("\\r?\\n");
-        boolean afterAmount = false;
-
-        for (String line : lines) {
-            String trimmed = line.trim();
-            if (trimmed.isEmpty()) {
-                continue;
-            }
-
-            // 1. Find the amount line (e.g. "$20.00" or "$20")
-            if (!afterAmount && (trimmed.matches("^\\$[0-9.,]+$") || trimmed.startsWith("$"))) {
-                afterAmount = true;
-                continue;
-            }
-
-            // 2. The next non-empty line after amount is the note
-            if (afterAmount) {
-                String lower = trimmed.toLowerCase();
-                // Stop if there is no note (hits system button/header)
-                if (lower.contains("see transaction") || lower.contains("view transaction")
-                        || lower.contains("transaction details") || lower.startsWith("http")
-                        || lower.startsWith("date") || lower.startsWith("status")) {
-                    break;
-                }
-                return trimmed;
+        if (bodyHtml != null && !bodyHtml.isBlank()) {
+            Matcher m = VENMO_TRANSACTION_NOTE_CLASS_PATTERN.matcher(bodyHtml);
+            if (m.find()) {
+                String note = m.group(1).replaceAll("<[^>]+>", "").trim();
+                return note.isBlank() ? null : note;
             }
         }
-
         return null;
     }
 
