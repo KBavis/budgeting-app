@@ -40,7 +40,10 @@ public class VenmoWebhookController {
      * @param signature  - Mailgun HMAC-SHA256 signature
      * @return           - 200 OK on success, 403 on invalid signature
      */
-    @PostMapping(value = "/venmo-email", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/venmo-email", consumes = {
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            MediaType.APPLICATION_FORM_URLENCODED_VALUE
+    })
     public ResponseEntity<Void> handleVenmoEmail(
             @RequestParam("recipient") String recipient,
             @RequestParam("from") String from,
