@@ -27,6 +27,7 @@ import BudgetSummaryPage from "./pages/BudgetSummaryPage";
 import SummaryState from "./context/summary/SummaryState";
 import CategoryCreationPage from "./pages/CategoryCreationPage";
 import SpendingAnalysisPage from "./pages/SpendingAnalysisPage";
+import VenmoAutomationPage from "./pages/VenmoAutomationPage";
 import CategoryPerformanceState from "./context/category/performances/CategoryPerformanceState";
 import PrivateRoute from "./components/routing/PrivateRoute";
 
@@ -186,6 +187,14 @@ function App() {
                                                 element={
                                                    <PrivateRoute>
                                                       <IncomesPage />
+                                                   </PrivateRoute>
+                                                }
+                                             />
+                                             <Route
+                                                path="/venmo-automation"
+                                                element={
+                                                   <PrivateRoute>
+                                                      <VenmoAutomationPage />
                                                    </PrivateRoute>
                                                 }
                                              />

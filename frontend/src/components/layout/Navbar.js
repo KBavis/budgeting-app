@@ -159,6 +159,21 @@ const Navbar = () => {
             </Link>
           </li>
           <li>
+            <Link
+              to="/venmo-automation"
+              className={`text-sm sm:text-base font-bold no-underline transition-colors px-1 py-1 ${
+                location.pathname === "/venmo-automation"
+                  ? "text-indigo-500 dark:text-indigo-400 font-extrabold"
+                  : isDark
+                  ? "text-slate-100 hover:text-indigo-400"
+                  : "text-slate-800 hover:text-indigo-600"
+              }`}
+              style={{ textDecoration: 'none' }}
+            >
+              Venmo
+            </Link>
+          </li>
+          <li>
             <button
               onClick={handleLogout}
               className={`text-sm sm:text-base font-bold no-underline transition-colors bg-transparent border-0 cursor-pointer px-1 py-1 ${
