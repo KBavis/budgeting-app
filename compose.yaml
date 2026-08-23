@@ -42,6 +42,8 @@ services:
       - PLAID_SECRET=${PLAID_SECRET}
       - PLAID_ENV=production
       - PLAID_API_BASE_URL=https://production.plaid.com
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY}
+      - MAILGUN_INGEST_DOMAIN=${MAILGUN_INGEST_DOMAIN:-mail.bavisbudgeting.com}
     restart: unless-stopped
     networks:
       - app-network
