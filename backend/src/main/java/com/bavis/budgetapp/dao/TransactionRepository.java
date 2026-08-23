@@ -102,6 +102,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     List<Transaction> findByCategoryCategoryIdAndAsOf(@Param("categoryId") long categoryId, @Param("asOf") LocalDate asOf);
 
 
+
     /**
      * Removal of all Transactions corresponding to a particular Account ID
      *

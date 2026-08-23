@@ -53,6 +53,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow CORS preflight requests
                         .requestMatchers("/auth/authenticate", "/auth/register", "/error", "/actuator/health")
                         .permitAll() // Allow registration/authentication endpoints
+                        .requestMatchers("/api/webhooks/**")
+                        .permitAll() // Allow Mailgun webhook (secured via HMAC signature verification)
                         .anyRequest().authenticated() // Authenticate all other requests
                 )
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless

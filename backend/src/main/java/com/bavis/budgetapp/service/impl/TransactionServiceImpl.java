@@ -28,6 +28,10 @@ import com.bavis.budgetapp.entity.CategoryVt;
 import com.bavis.budgetapp.filter.TransactionFilters;
 import com.bavis.budgetapp.mapper.CategoryMapper;
 import com.bavis.budgetapp.mapper.TransactionMapper;
+import com.bavis.budgetapp.dao.StagedVenmoPaymentRepository;
+import com.bavis.budgetapp.dao.VenmoAutomationRepository;
+import com.bavis.budgetapp.entity.StagedVenmoPayment;
+import com.bavis.budgetapp.entity.VenmoAutomation;
 import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.TransactionService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -83,6 +88,10 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Lazy
     private final CategoryServiceImpl categoryService;
+
+    private final StagedVenmoPaymentRepository _stagedVenmoPaymentRepository;
+
+    private final VenmoAutomationRepository _venmoAutomationRepository;
 
     @Override
     public SyncTransactionsDto syncTransactions(AccountsDto accountsDto) throws PlaidServiceException{
@@ -234,11 +243,26 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
 
-        // make predictions for categorizing each Transaction
         Long userId = _userService.getUserIdByAccountIds(accountsDto.getAccounts());
         if (userId == null) {
             throw new RuntimeException("Unable to retrieve user id pertaining to the following account ids: " + accountsDto.getAccounts());
         }
+
+        // Enrich any pending Venmo transactions from staged emails before running category prediction
+        try {
+            List<Transaction> syncBatch = new ArrayList<>();
+            syncBatch.addAll(allModifiedOrAddedTransactions);
+            syncBatch.addAll(previousMonthTransactions);
+
+            int enrichedCount = enrichVenmoTransactions(userId, syncBatch);
+            if (enrichedCount > 0) {
+                log.info("Enriched {} Venmo transactions for user ID {} during Plaid sync", enrichedCount, userId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to enrich Venmo transactions during sync for user ID {}: {}", userId, e.getMessage());
+        }
+
+        // make predictions for categorizing each Transaction
         predictCategories(allModifiedOrAddedTransactions, userId);
         predictCategories(previousMonthTransactions, userId);
 
@@ -662,6 +686,90 @@ public class TransactionServiceImpl implements TransactionService {
                 }
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public int enrichVenmoTransactions(Long userId, List<Transaction> syncBatch) {
+        if (syncBatch == null || syncBatch.isEmpty()) {
+            return 0;
+        }
+
+        // Only consider unmatched staged Venmo payments from the start of the previous month onward
+        LocalDateTime startOfPreviousMonth = LocalDate.now()
+                .minusMonths(1)
+                .withDayOfMonth(1)
+                .atStartOfDay();
+
+        List<StagedVenmoPayment> pendingPayments = _stagedVenmoPaymentRepository
+                .findByUserUserIdAndMatchedIsFalseAndEmailTimestampGreaterThanEqualOrderByEmailTimestampAsc(userId, startOfPreviousMonth);
+
+        if (pendingPayments.isEmpty()) {
+            return 0;
+        }
+
+        log.info("Attempting to enrich Venmo transactions for user ID: {} (syncBatch size: {}, staged count: {})",
+                userId, syncBatch.size(), pendingPayments.size());
+
+        int enrichedCount = 0;
+        double amountTolerance = 0.02;
+
+        // Keep track of transaction IDs matched within this batch to prevent duplicate assignments
+        Set<String> matchedBatchTxIds = new HashSet<>();
+
+        for (StagedVenmoPayment staged : pendingPayments) {
+            LocalDate emailDate = staged.getEmailTimestamp() != null 
+                    ? staged.getEmailTimestamp().toLocalDate() 
+                    : LocalDate.now();
+
+            // Match strictly by amount & Venmo merchant/name, sorted by date proximity to staged email date
+            List<Transaction> candidates = syncBatch.stream()
+                    .filter(t -> t.getTransactionId() != null && !matchedBatchTxIds.contains(t.getTransactionId()))
+                    .filter(t -> (t.getMerchantName() != null && t.getMerchantName().equalsIgnoreCase("venmo"))
+                            || (t.getName() != null && t.getName().equalsIgnoreCase("venmo")))
+                    .filter(t -> Math.abs(t.getAmount() - staged.getAmount()) <= amountTolerance)
+                    .sorted((t1, t2) -> {
+                        if (t1.getDate() == null && t2.getDate() == null) return 0;
+                        if (t1.getDate() == null) return 1;
+                        if (t2.getDate() == null) return -1;
+                        long d1 = Math.abs(ChronoUnit.DAYS.between(emailDate, t1.getDate()));
+                        long d2 = Math.abs(ChronoUnit.DAYS.between(emailDate, t2.getDate()));
+                        return Long.compare(d1, d2);
+                    })
+                    .toList();
+
+            if (candidates.isEmpty()) {
+                log.debug("No matching Venmo candidate found in syncBatch for staged payment ID {} (${})",
+                        staged.getStagedId(), staged.getAmount());
+                continue;
+            }
+
+            Transaction bestMatch = candidates.get(0);
+            matchedBatchTxIds.add(bestMatch.getTransactionId());
+
+            bestMatch.setName(staged.getEnrichedName());
+            _transactionRepository.save(bestMatch);
+
+            staged.setMatched(true);
+            staged.setMatchedAt(LocalDateTime.now());
+            _stagedVenmoPaymentRepository.save(staged);
+
+            enrichedCount++;
+            log.info("Enriched transaction ID {} on date {} with name '{}' (Staged ID: {}, Email Date: {})",
+                    bestMatch.getTransactionId(), bestMatch.getDate(), staged.getEnrichedName(), staged.getStagedId(), emailDate);
+        }
+
+        if (enrichedCount > 0) {
+            Optional<VenmoAutomation> automationOpt = _venmoAutomationRepository.findByUserUserId(userId);
+            if (automationOpt.isPresent()) {
+                VenmoAutomation automation = automationOpt.get();
+                automation.setLastProcessedAt(LocalDateTime.now());
+                automation.setEnrichedCount(automation.getEnrichedCount() + enrichedCount);
+                _venmoAutomationRepository.save(automation);
+            }
+        }
+
+        return enrichedCount;
     }
 
 }

@@ -155,4 +155,15 @@ public interface TransactionService {
      */
     void removeAccountTransactions(String accountId);
 
+    /**
+     * Functionality to enrich pending Venmo transactions from staged email payments for a sync batch.
+     *
+     * @param userId
+     *          - ID of the user whose transactions are being synced
+     * @param syncBatch
+     *          - list of newly synced transactions to enrich
+     * @return
+     *          - number of transactions successfully enriched
+     */
+    int enrichVenmoTransactions(Long userId, List<Transaction> syncBatch);
 }
