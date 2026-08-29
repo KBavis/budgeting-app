@@ -1,0 +1,90 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: env.REPO_URL ?: 'https://github.com/KBavis/budgeting-app.git']])
+            }
+        }
+
+        stage('Extract Version') {
+            steps {
+                script {
+                    def baseVersion = env.SUGGESTION_ENGINE_VERSION ?: '1.0.0'
+                    def buildNumber = env.BUILD_NUMBER
+                    env.VERSION = "${baseVersion}.${buildNumber}"
+                    echo "Building Suggestion Engine Version: ${env.VERSION}"
+                }
+            }
+        }
+
+        stage('Build Suggestion Engine Docker Image') {
+            steps {
+                dir('apps/suggestion-engine') {
+                    script {
+                        def version = env.VERSION
+                        def cmd = "docker build -t budget-app-suggestion-engine:${version} -f docker/Dockerfile ."
+                        if (isUnix()) { sh cmd } else { bat cmd }
+                    }
+                }
+            }
+        }
+
+        stage('Push Suggestion Engine Docker Image') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'dockerhubpwd', variable: 'dockerhubpwd'),
+                    string(credentialsId: 'docker-user', variable: 'dockeruser')
+                ]) {
+                    script {
+                        def version = env.VERSION
+                        def user = env.DOCKER_USER ?: dockeruser
+                        def dockerImage = "budget-app-suggestion-engine:${version}"
+                        def dockerHubImage = "${user}/budget-app-suggestion-engine:${version}"
+
+                        if (isUnix()) {
+                            sh """
+                                echo "${dockerhubpwd}" | docker login -u ${user} --password-stdin docker.io
+                                docker tag ${dockerImage} ${dockerHubImage}
+                                docker push ${dockerHubImage}
+                            """
+                        } else {
+                            bat "docker login -u ${user} -p ${dockerhubpwd} docker.io"
+                            bat "docker tag ${dockerImage} ${dockerHubImage}"
+                            bat "docker push ${dockerHubImage}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy To Server') {
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'server-ip', variable: 'SERVER_IP'),
+                        sshUserPrivateKey(credentialsId: 'deploy-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
+                    ]) {
+                        def deployDir = env.DEPLOY_PATH ?: "/home/${SSH_USER}"
+                        if (isUnix()) {
+                            sh """
+                                chmod 600 "\${SSH_KEY}"
+                                scp -i "\${SSH_KEY}" -o StrictHostKeyChecking=no compose.yaml \${SSH_USER}@\${SERVER_IP}:${deployDir}
+                                ssh -i "\${SSH_KEY}" -o StrictHostKeyChecking=no \${SSH_USER}@\${SERVER_IP} "cd ${deployDir} && docker-compose down && sed -i 's/^SUGGESTION_ENGINE_VERSION=.*/SUGGESTION_ENGINE_VERSION=\${VERSION}/' .env && docker-compose up -d"
+                            """
+                        } else {
+                            bat """
+                                REM fix ssh key permissions
+                                powershell -Command "\$acl = Get-Acl '%SSH_KEY%'; \$acl.SetAccessRuleProtection(\$true, \$false); \$acl.Access | ForEach-Object { \$acl.RemoveAccessRule(\$_) }; \$rule = New-Object System.Security.AccessControl.FileSystemAccessRule('NT AUTHORITY\\SYSTEM', 'FullControl', 'Allow'); \$acl.SetAccessRule(\$rule); Set-Acl '%SSH_KEY%' \$acl"
+
+                                scp -i "%SSH_KEY%" -o StrictHostKeyChecking=no compose.yaml %SSH_USER%@%SERVER_IP%:${deployDir}
+                                ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@%SERVER_IP% "cd ${deployDir} && docker-compose down && sed -i 's/^SUGGESTION_ENGINE_VERSION=.*/SUGGESTION_ENGINE_VERSION=%VERSION%/' .env && docker-compose up -d"
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

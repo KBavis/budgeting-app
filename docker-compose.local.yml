@@ -5,19 +5,96 @@ services:
     image: postgres:15-alpine
     container_name: budget-postgres-local
     environment:
-      POSTGRES_DB: budget-app
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME:-budget-app}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d budget-app"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-budget-app}"]
       interval: 5s
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - budget-local-network
+
+  suggestion-engine:
+    build:
+      context: ./apps/suggestion-engine
+      dockerfile: docker/Dockerfile
+    container_name: budget-suggestion-engine-local
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=postgres
+      - DB_NAME=${DB_NAME:-budget-app}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASS=${DB_PASS:-postgres}
+      - DB_PORT=5432
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./apps/suggestion-engine/suggestion_engine/artifacts:/app/suggestion_engine/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - budget-local-network
+
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: docker/Dockerfile
+    container_name: budget-backend-local
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DB_NAME:-budget-app}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASS:-postgres}
+      - SUGGESTION_ENGINE_URL=http://suggestion-engine:8000/
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
+      - PLAID_CLIENT_ID=${PLAID_CLIENT_ID:-}
+      - PLAID_SECRET=${PLAID_SECRET:-}
+      - PLAID_BASE_URL=${PLAID_BASE_URL:-https://sandbox.plaid.com}
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY:-}
+      - MAILGUN_INGEST_DOMAIN=${MAILGUN_INGEST_DOMAIN:-mail.bavisbudgeting.com}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      suggestion-engine:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - budget-local-network
+
+  frontend:
+    image: node:22-alpine
+    container_name: budget-frontend-local
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/frontend:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm start"
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:8080
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=3000
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - budget-local-network
+
+networks:
+  budget-local-network:
+    driver: bridge
 
 volumes:
   postgres_data:

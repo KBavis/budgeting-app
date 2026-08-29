@@ -1,0 +1,89 @@
+jenkins:
+  systemMessage: "Budget App Local CI/CD Jenkins Controller (Automated with JCasC)"
+  numExecutors: 2
+  mode: NORMAL
+  scmCheckoutRetryCount: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_USER:-admin}"
+          password: "${JENKINS_ADMIN_PASSWORD:-admin}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - string:
+              scope: GLOBAL
+              id: "docker-user"
+              secret: "${DOCKER_USER}"
+              description: "Docker Hub Username"
+          - string:
+              scope: GLOBAL
+              id: "dockerhubpwd"
+              secret: "${DOCKERHUB_PASSWORD}"
+              description: "Docker Hub Password / Access Token"
+          - string:
+              scope: GLOBAL
+              id: "server-ip"
+              secret: "${SERVER_IP}"
+              description: "Production Server IP"
+          - basicSSHUserPrivateKey:
+              scope: GLOBAL
+              id: "deploy-ssh-key"
+              username: "${SSH_USER:-deployuser}"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${SSH_PRIVATE_KEY}"
+              description: "SSH Key for Production Server Deployment"
+
+jobs:
+  - script: >
+      pipelineJob('budget-app-backend') {
+        description('Builds, packages, containerizes, and deploys the Spring Boot backend service.')
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote { url('${REPO_URL:-https://github.com/KBavis/budgeting-app.git}') }
+                branch('*/main')
+              }
+            }
+            scriptPath('apps/backend/jenkins/Jenkinsfile')
+          }
+        }
+      }
+  - script: >
+      pipelineJob('budget-app-frontend') {
+        description('Builds, packages, containerizes, and deploys the React frontend application.')
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote { url('${REPO_URL:-https://github.com/KBavis/budgeting-app.git}') }
+                branch('*/main')
+              }
+            }
+            scriptPath('apps/frontend/jenkins/Jenkinsfile')
+          }
+        }
+      }
+  - script: >
+      pipelineJob('budget-app-suggestion-engine') {
+        description('Builds, packages, containerizes, and deploys the Python FastAPI Suggestion Engine ML microservice.')
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote { url('${REPO_URL:-https://github.com/KBavis/budgeting-app.git}') }
+                branch('*/main')
+              }
+            }
+            scriptPath('apps/suggestion-engine/jenkins/Jenkinsfile')
+          }
+        }
+      }

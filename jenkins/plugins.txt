@@ -1,0 +1,9 @@
+configuration-as-code:latest
+job-dsl:latest
+workflow-aggregator:latest
+git:latest
+ssh-credentials:latest
+credentials-binding:latest
+pipeline-stage-view:latest
+pipeline-model-definition:latest
+pipeline-utility-steps:latest

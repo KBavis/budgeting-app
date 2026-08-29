@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: budget-app-jenkins
+    user: root
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    environment:
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/jenkins.yaml
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    env_file:
+      - path: .env.jenkins
+        required: false
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - ./jenkins.yaml:/var/jenkins_home/casc_configs/jenkins.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+volumes:
+  jenkins_data:
+    driver: local

@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:budget-app}}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USER:${USERNAME:postgres}}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASS:${PASSWORD:postgres}}}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+
+  categories:
+    Wants: 0.30
+    Needs: 0.50
+    Investments: 0.20
+
+plaid:
+  api:
+    baseUrl: ${PLAID_BASE_URL:${PLAID_API_BASE_URL:https://sandbox.plaid.com}}
+    client-id: ${PLAID_CLIENT_ID:}
+    secret-key: ${PLAID_SECRET:}
+
+logging:
+  level:
+    org.springframework.security: ${LOG_LEVEL_SECURITY:DEBUG}
+    com.bavisbudgeting: ${LOG_LEVEL_APP:DEBUG}
+
+suggestion-engine:
+  base-url: ${SUGGESTION_ENGINE_URL:http://localhost:8000/}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+
+mailgun:
+  api-key: ${MAILGUN_API_KEY:}
+  ingest-domain: ${MAILGUN_INGEST_DOMAIN:mail.bavisbudgeting.com}
+  base-url: ${MAILGUN_BASE_URL:https://api.mailgun.net}
+  sandbox-domain: ${MAILGUN_SANDBOX_DOMAIN:sandbox58c345fc55c14b7eb3d84436680dad35.mailgun.org}

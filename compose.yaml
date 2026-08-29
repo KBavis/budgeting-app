@@ -4,7 +4,7 @@ services:
 
   # react frontend service 
   frontend:
-    image: baviske/budget-app-frontend:${FRONTEND_VERSION}
+    image: ${DOCKER_USER}/budget-app-frontend:${FRONTEND_VERSION}
     container_name: frontend-app
     ports:
       - "80:80"
@@ -13,6 +13,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     environment:
       - NODE_ENV=production
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-}
     depends_on:
       - backend
     restart: unless-stopped
@@ -31,19 +32,26 @@ services:
 
   # spring boot backend service 
   backend:
-    image: baviske/budget-app-backend:${BACKEND_VERSION}
+    image: ${DOCKER_USER}/budget-app-backend:${BACKEND_VERSION}
     container_name: backend-app
     ports:
       - "8080:8080"
     environment:
-      - USERNAME=${USERNAME}
-      - PASSWORD=${PASSWORD}
+      - USERNAME=${USERNAME:-}
+      - PASSWORD=${PASSWORD:-}
+      - DB_HOST=${DB_HOST:-}
+      - DB_NAME=${DB_NAME:-}
+      - DB_USER=${DB_USER:-}
+      - DB_PASS=${DB_PASS:-}
+      - DB_PORT=${DB_PORT:-5432}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-}
       - PLAID_CLIENT_ID=${PLAID_CLIENT_ID}
       - PLAID_SECRET=${PLAID_SECRET}
       - PLAID_ENV=production
-      - PLAID_API_BASE_URL=https://production.plaid.com
+      - PLAID_API_BASE_URL=${PLAID_BASE_URL:-https://production.plaid.com}
       - MAILGUN_API_KEY=${MAILGUN_API_KEY}
       - MAILGUN_INGEST_DOMAIN=${MAILGUN_INGEST_DOMAIN:-mail.bavisbudgeting.com}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://bavisbudgeting.com}
     restart: unless-stopped
     networks:
       - app-network
@@ -55,23 +63,22 @@ services:
           memory: 192M
     tmpfs:
       - /tmp
-  
 
   # python suggestion engine service 
   suggestion-engine:
-    image: baviske/budget-app-suggestion-engine:${BACKEND_VERSION}
+    image: ${DOCKER_USER}/budget-app-suggestion-engine:${SUGGESTION_ENGINE_VERSION:-${BACKEND_VERSION:-1.0.0}}
     container_name: suggestion-engine-app
     ports:
       - "8000:8000"
     volumes:
-      - ./budgeting-app/backend/suggestion_engine/artifacts:/app/suggestion_engine/artifacts
+      - ./apps/suggestion-engine/suggestion_engine/artifacts:/app/suggestion_engine/artifacts
     environment:
       - DB_HOST=${DB_HOST}
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
       - DB_PORT=${DB_PORT}
-        # memory optimizations
+      # memory optimizations
       - PYTHONHASHSEED=0
       - PYTHONUNBUFFERED=1
       - OMP_NUM_THREADS=1
@@ -88,7 +95,7 @@ services:
           memory: 200M
     tmpfs:
       - /tmp
-    mem_swappiness: 60 # enable swap usage
+    mem_swappiness: 60
 
 networks:
   app-network:

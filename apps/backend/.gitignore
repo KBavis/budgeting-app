@@ -1,7 +1,6 @@
-application.properties
-application.yaml
 **/application-test.yaml
 .env
+*.secret.env
 /.gradle/
 .gradle/
 build/

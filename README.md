@@ -64,127 +64,63 @@ Users who are concerned about security are encouraged to follow this local setup
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/KBavis/budgeting-app.git
+git clone https://github.com/<your-username>/budgeting-app.git
 cd budgeting-app
 ```
 
 ---
 
-### 2. Backend Setup (Spring Boot)
+### 2. Configure Environment
+
+Copy the `.env.example` template:
+```bash
+cp .env.example .env
+```
+*The default values in `.env` are pre-configured for local development.*
+
+---
+
+### 3. Option A: Run Full Stack with Docker (Recommended)
+
+Start all services (Postgres, Backend, Suggestion Engine, and Frontend with live hot-reloading) in one command:
 
 ```bash
-cd backend/src
-mkdir resources
+docker compose -f docker-compose.local.yml up -d --build
 ```
 
-Create a `application.yaml` inside the newly created `resources` directory:
+Access your application at:
+* **Frontend**: [http://localhost:3000](http://localhost:3000)
+* **Backend API**: [http://localhost:8080](http://localhost:8080)
+* **Suggestion Engine**: [http://localhost:8000](http://localhost:8000)
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://<your-postgresql-url>:5432/<your-database-name>
-    username: <your-database-username>
-    password: <your-database-password>
-    driver-class-name: org.postgresql.Driver
+For complete setup instructions (including local Jenkins automation), see the [First-Time Setup Guide](docs/FIRST_TIME_SETUP.md).
 
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update
+---
 
-  categories:
-    Wants: <your-wants-percentage>
-    Needs: <your-needs-percentage>
-    Investments: <your-investments-percentage>
+### 4. Option B: Native Setup (Without Docker)
 
-plaid:
-  api:
-    baseUrl: <your-plaid-base-url>  # e.g. https://production.plaid.com
-    client-id: <your-plaid-client-id>
-    secret-key: <your-plaid-secret-key>
-
-logging:
-  level:
-    org.springframework.security: DEBUG
-    com.bavisbudgeting: DEBUG
-
-suggestion-engine:
-  base-url: "http://localhost:8000/"
-
-cors:
-  allowed-origins: "http://localhost:3000
-```
-
-Then build & start up Spring Boot service:
-
+#### A. Backend (Spring Boot)
 ```bash
-cd ../backend
-./gradlew build 
+cd apps/backend
 ./gradlew bootRun
 ```
 
-Verify that the Spring Boot service starts successfully.
-
----
-### 4. Frontend Setup (React)
-
+#### B. Frontend (React)
 ```bash
-cd ../frontend
+cd apps/frontend
 npm install
 npm start
 ```
 
-Your application should now be running locally at:
-👉 **[http://localhost:3000](http://localhost:3000)**
-
----
-### 5. Onboard New Account 
-
-Navigate to **[http://localhost:3000](http://localhost:3000)** and work through registration process
-to setup necessary budgets and allocations
-
----
-### 6. Suggestion Setup (AI/ML)
-
-In order to utilize the Suggestion Engine functionality provided by this code, it's suggested to have at have *at least 50 transactions* categorized manually in order for your model to make accurate suggestions
-
-Once complete, complete following steps: 
-
-a) Create virtual env and install relevant dependencies
+#### C. Suggestion Engine (Python FastAPI)
 ```bash
-python -m venv backend/suggestion_engine/training/.venv && \
-source backend/suggestion_engine/training/.venv/bin/activate && \
-pip install -r backend/suggestion_engine/training/requirements.txt
-```
-
-b) Train user specific neural network for making predictions
-```bash
-cd backend 
-source suggestion_engine/training/.venv/bin/activate
-python suggestion_engine/scripts/nightly_training.py
-```
-
-c) Validate model created in following location 
-```bash
-suggestion_engine/artifacts/{user_id}/model.onnx
-```
-
-d) Create new virtual env for inference 
-```bash
-python -m venv backend/suggestion_engine/inference/.venv && \
-source backend/suggestion_engine/inference/.venv/bin/activate && \
-pip install -r backend/suggestion_engine/inference/requirements.txt
-```
-
-e) Start up FastAPI Service 
-```bash
-cd backend
-source suggestion_engine/inference/.venv/bin/activate
+cd apps/suggestion-engine
+python -m venv .venv
+source .venv/bin/activate
+pip install -r suggestion_engine/inference/requirements.txt
 uvicorn suggestion_engine.inference.service:app --host 0.0.0.0 --port 8000
 ```
 
-The suggestion capabilities should now be available while syncing transactions
----
 
 ## 📦 Current Version
 
