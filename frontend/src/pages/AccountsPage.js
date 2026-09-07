@@ -81,23 +81,39 @@ const AccountsPage = () => {
         handleCloseConfirmationModal();
     };
 
-    const handleOnSuccess = (publicToken, metadata) => {
+    const mapAccountType = (type, subtype) => {
+        switch (type) {
+            case "depository":
+                return subtype === "checking" ? "CHECKING" : "SAVING";
+            case "credit":
+                return "CREDIT";
+            case "investment":
+                return "INVESTMENT";
+            case "loan":
+                return "LOAN";
+            default:
+                return "CHECKING";
+        }
+    };
+
+    const handleOnSuccess = async (publicToken, metadata) => {
         const accountsList = (metadata.accounts && metadata.accounts.length > 0)
             ? metadata.accounts
             : [metadata.account];
 
-        accountsList.forEach((acc) => {
+        for (const acc of accountsList) {
+            const institutionName = metadata.institution?.name;
             const accountData = {
-                institutionName: metadata.institution.name,
-                accountName: acc.name,
-                accountType: acc.type ? acc.type.toUpperCase() : 'CHECKING',
-                accountSubtype: acc.subtype ? acc.subtype.toUpperCase() : '',
-                mask: acc.mask,
                 plaidAccountId: acc.id || metadata.account_id,
-                plaidPublicToken: publicToken
+                accountName: institutionName ? `${institutionName} - ${acc.name}` : acc.name,
+                publicToken,
+                accountType: mapAccountType(
+                    acc.type || metadata.account?.type,
+                    acc.subtype || metadata.account?.subtype
+                ) || "CHECKING",
             };
-            createAccount(accountData);
-        });
+            await createAccount(accountData);
+        }
 
         setPlaidKey(Date.now());
         setAlert("Successfully linked financial institution!", "success");
