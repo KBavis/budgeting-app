@@ -1,6 +1,7 @@
 application.properties
 application.yaml
 **/application-test.yaml
+**/application-local.yaml
 .env
 /.gradle/
 .gradle/

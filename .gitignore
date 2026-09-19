@@ -4,3 +4,16 @@
 .venv
 .vscode/
 .idea/*
+
+
+# build artifacts / dependencies (keep out of git status wherever they appear, e.g. apps/)
+node_modules/
+.gradle/
+build/
+bin/
+
+# build deps
+gradlew
+gradlew.bat
+gradle-wrapper.jar
+gradle-wrapper.properties
