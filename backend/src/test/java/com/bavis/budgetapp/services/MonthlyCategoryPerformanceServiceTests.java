@@ -6,11 +6,13 @@ import com.bavis.budgetapp.entity.Category;
 import com.bavis.budgetapp.entity.CategoryVt;
 import com.bavis.budgetapp.entity.CategoryType;
 import com.bavis.budgetapp.entity.Transaction;
+import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.entity.analysis.MerchantAnalysis;
 import com.bavis.budgetapp.entity.analysis.MonthlyCategoryPerformance;
 import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.TransactionService;
+import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.service.impl.MonthlyCategoryPerformanceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +55,9 @@ public class MonthlyCategoryPerformanceServiceTests {
 
     @Mock
     private TransactionService transactionServiceMock;
+
+    @Mock
+    private UserService userService;
 
     @Spy
     private EffectivityService effectivityService = new EffectivityService();
@@ -372,5 +377,30 @@ public class MonthlyCategoryPerformanceServiceTests {
                 .build();
 
         return List.of(t1, t2, t3, t4, t5, t6);
+    }
+
+    @Test
+    void testGetPerformances_OnlyReturnsAuthenticatedUsersPerformances() {
+        // Arrange - request contains a CategoryType ID that (hypothetically) belongs to another user
+        List<Long> requestedCategoryTypeIds = List.of(1L, 2L);
+        List<MonthlyCategoryPerformance> expected = List.of(MonthlyCategoryPerformance.builder().userId(10L).build());
+        when(userService.getCurrentAuthUser()).thenReturn(User.builder().userId(10L).build());
+        when(repository.findByUserIdAndCategoryTypeIdInAndMonthYear(10L, requestedCategoryTypeIds, monthYear)).thenReturn(expected);
+
+        // Act
+        List<MonthlyCategoryPerformance> actual = categoryPerformanceService.getPerformances(requestedCategoryTypeIds, monthYear);
+
+        // Assert - query is always constrained to the authenticated user's own rows
+        assertEquals(expected, actual);
+        verify(repository, never()).findByCategoryTypeIdInAndMonthYear(any(), any());
+    }
+
+    @Test
+    void testGetPerformances_SingleCategoryType_IsScopedToAuthenticatedUser() {
+        when(userService.getCurrentAuthUser()).thenReturn(User.builder().userId(10L).build());
+        when(repository.findByUserIdAndCategoryTypeIdInAndMonthYear(10L, List.of(5L), monthYear)).thenReturn(List.of());
+
+        assertEquals(List.of(), categoryPerformanceService.getPerformances(5L, monthYear));
+        verify(repository, never()).findByCategoryTypeIdInAndMonthYear(any(), any());
     }
 }

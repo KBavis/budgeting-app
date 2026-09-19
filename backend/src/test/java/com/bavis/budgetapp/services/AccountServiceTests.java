@@ -76,6 +76,7 @@ public class AccountServiceTests {
     private String accountId;
     private String accessToken;
     private Account expectedAccount;
+    private static final Long OWNER_USER_ID = 10L;
 
     @BeforeEach
     public void setup() {
@@ -95,9 +96,13 @@ public class AccountServiceTests {
                 .build();
         expectedAccount = Account.builder()
                 .accountId(accountId)
+                .user(User.builder().userId(OWNER_USER_ID).build())
                 .connection(expectedConnection)
                 .validTimes(new ArrayList<>())
                 .build();
+
+        // the currently authenticated user owns expectedAccount
+        lenient().when(userService.isCurrentAuthUser(OWNER_USER_ID)).thenReturn(true);
     }
 
     @Test
@@ -151,7 +156,7 @@ public class AccountServiceTests {
     }
 
     @Test
-    void testDelete_NullUserOnAccount_NoUserFetch() {
+    void testDelete_OwnedAccount_NoUserFetch() {
         // Mock
         when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
         doNothing().when(plaidService).removeAccount(accessToken);
@@ -161,6 +166,40 @@ public class AccountServiceTests {
 
         // Verify
         Mockito.verify(userService, times(0)).readById(any(Long.class));
+    }
+
+    /**
+     * A user must not be able to delete (or disconnect from Plaid) an Account owned by someone else
+     */
+    @Test
+    void testDelete_AccountOwnedByAnotherUser_ThrowsAndDoesNotTouchPlaid() {
+        // Arrange
+        expectedAccount.setUser(User.builder().userId(999L).build());
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
+
+        // Act & Verify
+        RuntimeException e = assertThrows(RuntimeException.class, () -> accountService.delete(accountId));
+        assertEquals("Unable to locate Account with ID " + accountId, e.getMessage());
+        Mockito.verify(plaidService, never()).removeAccount(any());
+        Mockito.verify(accountRepository, never()).save(any());
+    }
+
+    /**
+     * An Account with no owner can never be accessed
+     */
+    @Test
+    void testFindEntity_AccountWithoutOwner_Throws() {
+        expectedAccount.setUser(null);
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
+
+        assertThrows(RuntimeException.class, () -> accountService.findEntity(accountId, null));
+    }
+
+    @Test
+    void testFindEntity_AccountOwnedByAuthUser_ReturnsAccount() {
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
+
+        assertEquals(expectedAccount, accountService.findEntity(accountId, null));
     }
 
     /**

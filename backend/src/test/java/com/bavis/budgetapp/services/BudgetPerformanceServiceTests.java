@@ -23,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
@@ -374,7 +375,7 @@ public class BudgetPerformanceServiceTests {
 
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
-        when(categoryService.findAllEntities(any())).thenReturn(categories);
+        when(categoryService.findAllEntities(any(User.class), any())).thenReturn(categories);
         doReturn(budgetOverviews).when(budgetPerformanceService)
                 .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
@@ -397,6 +398,36 @@ public class BudgetPerformanceServiceTests {
     }
 
     @Test
+    @DisplayName("Test runGenerateBudgetPerformanceJob looks up each user's own Categories and never needs an authenticated user")
+    void testRunGenerateBudgetPerformanceJob_UsesEachUsersCategories_NoAuthenticatedUserRequired() {
+        //Arrange - the scheduled job runs with no authenticated user, for several users
+        User otherUser = User.builder().userId(user.getUserId() + 1000).username("other-user").build();
+        List<Category> usersCategories = List.of(category);
+        List<Category> otherUsersCategories = List.of();
+
+        HashMap<OverviewType, BudgetOverview> budgetOverviews = new HashMap<>();
+        budgetOverviews.put(OverviewType.GENERAL, generalOverview);
+
+        //Mock
+        when(userService.readAll()).thenReturn(List.of(user, otherUser));
+        when(categoryService.findAllEntities(eq(user), any())).thenReturn(usersCategories);
+        when(categoryService.findAllEntities(eq(otherUser), any())).thenReturn(otherUsersCategories);
+        doReturn(budgetOverviews).when(budgetPerformanceService)
+                .generateBudgetOverviews(any(), any(MonthYear.class), any());
+
+        //Act
+        budgetPerformanceService.runGenerateBudgetPerformanceJob(null);
+
+        //Verify - each user is processed with their OWN Categories
+        verify(budgetPerformanceService, times(1)).generateBudgetOverviews(eq(usersCategories), any(MonthYear.class), eq(user));
+        verify(budgetPerformanceService, times(1)).generateBudgetOverviews(eq(otherUsersCategories), any(MonthYear.class), eq(otherUser));
+
+        //Verify - nothing required an authenticated user (there is none on the scheduler thread)
+        verify(userService, never()).getCurrentAuthUser();
+        verify(categoryService, never()).findAllEntities(any(LocalDate.class));
+    }
+
+    @Test
     @DisplayName("Test runGenerateBudgetPerformanceJob utilizes MonthYear passed in")
     void testRunGenerateBudgetPerformanceJob_UsesArg() {
         //Arrange
@@ -411,7 +442,7 @@ public class BudgetPerformanceServiceTests {
 
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
-        when(categoryService.findAllEntities(any())).thenReturn(categories);
+        when(categoryService.findAllEntities(any(User.class), any())).thenReturn(categories);
         doReturn(budgetOverviews).when(budgetPerformanceService)
                 .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
@@ -448,7 +479,7 @@ public class BudgetPerformanceServiceTests {
 
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
-        when(categoryService.findAllEntities(any())).thenReturn(categories);
+        when(categoryService.findAllEntities(any(User.class), any())).thenReturn(categories);
         doReturn(budgetOverviews).when(budgetPerformanceService)
                 .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
@@ -485,7 +516,7 @@ public class BudgetPerformanceServiceTests {
 
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
-        when(categoryService.findAllEntities(any())).thenReturn(categories);
+        when(categoryService.findAllEntities(any(User.class), any())).thenReturn(categories);
         doReturn(budgetOverviews).when(budgetPerformanceService)
                 .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
@@ -522,7 +553,7 @@ public class BudgetPerformanceServiceTests {
 
         //Mock
         when(userService.readAll()).thenReturn(List.of(user));
-        when(categoryService.findAllEntities(any())).thenReturn(categories);
+        when(categoryService.findAllEntities(any(User.class), any())).thenReturn(categories);
         doReturn(budgetOverviews).when(budgetPerformanceService)
                 .generateBudgetOverviews(any(), any(MonthYear.class), any());
         when(budgetPerformanceRepository
@@ -848,8 +879,9 @@ public class BudgetPerformanceServiceTests {
         budgetOverviews.put(OverviewType.NEEDS, needsOverview);
 
         // Mocks
+        when(userService.isCurrentAuthUser(targetUserId)).thenReturn(true);
         when(userService.readById(targetUserId)).thenReturn(user);
-        when(categoryService.findAllEntities(any())).thenReturn(userCategories);
+        when(categoryService.findAllEntities(any(User.class), any())).thenReturn(userCategories);
         when(budgetPerformanceRepository.findById_MonthYear_MonthAndId_MonthYear_YearAndId_UserId(
                 monthYear.getMonth(), monthYear.getYear(), targetUserId)).thenReturn(Optional.of(budgetPerformance));
         doNothing().when(budgetPerformanceRepository).delete(budgetPerformance);
@@ -872,11 +904,28 @@ public class BudgetPerformanceServiceTests {
     @DisplayName("Test recalculateUserBudgetPerformance throws IllegalArgumentException when MonthYear is null")
     void testRecalculateUserBudgetPerformance_NullMonthYear_ThrowsIllegalArgumentException() {
         Long targetUserId = user.getUserId();
+        when(userService.isCurrentAuthUser(targetUserId)).thenReturn(true);
         when(userService.readById(targetUserId)).thenReturn(user);
 
         assertThrows(IllegalArgumentException.class, () -> {
             budgetPerformanceService.recalculateUserBudgetPerformance(targetUserId, null);
         });
+    }
+
+    @Test
+    @DisplayName("Test recalculateUserBudgetPerformance refuses to recalculate a different user's BudgetPerformance")
+    void testRecalculateUserBudgetPerformance_DifferentUser_ThrowsAccessDenied() {
+        Long otherUserId = 999L;
+        when(userService.isCurrentAuthUser(otherUserId)).thenReturn(false);
+
+        assertThrows(AccessDeniedException.class, () -> {
+            budgetPerformanceService.recalculateUserBudgetPerformance(otherUserId, monthYear);
+        });
+
+        // nothing about the other user may be read, deleted or regenerated
+        verify(userService, never()).readById(any());
+        verify(budgetPerformanceRepository, never()).delete(any(BudgetPerformance.class));
+        verify(budgetPerformanceRepository, never()).saveAndFlush(any(BudgetPerformance.class));
     }
 
     /**

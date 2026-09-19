@@ -67,7 +67,7 @@ public class AssignCategoryRequestValidatorTests {
         //Mock
         when(userService.getCurrentAuthUser()).thenReturn(user);
         when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
-        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
+        when(transactionService.findEntityAllowingUnowned(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
 
         //Act
         boolean valid = validator.isValid(assignCategoryRequestDto, constraintValidatorContext);
@@ -78,7 +78,7 @@ public class AssignCategoryRequestValidatorTests {
         //Verify
         verify(userService, times(1)).getCurrentAuthUser();
         verify(categoryService, times(1)).findEntity(category.getCategoryId(), null);
-        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
+        verify(transactionService, times(1)).findEntityAllowingUnowned(transaction.getTransactionId());
     }
 
     @Test
@@ -112,7 +112,7 @@ public class AssignCategoryRequestValidatorTests {
 
         //Mock
         when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(null);
-        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
+        when(transactionService.findEntityAllowingUnowned(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
 
         //Act
         boolean valid = validator.isValid(assignCategoryRequestDto, constraintValidatorContext);
@@ -122,7 +122,7 @@ public class AssignCategoryRequestValidatorTests {
 
         //Verify
         verify(categoryService, times(1)).findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null);
-        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
+        verify(transactionService, times(1)).findEntityAllowingUnowned(transaction.getTransactionId());
     }
 
     @Test
@@ -156,7 +156,7 @@ public class AssignCategoryRequestValidatorTests {
 
         //Mock
         when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
-        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenThrow(new RuntimeException("Invalid Transaction ID"));
+        when(transactionService.findEntityAllowingUnowned(assignCategoryRequestDto.getTransactionId())).thenThrow(new RuntimeException("Invalid Transaction ID"));
 
         //Act
         boolean valid = validator.isValid(assignCategoryRequestDto, constraintValidatorContext);
@@ -166,7 +166,7 @@ public class AssignCategoryRequestValidatorTests {
 
         //Verify
         verify(categoryService, times(1)).findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null);
-        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
+        verify(transactionService, times(1)).findEntityAllowingUnowned(transaction.getTransactionId());
     }
 
     @Test
@@ -205,7 +205,7 @@ public class AssignCategoryRequestValidatorTests {
 
         //Mock
         when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
-        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
+        when(transactionService.findEntityAllowingUnowned(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
         //Act
@@ -216,7 +216,7 @@ public class AssignCategoryRequestValidatorTests {
 
         //Verify
         verify(categoryService, times(1)).findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null);
-        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
+        verify(transactionService, times(1)).findEntityAllowingUnowned(transaction.getTransactionId());
         verify(userService, times(1)).getCurrentAuthUser();
     }
 
@@ -256,7 +256,7 @@ public class AssignCategoryRequestValidatorTests {
 
         //Mock
         when(categoryService.findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
-        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
+        when(transactionService.findEntityAllowingUnowned(assignCategoryRequestDto.getTransactionId())).thenReturn(transaction);
         when(userService.getCurrentAuthUser()).thenReturn(user);
 
         //Act
@@ -267,7 +267,7 @@ public class AssignCategoryRequestValidatorTests {
 
         //Verify
         verify(categoryService, times(1)).findEntity(Long.valueOf(assignCategoryRequestDto.getCategoryId()), null);
-        verify(transactionService, times(1)).findEntity(transaction.getTransactionId());
+        verify(transactionService, times(1)).findEntityAllowingUnowned(transaction.getTransactionId());
         verify(userService, times(1)).getCurrentAuthUser();
     }
 

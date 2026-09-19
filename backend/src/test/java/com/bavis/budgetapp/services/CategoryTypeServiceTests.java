@@ -86,6 +86,9 @@ public class CategoryTypeServiceTests {
                 .userId(10L)
                 .build();
 
+        // the currently authenticated user owns the CategoryTypes below
+        lenient().when(userService.isCurrentAuthUser(10L)).thenReturn(true);
+
         argumentCaptor = ArgumentCaptor.forClass(CategoryType.class);
 
         // Arrange DTOs
@@ -387,6 +390,32 @@ public class CategoryTypeServiceTests {
 
         // Assert
         assertEquals(categoryTypeNeeds, actualCategoryType);
+    }
+
+    @Test
+    void testFindEntity_OwnedByAnotherUser_ThrowsException() {
+        // Arrange
+        categoryTypeNeeds.setUser(User.builder().userId(999L).build());
+        when(repository.findByCategoryTypeIdAndAsOf(eq(categoryTypeNeeds.getCategoryTypeId()), any())).thenReturn(Optional.of(categoryTypeNeeds));
+
+        // Act
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+            categoryTypeService.findEntity(categoryTypeNeeds.getCategoryTypeId(), null);
+        });
+
+        // Assert - must be indistinguishable from a CategoryType that does not exist
+        assertEquals("Invalid category type id: " + categoryTypeNeeds.getCategoryTypeId(), runtimeException.getMessage());
+    }
+
+    @Test
+    void testDelete_OwnedByAnotherUser_DoesNotDelete() {
+        // Arrange
+        categoryTypeNeeds.setUser(User.builder().userId(999L).build());
+        when(repository.findByCategoryTypeIdAndAsOf(eq(categoryTypeNeeds.getCategoryTypeId()), any())).thenReturn(Optional.of(categoryTypeNeeds));
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> categoryTypeService.delete(categoryTypeNeeds.getCategoryTypeId()));
+        verify(repository, never()).save(any());
     }
 
     @Test

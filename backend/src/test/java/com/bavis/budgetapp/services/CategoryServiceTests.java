@@ -104,6 +104,9 @@ public class CategoryServiceTests {
                 .userId(10L)
                 .build();
 
+        // the currently authenticated user owns all of the Categories below
+        lenient().when(userService.isCurrentAuthUser(10L)).thenReturn(true);
+
         category1 = Category.builder()
                 .categoryId(1L)
                 .user(user)
@@ -359,6 +362,7 @@ public class CategoryServiceTests {
     void testDelete_ValidCategory_Success() {
         Category categoryToDelete = Category.builder()
                 .categoryId(1L)
+                .user(user)
                 .build();
         CategoryVt catVt = CategoryVt.builder()
                 .category(categoryToDelete)
@@ -487,5 +491,29 @@ public class CategoryServiceTests {
                 fail("Unrecognized Category updated");
             }
         }
+    }
+
+    @Test
+    void testFindEntity_OwnedByAnotherUser_ThrowsException() {
+        // Arrange
+        category1.setUser(User.builder().userId(999L).build());
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(1L), any())).thenReturn(Optional.of(category1));
+
+        // Act
+        RuntimeException e = assertThrows(RuntimeException.class, () -> categoryService.findEntity(1L, null));
+
+        // Assert - must be indistinguishable from a Category that does not exist
+        assertEquals("Invalid category id: 1", e.getMessage());
+    }
+
+    @Test
+    void testDelete_OwnedByAnotherUser_DoesNotDelete() {
+        // Arrange
+        category1.setUser(User.builder().userId(999L).build());
+        when(categoryRepository.findByCategoryIdAndAsOf(eq(1L), any())).thenReturn(Optional.of(category1));
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> categoryService.delete(1L));
+        verify(categoryRepository, never()).saveAndFlush(any());
     }
 }

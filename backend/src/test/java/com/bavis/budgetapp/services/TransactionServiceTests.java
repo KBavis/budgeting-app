@@ -114,8 +114,13 @@ public class TransactionServiceTests {
     List<PlaidTransactionDto> modifiedTransactions;
     List<PlaidTransactionDto> removedTransactions;
 
+    private static final Long OWNER_USER_ID = 10L;
+
     @BeforeEach
     void setup() {
+        // the currently authenticated user is the owner of every "owned" entity built via the helpers below
+        lenient().when(userService.isCurrentAuthUser(OWNER_USER_ID)).thenReturn(true);
+
         nextCursor = "next-cursor";
         previousCursor = "previous-cursor";
         date = LocalDateTime.now();
@@ -237,7 +242,7 @@ public class TransactionServiceTests {
         // mocks
         configureSyncTransactionMocks_addedModified();
         when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
-        when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        when(transactionRepository.findById(any())).thenReturn(Optional.of(ownedTransaction()));
         doNothing().when(transactionService).predictCategories(any(), any());
 
         // act
@@ -295,7 +300,7 @@ public class TransactionServiceTests {
         // mocks
         configureSyncTransactionMocks_addedModified();
         when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
-        when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        when(transactionRepository.findById(any())).thenReturn(Optional.of(ownedTransaction()));
         AccountResponseDto dto = AccountResponseDto.builder()
                 .balance(2046.00)
                 .build();
@@ -411,7 +416,7 @@ public class TransactionServiceTests {
                 .accountId(accountIdOne)
                 .connection(accountConnectionOne)
                 .build();
-        Category transactionCategory = Category.builder().categoryId(1L).build();
+        Category transactionCategory = Category.builder().categoryId(1L).user(ownerUser()).build();
         ArrayList<String> accountIds = new ArrayList<>(Collections.singletonList(accountIdOne));
         AccountsDto accountsDto = AccountsDto.builder()
                 .accounts(accountIds)
@@ -462,7 +467,7 @@ public class TransactionServiceTests {
                 .accountId(accountIdOne)
                 .connection(accountConnectionOne)
                 .build();
-        Category transactionCategory = Category.builder().categoryId(1L).build();
+        Category transactionCategory = Category.builder().categoryId(1L).user(ownerUser()).build();
         ArrayList<String> accountIds = new ArrayList<>(Collections.singletonList(accountIdOne));
         AccountsDto accountsDto = AccountsDto.builder()
                 .accounts(accountIds)
@@ -532,7 +537,7 @@ public class TransactionServiceTests {
         // mocks
         configureSyncTransactionMocks_prevMonth();
         when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
-        when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        when(transactionRepository.findById(any())).thenReturn(Optional.of(ownedTransaction()));
         doNothing().when(transactionService).predictCategories(any(), any());
 
 
@@ -588,7 +593,7 @@ public class TransactionServiceTests {
         // mocks
         configureSyncTransactionMocks_addedModified();
         when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
-        when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        when(transactionRepository.findById(any())).thenReturn(Optional.of(ownedTransaction()));
         doNothing().when(transactionService).predictCategories(any(), any());
 
         // act
@@ -947,6 +952,7 @@ public class TransactionServiceTests {
                 .build();
         Account account = Account.builder()
                 .accountId("account-id")
+                .user(ownerUser())
                 .build();
         Transaction originalTransaction = Transaction.builder()
                 .transactionId(transactionId)
@@ -1033,6 +1039,7 @@ public class TransactionServiceTests {
     void testReadById_ValidId_Success() {
         //Arrange
         Transaction expectedTransaction = Transaction.builder()
+                .account(ownerAccount())
                 .transactionId("ty124")
                 .amount(1000.0)
                 .name("Transaction")
@@ -1159,6 +1166,7 @@ public class TransactionServiceTests {
                 .categoryId(10L)
                 .build();
         Transaction transaction = Transaction.builder()
+                .account(ownerAccount())
                 .transactionId(transactionId)
                 .category(category)
                 .build();
@@ -1247,6 +1255,7 @@ public class TransactionServiceTests {
         String transactionId = "transaction-id";
 
         Transaction transaction = Transaction.builder()
+                .account(ownerAccount())
                 .amount(amount)
                 .transactionId(transactionId)
                 .name(transactioName)
@@ -1297,6 +1306,7 @@ public class TransactionServiceTests {
         //Arrange
         String transactionId = "transaction-id";
         Transaction transaction = Transaction.builder()
+                .account(ownerAccount())
                 .amount(2000.0)
                 .build();
 
@@ -1320,6 +1330,7 @@ public class TransactionServiceTests {
         // Arrange
         String transactionId = "transaction-id";
         Transaction transaction = Transaction.builder()
+                .account(ownerAccount())
                 .transactionId(transactionId)
                 .amount(2000.0)
                 .build();
@@ -1389,6 +1400,7 @@ public class TransactionServiceTests {
         String originalName = "original-name";
         String updatedName = "updated-name";
         Transaction originalTransaction = Transaction.builder()
+                .account(ownerAccount())
                 .transactionId(transactionId)
                 .name(originalName)
                 .build();
@@ -1584,7 +1596,7 @@ public class TransactionServiceTests {
     }
 
     private void configureSyncTransactions_multiplePagesMocks(PlaidTransactionSyncResponseDto page1Response, PlaidTransactionSyncResponseDto page2Response) {
-        when(transactionRepository.findById(any())).thenReturn(Optional.of(new Transaction()));
+        when(transactionRepository.findById(any())).thenReturn(Optional.of(ownedTransaction()));
         when(plaidService.syncTransactions(eq(accessToken), eq(previousCursor))).thenReturn(page1Response);
         when(plaidService.syncTransactions(eq(accessToken), argThat(cursor -> !previousCursor.equals(cursor))))
                 .thenReturn(page2Response);
@@ -1610,4 +1622,79 @@ public class TransactionServiceTests {
         });
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // Ownership helpers & tests
+    // ---------------------------------------------------------------------------------------------
+
+    private User ownerUser() {
+        return User.builder().userId(OWNER_USER_ID).build();
+    }
+
+    private Account ownerAccount() {
+        return Account.builder().accountId("owner-account-id").user(ownerUser()).build();
+    }
+
+    private Transaction ownedTransaction() {
+        return Transaction.builder().account(ownerAccount()).build();
+    }
+
+    private Transaction transactionOwnedByAnotherUser() {
+        Account otherAccount = Account.builder().accountId("other-account-id").user(User.builder().userId(999L).build()).build();
+        return Transaction.builder().transactionId("other-transaction-id").account(otherAccount).build();
+    }
+
+    @Test
+    void testFindEntity_AccountOwnedByAuthUser_ReturnsTransaction() {
+        Transaction transaction = ownedTransaction();
+        when(transactionRepository.findById("t1")).thenReturn(Optional.of(transaction));
+
+        assertEquals(transaction, transactionService.findEntity("t1"));
+    }
+
+    @Test
+    void testFindEntity_AccountOwnedByAnotherUser_Throws() {
+        when(transactionRepository.findById("other-transaction-id")).thenReturn(Optional.of(transactionOwnedByAnotherUser()));
+
+        RuntimeException e = assertThrows(RuntimeException.class, () -> transactionService.findEntity("other-transaction-id"));
+
+        // indistinguishable from a Transaction that does not exist
+        assertEquals("Transaction with the following ID not found: other-transaction-id", e.getMessage());
+    }
+
+    @Test
+    void testFindEntity_ManualTransactionOwnedThroughCategory_ReturnsTransaction() {
+        Category category = Category.builder().categoryId(1L).user(ownerUser()).build();
+        Transaction manual = Transaction.builder().transactionId("manual").category(category).build();
+        when(transactionRepository.findById("manual")).thenReturn(Optional.of(manual));
+
+        assertEquals(manual, transactionService.findEntity("manual"));
+    }
+
+    @Test
+    void testFindEntity_ManualTransactionCategoryOwnedByAnotherUser_Throws() {
+        Category category = Category.builder().categoryId(1L).user(User.builder().userId(999L).build()).build();
+        Transaction manual = Transaction.builder().transactionId("manual").category(category).build();
+        when(transactionRepository.findById("manual")).thenReturn(Optional.of(manual));
+
+        assertThrows(RuntimeException.class, () -> transactionService.findEntity("manual"));
+        assertThrows(RuntimeException.class, () -> transactionService.findEntityAllowingUnowned("manual"));
+    }
+
+    @Test
+    void testFindEntity_UnownedTransaction_DeniedByDefaultButAllowedForAssignment() {
+        Transaction unowned = Transaction.builder().transactionId("unowned").build();
+        when(transactionRepository.findById("unowned")).thenReturn(Optional.of(unowned));
+
+        assertThrows(RuntimeException.class, () -> transactionService.findEntity("unowned"));
+        assertEquals(unowned, transactionService.findEntityAllowingUnowned("unowned"));
+    }
+
+    @Test
+    void testDeleteTransaction_OwnedByAnotherUser_DoesNotDelete() {
+        when(transactionRepository.findById("other-transaction-id")).thenReturn(Optional.of(transactionOwnedByAnotherUser()));
+
+        assertThrows(RuntimeException.class, () -> transactionService.deleteTransaction("other-transaction-id"));
+        verify(transactionRepository, never()).save(any());
+        verify(transactionRepository, never()).deleteById(any());
+    }
 }
