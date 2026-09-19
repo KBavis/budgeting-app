@@ -76,13 +76,21 @@ const TransactionState = (props) => {
          if (res.data && res.data.updatedAccounts) {
             updateAccountBalance(res.data.updatedAccounts)
          }
+
+         // includes failedAccounts: the accounts that could not be synced (and why)
+         return res.data;
          
       } catch (err) {
          console.error(err);
          dispatch({
             type: SYNC_TRANSACTIONS_FAIL,
-            payload: err.response.data.error,
+            payload:
+               (err.response && err.response.data && err.response.data.error) ||
+               err.message ||
+               "Failed to sync transactions",
          });
+         // callers must know the sync failed rather than being told it succeeded
+         throw err;
       }
    };
 

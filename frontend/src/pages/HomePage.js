@@ -18,6 +18,7 @@ import UpdateAllocationsModal from "../components/category/UpdateAllocationsModa
 import RenameCategory from "../components/category/RenameCategory";
 import SummaryContext from "../context/summary/summaryContext";
 import TransactionSwiper from "../components/swiping/TransactionSwiper";
+import SyncIssuesBanner, { buildSyncIssues } from "../components/accounts/SyncIssuesBanner";
 import { FaSyncAlt, FaPlus, FaList, FaExclamationCircle, FaPiggyBank, FaChartLine } from "react-icons/fa";
 
 const HomePage = () => {
@@ -38,6 +39,8 @@ const HomePage = () => {
    const [showTransactionSwiper, setShowTransactionSwiper] = useState(null);
    const [transactionsToAssign, setTransactionsToAssign] = useState([]);
    const [isSyncing, setIsSyncing] = useState(false);
+   const [syncFailures, setSyncFailures] = useState([]); // accounts the last sync could not sync (and why)
+   const [syncIssuesDismissed, setSyncIssuesDismissed] = useState(false);
 
    const initalFetchRef = useRef(false);
 
@@ -207,8 +210,28 @@ const HomePage = () => {
       setTransactionLoading();
       try {
          const accountIds = (accounts || []).map((acc) => acc.accountId);
-         await syncTransactions(accountIds);
-         setAlert("Successfully Synced Account Transactions!", "success");
+         const result = await syncTransactions(accountIds);
+
+         // each account is synced independently, so some may have succeeded while others (which we list) did not
+         const failures = (result && result.failedAccounts) || [];
+         setSyncFailures(failures);
+         setSyncIssuesDismissed(false);
+
+         if (failures.length === 0) {
+            setAlert("Successfully Synced Account Transactions!", "success");
+         } else if (failures.length < accountIds.length) {
+            setAlert(
+               `Synced ${accountIds.length - failures.length} of ${accountIds.length} accounts. ${failures.length} could not be synced - see details below.`,
+               "danger"
+            );
+         } else {
+            setAlert("None of your accounts could be synced - see details below.", "danger");
+         }
+
+         // pick up the connection status (i.e. "needs login") the server recorded during this sync
+         if (failures.length > 0 || (accounts || []).some((acc) => acc.requiresReauth)) {
+            await fetchAccounts();
+         }
       } catch (err) {
          console.error(err);
          setAlert("Failed to sync transactions", "danger");
@@ -216,6 +239,17 @@ const HomePage = () => {
          setIsSyncing(false);
       }
    };
+
+   // Called after the User re-authenticated an account: it no longer needs attention, so drop its failure notice
+   const handleAccountReconnected = (accountId) => {
+      setSyncFailures((prev) => prev.filter((failure) => failure.accountId !== accountId));
+   };
+
+   // Accounts needing the User's attention: last sync's failures + anything the server still has flagged as needing a login
+   const syncIssues = useMemo(
+      () => (syncIssuesDismissed ? [] : buildSyncIssues(syncFailures, accounts)),
+      [syncFailures, accounts, syncIssuesDismissed]
+   );
 
    // Component Mount logic
    useEffect(() => {
@@ -390,6 +424,17 @@ const HomePage = () => {
                      </button>
                   )}
                </div>
+
+               {/* Accounts that could not be synced, why, and how to fix them */}
+               {syncIssues.length > 0 && (
+                  <div className="mt-6">
+                     <SyncIssuesBanner
+                        issues={syncIssues}
+                        onReconnected={handleAccountReconnected}
+                        onDismiss={() => setSyncIssuesDismissed(true)}
+                     />
+                  </div>
+               )}
             </div>
 
             {/* Full-width Month / Year Quick Stats Overview Banner */}

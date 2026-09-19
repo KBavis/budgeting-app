@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { FaTrashAlt, FaUniversity, FaEdit } from 'react-icons/fa';
 import { ThemeContext } from '../../context/theme/ThemeContext';
+import ReconnectAccountButton from './ReconnectAccountButton';
 
 /**
  * Account type badge styling for both light and dark modes
@@ -134,6 +135,18 @@ const Account = ({ account, handleShowConfirmationModal, handleOpenEditModal }) 
                     </div>
                 </div>
             </div>
+
+            {/* Plaid reported the bank needs the User to log in again: syncing is paused until they do */}
+            {account.requiresReauth && (
+                <div className={`mt-3 pt-3 border-t flex flex-wrap items-center justify-between gap-2 ${
+                    isDark ? "border-amber-400/20" : "border-amber-200"
+                }`}>
+                    <span className={`text-xs font-semibold ${isDark ? "text-amber-300" : "text-amber-700"}`}>
+                        Bank login required — syncing is paused
+                    </span>
+                    <ReconnectAccountButton accountId={account.accountId} accountName={account.accountName} />
+                </div>
+            )}
         </div>
     );
 };

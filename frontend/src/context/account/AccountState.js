@@ -62,6 +62,45 @@ const AccountState = (props) => {
    };
 
    /**
+    * Functionality to request a Plaid Link Token (update mode) that lets the User log in to their financial
+    * institution again for an Account that requires it
+    *
+    * @param accountId
+    *       - ID of the Account to re-authenticate
+    * @returns the Link Token string (rejects if the request fails)
+    */
+   const getReauthLinkToken = async (accountId) => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      const res = await axios.post(`${apiUrl}/account/${accountId}/reauth-link-token`);
+      return res.data.token;
+   };
+
+   /**
+    * Functionality to record that the User re-authenticated an Account via Plaid Link (update mode). The server marks the
+    * connection healthy and clears its error; the updated Account replaces the one in state, which removes the
+    * "needs login" indicators. Does NOT sync; the User syncs manually.
+    *
+    * @param accountId
+    *       - ID of the Account that was re-authenticated
+    * @returns the updated Account (rejects if the request fails)
+    */
+   const completeReauthentication = async (accountId) => {
+      if (localStorage.token) {
+         setAuthToken(localStorage.token);
+      }
+
+      const res = await axios.post(`${apiUrl}/account/${accountId}/reauth-complete`);
+      dispatch({
+         type: UPDATE_ACCOUNT_SUCCESS,
+         payload: res.data,
+      });
+      return res.data;
+   };
+
+   /**
     *  Functionality to clear any errors that may have occured
     */
    const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
@@ -176,7 +215,9 @@ const AccountState = (props) => {
             setLoading,
             removeAccount,
             updateAccount,
-            updateAccountBalance
+            updateAccountBalance,
+            getReauthLinkToken,
+            completeReauthentication
          }}
       >
          {props.children}
