@@ -215,8 +215,15 @@ public class AccountServiceImpl implements AccountService{
 	public Account findEntity(String accountId, LocalDate asOf) throws RuntimeException {
 		log.info("Attempting to read an Account entity with ID {} asOf [{}]", accountId, asOf);
 		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
-		return _accountRepository.findByAccountIdAndAsOf(accountId, target)
+		Account account = _accountRepository.findByAccountIdAndAsOf(accountId, target)
 				.orElseThrow(() -> new RuntimeException("Unable to locate Account with ID " + accountId));
+
+		// Only the owner may access an Account; respond exactly as if it did not exist so IDs cannot be probed
+		if (account.getUser() == null || !_userService.isCurrentAuthUser(account.getUser().getUserId())) {
+			log.warn("Authenticated user attempted to access an Account [{}] that they do not own", accountId);
+			throw new RuntimeException("Unable to locate Account with ID " + accountId);
+		}
+		return account;
 	}
 
 	/**

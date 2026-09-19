@@ -356,8 +356,15 @@ public class CategoryTypeServiceImpl implements CategoryTypeService {
 	public CategoryType findEntity(Long categoryTypeId, LocalDate asOf) {
 		log.info("Reading CategoryType with id [{}] asOf [{}]", categoryTypeId, asOf);
 		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
-		return repository.findByCategoryTypeIdAndAsOf(categoryTypeId, target).orElseThrow(
+		CategoryType categoryType = repository.findByCategoryTypeIdAndAsOf(categoryTypeId, target).orElseThrow(
 				() -> (new RuntimeException("Invalid category type id: " + categoryTypeId)));
+
+		// Only the owner may access a CategoryType; respond exactly as if it did not exist so IDs cannot be probed
+		if (categoryType.getUser() == null || !userService.isCurrentAuthUser(categoryType.getUser().getUserId())) {
+			log.warn("Authenticated user attempted to access a CategoryType [{}] that they do not own", categoryTypeId);
+			throw new RuntimeException("Invalid category type id: " + categoryTypeId);
+		}
+		return categoryType;
 	}
 
 	/**

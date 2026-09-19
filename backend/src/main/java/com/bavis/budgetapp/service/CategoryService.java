@@ -6,6 +6,7 @@ import com.bavis.budgetapp.dto.request.EditCategoryDto;
 import com.bavis.budgetapp.dto.request.RenameCategoryDto;
 import com.bavis.budgetapp.dto.response.CategoryResponseDto;
 import com.bavis.budgetapp.entity.Category;
+import com.bavis.budgetapp.entity.User;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -89,6 +90,19 @@ public interface CategoryService {
 	 * 		- all Categories corresponding to auth user as of date
 	 */
 	List<Category> findAllEntities(LocalDate asOf);
+
+	/**
+	 * Function to fetch all Category entities pertaining to a specific User as of a point-in-time date.
+	 * Does not depend on an authenticated user, so it is safe to use from background jobs.
+	 *
+	 * @param user
+	 * 			- User to fetch Categories for
+	 * @param asOf
+	 * 			- Point-in-time evaluation date (defaults to today if null)
+	 * @return
+	 * 		- all Categories corresponding to the User as of date
+	 */
+	List<Category> findAllEntities(User user, LocalDate asOf);
 
 	/**
 	 * Function to fetch all CategoryResponseDtos pertaining to authenticated user as of a point-in-time date

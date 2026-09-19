@@ -122,9 +122,13 @@ public class CategoryServiceImpl implements CategoryService {
 	@Override
 	public List<Category> findAllEntities(LocalDate asOf) {
 		log.info("Attempting to read all Categories corresponding to authenticated user asOf [{}]", asOf);
-		User currentAuthUser = userService.getCurrentAuthUser();
+		return findAllEntities(userService.getCurrentAuthUser(), asOf);
+	}
+
+	@Override
+	public List<Category> findAllEntities(User user, LocalDate asOf) {
 		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
-		return categoryRepository.findByUserUserIdAndAsOf(currentAuthUser.getUserId(), target);
+		return categoryRepository.findByUserUserIdAndAsOf(user.getUserId(), target);
 	}
 
 	@Override
@@ -306,8 +310,15 @@ public class CategoryServiceImpl implements CategoryService {
 	public Category findEntity(Long categoryId, LocalDate asOf) {
 		log.info("Reading Category with id [{}] asOf [{}]", categoryId, asOf);
 		LocalDate target = (asOf != null) ? asOf : LocalDate.now();
-		return categoryRepository.findByCategoryIdAndAsOf(categoryId, target)
+		Category category = categoryRepository.findByCategoryIdAndAsOf(categoryId, target)
 				.orElseThrow(() -> new RuntimeException("Invalid category id: " + categoryId));
+
+		// Only the owner may access a Category; respond exactly as if it did not exist so IDs cannot be probed
+		if (category.getUser() == null || !userService.isCurrentAuthUser(category.getUser().getUserId())) {
+			log.warn("Authenticated user attempted to access a Category [{}] that they do not own", categoryId);
+			throw new RuntimeException("Invalid category id: " + categoryId);
+		}
+		return category;
 	}
 
 	/**

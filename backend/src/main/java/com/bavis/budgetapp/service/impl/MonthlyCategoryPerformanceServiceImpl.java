@@ -10,6 +10,7 @@ import com.bavis.budgetapp.model.MonthYear;
 import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.MonthlyCategoryPerformanceService;
 import com.bavis.budgetapp.service.TransactionService;
+import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +36,9 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
 
     @Autowired
     private MonthlyCategoryPerformanceRepository repository;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     @Lazy
@@ -104,12 +108,14 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
 
     @Override
     public List<MonthlyCategoryPerformance> getPerformances(Long categoryTypeId, MonthYear monthYear) {
-        return repository.findByCategoryTypeIdInAndMonthYear(Collections.singletonList(categoryTypeId), monthYear);
+        return getPerformances(Collections.singletonList(categoryTypeId), monthYear);
     }
 
     @Override
     public List<MonthlyCategoryPerformance> getPerformances(List<Long> categoryTypeIds, MonthYear monthYear) {
-        return repository.findByCategoryTypeIdInAndMonthYear(categoryTypeIds, monthYear);
+        // only ever return the authenticated user's own performances, regardless of which CategoryType IDs were requested
+        Long userId = userService.getCurrentAuthUser().getUserId();
+        return repository.findByUserIdAndCategoryTypeIdInAndMonthYear(userId, categoryTypeIds, monthYear);
     }
 
     public Double getTotalSpend(List<Transaction> transactions) {

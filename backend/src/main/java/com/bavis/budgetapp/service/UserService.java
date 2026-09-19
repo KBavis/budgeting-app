@@ -28,4 +28,15 @@ public interface UserService {
 	void removeCategory(Category category);
 
 	List<User> readAll();
+
+	/**
+	 * Determine whether the currently authenticated User is the User with the specified ID.
+	 * Used to enforce that a User can only access entities that they own.
+	 *
+	 * @param userId
+	 * 			- ID of the User that owns an entity (may be null for unowned entities)
+	 * @return
+	 * 			- true only if userId is non-null and matches the currently authenticated User
+	 */
+	boolean isCurrentAuthUser(Long userId);
 }

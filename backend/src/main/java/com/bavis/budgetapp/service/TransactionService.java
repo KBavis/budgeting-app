@@ -131,6 +131,12 @@ public interface TransactionService {
     Transaction findEntity(String transactionId);
 
     /**
+     * Same as findEntity, except a manually created Transaction that has not yet been assigned to an Account or
+     * Category (and therefore has no owner) is also returned. Only intended for assigning such a Transaction to a Category.
+     */
+    Transaction findEntityAllowingUnowned(String transactionId);
+
+    /**
      * Functionality to remove an assigned Category from a Transaction
      *
      * @param transactionId

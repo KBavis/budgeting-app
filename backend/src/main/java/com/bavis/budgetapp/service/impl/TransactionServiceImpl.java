@@ -145,7 +145,7 @@ public class TransactionServiceImpl implements TransactionService {
                     List<String> removedTransactionIds = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
                             .map(PlaidTransactionDto::getTransaction_id)
                             .toList();
-                    log.info("Removed Transaction IDs for Account {} : [{}]", accountId, removedTransactionIds);
+                    log.info("Removed {} Transactions for Account {}", removedTransactionIds.size(), accountId);
                     allRemovedTransactionIds.addAll(removedTransactionIds);
 
                     //Update Previous Cursor For Subsequent Request
@@ -355,9 +355,50 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Transaction findEntity(String transactionId) throws RuntimeException {
+        return findOwnedTransaction(transactionId, false);
+    }
+
+    @Override
+    public Transaction findEntityAllowingUnowned(String transactionId) throws RuntimeException {
+        return findOwnedTransaction(transactionId, true);
+    }
+
+    /**
+     * Fetch a Transaction and verify that the currently authenticated User owns it.
+     *
+     * A Transaction is owned by the User of its Account (Plaid Transactions) or, for manually created
+     * Transactions that have no Account, by the User of its Category. A manually created Transaction that has
+     * neither yet (i.e. it has just been created and not yet assigned a Category) has no owner at all.
+     *
+     * @param transactionId
+     *          - ID of the Transaction to fetch
+     * @param allowUnowned
+     *          - whether a Transaction without any owner may be returned (needed to assign a new manual Transaction to a Category)
+     * @return
+     *          - the Transaction, if the authenticated User is permitted to access it
+     */
+    private Transaction findOwnedTransaction(String transactionId, boolean allowUnowned) {
         log.info("Attempting to read Transaction by the following ID: [{}]", transactionId);
-        return _transactionRepository.findById(transactionId)
+        Transaction transaction = _transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction with the following ID not found: " + transactionId));
+
+        User owner = null;
+        if (transaction.getAccount() != null) {
+            owner = transaction.getAccount().getUser();
+        } else if (transaction.getCategory() != null) {
+            owner = transaction.getCategory().getUser();
+        }
+
+        boolean permitted = (owner == null)
+                ? allowUnowned && transaction.getAccount() == null && transaction.getCategory() == null
+                : _userService.isCurrentAuthUser(owner.getUserId());
+
+        // respond exactly as if the Transaction did not exist so IDs cannot be probed
+        if (!permitted) {
+            log.warn("Authenticated user attempted to access a Transaction [{}] that they do not own", transactionId);
+            throw new RuntimeException("Transaction with the following ID not found: " + transactionId);
+        }
+        return transaction;
     }
 
     @Override
@@ -415,7 +456,7 @@ public class TransactionServiceImpl implements TransactionService {
         Category category = categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null);
 
         // Fetch Transaction
-        Transaction transaction = findEntity(assignCategoryRequestDto.getTransactionId());
+        Transaction transaction = findEntityAllowingUnowned(assignCategoryRequestDto.getTransactionId());
 
         //Update & Persist Transaction (Updates Cascade to Category)
         transaction.setCategory(category);
@@ -425,7 +466,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Transaction addTransaction(TransactionDto transactionDto) throws RuntimeException{
-        log.info("Attempting to map the TransactionDto [{}] to a Transaction entity and persist the record.", transactionDto);
+        log.info("Attempting to map a TransactionDto to a Transaction entity and persist the record.");
 
         //Update TransactionDTO to not be assigned to any Account/Category
         transactionDto.setAccount(null);
@@ -434,7 +475,7 @@ public class TransactionServiceImpl implements TransactionService {
         //Map to Transaction
         Transaction transaction = _transactionMapper.toEntity(transactionDto);
         transaction.setTransactionId(UUID.randomUUID().toString()); //set Transaction ID to random, unique ID
-        log.info("Mapped Transaction entity: [{}]", transaction);
+        log.info("Mapped Transaction entity with ID [{}]", transaction.getTransactionId());
 
         //Persist & Return
         return _transactionRepository.save(transaction);
@@ -447,7 +488,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         // Fetch Original Transaction by ID
         Transaction originalTransaction = findEntity(transactionId);
-        log.info("Original Transaction being split: [{}]", originalTransaction);
+        log.info("Splitting Transaction with ID [{}]", originalTransaction.getTransactionId());
 
         //Update TransactionDto's with original Transaction properties
         List<TransactionDto> updatedTransactionDtos = Optional.ofNullable(splitTransactionDto.getSplitTransactions())
@@ -459,7 +500,7 @@ public class TransactionServiceImpl implements TransactionService {
                     dto.setLogoUrl(originalTransaction.getLogoUrl());
                     dto.setAccount(originalTransaction.getAccount());
                 }).toList();
-        log.info("Updated Transaction Dtos to be mapped to Transaction Entities: [{}]", updatedTransactionDtos);
+        log.info("Mapping {} split TransactionDtos to Transaction Entities", updatedTransactionDtos.size());
 
         //Atomic Integer for Incremental Suffixes
         AtomicInteger counter = new AtomicInteger(1);
@@ -469,7 +510,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .map(_transactionMapper::toEntity)
                 .peek(transaction -> transaction.setTransactionId(transactionId + "_" + counter.getAndIncrement()))
                 .toList();
-        log.info("Transaction entities to be persisted: [{}]", splitTransactions);
+        log.info("Persisting {} split Transaction entities", splitTransactions.size());
 
         //Delete Original Transaction
         _transactionRepository.deleteById(transactionId);
@@ -488,7 +529,7 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = findEntity(transactionId);
 
         //Update & Persist
-        log.info("Removing Category associated with the following Transaction: [{}]", transaction);
+        log.info("Removing Category associated with Transaction with ID [{}]", transaction.getTransactionId());
         transaction.setCategory(null);
         _transactionRepository.save(transaction);
     }
@@ -536,7 +577,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .filter(_transactionFilters.addedTransactionFilters())
                 .toList();
 
-        log.info("Added Transaction entities for Account {} to be persisted: [{}]", account.getAccountId(), addedTransactionEntities);
+        log.info("Persisting {} added Transaction entities for Account {}", addedTransactionEntities.size(), account.getAccountId());
         return addedTransactionEntities;
     }
 
@@ -566,7 +607,7 @@ public class TransactionServiceImpl implements TransactionService {
                 })
                 .toList();
 
-        log.info("Modified Transaction entities for Account {} to be persisted: [{}]", account.getAccountId(), modifiedTransactionEntities);
+        log.info("Persisting {} modified Transaction entities for Account {}", modifiedTransactionEntities.size(), account.getAccountId());
         return modifiedTransactionEntities;
     }
 
@@ -597,7 +638,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .toList();
 
 
-        log.info("Previous month Transactions for Account {} to be persisted: [{}]", account.getAccountId(), prevMonthTransactionEntities);
+        log.info("Persisting {} previous month Transactions for Account {}", prevMonthTransactionEntities.size(), account.getAccountId());
         return prevMonthTransactionEntities;
     }
 
@@ -773,4 +814,10 @@ public class TransactionServiceImpl implements TransactionService {
         return enrichedCount;
     }
 
+    /**
+     * Null-safe size helper so we can log counts of Plaid results instead of their (sensitive) contents
+     */
+    private static int size(List<?> list) {
+        return list == null ? 0 : list.size();
+    }
 }

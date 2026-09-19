@@ -48,7 +48,7 @@ public class AssignCategoryRequestUserValidator implements ConstraintValidator<A
 
         try {
             Category category = categoryService.findEntity(categoryId, null);
-            Transaction transaction = transactionService.findEntity(transactionId);
+            Transaction transaction = transactionService.findEntityAllowingUnowned(transactionId);
             if(category == null || transaction == null || category.getUser() == null) {
                 log.debug("Invalid AssignCategoryRequestDto! Users do not correspond to Auth User");
                 return false;

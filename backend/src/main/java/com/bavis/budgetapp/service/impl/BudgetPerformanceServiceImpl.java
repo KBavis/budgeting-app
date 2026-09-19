@@ -22,6 +22,7 @@ import com.bavis.budgetapp.service.UserService;
 import com.bavis.budgetapp.util.GeneralUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,7 +95,8 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
             BudgetPerformance budgetPerformance = new BudgetPerformance();
 
             LocalDate asOfDate = monthYear.toEndOfMonthDate();
-            List<Category> categories = categoryService.findAllEntities(asOfDate);
+            // scheduled job has no authenticated user, so always look Categories up for the User being processed
+            List<Category> categories = categoryService.findAllEntities(user, asOfDate);
 
             log.info("Calculating Budget Overviews for User {}", user.getUsername());
             HashMap<OverviewType, BudgetOverview> budgetOverviews = generateBudgetOverviews(categories, monthYear, user);
@@ -138,6 +140,12 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
     @Override
     @Transactional
     public BudgetPerformance recalculateUserBudgetPerformance(Long userId, MonthYear monthYear) {
+        // A user may only recalculate their own BudgetPerformance
+        if (!userService.isCurrentAuthUser(userId)) {
+            log.warn("Authenticated user attempted to recalculate BudgetPerformance for a different user [{}]", userId);
+            throw new AccessDeniedException("Access denied");
+        }
+
         User user = userService.readById(userId);
         if (user == null) {
             log.error("User not found with id {}", userId);
@@ -159,7 +167,7 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
         }
 
         LocalDate asOfDate = monthYear.toEndOfMonthDate();
-        List<Category> categories = categoryService.findAllEntities(asOfDate);
+        List<Category> categories = categoryService.findAllEntities(user, asOfDate);
         HashMap<OverviewType, BudgetOverview> budgetOverviews = generateBudgetOverviews(categories, monthYear, user);
 
         BudgetPerformance newPerformance = new BudgetPerformance();

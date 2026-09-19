@@ -20,6 +20,11 @@ public interface MonthlyCategoryPerformanceRepository extends JpaRepository<Mont
     List<MonthlyCategoryPerformance> findByCategoryTypeIdInAndMonthYear(List<Long> categoryTypeIds, MonthYear monthYear);
 
     /**
+     * Retrieve MonthlyCategoryPerformances belonging to a specific User, corresponding to CategoryTypeIds and specific MonthYear
+     */
+    List<MonthlyCategoryPerformance> findByUserIdAndCategoryTypeIdInAndMonthYear(Long userId, List<Long> categoryTypeIds, MonthYear monthYear);
+
+    /**
      * Retrieve MonthlyCategoryPerformances corresponding to a specific User and MonthYear
      */
     List<MonthlyCategoryPerformance> findByUserIdAndMonthYear(Long userId, MonthYear monthYear);

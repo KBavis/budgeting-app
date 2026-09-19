@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService{
 
 	@Override
 	public User create(User user){
-		log.info("Attempting to create the following User: [{}]", user);
+		log.info("Attempting to create User with username [{}]", user.getUsername());
 		return _userRepository.save(user);
 	}
 
@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService{
 
 	@Override
 	public User update(Long id, User updatedUser) throws UserServiceException {
-		log.info("Attempting to update User with ID {} with the following updated User: [{}]", id, updatedUser);
+		log.info("Attempting to update User with ID {}", id);
 		User foundUser = readById(id);
 		_userMapper.updateUserProfile(foundUser, updatedUser);
 		return _userRepository.save(foundUser);
@@ -94,6 +94,14 @@ public class UserServiceImpl implements UserService{
 
 		String username = authentication.getName().trim();
         return readByUsername(username);
+	}
+
+	@Override
+	public boolean isCurrentAuthUser(Long userId) {
+		if (userId == null) {
+			return false;
+		}
+		return userId.equals(getCurrentAuthUser().getUserId());
 	}
 
 	@Override

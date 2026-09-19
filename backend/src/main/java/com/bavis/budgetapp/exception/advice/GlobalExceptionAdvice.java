@@ -6,9 +6,9 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -54,6 +54,13 @@ public class GlobalExceptionAdvice {
     public ResponseEntity<Map<String,String>> handleAuthenticationFailure(AuthenticationException e){
         Map<String, String> errors = new HashMap<>();
         errors.put("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String,String>> handleAccessDenied(AccessDeniedException e){
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", "Access denied");
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
     }
 
