@@ -16,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,7 +25,9 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -110,6 +113,7 @@ public class BudgetPerformanceControllerTests {
     }
 
     @Test
+    @WithMockUser(authorities = "ADMIN")
     void testInvokeGenerateBudgetPerformanceJob_Success() throws Exception{
         //Mock
         doNothing().when(budgetPerformanceService).runGenerateBudgetPerformanceJob(monthYear);
@@ -164,6 +168,7 @@ public class BudgetPerformanceControllerTests {
     }
 
     @Test
+    @WithMockUser(authorities = "ADMIN")
     void testInvokeGenerateBudgetPerformanceJob_InvalidMonthYear_Fail() throws Exception {
         //Arrange
         MonthYear invalidMonthYear = new MonthYear();
@@ -232,6 +237,39 @@ public class BudgetPerformanceControllerTests {
                 .andExpect(jsonPath("$.wantsOverview").value(budgetPerformance.getWantsOverview()));
 
         verify(budgetPerformanceService, times(1)).fetchBudgetPerformance(monthYear);
+    }
+
+    /**
+     * The job runs for EVERY user, so a regular (non-admin) user must not be able to trigger it
+     */
+    @Test
+    void testInvokeGenerateBudgetPerformanceJob_NonAdminUser_Forbidden() throws Exception {
+        ResultActions resultActions = mockMvc.perform(post("/budget/performance")
+                .content(objectMapper.writeValueAsString(monthYear))
+                .contentType(MediaType.APPLICATION_JSON));
+
+        resultActions.andExpect(status().isForbidden());
+
+        verify(budgetPerformanceService, never()).runGenerateBudgetPerformanceJob(any());
+    }
+
+    /**
+     * A user asking to recalculate someone else's BudgetPerformance is answered with a 403 (not a 500)
+     */
+    @Test
+    void testRecalculateUserBudgetPerformance_DifferentUser_Forbidden() throws Exception {
+        Long otherUserId = 999L;
+        when(budgetPerformanceService.recalculateUserBudgetPerformance(otherUserId, monthYear))
+                .thenThrow(new AccessDeniedException("Access denied"));
+
+        ResultActions resultActions = mockMvc.perform(post("/budget/performance/recalculate")
+                .param("userId", String.valueOf(otherUserId))
+                .content(objectMapper.writeValueAsString(monthYear))
+                .contentType(MediaType.APPLICATION_JSON));
+
+        resultActions
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Access denied"));
     }
 
     @Test

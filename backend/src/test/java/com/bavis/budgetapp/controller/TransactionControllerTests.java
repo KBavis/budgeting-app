@@ -348,7 +348,7 @@ public class TransactionControllerTests {
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
         when(categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
-        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
+        when(transactionService.findEntityAllowingUnowned(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act
         ResultActions resultActions = mockMvc.perform(put("/transactions/category")
@@ -390,7 +390,7 @@ public class TransactionControllerTests {
         when(transactionService.assignCategory(assignCategoryRequestDto)).thenReturn(transactionOne);
         when(userService.getCurrentAuthUser()).thenReturn(authUser);
         when(categoryService.findEntity(Long.parseLong(assignCategoryRequestDto.getCategoryId()), null)).thenReturn(category);
-        when(transactionService.findEntity(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
+        when(transactionService.findEntityAllowingUnowned(assignCategoryRequestDto.getTransactionId())).thenReturn(transactionOne);
 
         //Act
         ResultActions resultActions = mockMvc.perform(put("/transactions/category")
