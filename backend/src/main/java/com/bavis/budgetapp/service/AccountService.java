@@ -8,6 +8,7 @@ import com.bavis.budgetapp.exception.AccountConnectionException;
 
 import com.bavis.budgetapp.dto.request.UpdateAccountDto;
 
+import com.bavis.budgetapp.model.LinkToken;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -37,6 +38,31 @@ public interface AccountService {
 	 * 			- Account ID of relevant Account to be deleted
 	 */
 	void delete(String accountId);
+
+	/**
+	 * Functionality to generate a Plaid Link Token (in "update mode") that allows the authenticated User to log in to
+	 * their financial institution again for an Account whose connection requires re-authentication
+	 *
+	 * @param accountId
+	 * 			- Account ID of the Account to re-authenticate (must belong to the authenticated User)
+	 * @return
+	 * 			- Link Token used to launch Plaid Link in update mode
+	 */
+	LinkToken generateReauthenticationLinkToken(String accountId);
+
+	/**
+	 * Functionality to record that the authenticated User successfully re-authenticated an Account via Plaid Link
+	 * (update mode): the Account's connection is marked healthy and its reported error is cleared.
+	 *
+	 * NOTE: This intentionally does NOT sync; the User syncs manually. If the connection is in fact still broken, the next
+	 * sync will simply flag it again.
+	 *
+	 * @param accountId
+	 * 			- Account ID of the Account that was re-authenticated (must belong to the authenticated User)
+	 * @return
+	 * 			- the Account, reflecting its now healthy connection
+	 */
+	AccountResponseDto completeReauthentication(String accountId);
 
 	/**
 	 * Functionality to fetch a specific Account as of a point-in-time date mapped to response DTO

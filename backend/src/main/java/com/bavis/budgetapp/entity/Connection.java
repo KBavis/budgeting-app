@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.bavis.budgetapp.constants.ConnectionStatus;
+import com.bavis.budgetapp.constants.PlaidErrorCode;
 import com.bavis.budgetapp.constants.TemporalConstants;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -70,4 +71,27 @@ public class Connection {
 
 	@Column
 	private String originalCursor;
+
+	/**
+	 * Plaid error code explaining why this Connection needs attention (i.e. ITEM_LOGIN_REQUIRED); null when healthy
+	 */
+	@Column
+	private String errorCode;
+
+	/**
+	 * Plaid's message explaining why this Connection needs attention; null when healthy
+	 */
+	@Column(length = 500)
+	private String errorMessage;
+
+	/**
+	 * Whether the User must re-authenticate this Connection via Plaid Link's update mode
+	 *
+	 * NOTE: ConnectionStatus.DISCONNECTED is utilized to represent "Plaid requires the User to take action"; the
+	 * reason is stored in errorCode. (A new enum value would require altering the DB check constraint that Hibernate
+	 * generates for the enum column, which 'ddl-auto: update' does not do.)
+	 */
+	public boolean requiresReauthentication() {
+		return connectionStatus == ConnectionStatus.DISCONNECTED && PlaidErrorCode.ITEM_LOGIN_REQUIRED.equals(errorCode);
+	}
 }

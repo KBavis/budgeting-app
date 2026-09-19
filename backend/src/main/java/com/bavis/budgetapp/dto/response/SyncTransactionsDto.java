@@ -20,4 +20,9 @@ public class SyncTransactionsDto {
     private List<Transaction> allModifiedOrAddedTransactions;
     private List<Transaction> previousMonthTransactions;
     private List<String> removedTransactionIds;
+
+    /**
+     * Accounts that could not be synced (and why). Accounts not listed here were synced successfully.
+     */
+    private List<AccountSyncFailureDto> failedAccounts;
 }

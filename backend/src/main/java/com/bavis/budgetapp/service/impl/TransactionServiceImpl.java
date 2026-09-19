@@ -2,6 +2,8 @@ package com.bavis.budgetapp.service.impl;
 
 import com.bavis.budgetapp.clients.SuggestionEngineClient;
 import com.bavis.budgetapp.constants.AccountType;
+import com.bavis.budgetapp.constants.ConnectionStatus;
+import com.bavis.budgetapp.constants.PlaidErrorCode;
 import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.request.AccountsDto;
 import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
@@ -12,6 +14,7 @@ import com.bavis.budgetapp.dto.request.PlaidTransactionDto;
 import com.bavis.budgetapp.dto.request.SplitTransactionDto;
 import com.bavis.budgetapp.dto.request.TransactionDto;
 import com.bavis.budgetapp.dto.response.AccountResponseDto;
+import com.bavis.budgetapp.dto.response.AccountSyncFailureDto;
 import com.bavis.budgetapp.dto.response.FetchTransactionsDto;
 import com.bavis.budgetapp.dto.response.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.dto.response.SyncTransactionsDto;
@@ -104,118 +107,36 @@ public class TransactionServiceImpl implements TransactionService {
 
         Set<String> pendingTransactionIds = new HashSet<>();
 
-        boolean hasMore;
-        boolean updateOriginalCursor;
-        String accessToken;
-        String previousCursor;
-        String originalCursor;
+        // Accounts that could not be synced (and why), and the results of those that were
+        List<AccountSyncFailureDto> failedAccounts = new ArrayList<>();
+        List<AccountSyncResult> successfulSyncs = new ArrayList<>();
 
-        //Sync Transaction for each specified Account
+        //Sync Transaction for each specified Account. A failure for one Account must never prevent the others from syncing.
         for(String accountId: accountsDto.getAccounts()){
+            Account account = null;
             try{
-                //Fetch relevant Account/Connection information
-                Account account = _accountService.findEntity(accountId, null);
-                log.info("Syncing Transactions for Account ID {}", account.getAccountId());
-                Connection accountConnection = account.getConnection();
-                originalCursor = accountConnection.getOriginalCursor();
-                accessToken = accountConnection.getAccessToken();
-                previousCursor = accountConnection.getPreviousCursor();
-                hasMore = true;
-                updateOriginalCursor = StringUtils.isBlank(originalCursor); //flag to determine if we need to persist originalCursor or not
+                account = _accountService.findEntity(accountId, null);
+                AccountSyncResult result = syncAccount(account);
 
-                //Collect Added, Modified, and Removed Transactions for Account until Plaid specifies none remain
-                while(hasMore){
-                    PlaidTransactionSyncResponseDto syncResponseDto = _plaidService.syncTransactions(accessToken, previousCursor);
-                    log.info("Received Plaid sync response for Account ID {}: {} added, {} modified, {} removed, hasMore={}", accountId,
-                            size(syncResponseDto.getAdded()), size(syncResponseDto.getModified()), size(syncResponseDto.getRemoved()), syncResponseDto.isHas_more());
-
-                    //Collect Added Transactions
-                    allModifiedOrAddedTransactions.addAll(mapAddedTransactions(syncResponseDto.getAdded(), account, pendingTransactionIds));
-
-                    //Collect Modified Transactions
-                    allModifiedOrAddedTransactions.addAll(mapModifiedTransactions(syncResponseDto.getModified(), account));
-
-                    //Account for Previous Months Transactions
-                    List<PlaidTransactionDto> allPlaidTransactions = new ArrayList<>();
-                    allPlaidTransactions.addAll(syncResponseDto.getModified());
-                    allPlaidTransactions.addAll(syncResponseDto.getAdded());
-                    previousMonthTransactions.addAll(mapPreviousMonthTransactions(allPlaidTransactions, account, previousMonthTransactions));
-
-                    //Collect Removed TransactionIds
-                    List<String> removedTransactionIds = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
-                            .map(PlaidTransactionDto::getTransaction_id)
-                            .toList();
-                    log.info("Removed {} Transactions for Account {}", removedTransactionIds.size(), accountId);
-                    allRemovedTransactionIds.addAll(removedTransactionIds);
-
-                    //Update Previous Cursor For Subsequent Request
-                    previousCursor = syncResponseDto.getNext_cursor();
-
-                    //Update OriginalCursor value if this is the first paginated response for the current Account
-                    if(StringUtils.isBlank(originalCursor)){
-                        originalCursor = previousCursor;
-
-                    }
-
-                    // Update relevant Account with up-to-date balance information
-                    AccountVt currentVt = account.getValidTimes() != null && !account.getValidTimes().isEmpty()
-                            ? _effectivityService.getActiveVt(account.getValidTimes(), LocalDate.now()) : null;
-                    if(syncResponseDto.getAccounts() != null && !syncResponseDto.getAccounts().isEmpty()) {
-                        Double extractedBalance = syncResponseDto.getAccounts().stream()
-                                .filter(plaidAccountDto -> account.getAccountId().equals(plaidAccountDto.getAccountId()))
-                                .findFirst()
-                                .map(PlaidAccountDto::getBalances)
-                                .map(balances -> {
-                                    AccountType currentType = currentVt != null ? currentVt.getAccountType() : null;
-                                    if (currentType == AccountType.CREDIT || 
-                                        currentType == AccountType.LOAN || 
-                                        currentType == AccountType.INVESTMENT) {
-                                        return balances.getCurrent() != null ? balances.getCurrent() : balances.getAvailable();
-                                    }
-                                    return balances.getAvailable() != null ? balances.getAvailable() : balances.getCurrent();
-                                })
-                                .filter(Objects::nonNull)
-                                .map(BigDecimal::doubleValue)
-                                .orElse(null);
-
-                        if (extractedBalance != null) {
-                            UpdateAccountDto updateDto = UpdateAccountDto.builder()
-                                    .accountId(account.getAccountId())
-                                    .balance(extractedBalance)
-                                    .build();
-                            AccountResponseDto updatedDto = _accountService.update(updateDto);
-                            updatedAccounts.add(updatedDto);
-                        }
-                    } else if (currentVt != null && currentVt.getAccountType() == AccountType.INVESTMENT) {
-                        // referesh balance via /accounts/balance/get for Investment Accounts
-                        try {
-                            double freshBalance = _plaidService.retrieveBalance(account.getAccountId(), accessToken);
-                            UpdateAccountDto updateDto = UpdateAccountDto.builder()
-                                    .accountId(account.getAccountId())
-                                    .balance(freshBalance)
-                                    .build();
-                            AccountResponseDto updatedDto = _accountService.update(updateDto);
-                            updatedAccounts.add(updatedDto);
-                            log.info("Refreshed live balance for Investment account {}: ${}", account.getAccountId(), freshBalance);
-                        } catch (Exception ex) {
-                            log.warn("Could not retrieve live balance for investment account {}: {}", account.getAccountId(), ex.getMessage());
-                        }
-                    }
-
-                    //Determine if Plaid has more Transactions to sync for current Account
-                    hasMore = syncResponseDto.isHas_more();
-                }
-
-                //Update persisted Connection
-                updateConnection(accountConnection, originalCursor, previousCursor, updateOriginalCursor);
+                // only merge once the Account has been fully pulled from Plaid, so a failure never leaves partial data behind
+                allModifiedOrAddedTransactions.addAll(result.modifiedOrAddedTransactions);
+                previousMonthTransactions.addAll(result.previousMonthTransactions);
+                allRemovedTransactionIds.addAll(result.removedTransactionIds);
+                pendingTransactionIds.addAll(result.pendingTransactionIds);
+                updatedAccounts.addAll(result.updatedAccounts);
+                successfulSyncs.add(result);
 
             } catch (PlaidServiceException plaidServiceException){
-               log.error("PlaidServiceException occurred while syncing transactions via our TransactionService: [{}]", plaidServiceException.getMessage());
-               throw plaidServiceException;
-            }
-            catch(RuntimeException e){
-                log.error("An error occurred while Syncing Transactions: [{}]", e.getMessage());
-                throw new RuntimeException(e);
+                log.error("PlaidServiceException occurred while syncing Account [{}]: [{}]", accountId, plaidServiceException.getMessage());
+                failedAccounts.add(handlePlaidSyncFailure(accountId, account, plaidServiceException));
+            } catch(RuntimeException e){
+                log.error("An error occurred while Syncing Transactions for Account [{}]: [{}]", accountId, e.getMessage());
+                failedAccounts.add(AccountSyncFailureDto.builder()
+                        .accountId(accountId)
+                        .accountName(resolveAccountName(account))
+                        .message("An unexpected error occurred while syncing this account. Please try again.")
+                        .requiresReauth(false)
+                        .build());
             }
         }
 
@@ -242,6 +163,11 @@ public class TransactionServiceImpl implements TransactionService {
 
             if(!filteredTransactionIds.isEmpty())  _transactionRepository.deleteAllById(filteredTransactionIds);
         }
+
+        // Advance each successfully synced Account's cursor only now that its Transactions have been persisted. Persisting the
+        // cursor any earlier would mean a later failure could cause Transactions to be skipped on the next sync.
+        successfulSyncs.forEach(result ->
+                updateConnection(result.connection, result.originalCursor, result.previousCursor, result.updateOriginalCursor));
 
 
         Long userId = _userService.getUserIdByAccountIds(accountsDto.getAccounts());
@@ -273,7 +199,165 @@ public class TransactionServiceImpl implements TransactionService {
                 .removedTransactionIds(filteredTransactionIds)
                 .previousMonthTransactions(previousMonthTransactions)
                 .updatedAccounts(updatedAccounts)
+                .failedAccounts(failedAccounts)
                 .build();
+    }
+
+    /**
+     * Pull every page of Transactions Plaid has for a single Account.
+     *
+     * Nothing Transaction/Connection related is persisted here; everything is returned so the caller can persist it
+     * only if the entire Account synced successfully.
+     *
+     * @param account
+     *          - Account to sync
+     * @return
+     *          - everything retrieved from Plaid for the Account
+     * @throws PlaidServiceException
+     *          - thrown if Plaid fails to sync any page for the Account
+     */
+    private AccountSyncResult syncAccount(Account account) throws PlaidServiceException {
+        log.info("Syncing Transactions for Account ID {}", account.getAccountId());
+        Connection accountConnection = account.getConnection();
+        String originalCursor = accountConnection.getOriginalCursor();
+        String accessToken = accountConnection.getAccessToken();
+        String previousCursor = accountConnection.getPreviousCursor();
+        boolean hasMore = true;
+        boolean updateOriginalCursor = StringUtils.isBlank(originalCursor); //flag to determine if we need to persist originalCursor or not
+
+        AccountSyncResult result = new AccountSyncResult(accountConnection);
+
+        //Collect Added, Modified, and Removed Transactions for Account until Plaid specifies none remain
+        while(hasMore){
+            PlaidTransactionSyncResponseDto syncResponseDto = _plaidService.syncTransactions(accessToken, previousCursor);
+            log.info("Received Plaid sync response for Account ID {}: {} added, {} modified, {} removed, hasMore={}", account.getAccountId(),
+                    size(syncResponseDto.getAdded()), size(syncResponseDto.getModified()), size(syncResponseDto.getRemoved()), syncResponseDto.isHas_more());
+
+            //Collect Added Transactions
+            result.modifiedOrAddedTransactions.addAll(mapAddedTransactions(syncResponseDto.getAdded(), account, result.pendingTransactionIds));
+
+            //Collect Modified Transactions
+            result.modifiedOrAddedTransactions.addAll(mapModifiedTransactions(syncResponseDto.getModified(), account));
+
+            //Account for Previous Months Transactions
+            List<PlaidTransactionDto> allPlaidTransactions = new ArrayList<>();
+            allPlaidTransactions.addAll(syncResponseDto.getModified());
+            allPlaidTransactions.addAll(syncResponseDto.getAdded());
+            result.previousMonthTransactions.addAll(mapPreviousMonthTransactions(allPlaidTransactions, account, result.previousMonthTransactions));
+
+            //Collect Removed TransactionIds
+            List<String> removedTransactionIds = Optional.ofNullable(syncResponseDto.getRemoved()).stream().flatMap(List::stream)
+                    .map(PlaidTransactionDto::getTransaction_id)
+                    .toList();
+            log.info("Removed {} Transactions for Account {}", removedTransactionIds.size(), account.getAccountId());
+            result.removedTransactionIds.addAll(removedTransactionIds);
+
+            //Update Previous Cursor For Subsequent Request
+            previousCursor = syncResponseDto.getNext_cursor();
+
+            //Update OriginalCursor value if this is the first paginated response for the current Account
+            if(StringUtils.isBlank(originalCursor)){
+                originalCursor = previousCursor;
+            }
+
+            // Update relevant Account with up-to-date balance information
+            AccountVt currentVt = account.getValidTimes() != null && !account.getValidTimes().isEmpty()
+                    ? _effectivityService.getActiveVt(account.getValidTimes(), LocalDate.now()) : null;
+            if(syncResponseDto.getAccounts() != null && !syncResponseDto.getAccounts().isEmpty()) {
+                Double extractedBalance = syncResponseDto.getAccounts().stream()
+                        .filter(plaidAccountDto -> account.getAccountId().equals(plaidAccountDto.getAccountId()))
+                        .findFirst()
+                        .map(PlaidAccountDto::getBalances)
+                        .map(balances -> {
+                            AccountType currentType = currentVt != null ? currentVt.getAccountType() : null;
+                            if (currentType == AccountType.CREDIT ||
+                                currentType == AccountType.LOAN ||
+                                currentType == AccountType.INVESTMENT) {
+                                return balances.getCurrent() != null ? balances.getCurrent() : balances.getAvailable();
+                            }
+                            return balances.getAvailable() != null ? balances.getAvailable() : balances.getCurrent();
+                        })
+                        .filter(Objects::nonNull)
+                        .map(BigDecimal::doubleValue)
+                        .orElse(null);
+
+                if (extractedBalance != null) {
+                    UpdateAccountDto updateDto = UpdateAccountDto.builder()
+                            .accountId(account.getAccountId())
+                            .balance(extractedBalance)
+                            .build();
+                    AccountResponseDto updatedDto = _accountService.update(updateDto);
+                    result.updatedAccounts.add(updatedDto);
+                }
+            } else if (currentVt != null && currentVt.getAccountType() == AccountType.INVESTMENT) {
+                // referesh balance via /accounts/balance/get for Investment Accounts
+                try {
+                    double freshBalance = _plaidService.retrieveBalance(account.getAccountId(), accessToken);
+                    UpdateAccountDto updateDto = UpdateAccountDto.builder()
+                            .accountId(account.getAccountId())
+                            .balance(freshBalance)
+                            .build();
+                    AccountResponseDto updatedDto = _accountService.update(updateDto);
+                    result.updatedAccounts.add(updatedDto);
+                    log.info("Refreshed live balance for Investment account {}: ${}", account.getAccountId(), freshBalance);
+                } catch (Exception ex) {
+                    log.warn("Could not retrieve live balance for investment account {}: {}", account.getAccountId(), ex.getMessage());
+                }
+            }
+
+            //Determine if Plaid has more Transactions to sync for current Account
+            hasMore = syncResponseDto.isHas_more();
+        }
+
+        result.originalCursor = originalCursor;
+        result.previousCursor = previousCursor;
+        result.updateOriginalCursor = updateOriginalCursor;
+        return result;
+    }
+
+    /**
+     * Build the failure we report back to the User for an Account that Plaid was unable to sync and, if Plaid says the
+     * User must log in to their financial institution again, flag the Account's Connection so that we keep telling them
+     * until it is fixed.
+     */
+    private AccountSyncFailureDto handlePlaidSyncFailure(String accountId, Account account, PlaidServiceException exception) {
+        String errorCode = exception.getErrorCode();
+        boolean requiresReauth = PlaidErrorCode.ITEM_LOGIN_REQUIRED.equals(errorCode);
+
+        String message;
+        if (requiresReauth) {
+            message = "Your bank needs you to log in again before this account can be synced. Choose Reconnect to log in and restore access.";
+            if (account != null && account.getConnection() != null) {
+                try {
+                    _connectionService.markDisconnected(account.getConnection().getConnectionId(), errorCode, exception.getPlaidMessage());
+                } catch (RuntimeException e) {
+                    // never let bookkeeping prevent us from reporting the failure (or from syncing the other Accounts)
+                    log.error("Unable to flag Connection for Account [{}] as requiring re-authentication: [{}]", accountId, e.getMessage());
+                }
+            }
+        } else {
+            message = "Plaid was unable to sync this account: "
+                    + (StringUtils.isNotBlank(exception.getPlaidMessage()) ? exception.getPlaidMessage() : "unknown error");
+        }
+
+        return AccountSyncFailureDto.builder()
+                .accountId(accountId)
+                .accountName(resolveAccountName(account))
+                .errorCode(errorCode)
+                .message(message)
+                .requiresReauth(requiresReauth)
+                .build();
+    }
+
+    /**
+     * Resolve the display name of an Account, or null if it cannot be determined
+     */
+    private String resolveAccountName(Account account) {
+        if (account == null || account.getValidTimes() == null || account.getValidTimes().isEmpty()) {
+            return null;
+        }
+        AccountVt activeVt = _effectivityService.getActiveVt(account.getValidTimes(), LocalDate.now());
+        return activeVt != null ? activeVt.getAccountName() : null;
     }
 
     @Override
@@ -661,6 +745,10 @@ public class TransactionServiceImpl implements TransactionService {
     private void updateConnection(Connection connection, String originalCursor, String previousCursor, boolean updateOriginalCursor) {
         connection.setPreviousCursor(previousCursor);
         connection.setLastSyncTime(LocalDateTime.now());
+        // a successful sync proves the Connection is healthy, so clear any previously reported "needs attention" state
+        connection.setConnectionStatus(ConnectionStatus.CONNECTED);
+        connection.setErrorCode(null);
+        connection.setErrorMessage(null);
         if(updateOriginalCursor){
             connection.setOriginalCursor(originalCursor);
         }
@@ -819,5 +907,24 @@ public class TransactionServiceImpl implements TransactionService {
      */
     private static int size(List<?> list) {
         return list == null ? 0 : list.size();
+    }
+
+    /**
+     * Everything retrieved from Plaid for a single Account during a sync; only persisted once the whole Account succeeded
+     */
+    private static final class AccountSyncResult {
+        private final Connection connection;
+        private final List<Transaction> modifiedOrAddedTransactions = new ArrayList<>();
+        private final List<Transaction> previousMonthTransactions = new ArrayList<>();
+        private final List<String> removedTransactionIds = new ArrayList<>();
+        private final Set<String> pendingTransactionIds = new HashSet<>();
+        private final List<AccountResponseDto> updatedAccounts = new ArrayList<>();
+        private String originalCursor;
+        private String previousCursor;
+        private boolean updateOriginalCursor;
+
+        private AccountSyncResult(Connection connection) {
+            this.connection = connection;
+        }
     }
 }

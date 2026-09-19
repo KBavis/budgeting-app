@@ -58,7 +58,30 @@ public class PlaidServiceImpl implements PlaidService{
                 .build();
 
         log.info("Fetching Link Token for User with ID {}", userId);
+        return requestLinkToken(linkTokenRequestDto);
+    }
 
+    @Override
+    public LinkToken generateUpdateModeLinkToken(Long userId, String accessToken) throws PlaidServiceException {
+        // update mode: identify the existing Item via its access token and do NOT specify any products
+        LinkTokenRequestDto linkTokenRequestDto = LinkTokenRequestDto.builder()
+                .clientId(_plaidConfig.getClientId())
+                .secretKey(_plaidConfig.getSecretKey())
+                .clientName("Bavis Budget Application")
+                .countryCodes(new String[]{"US"})
+                .language("en")
+                .user(new PlaidUserDto(userId.toString()))
+                .accessToken(accessToken)
+                .build();
+
+        log.info("Fetching update mode Link Token for User with ID {}", userId);
+        return requestLinkToken(linkTokenRequestDto);
+    }
+
+    /**
+     * Request a Link Token from Plaid and validate the response
+     */
+    private LinkToken requestLinkToken(LinkTokenRequestDto linkTokenRequestDto) throws PlaidServiceException {
         //Validate & Handle FeignClientException
         ResponseEntity<LinkTokenResponseDto> responseEntity;
         try{
@@ -66,7 +89,7 @@ public class PlaidServiceImpl implements PlaidService{
         } catch (FeignClientException e){
             log.error("An error occurred while fetching Link Token from Plaid API: [{}]", e.getMessage());
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
-            throw new PlaidServiceException(plaidClientExceptionMessage);
+            throw new PlaidServiceException(_jsonUtil.extractErrorCode(e), plaidClientExceptionMessage);
         } catch (Exception ex){
             log.error(ex.getLocalizedMessage());
             throw new PlaidServiceException(ex.getMessage());
@@ -110,7 +133,7 @@ public class PlaidServiceImpl implements PlaidService{
         } catch (FeignClientException e) {
            log.error("An error occurred while attempting to remove Account from Plaid API: [{}]", e.getMessage());
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
-            throw new PlaidServiceException(plaidClientExceptionMessage);
+            throw new PlaidServiceException(_jsonUtil.extractErrorCode(e), plaidClientExceptionMessage);
         } catch (Exception ex){
             log.error(ex.getLocalizedMessage());
             throw new PlaidServiceException(ex.getMessage());
@@ -140,7 +163,7 @@ public class PlaidServiceImpl implements PlaidService{
         } catch(FeignClientException e){
             log.error("An error occurred while exchanging Public Token for Access Token via Plaid API: [{}]", e.getMessage());
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
-            throw new PlaidServiceException(plaidClientExceptionMessage);
+            throw new PlaidServiceException(_jsonUtil.extractErrorCode(e), plaidClientExceptionMessage);
         } catch(Exception e){
             log.error(e.getLocalizedMessage());
             throw new PlaidServiceException(e.getMessage());
@@ -183,7 +206,7 @@ public class PlaidServiceImpl implements PlaidService{
         } catch (FeignClientException e){
             log.error("An error occurred while retrieving account balance via Plaid API: [{}]", e.getMessage());
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
-            throw new PlaidServiceException(plaidClientExceptionMessage);
+            throw new PlaidServiceException(_jsonUtil.extractErrorCode(e), plaidClientExceptionMessage);
         } catch(Exception e){
             log.error(e.getLocalizedMessage());
             throw new PlaidServiceException(e.getMessage());
@@ -239,7 +262,7 @@ public class PlaidServiceImpl implements PlaidService{
         } catch (FeignClientException e){
             log.error("An error occurred while attempting to Sync Transactions via Plaid API: [{}]", e.getMessage());
             String plaidClientExceptionMessage = _jsonUtil.extractErrorMessage(e);
-            throw new PlaidServiceException(plaidClientExceptionMessage);
+            throw new PlaidServiceException(_jsonUtil.extractErrorCode(e), plaidClientExceptionMessage);
         } catch(Exception e){
             log.error(e.getLocalizedMessage());
             throw new PlaidServiceException(e.getMessage());

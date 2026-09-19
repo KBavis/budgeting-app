@@ -1,12 +1,15 @@
 package com.bavis.budgetapp.controller;
 
+import com.bavis.budgetapp.constants.ConnectionStatus;
 import com.bavis.budgetapp.dto.response.AccountResponseDto;
 import com.bavis.budgetapp.constants.AccountType;
 import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.exception.PlaidServiceException;
+import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.impl.AccountServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -282,5 +285,58 @@ public class AccountControllerTests {
                 .andExpect(jsonPath("$.accountName").value("Updated Account"))
                 .andExpect(jsonPath("$.balance").value(5000.0))
                 .andExpect(jsonPath("$.accountType").value("SAVING"));
+    }
+
+    @Test
+    void testGenerateReauthenticationLinkToken_Success() throws Exception {
+        //Arrange
+        String accountId = "account-id";
+        LinkToken linkToken = new LinkToken(LocalDateTime.now().plusHours(1), "update-link-token");
+
+        //Mock
+        when(accountService.generateReauthenticationLinkToken(accountId)).thenReturn(linkToken);
+
+        //Act & Assert
+        mockMvc.perform(post("/account/" + accountId + "/reauth-link-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("update-link-token"));
+
+        verify(accountService, times(1)).generateReauthenticationLinkToken(accountId);
+    }
+
+    @Test
+    void testGenerateReauthenticationLinkToken_NotOwnedOrUnknownAccount_DoesNotLeakToken() throws Exception {
+        //Mock
+        when(accountService.generateReauthenticationLinkToken("someone-elses-account"))
+                .thenThrow(new RuntimeException("Unable to locate Account with ID someone-elses-account"));
+
+        //Act & Assert
+        mockMvc.perform(post("/account/someone-elses-account/reauth-link-token"))
+                .andExpect(status().is5xxServerError())
+                .andExpect(jsonPath("$.token").doesNotExist());
+    }
+
+    @Test
+    void testCompleteReauthentication_Success() throws Exception {
+        //Arrange
+        String accountId = "account-id";
+        AccountResponseDto dto = AccountResponseDto.builder()
+                .accountId(accountId)
+                .accountName("Discover")
+                .connectionStatus(ConnectionStatus.CONNECTED)
+                .requiresReauth(false)
+                .build();
+
+        //Mock
+        when(accountService.completeReauthentication(accountId)).thenReturn(dto);
+
+        //Act & Assert
+        mockMvc.perform(post("/account/" + accountId + "/reauth-complete"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountId").value(accountId))
+                .andExpect(jsonPath("$.requiresReauth").value(false))
+                .andExpect(jsonPath("$.connectionStatus").value("CONNECTED"));
+
+        verify(accountService, times(1)).completeReauthentication(accountId);
     }
 }

@@ -10,6 +10,7 @@ import com.bavis.budgetapp.exception.AccountConnectionException;
 import com.bavis.budgetapp.exception.PlaidServiceException;
 import com.bavis.budgetapp.mapper.AccountMapper;
 import com.bavis.budgetapp.entity.Connection;
+import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.ConnectionService;
 import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.PlaidService;
@@ -17,6 +18,7 @@ import com.bavis.budgetapp.service.TransactionService;
 import com.bavis.budgetapp.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -156,6 +158,38 @@ public class AccountServiceImpl implements AccountService{
 
 		accountToDelete.setEndDate(LocalDate.now().minusDays(1));
 		_accountRepository.save(accountToDelete);
+	}
+
+	@Override
+	public LinkToken generateReauthenticationLinkToken(String accountId) {
+		log.info("Attempting to generate a re-authentication Link Token for Account with ID {}", accountId);
+
+		// findEntity guarantees the Account belongs to the authenticated User
+		Account account = findEntity(accountId, null);
+		Connection connection = account.getConnection();
+		if (connection == null || StringUtils.isBlank(connection.getAccessToken())) {
+			throw new RuntimeException("Unable to re-authenticate Account with ID " + accountId + " as it has no connection to re-authenticate.");
+		}
+
+		User currentAuthUser = _userService.getCurrentAuthUser();
+		return _plaidService.generateUpdateModeLinkToken(currentAuthUser.getUserId(), connection.getAccessToken());
+	}
+
+	@Override
+	public AccountResponseDto completeReauthentication(String accountId) {
+		log.info("Attempting to complete re-authentication for Account with ID {}", accountId);
+
+		// findEntity guarantees the Account belongs to the authenticated User
+		Account account = findEntity(accountId, null);
+		Connection connection = account.getConnection();
+		if (connection == null) {
+			throw new RuntimeException("Unable to complete re-authentication for Account with ID " + accountId + " as it has no connection.");
+		}
+
+		account.setConnection(_connectionService.markConnected(connection.getConnectionId()));
+
+		AccountVt activeVt = _effectivityService.getActiveVt(account.getValidTimes(), LocalDate.now());
+		return _accountMapper.toResponseDto(account, activeVt);
 	}
 
 	/**

@@ -34,6 +34,31 @@ public interface ConnectionService {
 	Connection update(Connection connection, Long connectionId);
 
 	/**
+	 * Flag a Connection as requiring the User's attention (i.e. Plaid reported ITEM_LOGIN_REQUIRED)
+	 *
+	 * @param connectionId
+	 * 			- ID of the Connection to flag
+	 * @param errorCode
+	 * 			- Plaid's error code explaining why
+	 * @param errorMessage
+	 * 			- Plaid's error message explaining why
+	 * @return
+	 * 			- persisted Connection
+	 */
+	Connection markDisconnected(Long connectionId, String errorCode, String errorMessage);
+
+	/**
+	 * Mark a Connection as healthy again and clear any previously reported error (i.e. after the User re-authenticated
+	 * via Plaid Link's update mode)
+	 *
+	 * @param connectionId
+	 * 			- ID of the Connection to mark as connected
+	 * @return
+	 * 			- persisted Connection
+	 */
+	Connection markConnected(Long connectionId);
+
+	/**
 	 * Function to fetch a specific Connection by ID from our database
 	 *
 	 * @param connectionId

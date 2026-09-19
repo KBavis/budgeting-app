@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.dto.response;
 
 import com.bavis.budgetapp.constants.AccountType;
+import com.bavis.budgetapp.constants.ConnectionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +23,19 @@ public class AccountResponseDto {
     private double balance;
     private LocalDate startDate;
     private LocalDate endDate;
+
+    /**
+     * Health of the Account's connection to their financial institution
+     */
+    private ConnectionStatus connectionStatus;
+
+    /**
+     * Plaid error code explaining an unhealthy connection (null when healthy)
+     */
+    private String connectionErrorCode;
+
+    /**
+     * True if the User must log in to their financial institution again (Plaid Link update mode) before syncing works
+     */
+    private boolean requiresReauth;
 }

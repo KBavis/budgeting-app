@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.util;
 
 import com.bavis.budgetapp.TestHelper;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -214,5 +215,46 @@ public class JsonUtilTests {
         assertEquals(expectedErrorMessage, errorMessage);
     }
 
+    @Test
+    public void testExtractErrorCode_ValidFeignException_Successful() throws Exception {
+        //Arrange
+        String responseBody = "{\"error_code\":\"ITEM_LOGIN_REQUIRED\",\"error_message\":\"login required\"}";
+        ObjectNode rootNode = testObjectMapper.createObjectNode();
+        rootNode.put("error_code", "ITEM_LOGIN_REQUIRED");
 
+        //Mock
+        FeignException.FeignClientException exception = mock(FeignException.FeignClientException.class);
+        when(exception.contentUTF8()).thenReturn(responseBody);
+        when(mockObjectMapper.readTree(responseBody)).thenReturn(rootNode);
+
+        //Act & Assert
+        assertEquals("ITEM_LOGIN_REQUIRED", jsonUtil.extractErrorCode(exception));
+    }
+
+    @Test
+    public void testExtractErrorCode_NoErrorCodeInBody_ReturnsNull() throws Exception {
+        //Arrange
+        String responseBody = "{\"error_message\":\"something\"}";
+        ObjectNode rootNode = testObjectMapper.createObjectNode();
+        rootNode.put("error_message", "something");
+
+        //Mock
+        FeignException.FeignClientException exception = mock(FeignException.FeignClientException.class);
+        when(exception.contentUTF8()).thenReturn(responseBody);
+        when(mockObjectMapper.readTree(responseBody)).thenReturn(rootNode);
+
+        //Act & Assert
+        assertNull(jsonUtil.extractErrorCode(exception));
+    }
+
+    @Test
+    public void testExtractErrorCode_UnparseableBody_ReturnsNull() throws Exception {
+        //Mock
+        FeignException.FeignClientException exception = mock(FeignException.FeignClientException.class);
+        when(exception.contentUTF8()).thenReturn("not-json");
+        when(mockObjectMapper.readTree("not-json")).thenThrow(new JsonParseException(null, "bad json"));
+
+        //Act & Assert - must never throw; the caller is already handling a failure
+        assertNull(jsonUtil.extractErrorCode(exception));
+    }
 }

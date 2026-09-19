@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.service.impl;
 
+import com.bavis.budgetapp.constants.ConnectionStatus;
 import com.bavis.budgetapp.exception.ConnectionCreationException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -43,12 +44,41 @@ public class ConnectionServiceImpl implements ConnectionService{
 
 		connectionToUpdate.setPreviousCursor(connection.getPreviousCursor());
 		connectionToUpdate.setLastSyncTime(connection.getLastSyncTime());
+		if(connection.getConnectionStatus() != null){
+			connectionToUpdate.setConnectionStatus(connection.getConnectionStatus());
+		}
+		connectionToUpdate.setErrorCode(connection.getErrorCode()); //null clears a previously reported error
+		connectionToUpdate.setErrorMessage(connection.getErrorMessage());
 		if(!StringUtils.isBlank(connection.getOriginalCursor())){
 			connectionToUpdate.setOriginalCursor(connection.getOriginalCursor()); //persist original cursor if passed
 		}
 
 		//Return persisted Connection
 		return _repository.save(connectionToUpdate);
+	}
+
+	@Override
+	public Connection markDisconnected(Long connectionId, String errorCode, String errorMessage) {
+		Connection connection = _repository.findById(connectionId)
+				.orElseThrow(() -> new RuntimeException("Unable to find Connection with ID " + connectionId + " to flag."));
+
+		log.info("Flagging Connection with ID {} as requiring user action due to Plaid error code [{}]", connectionId, errorCode);
+		connection.setConnectionStatus(ConnectionStatus.DISCONNECTED);
+		connection.setErrorCode(errorCode);
+		connection.setErrorMessage(StringUtils.abbreviate(errorMessage, 500));
+		return _repository.save(connection);
+	}
+
+	@Override
+	public Connection markConnected(Long connectionId) {
+		Connection connection = _repository.findById(connectionId)
+				.orElseThrow(() -> new RuntimeException("Unable to find Connection with ID " + connectionId + " to mark as connected."));
+
+		log.info("Marking Connection with ID {} as connected and clearing any reported error", connectionId);
+		connection.setConnectionStatus(ConnectionStatus.CONNECTED);
+		connection.setErrorCode(null);
+		connection.setErrorMessage(null);
+		return _repository.save(connection);
 	}
 
 	// TODO: finish this logic and add comments

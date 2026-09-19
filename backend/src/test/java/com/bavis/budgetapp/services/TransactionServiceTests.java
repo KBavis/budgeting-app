@@ -1,6 +1,8 @@
 package com.bavis.budgetapp.services;
 
 import com.bavis.budgetapp.clients.SuggestionEngineClient;
+import com.bavis.budgetapp.constants.ConnectionStatus;
+import com.bavis.budgetapp.constants.PlaidErrorCode;
 import com.bavis.budgetapp.dao.TransactionRepository;
 import com.bavis.budgetapp.dto.request.AccountsDto;
 import com.bavis.budgetapp.dto.request.AssignCategoryRequestDto;
@@ -10,6 +12,7 @@ import com.bavis.budgetapp.dto.request.SplitTransactionDto;
 import com.bavis.budgetapp.dto.request.TransactionDto;
 import com.bavis.budgetapp.dto.request.UpdateAccountDto;
 import com.bavis.budgetapp.dto.response.AccountResponseDto;
+import com.bavis.budgetapp.dto.response.AccountSyncFailureDto;
 import com.bavis.budgetapp.dto.response.FetchTransactionsDto;
 import com.bavis.budgetapp.dto.response.PlaidTransactionSyncResponseDto;
 import com.bavis.budgetapp.dto.response.SyncTransactionsDto;
@@ -30,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -673,38 +677,39 @@ public class TransactionServiceTests {
 
 
     @Test
-    void testSyncTransactions_AccountServiceException_Failure() {
+    void testSyncTransactions_AccountLookupFails_ReportsFailedAccountInsteadOfThrowing() {
         //Arrange
         String accountIdOne = "12345XYZ";
-        String accountIdTwo = "6789ABCD";
-        ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne, accountIdTwo));
         AccountsDto accountsDto = AccountsDto.builder()
-                .accounts(accountIds)
+                .accounts(new ArrayList<>(List.of(accountIdOne)))
                 .build();
 
         //Mock
         when(accountService.findEntity(accountIdOne, null)).thenThrow(new RuntimeException("Unable to locate Account with ID 12345XYZ"));
+        doNothing().when(transactionService).predictCategories(any(), any());
 
-        //Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            transactionService.syncTransactions(accountsDto);
-        });
-        assertNotNull(exception);
-        //TODO: modify the exception thrown to be our own Exception so we don't see java.lang.RuntimeExeption
-        assertEquals("java.lang.RuntimeException: Unable to locate Account with ID 12345XYZ", exception.getMessage());
+        //Act
+        SyncTransactionsDto result = transactionService.syncTransactions(accountsDto);
+
+        //Assert
+        assertEquals(1, result.getFailedAccounts().size());
+        AccountSyncFailureDto failure = result.getFailedAccounts().get(0);
+        assertEquals(accountIdOne, failure.getAccountId());
+        assertNull(failure.getErrorCode());
+        assertFalse(failure.isRequiresReauth());
+        assertTrue(failure.getMessage().contains("unexpected error"));
+        assertFalse(failure.getMessage().contains("Unable to locate"), "internal exception details must not be leaked to the user");
 
         //Verify
         verify(accountService, times(1)).findEntity(accountIdOne, null);
+        verify(plaidService, never()).syncTransactions(any(), any());
     }
 
     @Test
-    void testSyncTransactions_PlaidServiceException_Failure() {
+    void testSyncTransactions_PlaidServiceException_ReportsFailedAccountInsteadOfThrowing() {
         //Arrange
         String errorMsg = "The provided access token is invalid";
-        String plaidServiceErrorMessage = "PlaidServiceException: [" + errorMsg + "]";
-
         String accountIdOne = "12345XYZ";
-        String accountIdTwo = "6789ABCD";
         Connection accountConnectionOne = Connection.builder()
                 .connectionId(5L)
                 .accessToken(accessToken)
@@ -714,26 +719,31 @@ public class TransactionServiceTests {
                 .accountId(accountIdOne)
                 .connection(accountConnectionOne)
                 .build();
-        ArrayList<String> accountIds = new ArrayList<>(List.of(accountIdOne, accountIdTwo));
-
         AccountsDto accountsDto = AccountsDto.builder()
-                .accounts(accountIds)
+                .accounts(new ArrayList<>(List.of(accountIdOne)))
                 .build();
 
         //Mock
-        when(plaidService.syncTransactions(accountConnectionOne.getAccessToken(), accountConnectionOne.getPreviousCursor())).thenThrow(new PlaidServiceException(errorMsg));
+        when(plaidService.syncTransactions(accessToken, previousCursor)).thenThrow(new PlaidServiceException("INVALID_ACCESS_TOKEN", errorMsg));
         when(accountService.findEntity(accountIdOne, null)).thenReturn(accountOne);
+        doNothing().when(transactionService).predictCategories(any(), any());
 
-        //Act & Assert
-        PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> {
-            transactionService.syncTransactions(accountsDto);
-        });
-        assertNotNull(exception);
-        assertEquals(plaidServiceErrorMessage, exception.getMessage());
+        //Act - no longer throws; the failure is reported for the specific Account
+        SyncTransactionsDto result = transactionService.syncTransactions(accountsDto);
 
-        //Verify
-        verify(plaidService, times(1)).syncTransactions(accountConnectionOne.getAccessToken(), accountConnectionOne.getPreviousCursor());
-        verify(accountService, times(1)).findEntity(accountIdOne, null);
+        //Assert
+        assertEquals(1, result.getFailedAccounts().size());
+        AccountSyncFailureDto failure = result.getFailedAccounts().get(0);
+        assertEquals(accountIdOne, failure.getAccountId());
+        assertEquals("INVALID_ACCESS_TOKEN", failure.getErrorCode());
+        assertEquals("Plaid was unable to sync this account: " + errorMsg, failure.getMessage());
+        assertFalse(failure.isRequiresReauth());
+        assertTrue(result.getAllModifiedOrAddedTransactions().isEmpty());
+
+        //Verify - a failed Account is not flagged as needing login, and its cursor is never advanced
+        verify(connectionService, never()).markDisconnected(any(), any(), any());
+        verify(connectionService, never()).update(any(), any());
+        verify(transactionRepository, never()).saveAllAndFlush(anyList());
     }
 
 
@@ -1696,5 +1706,247 @@ public class TransactionServiceTests {
         assertThrows(RuntimeException.class, () -> transactionService.deleteTransaction("other-transaction-id"));
         verify(transactionRepository, never()).save(any());
         verify(transactionRepository, never()).deleteById(any());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Per-account isolation of syncing & re-authentication handling
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Lenient variant of the sync mocks so tests can exercise paths that intentionally do not reach every collaborator
+     */
+    private void configureLenientSyncMocks() {
+        lenient().when(plaidService.syncTransactions(accessToken, previousCursor)).thenReturn(syncResponseDto);
+        lenient().when(transactionMapper.toEntity(any(PlaidTransactionDto.class))).thenAnswer(invocationOnMock -> {
+            PlaidTransactionDto dto = invocationOnMock.getArgument(0);
+            return Transaction.builder()
+                    .transactionId(dto.getTransaction_id())
+                    .name(dto.getCounterparties().get(0).getName())
+                    .amount(dto.getAmount())
+                    .date(dto.getDate())
+                    .build();
+        });
+        lenient().when(transactionRepository.saveAllAndFlush(anyList())).thenAnswer(invocationOnMock -> invocationOnMock.<List<Transaction>>getArgument(0));
+        lenient().when(connectionService.update(any(Connection.class), any(Long.class))).thenAnswer(invocationOnMock -> invocationOnMock.<Connection>getArgument(0));
+        lenient().when(transactionFilters.addedTransactionFilters()).thenReturn(t -> true);
+        lenient().when(transactionFilters.modifiedTransactionFilters()).thenReturn(t -> true);
+        lenient().when(transactionFilters.isPendingAndUserModified(any())).thenReturn(t -> true);
+        lenient().when(transactionFilters.prevMonthTransactionFilters(any())).thenReturn(t -> false);
+        lenient().doNothing().when(transactionService).predictCategories(any(), any());
+    }
+
+    private PlaidTransactionSyncResponseDto singlePageWithOneAddedTransaction() {
+        return PlaidTransactionSyncResponseDto.builder()
+                .added(Collections.singletonList(plaidTransactionDtoOne))
+                .modified(new ArrayList<>())
+                .removed(new ArrayList<>())
+                .next_cursor(nextCursor)
+                .has_more(false)
+                .build();
+    }
+
+    /**
+     * The exact scenario seen in production: an Account that needs its login refreshed is processed BEFORE a healthy one.
+     * The healthy Account must still sync and the broken one must be reported (and flagged) rather than aborting the request.
+     */
+    @Test
+    void testSyncTransactions_failingAccountDoesNotPreventOtherAccountsFromSyncing() {
+        //Arrange
+        Connection failingConnection = Connection.builder().connectionId(1L).accessToken("failing-token").previousCursor("failing-cursor").build();
+        Connection healthyConnection = Connection.builder().connectionId(2L).accessToken(accessToken).previousCursor(previousCursor).build();
+        Account failingAccount = Account.builder().accountId("failing-account").connection(failingConnection).build();
+        Account healthyAccount = Account.builder().accountId("healthy-account").connection(healthyConnection).build();
+        AccountsDto accountsDto = AccountsDto.builder()
+                .accounts(new ArrayList<>(List.of("failing-account", "healthy-account"))) //failing Account first
+                .build();
+        syncResponseDto = singlePageWithOneAddedTransaction();
+
+        //Mock
+        configureLenientSyncMocks();
+        when(accountService.findEntity("failing-account", null)).thenReturn(failingAccount);
+        when(accountService.findEntity("healthy-account", null)).thenReturn(healthyAccount);
+        when(plaidService.syncTransactions("failing-token", "failing-cursor"))
+                .thenThrow(new PlaidServiceException(PlaidErrorCode.ITEM_LOGIN_REQUIRED, "the login details of this item have changed"));
+
+        //Act
+        SyncTransactionsDto result = transactionService.syncTransactions(accountsDto);
+
+        //Assert - the healthy Account's Transactions were retrieved
+        assertEquals(1, result.getAllModifiedOrAddedTransactions().size());
+        assertEquals(plaidTransactionDtoOne.getTransaction_id(), result.getAllModifiedOrAddedTransactions().get(0).getTransactionId());
+
+        //Assert - the failing Account is called out, and explained
+        assertEquals(1, result.getFailedAccounts().size());
+        AccountSyncFailureDto failure = result.getFailedAccounts().get(0);
+        assertEquals("failing-account", failure.getAccountId());
+        assertEquals(PlaidErrorCode.ITEM_LOGIN_REQUIRED, failure.getErrorCode());
+        assertTrue(failure.isRequiresReauth());
+        assertTrue(failure.getMessage().contains("log in again"));
+
+        //Verify - only the healthy Account's cursor advanced; the failing Connection is flagged as needing login
+        ArgumentCaptor<Connection> connectionCaptor = ArgumentCaptor.forClass(Connection.class);
+        verify(connectionService, times(1)).update(connectionCaptor.capture(), any());
+        assertEquals(2L, connectionCaptor.getValue().getConnectionId());
+        assertEquals(nextCursor, connectionCaptor.getValue().getPreviousCursor());
+        verify(connectionService, times(1)).markDisconnected(1L, PlaidErrorCode.ITEM_LOGIN_REQUIRED, "the login details of this item have changed");
+    }
+
+    @Test
+    void testSyncTransactions_itemLoginRequired_reportsAccountNameAndRequiresReauth() {
+        //Arrange
+        AccountVt accountVt = AccountVt.builder().accountName("Discover - Credit Card").build();
+        Connection connection = Connection.builder().connectionId(7L).accessToken(accessToken).previousCursor(previousCursor).build();
+        Account account = Account.builder()
+                .accountId("discover-account")
+                .connection(connection)
+                .validTimes(new ArrayList<>(List.of(accountVt)))
+                .build();
+        AccountsDto accountsDto = AccountsDto.builder().accounts(new ArrayList<>(List.of("discover-account"))).build();
+
+        //Mock
+        when(accountService.findEntity("discover-account", null)).thenReturn(account);
+        when(effectivityService.getActiveVt(any(), any())).thenReturn(accountVt);
+        when(plaidService.syncTransactions(accessToken, previousCursor))
+                .thenThrow(new PlaidServiceException(PlaidErrorCode.ITEM_LOGIN_REQUIRED, "login required"));
+        doNothing().when(transactionService).predictCategories(any(), any());
+
+        //Act
+        SyncTransactionsDto result = transactionService.syncTransactions(accountsDto);
+
+        //Assert
+        AccountSyncFailureDto failure = result.getFailedAccounts().get(0);
+        assertEquals("Discover - Credit Card", failure.getAccountName());
+        assertTrue(failure.isRequiresReauth());
+        verify(connectionService, times(1)).markDisconnected(7L, PlaidErrorCode.ITEM_LOGIN_REQUIRED, "login required");
+    }
+
+    @Test
+    void testSyncTransactions_failureFlaggingConnection_stillReportsFailure() {
+        //Arrange
+        Connection connection = Connection.builder().connectionId(7L).accessToken(accessToken).previousCursor(previousCursor).build();
+        Account account = Account.builder().accountId("account").connection(connection).build();
+        AccountsDto accountsDto = AccountsDto.builder().accounts(new ArrayList<>(List.of("account"))).build();
+
+        //Mock
+        when(accountService.findEntity("account", null)).thenReturn(account);
+        when(plaidService.syncTransactions(accessToken, previousCursor))
+                .thenThrow(new PlaidServiceException(PlaidErrorCode.ITEM_LOGIN_REQUIRED, "login required"));
+        when(connectionService.markDisconnected(any(), any(), any())).thenThrow(new RuntimeException("database unavailable"));
+        doNothing().when(transactionService).predictCategories(any(), any());
+
+        //Act - a bookkeeping failure must not turn into a failed request
+        SyncTransactionsDto result = transactionService.syncTransactions(accountsDto);
+
+        //Assert
+        assertEquals(1, result.getFailedAccounts().size());
+        assertTrue(result.getFailedAccounts().get(0).isRequiresReauth());
+    }
+
+    /**
+     * If a later page fails, nothing from earlier pages may be kept and no cursor may advance (otherwise the
+     * Transactions from the earlier pages would be lost for good on the next sync)
+     */
+    @Test
+    void testSyncTransactions_failureOnLaterPage_keepsNothingFromEarlierPages() {
+        //Arrange
+        Connection connection = Connection.builder().connectionId(5L).accessToken(accessToken).previousCursor(previousCursor).build();
+        Account account = Account.builder().accountId("account").connection(connection).build();
+        AccountsDto accountsDto = AccountsDto.builder().accounts(new ArrayList<>(List.of("account"))).build();
+        syncResponseDto = PlaidTransactionSyncResponseDto.builder()
+                .added(Collections.singletonList(plaidTransactionDtoOne))
+                .modified(new ArrayList<>())
+                .removed(new ArrayList<>())
+                .next_cursor("page-2-cursor")
+                .has_more(true)
+                .build();
+
+        //Mock
+        configureLenientSyncMocks();
+        when(accountService.findEntity("account", null)).thenReturn(account);
+        when(plaidService.syncTransactions(accessToken, "page-2-cursor")).thenThrow(new PlaidServiceException("INTERNAL_SERVER_ERROR", "boom"));
+
+        //Act
+        SyncTransactionsDto result = transactionService.syncTransactions(accountsDto);
+
+        //Assert
+        assertEquals(1, result.getFailedAccounts().size());
+        assertTrue(result.getAllModifiedOrAddedTransactions().isEmpty());
+        verify(transactionRepository, never()).saveAllAndFlush(anyList());
+        verify(connectionService, never()).update(any(), any());
+    }
+
+    @Test
+    void testSyncTransactions_cursorOnlyAdvancesAfterTransactionsArePersisted() {
+        //Arrange
+        Connection connection = Connection.builder().connectionId(5L).accessToken(accessToken).previousCursor(previousCursor).build();
+        Account account = Account.builder().accountId("account").connection(connection).build();
+        AccountsDto accountsDto = AccountsDto.builder().accounts(new ArrayList<>(List.of("account"))).build();
+        syncResponseDto = singlePageWithOneAddedTransaction();
+
+        //Mock
+        configureLenientSyncMocks();
+        when(accountService.findEntity("account", null)).thenReturn(account);
+
+        //Act
+        transactionService.syncTransactions(accountsDto);
+
+        //Verify
+        InOrder inOrder = inOrder(transactionRepository, connectionService);
+        inOrder.verify(transactionRepository).saveAllAndFlush(anyList());
+        inOrder.verify(connectionService).update(any(Connection.class), any());
+    }
+
+    @Test
+    void testSyncTransactions_persistFailure_doesNotAdvanceCursor() {
+        //Arrange
+        Connection connection = Connection.builder().connectionId(5L).accessToken(accessToken).previousCursor(previousCursor).build();
+        Account account = Account.builder().accountId("account").connection(connection).build();
+        AccountsDto accountsDto = AccountsDto.builder().accounts(new ArrayList<>(List.of("account"))).build();
+        syncResponseDto = singlePageWithOneAddedTransaction();
+
+        //Mock
+        configureLenientSyncMocks();
+        when(accountService.findEntity("account", null)).thenReturn(account);
+        when(transactionRepository.saveAllAndFlush(anyList())).thenThrow(new RuntimeException("database unavailable"));
+
+        //Act & Assert
+        assertThrows(RuntimeException.class, () -> transactionService.syncTransactions(accountsDto));
+
+        //Verify - the Transactions were not saved, so the cursor must not have moved past them
+        verify(connectionService, never()).update(any(), any());
+    }
+
+    /**
+     * A successful sync proves the Connection is healthy again (i.e. after the User re-authenticated)
+     */
+    @Test
+    void testSyncTransactions_successfulSync_clearsPreviouslyReportedConnectionError() {
+        //Arrange
+        Connection connection = Connection.builder()
+                .connectionId(5L)
+                .accessToken(accessToken)
+                .previousCursor(previousCursor)
+                .connectionStatus(ConnectionStatus.DISCONNECTED)
+                .errorCode(PlaidErrorCode.ITEM_LOGIN_REQUIRED)
+                .errorMessage("login required")
+                .build();
+        Account account = Account.builder().accountId("account").connection(connection).build();
+        AccountsDto accountsDto = AccountsDto.builder().accounts(new ArrayList<>(List.of("account"))).build();
+        syncResponseDto = singlePageWithOneAddedTransaction();
+
+        //Mock
+        configureLenientSyncMocks();
+        when(accountService.findEntity("account", null)).thenReturn(account);
+
+        //Act
+        SyncTransactionsDto result = transactionService.syncTransactions(accountsDto);
+
+        //Assert
+        assertTrue(result.getFailedAccounts().isEmpty());
+        ArgumentCaptor<Connection> connectionCaptor = ArgumentCaptor.forClass(Connection.class);
+        verify(connectionService, times(1)).update(connectionCaptor.capture(), any());
+        assertEquals(ConnectionStatus.CONNECTED, connectionCaptor.getValue().getConnectionStatus());
+        assertNull(connectionCaptor.getValue().getErrorCode());
+        assertNull(connectionCaptor.getValue().getErrorMessage());
     }
 }

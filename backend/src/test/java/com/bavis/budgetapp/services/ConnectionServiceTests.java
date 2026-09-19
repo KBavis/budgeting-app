@@ -174,4 +174,117 @@ public class ConnectionServiceTests {
         verify(connectionRepository, times(1)).findById(10L);
     }
 
+    @Test
+    void testMarkDisconnected_FlagsConnectionWithReason() {
+        //Mock
+        when(connectionRepository.findById(10L)).thenReturn(Optional.of(connection));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        //Act
+        Connection flagged = connectionService.markDisconnected(10L, "ITEM_LOGIN_REQUIRED", "login required");
+
+        //Assert
+        assertEquals(ConnectionStatus.DISCONNECTED, flagged.getConnectionStatus());
+        assertEquals("ITEM_LOGIN_REQUIRED", flagged.getErrorCode());
+        assertEquals("login required", flagged.getErrorMessage());
+        assertTrue(flagged.requiresReauthentication());
+        verify(connectionRepository, times(1)).save(connection);
+    }
+
+    @Test
+    void testMarkDisconnected_TruncatesOverlyLongMessages() {
+        //Mock
+        when(connectionRepository.findById(10L)).thenReturn(Optional.of(connection));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        //Act
+        Connection flagged = connectionService.markDisconnected(10L, "SOME_ERROR", "x".repeat(2000));
+
+        //Assert - must fit the column
+        assertEquals(500, flagged.getErrorMessage().length());
+    }
+
+    @Test
+    void testMarkDisconnected_ConnectionNotFound_Throws() {
+        when(connectionRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> connectionService.markDisconnected(99L, "ITEM_LOGIN_REQUIRED", "login required"));
+        verify(connectionRepository, never()).save(any());
+    }
+
+    @Test
+    void testMarkDisconnected_OtherPlaidErrors_DoNotRequireReauthentication() {
+        when(connectionRepository.findById(10L)).thenReturn(Optional.of(connection));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Connection flagged = connectionService.markDisconnected(10L, "ITEM_NOT_FOUND", "gone");
+
+        assertEquals(ConnectionStatus.DISCONNECTED, flagged.getConnectionStatus());
+        assertFalse(flagged.requiresReauthentication(), "only ITEM_LOGIN_REQUIRED can be fixed via update mode");
+    }
+
+    /**
+     * A successful sync passes a healthy Connection through update(), which must clear a previously reported error
+     */
+    @Test
+    void testUpdateConnection_HealthyConnection_ClearsPreviouslyReportedError() {
+        //Arrange
+        Connection persisted = Connection.builder()
+                .connectionId(10L)
+                .connectionStatus(ConnectionStatus.DISCONNECTED)
+                .errorCode("ITEM_LOGIN_REQUIRED")
+                .errorMessage("login required")
+                .build();
+        Connection healthy = Connection.builder()
+                .connectionStatus(ConnectionStatus.CONNECTED)
+                .lastSyncTime(LocalDateTime.now())
+                .previousCursor("cursor")
+                .build();
+
+        //Mock
+        when(connectionRepository.findById(10L)).thenReturn(Optional.of(persisted));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        //Act
+        Connection updated = connectionService.update(healthy, 10L);
+
+        //Assert
+        assertEquals(ConnectionStatus.CONNECTED, updated.getConnectionStatus());
+        assertNull(updated.getErrorCode());
+        assertNull(updated.getErrorMessage());
+        assertFalse(updated.requiresReauthentication());
+    }
+
+    @Test
+    void testMarkConnected_ClearsErrorAndMarksConnected() {
+        //Arrange
+        Connection flagged = Connection.builder()
+                .connectionId(10L)
+                .connectionStatus(ConnectionStatus.DISCONNECTED)
+                .errorCode("ITEM_LOGIN_REQUIRED")
+                .errorMessage("login required")
+                .build();
+
+        //Mock
+        when(connectionRepository.findById(10L)).thenReturn(Optional.of(flagged));
+        when(connectionRepository.save(any(Connection.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        //Act
+        Connection result = connectionService.markConnected(10L);
+
+        //Assert
+        assertEquals(ConnectionStatus.CONNECTED, result.getConnectionStatus());
+        assertNull(result.getErrorCode());
+        assertNull(result.getErrorMessage());
+        assertFalse(result.requiresReauthentication());
+        verify(connectionRepository, times(1)).save(flagged);
+    }
+
+    @Test
+    void testMarkConnected_ConnectionNotFound_Throws() {
+        when(connectionRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> connectionService.markConnected(99L));
+        verify(connectionRepository, never()).save(any());
+    }
 }

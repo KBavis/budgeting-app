@@ -23,6 +23,7 @@ import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -782,5 +783,87 @@ public class PlaidServiceTests {
         verify(plaidClient, times(1)).syncTransactions(any(PlaidTransactionSyncRequestDto.class));
         verify(plaidConfig, times(1)).getClientId();
         verify(plaidConfig, times(1)).getSecretKey();
+    }
+
+    /**
+     * Update mode Link Tokens identify the existing Item via its access token and must NOT specify products
+     */
+    @Test
+    public void testGenerateUpdateModeLinkToken_SendsAccessTokenAndNoProducts() throws Exception {
+        //Arrange
+        Long userId = 123L;
+        LinkTokenResponseDto linkTokenResponseDto = LinkTokenResponseDto.builder()
+                .linkToken("update-link-token")
+                .expiration(LocalDateTime.now())
+                .build();
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.createLinkToken(any(LinkTokenRequestDto.class))).thenReturn(new ResponseEntity<>(linkTokenResponseDto, HttpStatus.OK));
+
+        //Act
+        LinkToken actualLinkToken = plaidService.generateUpdateModeLinkToken(userId, "existing-access-token");
+
+        //Assert
+        assertEquals("update-link-token", actualLinkToken.getToken());
+
+        ArgumentCaptor<LinkTokenRequestDto> requestCaptor = ArgumentCaptor.forClass(LinkTokenRequestDto.class);
+        verify(plaidClient, times(1)).createLinkToken(requestCaptor.capture());
+        LinkTokenRequestDto request = requestCaptor.getValue();
+        assertEquals("existing-access-token", request.getAccessToken());
+        assertNull(request.getProducts());
+        assertEquals("123", request.getUser().getClient_user_id());
+
+        //Assert - what actually goes over the wire: access_token present, no products (and no nulls that Plaid could reject)
+        String json = new ObjectMapper().writeValueAsString(request);
+        assertTrue(json.contains("\"access_token\":\"existing-access-token\""));
+        assertFalse(json.contains("products"));
+        assertFalse(json.contains("null"));
+    }
+
+    /**
+     * Regular (non update mode) Link Tokens are unchanged: they request products and never send an access token
+     */
+    @Test
+    public void testGenerateLinkToken_SendsProductsAndNoAccessToken() throws Exception {
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.createLinkToken(any(LinkTokenRequestDto.class))).thenReturn(new ResponseEntity<>(
+                LinkTokenResponseDto.builder().linkToken("link-token").expiration(LocalDateTime.now()).build(), HttpStatus.OK));
+
+        //Act
+        plaidService.generateLinkToken(5L);
+
+        //Assert
+        ArgumentCaptor<LinkTokenRequestDto> requestCaptor = ArgumentCaptor.forClass(LinkTokenRequestDto.class);
+        verify(plaidClient).createLinkToken(requestCaptor.capture());
+        String json = new ObjectMapper().writeValueAsString(requestCaptor.getValue());
+        assertTrue(json.contains("\"products\":[\"transactions\"]"));
+        assertFalse(json.contains("access_token"));
+    }
+
+    @Test
+    public void testSyncTransactions_FeignClientException_PropagatesPlaidErrorCode() {
+        //Arrange
+        Request request = Request.create(Request.HttpMethod.POST, "/transactions/sync", Collections.emptyMap(),
+                "request_body".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8, null);
+        FeignException.FeignClientException feignClientException = new FeignException.FeignClientException(400, "Bad Request", request, null, null);
+
+        //Mock
+        when(plaidConfig.getClientId()).thenReturn("client-id");
+        when(plaidConfig.getSecretKey()).thenReturn("secret-key");
+        when(plaidClient.syncTransactions(any(PlaidTransactionSyncRequestDto.class))).thenThrow(feignClientException);
+        when(mockJsonUtil.extractErrorMessage(any(FeignException.FeignClientException.class))).thenReturn("the login details of this item have changed");
+        when(mockJsonUtil.extractErrorCode(any(FeignException.FeignClientException.class))).thenReturn("ITEM_LOGIN_REQUIRED");
+
+        //Act
+        PlaidServiceException exception = assertThrows(PlaidServiceException.class, () -> plaidService.syncTransactions("access-token", "cursor"));
+
+        //Assert
+        assertEquals("ITEM_LOGIN_REQUIRED", exception.getErrorCode());
+        assertEquals("the login details of this item have changed", exception.getPlaidMessage());
+        assertEquals("PlaidServiceException: [the login details of this item have changed]", exception.getMessage());
     }
 }

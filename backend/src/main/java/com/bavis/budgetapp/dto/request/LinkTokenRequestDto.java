@@ -1,5 +1,6 @@
 package com.bavis.budgetapp.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.ToString;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class LinkTokenRequestDto {
 
     @JsonProperty("client_id")
@@ -36,4 +38,12 @@ public class LinkTokenRequestDto {
     private PlaidUserDto user;
 
     private String[] products;
+
+    /**
+     * Only provided when creating a Link Token for "update mode" (re-authenticating an existing Item);
+     * in that case 'products' must be omitted
+     */
+    @JsonProperty("access_token")
+    @ToString.Exclude
+    private String accessToken;
 }

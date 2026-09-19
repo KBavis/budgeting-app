@@ -25,6 +25,21 @@ public interface PlaidService {
     LinkToken generateLinkToken(Long userId) throws PlaidServiceException;
 
     /**
+     * Generate a Link Token in Plaid's "update mode", which allows a User to re-authenticate an existing Item
+     * (i.e. when Plaid reports ITEM_LOGIN_REQUIRED) without creating a new Item/Account
+     *
+     * @param userId
+     *          - ID of the User re-authenticating
+     * @param accessToken
+     *          - access token of the existing Item that requires re-authentication
+     * @return
+     *          - Link Token used to launch Plaid Link in update mode
+     * @throws PlaidServiceException
+     *          - thrown if Plaid is unable to create the Link Token
+     */
+    LinkToken generateUpdateModeLinkToken(Long userId, String accessToken) throws PlaidServiceException;
+
+    /**
      * Functionality to generate an Access Token based on specified Public Token
      *
      * @param publicToken

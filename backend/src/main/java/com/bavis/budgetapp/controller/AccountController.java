@@ -3,6 +3,7 @@ package com.bavis.budgetapp.controller;
 import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
 import com.bavis.budgetapp.dto.request.UpdateAccountDto;
 import com.bavis.budgetapp.dto.response.AccountResponseDto;
+import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
@@ -109,6 +110,36 @@ public class AccountController {
 	 * @param accountId
 	 * 			- Account ID pertaining to particular account needing to be deleted
 	 */
+	/**
+	 * Generate a Plaid Link Token (update mode) so the User can log in to their financial institution again for an
+	 * Account that Plaid reports requires re-authentication
+	 *
+	 * @param accountId
+	 * 			- Account to re-authenticate
+	 * @return
+	 * 			- Link Token used to launch Plaid Link in update mode
+	 */
+	@PostMapping("/{accountId}/reauth-link-token")
+	public ResponseEntity<LinkToken> generateReauthenticationLinkToken(@PathVariable(value = "accountId") String accountId) {
+		log.info("Received request to generate a re-authentication Link Token for account with ID {}", accountId);
+		return ResponseEntity.ok(_accountService.generateReauthenticationLinkToken(accountId));
+	}
+
+	/**
+	 * Record that the User successfully re-authenticated an Account via Plaid Link (update mode); clears the Account's
+	 * "needs login" state. Does not sync; the User syncs manually.
+	 *
+	 * @param accountId
+	 * 			- Account that was re-authenticated
+	 * @return
+	 * 			- the Account, reflecting its now healthy connection
+	 */
+	@PostMapping("/{accountId}/reauth-complete")
+	public ResponseEntity<AccountResponseDto> completeReauthentication(@PathVariable(value = "accountId") String accountId) {
+		log.info("Received request to complete re-authentication for account with ID {}", accountId);
+		return ResponseEntity.ok(_accountService.completeReauthentication(accountId));
+	}
+
 	@DeleteMapping("/{accountId}")
 	public void delete(@PathVariable(value = "accountId") String accountId) {
 		log.info("Received request to delete account with ID {}", accountId);

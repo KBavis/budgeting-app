@@ -13,6 +13,7 @@ import com.bavis.budgetapp.entity.AccountVt;
 import com.bavis.budgetapp.entity.Connection;
 import com.bavis.budgetapp.entity.User;
 import com.bavis.budgetapp.dto.request.ConnectAccountRequestDto;
+import com.bavis.budgetapp.model.LinkToken;
 import com.bavis.budgetapp.service.ConnectionService;
 import com.bavis.budgetapp.service.EffectivityService;
 import com.bavis.budgetapp.service.PlaidService;
@@ -385,5 +386,112 @@ public class AccountServiceTests {
 
         // Assert
         assertTrue(actualAccounts.isEmpty());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Re-authentication (Plaid Link update mode)
+    // ---------------------------------------------------------------------------------------------
+
+    @Test
+    void testGenerateReauthenticationLinkToken_OwnedAccount_UsesConnectionAccessToken() {
+        //Arrange
+        LinkToken expected = new LinkToken(LocalDateTime.now(), "update-link-token");
+
+        //Mock
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
+        when(userService.getCurrentAuthUser()).thenReturn(User.builder().userId(OWNER_USER_ID).build());
+        when(plaidService.generateUpdateModeLinkToken(OWNER_USER_ID, accessToken)).thenReturn(expected);
+
+        //Act
+        LinkToken actual = accountService.generateReauthenticationLinkToken(accountId);
+
+        //Assert
+        assertEquals(expected, actual);
+        verify(plaidService, times(1)).generateUpdateModeLinkToken(OWNER_USER_ID, accessToken);
+    }
+
+    /**
+     * A user must never be able to obtain an update mode Link Token for someone else's Account
+     */
+    @Test
+    void testGenerateReauthenticationLinkToken_AccountOwnedByAnotherUser_Throws() {
+        //Arrange
+        expectedAccount.setUser(User.builder().userId(999L).build());
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
+
+        //Act & Assert
+        assertThrows(RuntimeException.class, () -> accountService.generateReauthenticationLinkToken(accountId));
+        verify(plaidService, never()).generateUpdateModeLinkToken(any(), any());
+    }
+
+    @Test
+    void testGenerateReauthenticationLinkToken_AccountWithoutConnection_Throws() {
+        //Arrange
+        expectedAccount.setConnection(null);
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
+
+        //Act & Assert
+        assertThrows(RuntimeException.class, () -> accountService.generateReauthenticationLinkToken(accountId));
+        verify(plaidService, never()).generateUpdateModeLinkToken(any(), any());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Completing re-authentication (clears the "needs login" state; does NOT sync)
+    // ---------------------------------------------------------------------------------------------
+
+    @Test
+    void testCompleteReauthentication_OwnedAccount_MarksConnectionConnectedAndReturnsAccount() {
+        //Arrange
+        Connection flagged = expectedAccount.getConnection();
+        flagged.setConnectionStatus(ConnectionStatus.DISCONNECTED);
+        flagged.setErrorCode("ITEM_LOGIN_REQUIRED");
+
+        Connection healthy = Connection.builder().connectionId(flagged.getConnectionId()).connectionStatus(ConnectionStatus.CONNECTED).build();
+        AccountResponseDto expectedDto = AccountResponseDto.builder().accountId(accountId).requiresReauth(false).build();
+        AccountVt activeVt = AccountVt.builder().account(expectedAccount).accountName("Discover").build();
+
+        //Mock
+        doReturn(activeVt).when(effectivityService).getActiveVt(any(), any());
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
+        when(connectionService.markConnected(flagged.getConnectionId())).thenReturn(healthy);
+        when(accountMapper.toResponseDto(eq(expectedAccount), any())).thenReturn(expectedDto);
+
+        //Act
+        AccountResponseDto actual = accountService.completeReauthentication(accountId);
+
+        //Assert
+        assertEquals(expectedDto, actual);
+        assertFalse(actual.isRequiresReauth());
+        assertEquals(healthy, expectedAccount.getConnection());
+
+        //Verify - re-authenticating only updates status; it never talks to Plaid or syncs
+        verify(connectionService, times(1)).markConnected(flagged.getConnectionId());
+        verifyNoInteractions(plaidService);
+        verifyNoInteractions(transactionService);
+    }
+
+    /**
+     * A user must never be able to change the status of someone else's Account connection
+     */
+    @Test
+    void testCompleteReauthentication_AccountOwnedByAnotherUser_Throws() {
+        //Arrange
+        expectedAccount.setUser(User.builder().userId(999L).build());
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
+
+        //Act & Assert
+        assertThrows(RuntimeException.class, () -> accountService.completeReauthentication(accountId));
+        verify(connectionService, never()).markConnected(any());
+    }
+
+    @Test
+    void testCompleteReauthentication_AccountWithoutConnection_Throws() {
+        //Arrange
+        expectedAccount.setConnection(null);
+        when(accountRepository.findByAccountIdAndAsOf(eq(accountId), any())).thenReturn(Optional.of(expectedAccount));
+
+        //Act & Assert
+        assertThrows(RuntimeException.class, () -> accountService.completeReauthentication(accountId));
+        verify(connectionService, never()).markConnected(any());
     }
 }

@@ -113,6 +113,24 @@ public class JsonUtil {
     }
 
     /**
+     * Utility function to extract Plaid's error_code (i.e. ITEM_LOGIN_REQUIRED) from FeignClientException
+     *
+     * @param e
+     *      - Feign Client exception
+     * @return
+     *      - Plaid's error_code, or null if none could be extracted
+     */
+    public String extractErrorCode(FeignException.FeignClientException e){
+        try {
+            JsonNode errorCode = _objectMapper.readTree(e.contentUTF8()).get("error_code");
+            return errorCode != null && !errorCode.isNull() ? errorCode.asText() : null;
+        } catch (Exception ex) {
+            log.warn("Unable to extract error code from FeignClientException: [{}]", ex.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Utility function to extract relevant message from FeignClientException for PlaidServiceException cleanliness
      *
      * @param e
