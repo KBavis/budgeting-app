@@ -126,7 +126,8 @@ public class TransactionServiceImpl implements TransactionService {
                 //Collect Added, Modified, and Removed Transactions for Account until Plaid specifies none remain
                 while(hasMore){
                     PlaidTransactionSyncResponseDto syncResponseDto = _plaidService.syncTransactions(accessToken, previousCursor);
-                    log.info("PlaidTransactionSyncResponseDto for Account ID {} : [{}]", accountId, syncResponseDto);
+                    log.info("Received Plaid sync response for Account ID {}: {} added, {} modified, {} removed, hasMore={}", accountId,
+                            size(syncResponseDto.getAdded()), size(syncResponseDto.getModified()), size(syncResponseDto.getRemoved()), syncResponseDto.isHas_more());
 
                     //Collect Added Transactions
                     allModifiedOrAddedTransactions.addAll(mapAddedTransactions(syncResponseDto.getAdded(), account, pendingTransactionIds));

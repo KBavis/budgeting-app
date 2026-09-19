@@ -131,7 +131,7 @@ public class PlaidServiceImpl implements PlaidService{
                 .secretKey(_plaidConfig.getSecretKey())
                 .build();
 
-        log.info("Exchanging Plaid API Public Token [{}]", publicToken);
+        log.info("Exchanging Plaid API Public Token for Access Token");
 
         //Validate & Handle Feign Client Exceptions
         ResponseEntity<AccessTokenResponseDto> responseEntity;

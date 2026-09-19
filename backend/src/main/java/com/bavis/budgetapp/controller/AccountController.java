@@ -77,7 +77,7 @@ public class AccountController {
 	 */
 	@PostMapping
 	public ResponseEntity<AccountResponseDto> connectAccount(@Valid @RequestBody ConnectAccountRequestDto connectAccountRequestDto){
-		log.info("Received request to connect new account: [{}]", connectAccountRequestDto);
+		log.info("Received request to connect new account with Plaid account ID [{}]", connectAccountRequestDto.getPlaidAccountId());
 		return ResponseEntity.ok(_accountService.connectAccount(connectAccountRequestDto));
 	}
 

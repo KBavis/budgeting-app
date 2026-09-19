@@ -3,6 +3,7 @@ package com.bavis.budgetapp.dto.request;
 import com.bavis.budgetapp.constants.AccountType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class ConnectAccountRequestDto {
     private String accountName;
 
     @NotEmpty(message = "publicToken must not be empty")
+    @ToString.Exclude
     private String publicToken;
 
     @NotNull(message = "accountType must not be null")

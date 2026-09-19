@@ -73,7 +73,7 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
             String computed = HexFormat.of().formatHex(mac.doFinal(data.getBytes()));
             boolean valid = computed.equalsIgnoreCase(signature);
             if (!valid) {
-                log.warn("Mailgun signature verification failed. Expected: {}, Got: {}", computed, signature);
+                log.warn("Mailgun signature verification failed");
             }
             return valid;
         } catch (Exception e) {
@@ -85,19 +85,19 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
     @Override
     @Transactional
     public void processInboundEmail(String recipient, String from, String subject, String bodyPlain, String bodyHtml) {
-        log.info("Processing inbound email — recipient: {}, from: {}, subject: {}", recipient, from, subject);
+        log.info("Processing inbound Mailgun email");
 
         // 1. Extract ingest token from recipient address
         String ingestToken = extractIngestToken(recipient);
         if (ingestToken == null) {
-            log.warn("Could not extract ingest token from recipient: {}", recipient);
+            log.warn("Could not extract ingest token from inbound email recipient");
             return;
         }
 
         // 2. Resolve user from ingest token
         Optional<VenmoAutomation> automationOpt = venmoAutomationRepository.findByIngestToken(ingestToken);
         if (automationOpt.isEmpty()) {
-            log.warn("No VenmoAutomation found for ingest token: {}", ingestToken);
+            log.warn("No VenmoAutomation found for inbound email ingest token");
             return;
         }
 
@@ -118,21 +118,20 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
 
         // 4. Validate sender is Venmo
         if (from == null || !from.toLowerCase().contains("@venmo.com")) {
-            log.info("Ignoring non-Venmo/non-Google email from: {}", from);
+            log.info("Ignoring non-Venmo/non-Google inbound email");
             return;
         }
 
         User user = automation.getUser();
-        log.info("Resolved Venmo email to user ID: {} ({})", user.getUserId(), user.getUsername());
+        log.info("Resolved Venmo email to user ID: {}", user.getUserId());
 
         // 4. Parse the email
         ParsedVenmoEmail parsed = parseEmail(subject, bodyPlain, bodyHtml);
         if (parsed == null) {
-            log.warn("Could not parse Venmo email — subject: {}", subject);
+            log.warn("Could not parse Venmo email for user ID: {}", user.getUserId());
             return;
         }
-        log.info("Parsed Venmo email — counterparty: {}, amount: {}, description: {}",
-                parsed.counterparty, parsed.amount, parsed.description);
+        log.info("Parsed Venmo email for user ID: {}", user.getUserId());
 
         // 5. Stage the parsed email in DB queue
         StagedVenmoPayment staged = StagedVenmoPayment.builder()
@@ -145,8 +144,7 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
                 .matched(false)
                 .build();
         stagedVenmoPaymentRepository.save(staged);
-        log.info("Staged Venmo payment for user ID: {} — amount: ${}, counterparty: {}",
-                user.getUserId(), parsed.amount, parsed.counterparty);
+        log.info("Staged Venmo payment for user ID: {}", user.getUserId());
 
         // 6. Update automation metadata
         automation.setLastProcessedAt(LocalDateTime.now());
@@ -189,8 +187,7 @@ public class VenmoEmailServiceImpl implements VenmoEmailService {
                 .setupPhase(initialPhase)
                 .build();
         automation = venmoAutomationRepository.save(automation);
-        log.info("Created Venmo automation for user ID: {} with token: {} and provider: {}",
-                userId, automation.getIngestToken(), normalizedProvider);
+        log.info("Created Venmo automation for user ID: {} with provider: {}", userId, normalizedProvider);
         return toDto(automation);
     }
 

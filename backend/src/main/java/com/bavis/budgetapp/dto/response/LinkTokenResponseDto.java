@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class LinkTokenResponseDto {
     @JsonProperty("link_token")
+    @ToString.Exclude
     private String linkToken;
 
     @JsonProperty("expiration")

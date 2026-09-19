@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.model;
 
 import jakarta.persistence.Embeddable;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,5 +21,6 @@ import java.time.LocalDateTime;
 @Embeddable
 public class LinkToken {
     private LocalDateTime expiration;
+    @ToString.Exclude
     private String token;
 }

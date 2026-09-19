@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,8 +21,10 @@ public class ExchangeTokenRequestDto {
     private String clientId;
 
     @JsonProperty("secret")
+    @ToString.Exclude
     private String secretKey;
 
     @JsonProperty("public_token")
+    @ToString.Exclude
     private String publicToken;
 }

@@ -76,7 +76,7 @@ public class AccountServiceImpl implements AccountService{
 	@Transactional
 	public AccountResponseDto connectAccount(ConnectAccountRequestDto connectAccountRequestDto) throws AccountConnectionException {
 
-		log.debug("Attempting To ConnectAccount via ConnectAccountRequest: [{}]", connectAccountRequestDto);
+		log.debug("Attempting To ConnectAccount for Plaid account ID [{}]", connectAccountRequestDto.getPlaidAccountId());
 
 		double balance;
 		String accessToken;
@@ -84,14 +84,14 @@ public class AccountServiceImpl implements AccountService{
 		try {
 			accessToken = _plaidService.exchangeToken(connectAccountRequestDto.getPublicToken());
 			if(!accessToken.isBlank()) {
-				log.debug("Successfully retrieved access token for Connect Account Request: [{}]", connectAccountRequestDto);
+				log.debug("Successfully retrieved access token for Plaid account ID [{}]", connectAccountRequestDto.getPlaidAccountId());
 			} else {
-				log.error("Failed to retrieve access token via Connect Account Request : [{}]", connectAccountRequestDto);
+				log.error("Failed to retrieve access token for Plaid account ID [{}]", connectAccountRequestDto.getPlaidAccountId());
 				throw new PlaidServiceException("Unable to exchange publicToken for accessToken");
 			}
 
 			balance = _plaidService.retrieveBalance(connectAccountRequestDto.getPlaidAccountId(), accessToken);
-			log.debug("Balance Retrieved From Plaid Service: [{}]", balance);
+			log.debug("Balance retrieved from Plaid Service for Plaid account ID [{}]", connectAccountRequestDto.getPlaidAccountId());
 
 		} catch (PlaidServiceException exception){
 			log.debug("A PlaidServiceException was thrown by PlaidService while attempting to connect account: [{}]", exception.getMessage());
@@ -125,8 +125,8 @@ public class AccountServiceImpl implements AccountService{
 		Connection savedConnection = _connectionService.create(newConnection);
 		Account savedAccount = _accountRepository.save(newAccount);
 
-		log.debug("Saved Connection: [{}]", savedConnection.toString());
-		log.debug("Saved Account: [{}]", savedAccount.toString());
+		log.debug("Saved Connection with ID [{}]", savedConnection.getConnectionId());
+		log.debug("Saved Account with ID [{}]", savedAccount.getAccountId());
 
 		AccountVt activeVt = _effectivityService.getActiveVt(newAccount.getValidTimes(), LocalDate.now());
 		return _accountMapper.toResponseDto(newAccount, activeVt);

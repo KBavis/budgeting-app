@@ -26,6 +26,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -47,6 +48,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@ToString(exclude = {"password", "linkToken", "categories", "accounts", "incomes"})
 public class User implements UserDetails {
 	@Serial
 	private static final long serialVersionUID = 1L;

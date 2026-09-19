@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponseDto register(AuthRequestDto authRequestDto) throws UserServiceException, PlaidServiceException, JwtServiceException {
-        log.info("Attempting to Register new user pertaining to AuthRequestDto: [{}]", authRequestDto);
+        log.info("Attempting to Register new user with username [{}]", authRequestDto.getUsername());
 
         User user = User.builder()
                 .name(authRequestDto.getName())
@@ -63,16 +63,17 @@ public class AuthServiceImpl implements AuthService {
                 .linkToken(null)
                 .build();
 
-        log.info("Registered User: [" + _userService.create(user) + "]");
+        _userService.create(user);
+        log.info("Registered User with ID [{}]", user.getUserId());
 
         //Generate Plaid Link Token for authenticated user
         LinkToken linkToken = _plaidService.generateLinkToken(user.getUserId());
         user.setLinkToken(linkToken);
-        log.debug("Link Token Generated for User {} : {}", user.getUserId(), linkToken);
+        log.debug("Link Token Generated for User {}", user.getUserId());
 
         //Ensure Plaid Link Token persisted
         user = _userService.update(user.getUserId(), user);
-        log.info("User Following Plaid Link Token Generation: [{}]", user.toString());
+        log.info("Persisted Plaid Link Token for User with ID [{}]", user.getUserId());
 
         //Generate JWT Token for newly registered user
         String jwtToken = _jwtService.generateToken(user);
@@ -87,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponseDto authenticate(AuthRequestDto authRequestDto) throws AuthenticationException{
-        log.info("Attempting to Authenticate an user via following AuthRequestDto: [{}]", authRequestDto);
+        log.info("Attempting to Authenticate user with username [{}]", authRequestDto.getUsername());
 
         //Authenticate User using our AuthenticationManager Bean
         _authenticationManager.authenticate(

@@ -66,13 +66,13 @@ public class TransactionController {
      */
     @PostMapping
     public ResponseEntity<Transaction> addTransaction(@RequestBody @Validated(TransactionDtoAddValidationGroup.class) TransactionDto transactionDto) {
-        log.info("Received request to create new Transaction entity for following TransactionDto: [{}]", transactionDto);
+        log.info("Received request to create new Transaction entity");
         return ResponseEntity.ok(_transactionService.addTransaction(transactionDto));
     }
 
     @PutMapping("/{transactionId}")
     public ResponseEntity<Transaction> reduceTransactionAmount(@PathVariable("transactionId") String transactionId, @RequestBody TransactionDto transactionDto) {
-        log.info("Received request to reduce Transaction amount via following TransactionDto: [{}]", transactionDto);
+        log.info("Received request to reduce Transaction amount for Transaction with ID {}", transactionId);
         return ResponseEntity.ok(_transactionService.reduceTransactionAmount(transactionId, transactionDto));
     }
 
@@ -123,7 +123,7 @@ public class TransactionController {
      */
     @PutMapping("/{transactionId}/split")
     public ResponseEntity<List<Transaction>> splitTransactions(@PathVariable("transactionId") String transactionId, @Validated(TransactionDtoSplitValidationGroup.class) @RequestBody SplitTransactionDto splitTransactionDto) {
-        log.info("Received request to split out Transaction with ID {} into following Transactions: [{}]", transactionId, splitTransactionDto);
+        log.info("Received request to split out Transaction with ID {}", transactionId);
         return ResponseEntity.ok(_transactionService.splitTransaction(transactionId, splitTransactionDto));
     }
 

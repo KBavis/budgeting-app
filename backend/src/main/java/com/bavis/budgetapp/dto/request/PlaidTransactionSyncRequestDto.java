@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +19,9 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PlaidTransactionSyncRequestDto {
     private String client_id;
+    @ToString.Exclude
     private String secret;
+    @ToString.Exclude
     private String access_token;
     private int count;
     private String cursor;

@@ -49,7 +49,7 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDto> register(@Validated(AuthRequestRegistrationValidationGroup.class) @RequestBody AuthRequestDto authRequestDto) {
-        log.info("Received request to register a new User: [{}}", authRequestDto);
+        log.info("Received request to register a new User with username [{}]", authRequestDto.getUsername());
         return ResponseEntity.ok(authService.register(authRequestDto));
     }
 
@@ -76,7 +76,7 @@ public class AuthController {
      */
     @PostMapping("/authenticate")
     public ResponseEntity<AuthResponseDto> authenticate(@Validated(AuthRequestAuthenticationValidationGroup.class) @RequestBody AuthRequestDto authRequestDto) {
-        log.info("Received request to authenticate an User: [{}]", authRequestDto);
+        log.info("Received request to authenticate User with username [{}]", authRequestDto.getUsername());
         return ResponseEntity.ok(authService.authenticate(authRequestDto));
     }
 

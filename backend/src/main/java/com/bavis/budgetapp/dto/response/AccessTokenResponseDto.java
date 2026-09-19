@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AccessTokenResponseDto {
     @JsonProperty("access_token")
+    @ToString.Exclude
     private String accessToken;
 
     @JsonProperty("item_id")

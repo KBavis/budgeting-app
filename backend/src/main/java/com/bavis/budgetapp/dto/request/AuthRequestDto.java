@@ -26,7 +26,7 @@ import lombok.ToString;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(exclude = {"passwordOne", "passwordTwo"})
 @Builder
 public class AuthRequestDto {
     private String name;

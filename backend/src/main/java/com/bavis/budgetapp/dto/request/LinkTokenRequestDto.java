@@ -1,6 +1,7 @@
 package com.bavis.budgetapp.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class LinkTokenRequestDto {
     private String clientId;
 
     @JsonProperty("secret")
+    @ToString.Exclude
     private String secretKey;
 
     @JsonProperty("client_name")

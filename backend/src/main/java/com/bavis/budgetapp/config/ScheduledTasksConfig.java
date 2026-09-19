@@ -26,5 +26,6 @@ public class ScheduledTasksConfig {
     public void generateBudgetPerformance() {
         log.info("Executing monthly Budget Performance job");
         budgetPerformanceService.runGenerateBudgetPerformanceJob(null);
+        log.info("Completed monthly Budget Performance job");
     }
 }

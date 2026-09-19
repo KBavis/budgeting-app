@@ -54,7 +54,7 @@ public class VenmoWebhookController {
             @RequestParam(value = "token", required = false, defaultValue = "") String token,
             @RequestParam(value = "signature", required = false, defaultValue = "") String signature) {
 
-        log.info("Received Mailgun webhook — recipient: {}, from: {}, subject: {}", recipient, from, subject);
+        log.info("Received Mailgun webhook");
 
         // Verify Mailgun webhook signature
         if (!venmoEmailService.verifyMailgunSignature(timestamp, token, signature)) {
