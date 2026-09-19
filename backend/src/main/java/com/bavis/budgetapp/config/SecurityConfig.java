@@ -55,6 +55,8 @@ public class SecurityConfig {
                         .permitAll() // Allow registration/authentication endpoints
                         .requestMatchers("/api/webhooks/**")
                         .permitAll() // Allow Mailgun webhook (secured via HMAC signature verification)
+                        .requestMatchers(HttpMethod.POST, "/budget/performance")
+                        .hasAuthority("ADMIN") // Job runs for every user; only admins may trigger it manually
                         .anyRequest().authenticated() // Authenticate all other requests
                 )
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless
