@@ -250,6 +250,30 @@ public class MonthlyCategoryPerformanceServiceTests {
     }
 
     @Test
+    void testGetCategoryTransactions_pastMonth_looksUpTransactionsAsOfToday() {
+        // a past month's Transactions may have been synced after that month ended, so they must not be looked up as of month end
+        LocalDate lastMonth = LocalDate.now().minusMonths(1);
+        long categoryId = 1L;
+        MonthYear pastMonthYear = MonthYear.builder()
+                .month(lastMonth.getMonth().name())
+                .year(lastMonth.getYear())
+                .build();
+
+        Transaction lateSyncedTransaction = Transaction.builder()
+                .amount(5.65)
+                .date(lastMonth)
+                .startDate(LocalDate.now())
+                .build();
+
+        when(transactionServiceMock.fetchCategoryTransactions(eq(categoryId), eq(LocalDate.now()))).thenReturn(List.of(lateSyncedTransaction));
+
+        List<Transaction> actualTransactions = categoryPerformanceService.getCategoryTransactions(pastMonthYear, categoryId);
+
+        assertEquals(List.of(lateSyncedTransaction), actualTransactions);
+        verify(transactionServiceMock).fetchCategoryTransactions(categoryId, LocalDate.now());
+    }
+
+    @Test
     void testGetCategoryTransactions_handlesNullTransactions() {
 
         when(transactionServiceMock.fetchCategoryTransactions(any(Long.class), any())).thenReturn(null);

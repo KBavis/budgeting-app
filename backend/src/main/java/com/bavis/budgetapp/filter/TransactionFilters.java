@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -41,6 +42,15 @@ public class TransactionFilters {
         return transaction -> transactionRepository.existsById(transaction.getTransactionId());
     }
 
+    /**
+     * Plaid re-sends Transactions we have already persisted (e.g. modifications, previous month re-syncs, or a full re-sync
+     * after reconnecting). Saving one of those over a Transaction the user soft deleted would reset its end date and
+     * silently revive it, so any Transaction persisted as soft deleted is excluded.
+     */
+    private Predicate<Transaction> notSoftDeleted() {
+        return transaction -> !transactionRepository.existsByTransactionIdAndEndDateBefore(transaction.getTransactionId(), LocalDate.now());
+    }
+
     private Predicate<Transaction> alreadyExistsAndUpdatedByUser() {
         return transaction -> !transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue(transaction.getTransactionId());
     }
@@ -70,7 +80,8 @@ public class TransactionFilters {
         return HAS_POSITIVE_AMOUNT
                 .and(IS_PREVIOUS_MONTH)
                 .and(IS_ACTIVE)
-                .and(notAlreadyAccountedFor(previousMonthTransactions));
+                .and(notAlreadyAccountedFor(previousMonthTransactions))
+                .and(notSoftDeleted());
     }
 
     /**
@@ -81,7 +92,8 @@ public class TransactionFilters {
                 .and(IS_CURRENT_MONTH)
                 .and(IS_ACTIVE)
                 .and(alreadyExists())
-                .and(alreadyExistsAndUpdatedByUser());
+                .and(alreadyExistsAndUpdatedByUser())
+                .and(notSoftDeleted());
     }
 
     /**
@@ -89,7 +101,8 @@ public class TransactionFilters {
      */
     public Predicate<Transaction> addedTransactionFilters() {
         return HAS_POSITIVE_AMOUNT
-                .and(IS_CURRENT_MONTH);
+                .and(IS_CURRENT_MONTH)
+                .and(notSoftDeleted());
     }
 
 

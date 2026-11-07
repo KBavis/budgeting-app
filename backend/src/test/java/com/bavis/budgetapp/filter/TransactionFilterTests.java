@@ -215,4 +215,35 @@ public class TransactionFilterTests {
 
         assertTrue(result);
     }
+
+    @Test
+    void testAddedTransactionFilters_shouldFail_ifPersistedTransactionSoftDeleted() {
+        when(transactionRepository.existsByTransactionIdAndEndDateBefore("tx123", LocalDate.now())).thenReturn(true);
+
+        assertFalse(transactionFilters.addedTransactionFilters().test(sampleTransaction));
+    }
+
+    @Test
+    void testAddedTransactionFilters_shouldPass_ifPersistedTransactionNotSoftDeleted() {
+        when(transactionRepository.existsByTransactionIdAndEndDateBefore("tx123", LocalDate.now())).thenReturn(false);
+
+        assertTrue(transactionFilters.addedTransactionFilters().test(sampleTransaction));
+    }
+
+    @Test
+    void testModifiedTransactionFilters_shouldFail_ifPersistedTransactionSoftDeleted() {
+        when(transactionRepository.existsById("tx123")).thenReturn(true);
+        when(transactionRepository.existsByTransactionIdAndUpdatedByUserIsTrue("tx123")).thenReturn(false);
+        when(transactionRepository.existsByTransactionIdAndEndDateBefore("tx123", LocalDate.now())).thenReturn(true);
+
+        assertFalse(transactionFilters.modifiedTransactionFilters().test(sampleTransaction));
+    }
+
+    @Test
+    void testPrevMonthTransactionFilters_shouldFail_ifPersistedTransactionSoftDeleted() {
+        sampleTransaction.setDate(LocalDate.now().withDayOfMonth(1).minusDays(1));
+        when(transactionRepository.existsByTransactionIdAndEndDateBefore("tx123", LocalDate.now())).thenReturn(true);
+
+        assertFalse(transactionFilters.prevMonthTransactionFilters(Collections.emptyList()).test(sampleTransaction));
+    }
 }

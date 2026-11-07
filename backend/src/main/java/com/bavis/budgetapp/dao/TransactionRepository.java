@@ -60,6 +60,18 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     boolean existsByTransactionIdAndUpdatedByUserIsTrue(String transactionId);
 
     /**
+     * Determine whether a Transaction exists by a specified Transaction ID AND was soft deleted (end dated) before a given date
+     *
+     * @param transactionId
+     *          - Transaction ID to search for
+     * @param date
+     *          - date the Transaction must have been end dated before
+     * @return
+     *          - boolean determining if the Transaction exists within our DB and was soft deleted
+     */
+    boolean existsByTransactionIdAndEndDateBefore(String transactionId, LocalDate date);
+
+    /**
      * Retrieve all Transactions for a given list of Category IDs, null Account, and within the current month/year
      *
      * @param categoryIds

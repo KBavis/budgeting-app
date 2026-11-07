@@ -20,6 +20,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -137,6 +139,20 @@ public class Transaction {
 	@ManyToOne
 	@JoinColumn(name = "categoryId", referencedColumnName = "categoryId")
 	private Category category;
+
+	/**
+	 * A Transaction is effective from the date it occurred, not the date it was synced/persisted.
+	 *
+	 * Without this, a Transaction synced after its month ended (or re-synced/merged from Plaid, which rebuilds the
+	 * entity with a default start date of today) falls outside of point-in-time lookups for the month it belongs to.
+	 */
+	@PrePersist
+	@PreUpdate
+	public void alignStartDateWithTransactionDate() {
+		if (date != null && (startDate == null || date.isBefore(startDate))) {
+			startDate = date;
+		}
+	}
 
 	@Override
 	public boolean equals(Object obj) {
