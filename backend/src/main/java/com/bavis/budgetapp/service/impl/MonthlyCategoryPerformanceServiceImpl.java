@@ -135,8 +135,9 @@ public class MonthlyCategoryPerformanceServiceImpl implements MonthlyCategoryPer
      *          - relevant Categories
      */
     public List<Transaction> getCategoryTransactions(MonthYear monthYear, Long categoryId) {
-        LocalDate asOfDate = monthYear.toEndOfMonthDate();
-        return Optional.ofNullable(transactionService.fetchCategoryTransactions(categoryId, asOfDate)).orElse(Collections.emptyList()).stream()
+        // Transactions are looked up as of today (excluding anything soft-deleted since) and then scoped to the month by
+        // their transaction date; looking them up as of the end of the month would drop Transactions synced after it ended
+        return Optional.ofNullable(transactionService.fetchCategoryTransactions(categoryId, LocalDate.now())).orElse(Collections.emptyList()).stream()
                 .filter(transaction -> GeneralUtil.isDateInMonthAndYear(transaction.getDate(), monthYear))
                 .toList();
     }

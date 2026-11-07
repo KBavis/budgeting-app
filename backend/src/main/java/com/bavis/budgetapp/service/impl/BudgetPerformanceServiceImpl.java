@@ -231,8 +231,11 @@ public class BudgetPerformanceServiceImpl implements BudgetPerformanceService{
                     .sum();
 
             //Calculate Total Amount Spent on Budget for CategoryType
+            // Transactions are looked up as of today (excluding anything soft-deleted since) and scoped to the month by their
+            // transaction date; looking them up as of the end of the month would drop Transactions synced after it ended
+            LocalDate today = LocalDate.now();
             double totalAmountSpent = filteredCategories.stream()
-                    .map(category -> Optional.ofNullable(transactionService.fetchCategoryTransactions(category.getCategoryId(), asOfDate)).orElse(Collections.emptyList()))
+                    .map(category -> Optional.ofNullable(transactionService.fetchCategoryTransactions(category.getCategoryId(), today)).orElse(Collections.emptyList()))
                     .flatMap(List::stream)
                     .filter(transaction -> GeneralUtil.isDateInMonthAndYear(transaction.getDate(), monthYear))
                     .mapToDouble(Transaction::getAmount)
